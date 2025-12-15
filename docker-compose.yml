@@ -1,0 +1,55 @@
+services:
+  # Servicio de Aplicación (PHP + Composer + Node)
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    image: laravel-12-app
+    container_name: laravel-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/node_modules
+      - /var/www/html/vendor
+    networks:
+      - laravel
+    ports:
+       - "5173:5173"
+
+  # Servicio Web (Nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: laravel-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80" # Accederás a tu app en http://localhost:8000
+    volumes:
+      - .:/var/www/html # Nginx también necesita ver tus archivos públicos
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - laravel
+
+  # Base de Datos (PostgreSQL)
+  db:
+    image: postgres:16
+    container_name: laravel-postgres
+    ports:
+      - "5432:5432" # Para conectar tu cliente SQL (TablePlus, DBeaver) localmente
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: mydb
+    volumes:
+      - db-data:/var/lib/postgresql/data # Persistencia de datos aunque borres el contenedor
+    networks:
+      - laravel
+
+networks:
+  laravel:
+    driver: bridge
+
+volumes:
+  db-data:
