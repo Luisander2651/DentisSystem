@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('author');
             $table->string('description');
+            $table->enum('status', ['visible', 'oculto'])->default('pending');
             $table->date('date');
             $table->enum('state', ['visible', 'oculto']);
             $table->timestamps();

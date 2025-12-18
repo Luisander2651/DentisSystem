@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description')->nullable();
+            $table->enum('status', ['visible', 'oculto'])->default('visible');
             $table->string('discount_percentage');
             $table->date('start_date');
             $table->date('end_date');

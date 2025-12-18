@@ -45,6 +45,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('address')->nullable();
+            $table->enum('status', ['active', 'inactive'])->nullable();
             $table->foreignId('role_id')->constrained('roles')->onDelete('cascade')->onUpdate('cascade');
             $table->foreignId('medical_data_id')->constrained('medical_data')->onDelete('cascade')->onUpdate('cascade');
             $table->foreignId('contact_info_id')->constrained('contact_info')->onDelete('cascade')->onUpdate('cascade');

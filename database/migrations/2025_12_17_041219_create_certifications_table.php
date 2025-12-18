@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description')->nullable();
+            $table->enum('status', ['visible', 'oculto'])->default('visible');
             $table->date('date');
             $table->string('image_url')->nullable();
             $table->timestamps();
