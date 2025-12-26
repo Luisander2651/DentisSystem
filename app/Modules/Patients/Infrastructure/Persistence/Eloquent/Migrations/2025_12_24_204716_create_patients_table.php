@@ -11,9 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        
+        Schema::create('patients', function (Blueprint $table) {
+            $table->id();
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->enum('status', ['active', 'inactive'])->nullable();
+            $table->enum('role', ['patient'])->default('patient');
+            $table->timestamps();
+        });
+
         Schema::create('medical_data', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade')->onUpdate('cascade');
             $table->string('blood_type')->nullable();
             $table->json('allergies')->nullable();
             $table->json('medications')->nullable();
@@ -23,6 +34,7 @@ return new class extends Migration
 
         Schema::create('contact_info', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade')->onUpdate('cascade');
             $table->string('phone_number')->nullable();
             $table->string('emergency_contact')->nullable();
             $table->string('email')->nullable();
@@ -31,28 +43,13 @@ return new class extends Migration
 
         Schema::create('addresses', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade')->onUpdate('cascade');
             $table->string('street')->nullable();
             $table->string('city')->nullable();
             $table->string('state')->nullable();
             $table->string('postal_code')->nullable();
             $table->timestamps();
         });
-        
-        Schema::create('patients', function (Blueprint $table) {
-            $table->id();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->string('address')->nullable();
-            $table->enum('status', ['active', 'inactive'])->nullable();
-            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreignId('medical_data_id')->constrained('medical_data')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreignId('contact_info_id')->constrained('contact_info')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreignId('address_id')->constrained('addresses')->onDelete('cascade')->onUpdate('cascade');
-            $table->timestamps();
-        });
-
     }
 
     /**
@@ -60,9 +57,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('patients');
         Schema::dropIfExists('medical_data');
         Schema::dropIfExists('contact_info');
         Schema::dropIfExists('addresses');
+        Schema::dropIfExists('patients');
     }
 };
