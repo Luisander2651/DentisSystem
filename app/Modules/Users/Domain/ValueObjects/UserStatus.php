@@ -8,12 +8,10 @@ final readonly class UserStatus
 {
     private const ACTIVE = 'active';
     private const INACTIVE = 'inactive';
-    private const SUSPENDED = 'suspended';
 
     private const VALID_STATUSES = [
         self::ACTIVE,
         self::INACTIVE,
-        self::SUSPENDED,
     ];
 
     public function __construct(
@@ -35,11 +33,6 @@ final readonly class UserStatus
         return new self(self::INACTIVE);
     }
 
-    public static function suspended(): self
-    {
-        return new self(self::SUSPENDED);
-    }
-
     // Create UserStatus from string (used when retrieving from DB)
     public static function fromString(string $status): self
     {
@@ -52,8 +45,8 @@ final readonly class UserStatus
         return $this->value === self::ACTIVE;
     }
 
-    public function isSuspended(): bool
+    public function isInactive(): bool
     {
-        return $this->value === self::SUSPENDED;
+        return $this->value === self::INACTIVE;
     }
 }

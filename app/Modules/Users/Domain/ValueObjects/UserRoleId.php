@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Domain\ValueObjects;
 
-final class UserRole
+final class UserRoleId
 {
     private const ADMIN = 'admin';
     private const DOCTOR = 'doctor';
