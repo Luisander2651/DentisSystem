@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Domain\ValueObjects;
 
+use App\Modules\Users\Domain\Exceptions\ValueObjects\UserRoleException;
+
 final class UserRoleId
 {
     private const ADMIN = 'admin';
-    private const DOCTOR = 'doctor';
     private const ASISTENT = 'asistent';
+    private const DOCTOR = 'doctor';
 
     private const VALID_ROLES = [
         self::ADMIN,
@@ -20,7 +22,7 @@ final class UserRoleId
         public readonly string $value,
     ) {
         if (!in_array($this->value, self::VALID_ROLES, true)) {
-            throw new \InvalidArgumentException("Invalid user role: {$this->value}");
+            throw UserRoleException::invalidFormat($this);
         }
     }
 
@@ -60,5 +62,28 @@ final class UserRoleId
     public function isAsistent(): bool
     {
         return $this->value === self::ASISTENT;
+    }
+
+    public function toDatabaseId(): int
+    {
+        if ($this->isAdmin()) {
+            return 1;
+        } elseif ($this->isAsistent()) {
+            return 2;
+        } elseif ($this->isDoctor()) {
+            return 3;
+        }
+
+        throw UserRoleException::notFound($this);
+    }
+
+    public static function fromDatabaseId(string $id): self
+    {
+        return match ((int)$id) {
+            1 => self::admin(),
+            2 => self::asistent(),
+            3 => self::doctor(),
+            default => throw UserRoleException::invalidFormat(new self($id)),
+        };
     }
 }

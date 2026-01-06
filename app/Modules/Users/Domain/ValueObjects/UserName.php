@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Domain\ValueObjects;
 
+use App\Modules\Users\Domain\Exceptions\ValueObjects\UserNameException;
+
 final readonly class UserName
 {
     private const MIN_LENGTH = 3;
@@ -25,8 +27,10 @@ final readonly class UserName
         $length = mb_strlen(trim($full));
 
         if ($length < self::MIN_LENGTH || $length > self::MAX_LENGTH) {
-            throw new \InvalidArgumentException(
-                "User name must be between " . self::MIN_LENGTH . " and " . self::MAX_LENGTH . " characters."
+            throw UserNameException::invalidLength(
+                name: self::create($formattedFirst, $formattedLast),
+                minLength: self::MIN_LENGTH,
+                maxLength: self::MAX_LENGTH
             );
         }
 

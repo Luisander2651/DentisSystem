@@ -3,20 +3,40 @@
 declare(strict_types=1);
 
 namespace App\Modules\Users\Domain\ValueObjects;
+use App\Modules\Users\Domain\Exceptions\ValueObjects\PasswordException;
+use Mockery\Generator\StringManipulation\Pass\Pass;
 
 final class PasswordHash
 {
-    public function __construct(
+    private function __construct(
         public readonly string $value,
     ) {
         if (strlen($value) !== 60) {
-            throw new \InvalidArgumentException("Invalid password hash length.");
+            throw PasswordException::invalidFormat();
         }
 
         $hashInfo = password_get_info($value);
         if ($hashInfo['algo'] !== PASSWORD_BCRYPT) {
-            throw new \InvalidArgumentException("Invalid password hash format. Must be a valid bcrypt hash.");
+            throw PasswordException::invalidFormat();
         }
+    }
+
+    public static function createFromPlainText(string $plainPassword): self
+    {
+        $hash = password_hash($plainPassword, PASSWORD_BCRYPT);
+        if ($hash === false) {
+            throw PasswordException::failedToHash();
+        }
+
+        return new self($hash);
+    }
+
+    /**
+     * Verifica si una contraseña plana coincide con este hash
+     */
+    public function verify(string $plainPassword): bool
+    {
+        return password_verify($plainPassword, $this->value);
     }
 
     // Create PasswordHash from string (used when retrieving from DB)

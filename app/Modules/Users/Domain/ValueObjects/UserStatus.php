@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Domain\ValueObjects;
 
+use App\Modules\Users\Domain\Exceptions\ValueObjects\UserStatusException;
+
 final readonly class UserStatus
 {
     private const ACTIVE = 'active';
@@ -18,7 +20,7 @@ final readonly class UserStatus
         public string $value,
     ) {
         if (!in_array($this->value, self::VALID_STATUSES, true)) {
-            throw new \InvalidArgumentException("Invalid user status: {$this->value}");
+            throw UserStatusException::invalidStatus($this);
         }
     }
 
