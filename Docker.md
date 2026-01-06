@@ -40,3 +40,9 @@ Abrir el Siguiente Enlace para Acceder al Contenido de la Pagina
 
 <http://localhost:8000>
 
+## Acceso al contenedor postgres de Docker
+Ejecutar el siguiente comando en la terminal (CMD)
+
+```bash
+docker exec -it laravel-postgres psql -U admin -d mydb
+```
