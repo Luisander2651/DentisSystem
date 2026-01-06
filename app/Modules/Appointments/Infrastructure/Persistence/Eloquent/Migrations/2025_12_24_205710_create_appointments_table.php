@@ -25,7 +25,7 @@ return new class extends Migration
             $table->boolean('whatsapp_reminder')->default(false);
             $table->enum('status', ['asignada', 'completada', 'cancelada', 'reprogramada'])->default('asignada');
             $table->foreignId('treatment_id')->constrained('treatments')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade')->onUpdate('cascade');
             $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });
