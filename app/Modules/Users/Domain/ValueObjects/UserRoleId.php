@@ -19,7 +19,7 @@ final class UserRoleId
     ];
 
     public function __construct(
-        public readonly string $value,
+        public string $value,
     ) {
         if (!in_array($this->value, self::VALID_ROLES, true)) {
             throw UserRoleException::invalidFormat($this);

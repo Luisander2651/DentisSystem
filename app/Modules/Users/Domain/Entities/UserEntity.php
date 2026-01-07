@@ -21,7 +21,7 @@ final class UserEntity
         public UserName $name,
         public readonly UserEmail $email,
         public PasswordHash $password,
-        public readonly UserRoleId $role,
+        public UserRoleId $role,
         public UserStatus $status,
         public readonly DateTimeImmutable $createdAt,
         public DateTimeImmutable $updatedAt,
@@ -66,6 +66,30 @@ final class UserEntity
             new DateTimeImmutable($createdAt),
             new DateTimeImmutable($updatedAt)
         );
+    }
+
+    public function update(
+        ?string $firstName,
+        ?string $lastName,
+        ?string $roleId,
+        ?string $status
+    ): void {
+        if ($firstName !== null || $lastName !== null) {
+            $this->name = UserName::create(
+                $firstName ?? $this->name->firstName,
+                $lastName ?? $this->name->lastName
+            );
+        }
+
+        if ($roleId !== null) {
+            $this->role = new UserRoleId($roleId);
+        }
+
+        if ($status !== null) {
+            $this->status = UserStatus::fromString($status);
+        }
+
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     public function activate(): void

@@ -35,6 +35,17 @@ class UserService
         $this->userRepository->save($user);
     }
 
+    public function updateUser(UserEntity $user): void
+    {
+        $userExist = $this->userRepository->findById($user->id());
+
+        if (!$userExist) {
+            throw UserException::notFound($user->id());
+        }
+        
+        $this->userRepository->save($user);
+    }
+
     /**
      * @return UserEntity[]
      */
@@ -47,6 +58,17 @@ class UserService
         }
 
         return $users;
+    }
+
+    public function findById(UserId $id): UserEntity
+    {
+        $user = $this->userRepository->findById($id);
+
+        if (!$user) {
+            throw UserException::notFound($id);
+        }
+
+        return $user;
     }
 
     public function deleteUserById(UserId $id): void
