@@ -6,7 +6,7 @@ namespace App\Modules\Users\Infrastructure\Http\Controllers;
 
 use App\Modules\Users\Aplication\UseCases\UpdateUserUseCase;
 use App\Modules\Users\Aplication\DTOs\UpdateUserDto;
-
+use App\Modules\Users\Aplication\Exceptions\UserAplicationExceptions;
 use App\Modules\Users\Domain\Exceptions\UserException;
 use App\Modules\Users\Domain\Exceptions\ValueObjectsException;
 
@@ -47,7 +47,9 @@ final class UpdateUserController
         } catch (ValueObjectsException $e) {
             // Capturamos errores de validación de Value Objects (ej: nombre corto)
             return response()->json(['error' => $e->getMessage()], 400);
-        } catch (\Exception $e) {
+        } catch (UserAplicationExceptions $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }catch (\Exception $e) {
             // Errores inesperados
             return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
         }

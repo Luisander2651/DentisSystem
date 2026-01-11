@@ -7,6 +7,7 @@ namespace App\Modules\Users\Aplication\UseCases;
 use App\Modules\Users\Domain\Service\UserService;
 use App\Modules\Users\Aplication\DTOs\UpdateUserDto;
 use \App\Modules\Users\Domain\ValueObjects\UserId;
+use \App\Modules\Users\Aplication\Exceptions\UserAplicationExceptions;
 
 final readonly class UpdateUserUseCase
 {
@@ -19,7 +20,7 @@ final readonly class UpdateUserUseCase
         $hasvalues = $dto->hasValue();
 
         if (!$hasvalues) {
-            throw new \InvalidArgumentException('At least one field must be provided for update.');
+            throw UserAplicationExceptions::NoInfoRetrivered();
         }
 
         $user = $this->userService->findById(new UserId($id));

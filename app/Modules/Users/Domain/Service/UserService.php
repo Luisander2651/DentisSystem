@@ -7,7 +7,6 @@ namespace App\Modules\Users\Domain\Service;
 use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\Users\Domain\Entities\UserEntity;
 use App\Modules\Users\Domain\Exceptions\UserException;
-use App\Modules\Users\Domain\ValueObjects\UserEmail;
 use App\Modules\Users\Domain\ValueObjects\UserId;
 use App\Modules\Users\Domain\ValueObjects\UserRoleId;
 use App\Modules\Users\Domain\ValueObjects\UserStatus;
