@@ -8,11 +8,17 @@ use App\Modules\Users\Domain\Entities\UserEntity;
 use App\Modules\Users\Domain\ValueObjects\UserId;
 use App\Modules\Users\Domain\ValueObjects\UserRoleId;
 use App\Modules\Users\Domain\ValueObjects\UserEmail;
+use App\Modules\Users\Domain\ValueObjects\UserStatus;
 
 interface UserRepositoryInterface
 {
     // Búsqueda por ID (retorna nulo si no existe)
     public function findById(UserId $id): ?UserEntity;
+
+    /**
+     * @return UserEntity[]
+     */
+    public function findByStatus(UserStatus $status): array;
 
     // Guardado "Upsert" (Sirve para Crear y para Editar)
     public function save(UserEntity $user): void;

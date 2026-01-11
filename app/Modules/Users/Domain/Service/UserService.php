@@ -10,6 +10,7 @@ use App\Modules\Users\Domain\Exceptions\UserException;
 use App\Modules\Users\Domain\ValueObjects\UserEmail;
 use App\Modules\Users\Domain\ValueObjects\UserId;
 use App\Modules\Users\Domain\ValueObjects\UserRoleId;
+use App\Modules\Users\Domain\ValueObjects\UserStatus;
 
 class UserService
 {
@@ -69,6 +70,20 @@ class UserService
         }
 
         return $user;
+    }
+
+    /**
+     * @return UserEntity[]
+     */
+    public function findByStatus(UserStatus $status): array
+    {
+        $users = $this->userRepository->findByStatus($status);
+
+        if (empty($users)) {
+            throw UserException::notFound($status);
+        }
+
+        return $users;
     }
 
     public function deleteUserById(UserId $id): void
