@@ -10,6 +10,7 @@ use App\Modules\Users\Domain\ValueObjects\UserEmail;
 use App\Modules\Users\Domain\ValueObjects\UserId;
 use App\Modules\Users\Domain\ValueObjects\UserRoleId;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use SebastianBergmann\Environment\Console;
 
 class EloquentUserRepository implements UserRepositoryInterface
 {
@@ -27,7 +28,9 @@ class EloquentUserRepository implements UserRepositoryInterface
     
     public function findByRole(UserRoleId $role): array
     {
-        $users = UserModel::where('role_id', $role->value)->get();
+        $roleId = (string)$role->toDatabaseId(); // 1 para admin, 2 para asistente, 3 para doctor
+
+        $users = UserModel::where('role_id', $roleId)->get();
 
         return $users ? $users->map(fn($user) => $this->mapToDomain($user))->toArray() : [];
     }
