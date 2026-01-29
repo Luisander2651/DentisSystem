@@ -49,9 +49,9 @@ class UserService
     /**
      * @return UserEntity[]
      */
-    public function findByRole(UserRoleId $role): array
+    public function findByRoleAndStatus(?UserStatus $status, ?UserRoleId $role): array
     {
-        $users = $this->userRepository->findByRole($role);
+        $users = $this->userRepository->findByRoleAndStatus($status, $role);
 
         if (empty($users)) {
             throw UserException::notFound($role);
@@ -71,19 +71,19 @@ class UserService
         return $user;
     }
 
-    /**
-     * @return UserEntity[]
-     */
-    public function findByStatus(UserStatus $status): array
-    {
-        $users = $this->userRepository->findByStatus($status);
+    // /**
+    //  * @return UserEntity[]
+    //  */
+    // public function findByStatus(UserStatus $status): array
+    // {
+    //     $users = $this->userRepository->findByStatus($status);
 
-        if (empty($users)) {
-            throw UserException::notFound($status);
-        }
+    //     if (empty($users)) {
+    //         throw UserException::notFound($status);
+    //     }
 
-        return $users;
-    }
+    //     return $users;
+    // }
 
     public function deleteUserById(UserId $id): void
     {

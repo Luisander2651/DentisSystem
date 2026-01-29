@@ -42,9 +42,19 @@ class EloquentUserRepository implements UserRepositoryInterface
     /**
      * @return UserEntity[]
      */
-    public function findByStatus(UserStatus $status): array
+    public function findByRoleAndStatus(?UserStatus $status, ?UserRoleId $role): array
     {
-        $users = UserModel::where('status', $status->value)->get();
+        $query = UserModel::query();
+
+        if ($status !== null) {
+            $query->where('status', $status->value);
+        }
+
+        if ($role !== null) {
+            $query->where('role_id', $role->toDatabaseId());
+        }
+
+        $users = $query->get();
 
         return $users ? $users->map(fn($user) => $this->mapToDomain($user))->toArray() : [];
     }

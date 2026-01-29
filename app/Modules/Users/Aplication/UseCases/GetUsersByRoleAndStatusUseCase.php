@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Users\Aplication\UseCases;
+
+use App\Modules\Users\Domain\Service\UserService;
+use App\Modules\Users\Domain\ValueObjects\UserRoleId;
+use App\Modules\Users\Domain\ValueObjects\UserStatus;
+use App\Modules\Users\Domain\Entities\UserEntity;
+use App\Modules\Users\Aplication\DTOs\GetUsersByStatusAndRoleDTO;
+use \App\Modules\Users\Aplication\Exceptions\UserAplicationExceptions;
+
+final readonly class GetUsersByRoleAndStatusUseCase
+{
+    public function __construct(
+        private UserService $userService,
+    ) {}
+
+    /**
+     * @return UserEntity[]
+     */
+    public function execute(GetUsersByStatusAndRoleDTO $dto): array
+    {
+        $hasvalues = $dto->hasValue();
+
+        if (!$hasvalues) {
+            throw UserAplicationExceptions::NoInfoRetrivered();
+        }
+
+        $role = null;
+        $status = null;
+
+        if ($dto->role !== null) {
+            $role = UserRoleId::fromString($dto->role);
+        }
+        
+        if ($dto->status !== null) {
+             $status = UserStatus::fromString($dto->status);
+        }
+
+        return $this->userService->findByRoleAndStatus($status, $role);
+    }
+}

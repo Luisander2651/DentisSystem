@@ -6,24 +6,29 @@ namespace App\Modules\Users\Infrastructure\Http\Controllers;
 
 use App\Modules\Users\Aplication\Exceptions\UserAplicationExceptions;
 use App\Modules\Users\Infrastructure\Http\Resources\UserResource;
-use App\Modules\Users\Aplication\UseCases\GetUsersByRoleUseCase;
+use App\Modules\Users\Aplication\UseCases\GetUsersByRoleAndStatusUseCase;
 use App\Modules\Users\Domain\Exceptions\UserException;
 use App\Modules\Users\Domain\Exceptions\ValueObjectsException;
+use App\Modules\Users\Aplication\DTOs\GetUsersByStatusAndRoleDTO;
+
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
-final class GetUsersByRoleController
+final class GetUsersByRoleAndStatusController
 {
     public function __construct(
-        private GetUsersByRoleUseCase $useCase
+        private GetUsersByRoleAndStatusUseCase $useCase
     ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
         try {
-            $role = $request->query('role');
+            $dto = GetUsersByStatusAndRoleDTO::create(
+                status: $request->query('status'),
+                role: $request->query('role')
+            );
 
-            $users = $this->useCase->execute($role);
+            $users = $this->useCase->execute($dto);
 
             return response()->json([
                 'data' => UserResource::collection($users)

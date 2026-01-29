@@ -18,7 +18,7 @@ interface UserRepositoryInterface
     /**
      * @return UserEntity[]
      */
-    public function findByStatus(UserStatus $status): array;
+    public function findByRoleAndStatus(?UserStatus $status, ?UserRoleId $role);
 
     // Guardado "Upsert" (Sirve para Crear y para Editar)
     public function save(UserEntity $user): void;
