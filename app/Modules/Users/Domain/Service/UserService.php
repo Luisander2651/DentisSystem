@@ -71,21 +71,7 @@ class UserService
         return $user;
     }
 
-    // /**
-    //  * @return UserEntity[]
-    //  */
-    // public function findByStatus(UserStatus $status): array
-    // {
-    //     $users = $this->userRepository->findByStatus($status);
-
-    //     if (empty($users)) {
-    //         throw UserException::notFound($status);
-    //     }
-
-    //     return $users;
-    // }
-
-    public function deleteUserById(UserId $id): void
+    public function deleteById(UserId $id): void
     {
         // ¿Existe el usuario antes de intentar borrarlo? 
         // Esto permite lanzar una excepción de dominio clara si el ID es basura.

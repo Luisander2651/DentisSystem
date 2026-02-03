@@ -9,7 +9,6 @@ use App\Modules\Users\Domain\ValueObjects\UserRoleId;
 use App\Modules\Users\Domain\ValueObjects\UserStatus;
 use App\Modules\Users\Domain\Entities\UserEntity;
 use App\Modules\Users\Aplication\DTOs\GetUsersByStatusAndRoleDTO;
-use \App\Modules\Users\Aplication\Exceptions\UserAplicationExceptions;
 
 final readonly class GetUsersByRoleAndStatusUseCase
 {
@@ -22,12 +21,6 @@ final readonly class GetUsersByRoleAndStatusUseCase
      */
     public function execute(GetUsersByStatusAndRoleDTO $dto): array
     {
-        $hasvalues = $dto->hasValue();
-
-        if (!$hasvalues) {
-            throw UserAplicationExceptions::NoInfoRetrivered();
-        }
-
         $role = null;
         $status = null;
 
