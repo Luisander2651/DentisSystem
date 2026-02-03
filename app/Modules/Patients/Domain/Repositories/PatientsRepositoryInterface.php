@@ -1,6 +1,6 @@
 <?php
 
-interface UserContract
+interface PatientsContract
 {
     public function register();
 
@@ -8,9 +8,7 @@ interface UserContract
 
     public function remove(): array;
 
-    public function listActiveUsers(): array;
-
-    public function findByRol(): array;
+    public function listActivePatients(): array;
 
     public function findById(): array;
 }
