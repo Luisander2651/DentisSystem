@@ -9,7 +9,6 @@ use App\Modules\Users\Domain\Exceptions\ValueObjectsException;
 use App\Modules\Users\Domain\Exceptions\UserException;
 use App\Modules\Users\Aplication\Exceptions\UserAplicationExceptions;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 final class DeleteUserByIdController

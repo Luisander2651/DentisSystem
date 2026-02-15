@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Users\Domain\ValueObjects;
-use App\Modules\Users\Domain\Exceptions\ValueObjects\PasswordException;
+namespace App\Modules\Patients\Domain\ValueObjects\Patients;
+
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\Patients\PasswordException;
 
 final class PasswordHash
 {
