@@ -46,3 +46,10 @@ Ejecutar el siguiente comando en la terminal (CMD)
 ```bash
 docker exec -it laravel-postgres psql -U admin -d mydb
 ```
+
+## Migrar Base de datos
+Ejecutar el siguiente comando en la terminal apra agregar las tablas al contenedor de la base de datos
+
+```bash
+docker exec app php artisan migrate
+```

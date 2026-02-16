@@ -6,7 +6,7 @@ namespace App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-final class PatientsModel extends Model
+final class PatientModel extends Model
 {
     protected $table = 'patients';
 
