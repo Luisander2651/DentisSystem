@@ -11,7 +11,7 @@ final class PatientRole
     public const ROLE_PATIENT = 'patient';
     
     private function __construct(
-        private readonly string $value
+        public readonly string $value
     ) {
         if (!in_array($value, [self::ROLE_PATIENT], true)) {
             throw PatientRoleException::invalidRole($this);

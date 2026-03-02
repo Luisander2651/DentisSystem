@@ -17,7 +17,7 @@ final class PatientStatus
     ];
 
     private function __construct(
-        private string $value,
+        public string $value,
     ) {
         if (!in_array($value, self::VALID_STATUSES, true)) {
             throw PatientStatusException::invalidStatus($this);

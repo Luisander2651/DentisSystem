@@ -17,14 +17,14 @@ use DateTimeImmutable;
 final class UserEntity
 {
     private function __construct(
-        public readonly UserId $id,
-        public UserName $name,
-        public readonly UserEmail $email,
-        public PasswordHash $password,
-        public UserRoleId $role,
-        public UserStatus $status,
-        public readonly DateTimeImmutable $createdAt,
-        public DateTimeImmutable $updatedAt,
+        private readonly UserId $id,
+        private UserName $name,
+        private readonly UserEmail $email,
+        private PasswordHash $password,
+        private UserRoleId $role,
+        private UserStatus $status,
+        private readonly DateTimeImmutable $createdAt,
+        private DateTimeImmutable $updatedAt,
     ) {}
 
     public static function create(

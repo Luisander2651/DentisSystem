@@ -2,8 +2,8 @@
 
 namespace App\Modules\Patients\Domain\Repositories;
 
-use App\Modules\Patients\Domain\Repositories\AbstractRepostoryForTableUnions;
+use App\Modules\Patients\Domain\Repositories\PatientRelatedRepository;
 
-interface ContactInfoRepositoryInterface extends AbstractRepostoryForTableUnions
+interface ContactInfoRepositoryInterface extends PatientRelatedRepository
 {
 }
