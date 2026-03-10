@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class ContactInfoModel extends Model
 {
@@ -27,8 +27,8 @@ final class ContactInfoModel extends Model
     ];
 
     // Relaciones
-    public function patient(): HasOne
+    public function patient(): BelongsTo
     {
-        return $this->hasOne(PatientsModel::class, 'id', 'patient_id');
+        return $this->belongsTo(PatientModel::class, 'patient_id', 'id');
     }
 }

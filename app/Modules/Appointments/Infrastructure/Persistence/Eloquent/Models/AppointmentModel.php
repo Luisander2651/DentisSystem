@@ -7,7 +7,7 @@ use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class AppointmentModel extends Model
 {
@@ -33,18 +33,18 @@ final class AppointmentModel extends Model
     ];
 
     // Relaciones
-    public function user(): HasOne
+    public function user(): BelongsTo
     {
-        return $this->hasOne(UserModel::class, 'id', 'user_id');
+        return $this->belongsTo(UserModel::class, 'user_id', 'id');
     }
 
-    public function treatment(): HasOne
+    public function treatment(): BelongsTo
     {
-        return $this->hasOne(TreatmentModel::class, 'id', 'treatment_id');
+        return $this->belongsTo(TreatmentModel::class, 'treatment_id', 'id');
     }
 
-    public function patient(): HasOne
+    public function patient(): BelongsTo
     {
-        return $this->hasOne(PatientModel::class, 'id', 'patient_id');
+        return $this->belongsTo(PatientModel::class, 'patient_id', 'id');
     }
 }
