@@ -7,6 +7,7 @@ use App\Modules\Patients\Domain\Entities\Patient;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientStatus;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientRole;
+use App\Modules\Patients\Domain\ValueObjects\Patients\PatientEmail;
 
 interface PatientRepositoryInterface extends PatientRelatedRepository
 {
@@ -16,5 +17,5 @@ interface PatientRepositoryInterface extends PatientRelatedRepository
 
     public function findByRoleAndStatus(?PatientRole $role, ?PatientStatus $status): ?array;
 
-    public function findByEmail(string $email): ?Patient;
+    public function findByEmailExcludingId(PatientEmail $email, ?PatientId $excludedId): ?Patient;
 }

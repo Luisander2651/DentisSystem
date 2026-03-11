@@ -23,7 +23,7 @@ class PatientService
     public function savePatient(Patient $patient): void
     {
         // Verificar si el email ya existe en otro paciente distinto a este
-        $emailExists = $this->patientRepository->findByEmail($patient->Email()->value) !== null;
+        $emailExists = $this->patientRepository->findByEmailExcludingId($patient->Email(), $patient->Id()) !== null;
         
         if ($emailExists) {
             throw PatientException::shouldBeUniqueEmail($patient->Email());
@@ -32,16 +32,16 @@ class PatientService
         $this->patientRepository->save($patient);
     }
 
-    public function updatePatient(Patient $patient): void
-    {
-        $patientExists = $this->patientRepository->findByPatientId($patient->Id());
+    // public function updatePatient(Patient $patient): void
+    // {
+    //     $patientExists = $this->patientRepository->findByPatientId($patient->Id());
 
-        if (!$patientExists) {
-            throw PatientException::notFound($patient->Id());
-        }
+    //     if (!$patientExists) {
+    //         throw PatientException::notFound($patient->Id());
+    //     }
 
-        $this->patientRepository->save($patient);
-    }
+    //     $this->patientRepository->save($patient);
+    // }
 
     /**
      * @return Patient[]
