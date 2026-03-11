@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\ValueObjects\MedicalData;
 
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\MedicalData\AllergiesException;
+
 final readonly class Allergies
 {
     private function __construct(
@@ -18,10 +20,11 @@ final readonly class Allergies
 
         foreach ($allergies as $item) {
             if (!is_string($item)) {
-                throw new \InvalidArgumentException('All allergies values must be strings.');
+                throw AllergiesException::allValuesMustBeStrings();
             }
         }
 
         return new self(array_values($allergies));
     }
 }
+

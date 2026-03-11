@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\ValueObjects\ContactInfo;
 
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\ContactInfo\PhoneNumberException;
+
 final readonly class PhoneNumber
 {
     private function __construct(
@@ -18,9 +20,10 @@ final readonly class PhoneNumber
 
         $value = trim($phoneNumber);
         if (!preg_match('/^[0-9+()\-\s]{7,20}$/', $value)) {
-            throw new \InvalidArgumentException('Invalid phone number format.');
+            throw PhoneNumberException::invalidFormat($value);
         }
 
         return new self($value);
     }
 }
+

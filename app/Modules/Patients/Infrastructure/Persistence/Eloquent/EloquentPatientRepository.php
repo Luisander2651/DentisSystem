@@ -13,6 +13,13 @@ use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel
 
 class EloquentPatientRepository implements PatientRepositoryInterface
 {
+    public function findByEmail(string $email): ?Patient
+    {
+        $patient = PatientModel::where('email', $email)->first();
+
+        return $patient ? $this->mapToDomain($patient) : null;
+    }
+
     public function findByPatientId(PatientId $patientId): ?array
     {
         $patient = PatientModel::find($patientId->value);

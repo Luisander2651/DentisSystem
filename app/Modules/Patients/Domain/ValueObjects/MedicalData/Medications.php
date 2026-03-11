@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\ValueObjects\MedicalData;
 
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\MedicalData\MedicationsException;
+
 final readonly class Medications
 {
     private function __construct(
@@ -18,10 +20,11 @@ final readonly class Medications
 
         foreach ($medications as $item) {
             if (!is_string($item)) {
-                throw new \InvalidArgumentException('All medications values must be strings.');
+                throw MedicationsException::allValuesMustBeStrings();
             }
         }
 
         return new self(array_values($medications));
     }
 }
+

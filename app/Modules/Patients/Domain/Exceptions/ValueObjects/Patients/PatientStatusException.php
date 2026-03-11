@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\Exceptions\ValueObjects\Patients;
 
-use App\Modules\Patients\Domain\ValueObjects\Patients\PatientStatus;
 use App\Modules\Patients\Domain\Exceptions\ValueObjectsException;
+use App\Modules\Patients\Domain\ValueObjects\Patients\PatientStatus;
 
 final class PatientStatusException extends ValueObjectsException
 {
@@ -14,3 +14,4 @@ final class PatientStatusException extends ValueObjectsException
         return new self("The patient status is invalid: {$status->value()}");
     }
 }
+

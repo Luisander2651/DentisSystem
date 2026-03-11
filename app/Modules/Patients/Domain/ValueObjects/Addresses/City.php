@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\ValueObjects\Addresses;
 
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\Addresses\CityException;
+
 final readonly class City
 {
     private const MAX_LENGTH = 100;
@@ -20,9 +22,10 @@ final readonly class City
 
         $value = trim($city);
         if (mb_strlen($value) > self::MAX_LENGTH) {
-            throw new \InvalidArgumentException('City is too long.');
+            throw CityException::tooLong(self::MAX_LENGTH);
         }
 
         return new self($value);
     }
 }
+

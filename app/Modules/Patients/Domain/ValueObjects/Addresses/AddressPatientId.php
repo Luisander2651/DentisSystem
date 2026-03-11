@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\ValueObjects\Addresses;
 
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\Addresses\AddressPatientIdException;
+
 final readonly class AddressPatientId
 {
     private function __construct(
@@ -13,9 +15,10 @@ final readonly class AddressPatientId
     public static function fromInt(int $patientId): self
     {
         if ($patientId <= 0) {
-            throw new \InvalidArgumentException('Patient id must be greater than zero.');
+            throw AddressPatientIdException::mustBeGreaterThanZero($patientId);
         }
 
         return new self($patientId);
     }
 }
+

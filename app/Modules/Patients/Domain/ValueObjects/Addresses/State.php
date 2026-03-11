@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\ValueObjects\Addresses;
 
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\Addresses\StateException;
+
 final readonly class State
 {
     private const MAX_LENGTH = 100;
@@ -20,9 +22,10 @@ final readonly class State
 
         $value = trim($state);
         if (mb_strlen($value) > self::MAX_LENGTH) {
-            throw new \InvalidArgumentException('State is too long.');
+            throw StateException::tooLong(self::MAX_LENGTH);
         }
 
         return new self($value);
     }
 }
+

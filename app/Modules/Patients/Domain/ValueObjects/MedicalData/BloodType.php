@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\ValueObjects\MedicalData;
 
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\MedicalData\BloodTypeException;
+
 final readonly class BloodType
 {
     private const VALID_TYPES = [
@@ -22,9 +24,10 @@ final readonly class BloodType
 
         $value = strtoupper(trim($bloodType));
         if (!in_array($value, self::VALID_TYPES, true)) {
-            throw new \InvalidArgumentException('Invalid blood type.');
+            throw BloodTypeException::invalidType($value);
         }
 
         return new self($value);
     }
 }
+

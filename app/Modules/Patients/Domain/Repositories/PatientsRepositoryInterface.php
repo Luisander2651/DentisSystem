@@ -16,4 +16,5 @@ interface PatientRepositoryInterface extends PatientRelatedRepository
 
     public function findByRoleAndStatus(?PatientRole $role, ?PatientStatus $status): ?array;
 
+    public function findByEmail(string $email): ?Patient;
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\ValueObjects\MedicalData;
 
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\MedicalData\MedicalDataIdException;
+
 final readonly class MedicalDataId
 {
     private function __construct(
@@ -13,9 +15,10 @@ final readonly class MedicalDataId
     public static function fromInt(int $id): self
     {
         if ($id <= 0) {
-            throw new \InvalidArgumentException('Medical data id must be greater than zero.');
+            throw MedicalDataIdException::mustBeGreaterThanZero($id);
         }
 
         return new self($id);
     }
 }
+

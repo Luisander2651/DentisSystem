@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\ValueObjects\ContactInfo;
 
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\ContactInfo\EmergencyContactException;
+
 final readonly class EmergencyContact
 {
     private const MAX_LENGTH = 120;
@@ -20,9 +22,10 @@ final readonly class EmergencyContact
 
         $value = trim($emergencyContact);
         if (mb_strlen($value) > self::MAX_LENGTH) {
-            throw new \InvalidArgumentException('Emergency contact is too long.');
+            throw EmergencyContactException::tooLong(self::MAX_LENGTH);
         }
 
         return new self($value);
     }
 }
+

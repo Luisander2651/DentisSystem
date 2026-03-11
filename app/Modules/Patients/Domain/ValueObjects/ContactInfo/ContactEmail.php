@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\ValueObjects\ContactInfo;
 
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\ContactInfo\ContactEmailException;
+
 final readonly class ContactEmail
 {
     private function __construct(
@@ -18,9 +20,10 @@ final readonly class ContactEmail
 
         $value = trim($email);
         if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException('Invalid contact email format.');
+            throw ContactEmailException::invalidFormat($value);
         }
 
         return new self($value);
     }
 }
+

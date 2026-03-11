@@ -19,3 +19,4 @@ final readonly class LastDentistVisit
         return new self($lastDentistVisit);
     }
 }
+

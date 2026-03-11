@@ -28,7 +28,7 @@ final readonly class PatientName
 
         if ($length < self::MIN_LENGTH || $length > self::MAX_LENGTH) {
             throw PatientNameException::invalidLength(
-                name: self::create($formattedFirst, $formattedLast),
+                name: new self($formattedFirst, $formattedLast),
                 minLength: self::MIN_LENGTH,
                 maxLength: self::MAX_LENGTH
             );

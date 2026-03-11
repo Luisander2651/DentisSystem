@@ -62,3 +62,4 @@ final class PatientStatus
         return $this->value === self::INACTIVE;
     }
 }
+

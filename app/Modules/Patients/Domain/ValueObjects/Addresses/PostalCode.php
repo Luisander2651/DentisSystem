@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Domain\ValueObjects\Addresses;
 
+use App\Modules\Patients\Domain\Exceptions\ValueObjects\Addresses\PostalCodeException;
+
 final readonly class PostalCode
 {
     private function __construct(
@@ -18,9 +20,10 @@ final readonly class PostalCode
 
         $value = trim($postalCode);
         if (!preg_match('/^[A-Za-z0-9\-\s]{3,12}$/', $value)) {
-            throw new \InvalidArgumentException('Invalid postal code format.');
+            throw PostalCodeException::invalidFormat($value);
         }
 
         return new self($value);
     }
 }
+

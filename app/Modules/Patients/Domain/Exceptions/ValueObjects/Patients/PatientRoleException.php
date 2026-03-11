@@ -14,3 +14,4 @@ final class PatientRoleException extends ValueObjectsException
         return new self("The patient role is invalid: {$role->value()}");
     }
 }
+
