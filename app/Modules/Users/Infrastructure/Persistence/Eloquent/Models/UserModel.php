@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Infrastructure\Persistence\Eloquent\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-final class UserModel extends Model
+
+final class UserModel extends Authenticatable
 {
+
+    use HasApiTokens, Notifiable;
+
     protected $table = 'users';
 
     public $incrementing = false;
