@@ -10,6 +10,7 @@ use App\Modules\Users\Aplication\UseCases\GetUsersByRoleAndStatusUseCase;
 use App\Modules\Users\Domain\Exceptions\UserException;
 use App\Modules\Users\Domain\Exceptions\ValueObjectsException;
 use App\Modules\Users\Aplication\DTOs\GetUsersByStatusAndRoleDTO;
+use App\Core\Authorization\Exceptions\AuthorizationException;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -41,6 +42,8 @@ final class GetUsersByRoleAndStatusController
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (UserAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 409);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
         }catch (\Exception $e) {
             // Errores inesperados
             return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);

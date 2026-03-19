@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Infrastructure\Http\Controllers;
 
+use App\Core\Authorization\Exceptions\AuthorizationException;
 use App\Modules\Users\Aplication\UseCases\DeleteUserByIdUseCase;
 use App\Modules\Users\Domain\Exceptions\ValueObjectsException;
 use App\Modules\Users\Domain\Exceptions\UserException;
@@ -24,6 +25,8 @@ final class DeleteUserByIdController
         try {
             $this->deleteUserByIdUseCase->execute($id);
             return response()->json(['message' => 'User deleted successfully'], 200);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
         } catch (ValueObjectsException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (UserException $e) {

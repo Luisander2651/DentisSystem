@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Infrastructure\Http\Controllers;
 
+use App\Core\Authorization\Exceptions\AuthorizationException;
 use App\Modules\Users\Aplication\UseCases\UpdateUserUseCase;
 use App\Modules\Users\Aplication\DTOs\UpdateUserDto;
 use App\Modules\Users\Aplication\Exceptions\UserAplicationExceptions;
@@ -44,6 +45,8 @@ final class UpdateUserController
         } catch (UserException $e) {
             // Capturamos errores de negocio (ej: email duplicado)
             return response()->json(['error' => $e->getMessage()], 409);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
         } catch (ValueObjectsException $e) {
             // Capturamos errores de validación de Value Objects (ej: nombre corto)
             return response()->json(['error' => $e->getMessage()], 400);

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Core\Authorization\AuthorizationServiceInterface;
+use App\Core\Authorization\CurrentActorAuthorizationService;
 use Illuminate\Support\ServiceProvider;
 
 use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
@@ -17,6 +19,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             UserRepositoryInterface::class,
             EloquentUserRepository::class
+        );
+
+        $this->app->bind(
+            AuthorizationServiceInterface::class,
+            CurrentActorAuthorizationService::class,
         );
     }
 
