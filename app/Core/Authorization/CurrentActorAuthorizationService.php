@@ -36,7 +36,7 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
 
         $roleName = strtolower((string) ($actor->role?->name ?? ''));
 
-        if ($roleName !== 'admin') {
+        if ($roleName !== 'administrador') {
             throw AuthorizationException::forbidden($permission);
         }
     }

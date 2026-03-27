@@ -26,7 +26,7 @@ final class OnlyAdmin
 
 		$roleName = strtolower((string) optional($actor->role)->name);
 
-		if ($roleName !== 'admin') {
+		if ($roleName !== 'administrador') {
 			return $this->forbidden('Only administrators can access this resource.');
 		}
 
