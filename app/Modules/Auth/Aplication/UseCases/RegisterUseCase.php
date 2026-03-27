@@ -29,7 +29,7 @@ final readonly class RegisterUseCase
 
         $this->service->registerPatient(
             patient: $patient,
-            patientEmail: $email,
+            confirmPassword: $dto->confirmPassword,
         );
     }
 }

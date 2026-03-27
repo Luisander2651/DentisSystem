@@ -13,6 +13,9 @@ use Illuminate\Http\Request;
 use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
 
+use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentPatientRepository;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -28,6 +31,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             AuthorizationServiceInterface::class,
             CurrentActorAuthorizationService::class,
+        );
+
+        $this->app->bind(
+            PatientsRepositoryInterface::class,
+            EloquentPatientRepository::class,
         );
     }
 

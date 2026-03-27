@@ -26,6 +26,7 @@ final class RegisterController
                 lastName: $request->string('last_name')->value(),
                 email: $request->string('email')->value(),
                 password: $request->string('password')->value(),
+                confirmPassword: $request->string('confirm_password')->value(),
             );
 
             $this->useCase->execute($dto);

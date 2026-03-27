@@ -27,4 +27,9 @@ final class AuthException extends Exception
     {
         return new self('Unable to revoke the current token.');
     }
+
+    public static function passwordsDoNotMatch(): self
+    {
+        return new self('The provided password and confirmation do not match.');
+    }
 }

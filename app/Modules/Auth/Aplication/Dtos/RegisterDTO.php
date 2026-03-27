@@ -11,6 +11,7 @@ final readonly class RegisterDTO
         public string $lastName,
         public string $email,
         public string $password,
+        public string $confirmPassword,
     ) {}
 
     public static function create(
@@ -18,12 +19,14 @@ final readonly class RegisterDTO
         string $lastName,
         string $email,
         string $password,
+        string $confirmPassword,
     ): self {
         return new self(
             firstName: $firstName,
             lastName: $lastName,
             email: $email,
             password: $password,
+            confirmPassword: $confirmPassword,
         );
     }
 }
