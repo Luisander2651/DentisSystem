@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Infrastructure\Persistence\Eloquent;
 
-use App\Modules\Patients\Domain\Repositories\PatientRepositoryInterface;
+use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
 use App\Modules\Patients\Domain\Entities\Patient;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientEmail;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
@@ -12,7 +12,7 @@ use App\Modules\Patients\Domain\ValueObjects\Patients\PatientRole;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientStatus;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel;
 
-class EloquentPatientRepository implements PatientRepositoryInterface
+class EloquentPatientRepository implements PatientsRepositoryInterface
 {
     public function findByEmailExcludingId(PatientEmail $email, ?PatientId $excludedId): ?Patient
     {
@@ -31,7 +31,9 @@ class EloquentPatientRepository implements PatientRepositoryInterface
     {
         $patient = PatientModel::find($patientId->value);
 
-        return $patient ? $this->mapToDomain($patient) : null;
+        $result = $patient ? $this->mapToDomain($patient) : null;
+
+        return $result;
     }
 
     public function save(Patient $patient): void

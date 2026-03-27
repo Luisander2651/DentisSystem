@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-final class PatientModel extends Model
+final class PatientModel extends Authenticatable
 {
+
+    use HasApiTokens, Notifiable;
+
     protected $table = 'patients';
 
     public $incrementing = false;

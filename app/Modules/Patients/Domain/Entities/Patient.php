@@ -55,11 +55,11 @@ final class Patient
     ): self {
         return new self(
             new PatientId($id),
-            new PatientName($firstName, $lastName),
-            new PatientEmail($email),
+            PatientName::create($firstName, $lastName),
+            PatientEmail::fromString($email),
             PasswordHash::fromString($passwordHash),
-            new PatientStatus($status),
-            new PatientRole($role),
+            PatientStatus::fromString($status),
+            PatientRole::fromString($role),
             new DateTimeImmutable($createdAt),
             new DateTimeImmutable($updatedAt)
         );
@@ -71,7 +71,7 @@ final class Patient
         ?string $patientStatus,
     ): void {
         if($firstName !== null || $lastName !== null) {
-            $this->name = new PatientName(
+            $this->name = PatientName::create(
                 $firstName ?? $this->name->firstName,
                 $lastName ?? $this->name->lastName
             );

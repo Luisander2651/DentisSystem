@@ -9,7 +9,7 @@ use App\Modules\Patients\Domain\ValueObjects\Patients\PatientStatus;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientRole;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientEmail;
 
-interface PatientRepositoryInterface extends PatientRelatedRepository
+interface PatientsRepositoryInterface extends PatientRelatedRepository
 {
     public function save(Patient $patient): void;
 
