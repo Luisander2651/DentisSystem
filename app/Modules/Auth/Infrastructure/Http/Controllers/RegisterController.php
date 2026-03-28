@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Infrastructure\Http\Controllers;
 
+use App\Modules\Auth\Aplication\DTOs\LoginDTO;
 use App\Modules\Auth\Aplication\DTOs\RegisterDTO;
 use App\Modules\Auth\Aplication\Exceptions\AuthAplicationExceptions;
+use App\Modules\Auth\Aplication\UseCases\LoginUseCase;
 use App\Modules\Auth\Aplication\UseCases\RegisterUseCase;
 use App\Modules\Auth\Domain\Exceptions\AuthException;
 use App\Modules\Patients\Domain\Exceptions\ValueObjectsException;
@@ -15,7 +17,8 @@ use Illuminate\Http\Request;
 final class RegisterController
 {
     public function __construct(
-        private RegisterUseCase $useCase,
+        private RegisterUseCase $registerUseCase,
+        private LoginUseCase $loginUseCase,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -29,7 +32,14 @@ final class RegisterController
                 confirmPassword: $request->string('confirm_password')->value(),
             );
 
-            $result = $this->useCase->execute($dto);
+            $this->registerUseCase->execute($dto);
+
+            $result = $this->loginUseCase->execute(
+                LoginDTO::create(
+                    email: $dto->email,
+                    password: $dto->password,
+                )
+            );
 
             $cookie = cookie(
                 name: 'auth_token',
