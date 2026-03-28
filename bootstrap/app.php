@@ -17,8 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
         $middleware->alias([
             'sanctum.cookie' => InjectSanctumTokenFromCookie::class,
-        ]);
-        $middleware->alias([
             'only.admin' => OnlyAdmin::class,
         ]);
     })
