@@ -10,7 +10,7 @@ use App\Modules\Users\Infrastructure\Http\Controllers\GetUsersByRoleAndStatusCon
 use App\Modules\Users\Infrastructure\Http\Controllers\DeleteUserByIdController;
 use App\Core\Middlewares\OnlyAdmin;
 
-Route::middleware(['throttle:api'])->group(function () {
+Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
 
     Route::prefix('v1')->group(function (): void {
 
@@ -21,12 +21,21 @@ Route::middleware(['throttle:api'])->group(function () {
                 Route::post('/logout', LogoutController::class);
             });
         });
-                
-        Route::prefix('users')->middleware(['auth:sanctum', OnlyAdmin::class])->group(function (): void {
-            Route::post('/', RegisterUserController::class);
-            Route::put('/{id}', UpdateUserController::class);
-            Route::get('/', GetUsersByRoleAndStatusController::class);
-            Route::delete('/{id}', DeleteUserByIdController::class);
+
+
+        Route::middleware('auth:sanctum', 'only.admin')->group(function (): void {        
+            Route::prefix('users')->group(function (): void {
+                Route::post('/', RegisterUserController::class);
+                Route::put('/{id}', UpdateUserController::class);
+                Route::get('/', GetUsersByRoleAndStatusController::class);
+                Route::delete('/{id}', DeleteUserByIdController::class);
+            });
+
+            Route::prefix('patients')->group(function (): void {
+                // Aquí puedes agregar rutas relacionadas con pacientes, por ejemplo:
+                // Route::get('/', GetPatientsController::class);
+                // Route::post('/', CreatePatientController::class);
+            });
         });
 
     });

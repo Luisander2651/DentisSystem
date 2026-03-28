@@ -1,8 +1,10 @@
 <?php
 
+use App\Core\Middlewares\InjectSanctumTokenFromCookie;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Core\Middlewares\OnlyAdmin;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,7 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->statefulApi();
+        $middleware->alias([
+            'sanctum.cookie' => InjectSanctumTokenFromCookie::class,
+        ]);
+        $middleware->alias([
+            'only.admin' => OnlyAdmin::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
