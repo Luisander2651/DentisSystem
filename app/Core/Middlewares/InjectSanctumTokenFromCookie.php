@@ -16,7 +16,7 @@ final class InjectSanctumTokenFromCookie
             $tokenFromCookie = $request->cookie('auth_token');
 
             if (is_string($tokenFromCookie) && $tokenFromCookie !== '') {
-                $request->headers->set('Authorization', 'Bearer '.$tokenFromCookie);
+                $request->headers->set('Authorization', 'Bearer '.trim($tokenFromCookie));
             }
         }
 
