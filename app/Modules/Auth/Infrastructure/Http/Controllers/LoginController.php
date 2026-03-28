@@ -27,10 +27,24 @@ final class LoginController
 
             $result = $this->useCase->execute($dto);
 
+            $cookie = cookie(
+                name: 'auth_token',
+                value: $result['token'],
+                minutes: (int) config('sanctum.expiration', 1440),
+                path: (string) config('session.path', '/'),
+                domain: config('session.domain'),
+                secure: (bool) config('session.secure', false),
+                httpOnly: true,
+                raw: false,
+                sameSite: (string) config('session.same_site', 'lax'),
+            );
+
+            unset($result['token']);
+
             return response()->json([
                 'message' => 'Login successful',
                 'data' => $result,
-            ], 200);
+            ], 200)->withCookie($cookie);
         } catch (AuthException $e) {
             return response()->json(['error' => $e->getMessage()], 401);
         } catch (AuthAplicationExceptions $e) {

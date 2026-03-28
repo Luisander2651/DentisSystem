@@ -29,11 +29,26 @@ final class RegisterController
                 confirmPassword: $request->string('confirm_password')->value(),
             );
 
-            $this->useCase->execute($dto);
+            $result = $this->useCase->execute($dto);
+
+            $cookie = cookie(
+                name: 'auth_token',
+                value: $result['token'],
+                minutes: (int) config('sanctum.expiration', 1440),
+                path: (string) config('session.path', '/'),
+                domain: config('session.domain'),
+                secure: (bool) config('session.secure', false),
+                httpOnly: true,
+                raw: false,
+                sameSite: (string) config('session.same_site', 'lax'),
+            );
+
+            unset($result['token']);
 
             return response()->json([
                 'message' => 'Patient registered successfully',
-            ], 201);
+                'data' => $result,
+            ], 201)->withCookie($cookie);
         } catch (ValueObjectsException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (AuthException $e) {
