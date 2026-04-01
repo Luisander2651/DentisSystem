@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        $middleware->encryptCookies(except: ['auth_token']);
+        $middleware->web(prepend: [InjectSanctumTokenFromCookie::class]);
+        $middleware->api(prepend: [InjectSanctumTokenFromCookie::class]);
+
         $middleware->alias([
             'sanctum.cookie' => InjectSanctumTokenFromCookie::class,
             'only.admin' => OnlyAdmin::class,
