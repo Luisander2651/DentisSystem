@@ -11,14 +11,26 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 final class LogoutService
 {
-	public function logout(UserModel|PatientModel $actor): void
+	public function logout(UserModel|PatientModel $actor, ?string $plainTextToken = null): void
 	{
 		$currentToken = $actor->currentAccessToken();
 
-		if (!$currentToken instanceof PersonalAccessToken) {
-			throw AuthException::tokenRevocationFailed();
+		if ($currentToken instanceof PersonalAccessToken) {
+			$currentToken->delete();
+
+			return;
 		}
 
-		$currentToken->delete();
+		if (is_string($plainTextToken) && trim($plainTextToken) !== '') {
+			$token = PersonalAccessToken::findToken(trim($plainTextToken));
+
+			if ($token instanceof PersonalAccessToken) {
+				$token->delete();
+
+				return;
+			}
+		}
+
+		throw AuthException::tokenRevocationFailed();
 	}
 }

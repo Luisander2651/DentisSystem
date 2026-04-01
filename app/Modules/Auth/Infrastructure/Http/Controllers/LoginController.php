@@ -27,13 +27,15 @@ final class LoginController
 
             $result = $this->useCase->execute($dto);
 
+            $useSecureCookie = $request->isSecure();
+
             $cookie = cookie(
                 name: 'auth_token',
                 value: $result['token'],
                 minutes: (int) config('sanctum.expiration', 1440),
                 path: (string) config('session.path', '/'),
                 domain: config('session.domain'),
-                secure: (bool) config('session.secure', false),
+                secure: $useSecureCookie,
                 httpOnly: true,
                 raw: false,
                 sameSite: (string) config('session.same_site', 'lax'),

@@ -15,12 +15,12 @@ final readonly class LogoutUseCase
         private LogoutService $logoutService,
     ) {}
 
-    public function execute(UserModel|PatientModel|null $actor): void
+    public function execute(UserModel|PatientModel|null $actor, ?string $plainTextToken = null): void
     {
         if ($actor === null) {
             throw AuthAplicationExceptions::unauthenticatedContext();
         }
 
-        $this->logoutService->logout($actor);
+        $this->logoutService->logout($actor, $plainTextToken);
     }
 }
