@@ -89,19 +89,24 @@
             }
 
             try {
-                await fetch('{{ url('/sanctum/csrf-cookie') }}', {
+                // Sanctum SPA flow: first obtain XSRF-TOKEN cookie.
+                const csrfResponse = await fetch('/sanctum/csrf-cookie', {
                     method: 'GET',
                     credentials: 'include',
                 });
 
-                const csrfToken = getCookie('XSRF-TOKEN');
+                if (!csrfResponse.ok) {
+                    throw new Error('No se pudo inicializar la cookie CSRF.');
+                }
 
-                const response = await fetch('{{ url('/api/v1/auth/login') }}', {
+                const xsrfToken = getCookie('XSRF-TOKEN');
+
+                const response = await fetch('/api/v1/auth/login', {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
-                        'X-XSRF-TOKEN': csrfToken || '',
+                        'X-XSRF-TOKEN': xsrfToken || '',
                     },
                     credentials: 'include',
                     body: JSON.stringify({ email: email, password: password }),
@@ -122,7 +127,7 @@
                     return;
                 }
 
-                window.location.href = '{{ url('/') }}';
+                window.location.href = '{{ url('/dashboard') }}';
             } catch (error) {
                 if (errorBox) {
                     errorBox.textContent = 'Error de conexion. Intentalo de nuevo.';

@@ -154,7 +154,7 @@
 					return;
 				}
 
-				window.location.href = '{{ url('/') }}';
+				window.location.href = '{{ url('/dashboard') }}';
 			} catch (error) {
 				if (errorBox) {
 					errorBox.textContent = 'Error de conexion. Intentalo de nuevo.';

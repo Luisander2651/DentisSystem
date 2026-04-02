@@ -22,8 +22,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             });
         });
 
-
-        Route::middleware('auth:sanctum', 'only.admin')->group(function (): void {        
+        Route::middleware(['auth:sanctum', 'only.admin'])->group(function (): void {        
             Route::prefix('users')->group(function (): void {
                 Route::post('/', RegisterUserController::class);
                 Route::put('/{id}', UpdateUserController::class);
