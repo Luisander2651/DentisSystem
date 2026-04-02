@@ -51,13 +51,7 @@ class UserService
      */
     public function findByRoleAndStatus(?UserStatus $status, ?UserRoleId $role): array
     {
-        $users = $this->userRepository->findByRoleAndStatus($status, $role);
-
-        if (empty($users)) {
-            throw UserException::notFound($role);
-        }
-
-        return $users;
+        return $this->userRepository->findByRoleAndStatus($status, $role);
     }
 
     public function findById(UserId $id): UserEntity

@@ -8,6 +8,7 @@ use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Modules\Users\Domain\Service\UserService;
 use App\Modules\Users\Aplication\DTOs\UpdateUserDto;
 use \App\Modules\Users\Domain\ValueObjects\UserId;
+use \App\Modules\Users\Domain\ValueObjects\PasswordHash;
 use \App\Modules\Users\Aplication\Exceptions\UserAplicationExceptions;
 
 final readonly class UpdateUserUseCase
@@ -35,6 +36,10 @@ final readonly class UpdateUserUseCase
             roleId:    $dto->roleId,
             status:    $dto->status,
         );
+
+        if ($dto->newPassword !== null) {
+            $user->changePassword(PasswordHash::createFromPlainText($dto->newPassword));
+        }
 
         $this->userService->updateUser($user);
     }

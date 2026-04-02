@@ -11,7 +11,6 @@ use App\Modules\Users\Domain\ValueObjects\UserId;
 use App\Modules\Users\Domain\ValueObjects\UserRoleId;
 use App\Modules\Users\Domain\ValueObjects\UserStatus;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
-use SebastianBergmann\Environment\Console;
 
 class EloquentUserRepository implements UserRepositoryInterface
 {
@@ -107,7 +106,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     /**
      * Centralizamos la creación de la entidad aquí
      */
-    private function mapToDomain(UserModel $user): UserEntity
+    private function mapToDomain(object $user): UserEntity
     {
         return UserEntity::fromPrimitives(
             (string) $user->id,

@@ -11,6 +11,7 @@ final readonly class UpdateUserDto
         public ?string $lastName,
         public ?string $roleId,
         public ?string $status = null,
+        public ?string $newPassword = null,
     ) {}
 
     public static function create(
@@ -18,12 +19,14 @@ final readonly class UpdateUserDto
         ?string $lastName = null,
         ?string $roleId = null,
         ?string $status = null,
+        ?string $newPassword = null,
     ): self {
         return new self(
             firstName: ($firstName === '') ? null : $firstName,
             lastName: ($lastName === '') ? null : $lastName,
             roleId: ($roleId === '') ? null : $roleId,
             status: ($status === '') ? null : $status,
+            newPassword: ($newPassword === '') ? null : $newPassword,
         );
     }
 
@@ -32,6 +35,7 @@ final readonly class UpdateUserDto
         return $this->firstName !== null ||
                $this->lastName !== null ||
                $this->roleId !== null ||
-               $this->status !== null;
+               $this->status !== null ||
+               $this->newPassword !== null;
     }
 }

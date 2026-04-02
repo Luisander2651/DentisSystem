@@ -30,6 +30,7 @@ final class UpdateUserController
                 lastName:  $request->string('last_name')->value(),
                 roleId:    $request->string('role_id')->value(),
                 status:    $request->string('status')->value(),
+                newPassword: $request->string('new_password')->value(),
             );
 
             $userId = $request->route('id');
