@@ -12,4 +12,14 @@ final class PatientAplicationExceptions extends Exception
     {
         return new self('At least one field must be provided for update.');
     }
+
+    public static function NoInfoProvided(): self
+    {
+        return self::NoInfoRetrivered();
+    }
+
+    public static function IdNotProvided(): self
+    {
+        return new self('Patient not found. Id is required.');
+    }
 }

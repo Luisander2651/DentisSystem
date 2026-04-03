@@ -77,7 +77,7 @@ final class Patient
             );
         }
 
-        $this->status = $patientStatus !== null ? new PatientStatus($patientStatus) : $this->status;
+        $this->status = $patientStatus !== null ? PatientStatus::fromString($patientStatus) : $this->status;
         $this->updatedAt = new DateTimeImmutable();
     }
 

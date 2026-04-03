@@ -6,16 +6,16 @@ namespace App\Modules\Patients\Domain\Service;
 
 use App\Modules\Patients\Domain\Entities\Patient;
 use App\Modules\Patients\Domain\Exceptions\PatientException;
-use App\Modules\Patients\Domain\Repositories\PatientRepositoryInterface;
+use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientRole;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientStatus;
 
 class PatientService
 {
-    private PatientRepositoryInterface $patientRepository;
+    private PatientsRepositoryInterface $patientRepository;
 
-    public function __construct(PatientRepositoryInterface $patientRepository)
+    public function __construct(PatientsRepositoryInterface $patientRepository)
     {
         $this->patientRepository = $patientRepository;
     }
@@ -32,32 +32,25 @@ class PatientService
         $this->patientRepository->save($patient);
     }
 
-    // public function updatePatient(Patient $patient): void
-    // {
-    //     $patientExists = $this->patientRepository->findByPatientId($patient->Id());
+    public function updatePatient(Patient $patient): void
+    {
+        $patientExists = $this->patientRepository->findByPatientId($patient->Id());
 
-    //     if (!$patientExists) {
-    //         throw PatientException::notFound($patient->Id());
-    //     }
-
-    //     $this->patientRepository->save($patient);
-    // }
+        if (!$patientExists) {
+            throw PatientException::notFound($patient->Id());
+        }
+      $this->patientRepository->save($patient);
+    }
 
     /**
      * @return Patient[]
      */
-    public function findByRoleAndStatus(?PatientRole $role, ?PatientStatus $status): array
+    public function findByRoleAndStatus(?PatientStatus $status): array
     {
-        $patients = $this->patientRepository->findByRoleAndStatus($role, $status) ?? [];
-
-        if (empty($patients)) {
-            throw PatientException::notFoundByRoleAndStatus();
-        }
-
-        return $patients;
+        return $this->patientRepository->findByRoleAndStatus($status);
     }
 
-    public function findById(PatientId $id): array
+    public function findById(PatientId $id): Patient
     {
         $patient = $this->patientRepository->findByPatientId($id);
 

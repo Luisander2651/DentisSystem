@@ -8,7 +8,11 @@ use App\Modules\Users\Infrastructure\Http\Controllers\RegisterUserController;
 use App\Modules\Users\Infrastructure\Http\Controllers\UpdateUserController;
 use App\Modules\Users\Infrastructure\Http\Controllers\GetUsersByRoleAndStatusController;
 use App\Modules\Users\Infrastructure\Http\Controllers\DeleteUserByIdController;
-use App\Core\Middlewares\OnlyAdmin;
+use App\Modules\Patients\Infrastructure\Http\Controllers\CreatePatientController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\GetPatientsByStatusController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\UpdatePatientController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\DeletePatientByIdController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\GetPatientByIdController;
 
 Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
 
@@ -22,7 +26,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             });
         });
 
-        Route::middleware(['auth:sanctum', 'only.admin'])->group(function (): void {        
+        Route::middleware(['auth:sanctum', 'only.admin'])->group(function (): void {
             Route::prefix('users')->group(function (): void {
                 Route::post('/', RegisterUserController::class);
                 Route::put('/{id}', UpdateUserController::class);
@@ -31,12 +35,16 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             });
 
             Route::prefix('patients')->group(function (): void {
-                // Aquí puedes agregar rutas relacionadas con pacientes, por ejemplo:
-                // Route::get('/', GetPatientsController::class);
-                // Route::post('/', CreatePatientController::class);
+                Route::post('/', CreatePatientController::class);
+                Route::delete('/{id}', DeletePatientByIdController::class);
+                Route::get('/', GetPatientsByStatusController::class);
             });
         });
 
+        Route::prefix('patients')->group(function (): void {
+            Route::put('/{id}', UpdatePatientController::class);
+            Route::get('/{id}', GetPatientByIdController::class);
+        });
     });
     
 });

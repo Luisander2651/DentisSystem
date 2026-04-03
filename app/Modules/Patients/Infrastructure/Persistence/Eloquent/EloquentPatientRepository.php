@@ -27,13 +27,11 @@ class EloquentPatientRepository implements PatientsRepositoryInterface
         return $patient ? $this->mapToDomain($patient) : null;
     }
 
-    public function findByPatientId(PatientId $patientId): ?array
+    public function findByPatientId(PatientId $patientId): ?Patient
     {
         $patient = PatientModel::find($patientId->value);
 
-        $result = $patient ? $this->mapToDomain($patient) : null;
-
-        return $result;
+        return $patient ? $this->mapToDomain($patient) : null;
     }
 
     public function save(Patient $patient): void
@@ -55,13 +53,9 @@ class EloquentPatientRepository implements PatientsRepositoryInterface
         PatientModel::destroy($patientId->value);
     }
 
-    public function findByRoleAndStatus(?PatientRole $role, ?PatientStatus $status): ?array
+    public function findByRoleAndStatus(?PatientStatus $status): array
     {
         $query = PatientModel::query();
-
-        if ($role !== null) {
-            $query->where('role', $role->value);
-        }
 
         if ($status !== null) {
             $query->where('status', $status->value);
@@ -72,7 +66,7 @@ class EloquentPatientRepository implements PatientsRepositoryInterface
         return $patients ? $patients->map(fn($patient) => $this->mapToDomain($patient))->toArray() : [];
     }
 
-    private function mapToDomain(PatientModel $model): Patient
+    private function mapToDomain(object $model): Patient
     {
         // Mapear el modelo de Eloquent a la entidad de dominio
         return Patient::fromPrimitives(
