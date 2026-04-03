@@ -28,6 +28,8 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
             'users.delete',
             'users.manage',
             'users.view',
+            'patients.delete',
+            'patients.create',
         ];
 
         if (!in_array($permission, $adminPermissions, true)) {
