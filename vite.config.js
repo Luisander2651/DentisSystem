@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/pages/usuarios/delete-user.js', 'resources/js/pages/usuarios/edit-user.js', 'resources/js/pages/usuarios/create-user.js'],
+            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/pages/dashboard.js', 'resources/js/pages/usuarios/delete-user.js', 'resources/js/pages/usuarios/edit-user.js', 'resources/js/pages/usuarios/create-user.js', 'resources/js/pages/patients/index.js', 'resources/js/pages/patients/create-patient.js', 'resources/js/pages/patients/edit-patient.js', 'resources/js/pages/patients/delete-patient.js'],
             refresh: true,
         }),
         tailwindcss(),

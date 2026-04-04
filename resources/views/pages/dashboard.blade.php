@@ -135,18 +135,24 @@
         </div>
 
         <!-- Recent Activity / Quick Links -->
-        <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 class="text-lg font-semibold text-slate-900 mb-4">Acciones Rapidas</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <a href="#" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors text-center">
-                    + Nuevo Paciente
-                </a>
-                <a href="#" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors text-center">
-                    + Nueva Cita
-                </a>
-                <a href="#" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors text-center">
-                    + Nuevo Usuario
-                </a>
+        <div class="space-y-6">
+            <div id="dashboard-patients-success" class="hidden rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700"></div>
+            
+            <div id="dashboard-users-success" class="hidden rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700"></div>
+
+            <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="text-lg font-semibold text-slate-900 mb-4">Acciones Rapidas</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <button type="button" data-create-patient-open class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors text-center cursor-pointer">
+                        + Nuevo Paciente
+                    </button>
+                    <a href="#" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors text-center">
+                        + Nueva Cita
+                    </a>
+                    <button type="button" data-create-user-open class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors text-center cursor-pointer">
+                        + Nuevo Usuario
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -188,15 +194,19 @@
             </div>
         </div>
 
-        <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 class="text-lg font-semibold text-slate-900 mb-4">Acciones Rapidas</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <a href="#" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors text-center">
-                    + Registrar Paciente
-                </a>
-                <a href="#" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors text-center">
-                    + Agendar Cita
-                </a>
+        <div class="space-y-6">
+            <div id="dashboard-patients-success" class="hidden rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700"></div>
+
+            <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="text-lg font-semibold text-slate-900 mb-4">Acciones Rapidas</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <button type="button" data-create-patient-open class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors text-center cursor-pointer">
+                        + Registrar Paciente
+                    </button>
+                    <a href="#" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors text-center">
+                        + Agendar Cita
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -247,4 +257,26 @@
         </div>
     @endif
 </div>
+
+<!-- Create Patient Modal (for Admin and Assistant) -->
+@if (strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin' || strtolower($userRole) === 'asistente')
+    <x-ui.create-patient-modal
+        modal-id="patients-create-modal"
+    />
+@endif
+
+<!-- Create User Modal (for Admin only) -->
+@if (strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin')
+    <x-ui.create-user-modal
+        modal-id="users-create-modal"
+    />
+@endif
+
+@vite('resources/js/pages/dashboard.js')
+@if (strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin' || strtolower($userRole) === 'asistente')
+    @vite('resources/js/pages/patients/create-patient.js')
+@endif
+@if (strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin')
+    @vite('resources/js/pages/usuarios/create-user.js')
+@endif
 @endsection

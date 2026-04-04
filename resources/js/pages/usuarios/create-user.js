@@ -166,10 +166,6 @@
             }
         } catch (error) {
             showModalError(error.message || 'No se pudo crear el usuario.');
-
-            if (window.usersPage && typeof window.usersPage.showError === 'function') {
-                window.usersPage.showError(error.message || 'No se pudo crear el usuario.');
-            }
         } finally {
             if (isSubmitting) {
                 setSubmittingState(false);

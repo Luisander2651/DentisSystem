@@ -42,7 +42,7 @@
 
 			<x-ui.input
 				name="password"
-				label="Contrasena"
+				label="Contraseña"
 				variant="password"
 				placeholder="********"
 				class=""
@@ -50,7 +50,7 @@
 
 			<x-ui.input
 				name="confirm_password"
-				label="Confirmar Contrasena"
+				label="Confirmar Contraseña"
 				variant="password"
 				placeholder="********"
 				class=""
