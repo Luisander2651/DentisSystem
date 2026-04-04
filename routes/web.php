@@ -29,4 +29,8 @@ Route::middleware(['auth:sanctum', 'only.admin'])->group(function () {
     Route::get('/usuarios', function () {
         return view('pages.usuarios.index');
     })->name('usuarios.index');
+
+    Route::get('/pacientes', function () {
+        return view('pages.patients.index');
+    })->name('patients.index');
 });

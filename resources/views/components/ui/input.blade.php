@@ -20,7 +20,7 @@
         'string' => 'Solo se permite texto.',
         'number' => 'Solo numeros no negativos.',
         'email' => 'Ingresa un correo valido.',
-        'password' => 'La contrasena no es valida.',
+        'password' => 'La contraseña no es valida.',
     ];
 
     $resolvedErrorText = $errorText ?? ($messages[$variant] ?? $messages['string']);

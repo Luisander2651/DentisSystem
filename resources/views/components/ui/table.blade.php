@@ -4,6 +4,7 @@
     'emptyMessage' => 'No hay informacion disponible.',
     'tableId' => null,
     'actions' => false,
+    'actionPrefix' => 'user',
 ])
 
 @php
@@ -33,6 +34,7 @@
     data-ui-table-columns='@json($columns)'
     data-ui-table-empty-message="{{ e($emptyMessage) }}"
     data-ui-table-actions="{{ $hasActions ? '1' : '0' }}"
+    data-ui-table-action-prefix="{{ e($actionPrefix) }}"
     {{ $attributes->merge(['class' => 'w-full overflow-x-auto rounded-lg border border-slate-200 bg-white']) }}
 >
     <table class="min-w-full border-collapse text-left text-sm text-slate-700">
@@ -67,7 +69,10 @@
                     $composedName = trim($firstName.' '.$lastName);
                     $email = trim((string) data_get($normalizedRow, 'email', ''));
 
-                    $userLabel = $fullName !== ''
+                    $actionPrefix = trim((string) $actionPrefix);
+                    $actionPrefix = $actionPrefix !== '' ? $actionPrefix : 'user';
+
+                    $rowLabel = $fullName !== ''
                         ? $fullName
                         : ($composedName !== ''
                             ? $composedName
@@ -109,12 +114,12 @@
                                 <button
                                     type="button"
                                     class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:border-[#F5C2D6] hover:bg-[#FFF1F6] hover:text-[#B5114A]"
-                                    data-user-edit
-                                    data-user-id="{{ e($rowId) }}"
-                                    data-user-first-name="{{ e($editFirstName) }}"
-                                    data-user-last-name="{{ e($editLastName) }}"
-                                    data-user-role-id="{{ e($editRoleId) }}"
-                                    data-user-status="{{ e($editStatus) }}"
+                                    data-{{ e($actionPrefix) }}-edit
+                                    data-{{ e($actionPrefix) }}-id="{{ e($rowId) }}"
+                                    data-{{ e($actionPrefix) }}-first-name="{{ e($editFirstName) }}"
+                                    data-{{ e($actionPrefix) }}-last-name="{{ e($editLastName) }}"
+                                    data-{{ e($actionPrefix) }}-role-id="{{ e($editRoleId) }}"
+                                    data-{{ e($actionPrefix) }}-status="{{ e($editStatus) }}"
                                     aria-label="Editar registro"
                                     @disabled(! $hasRowId)
                                 >
@@ -127,9 +132,9 @@
                                 <button
                                     type="button"
                                     class="{{ $deleteButtonClasses }}"
-                                    data-user-delete
-                                    data-user-id="{{ e($rowId) }}"
-                                    data-user-label="{{ e($userLabel) }}"
+                                    data-{{ e($actionPrefix) }}-delete
+                                    data-{{ e($actionPrefix) }}-id="{{ e($rowId) }}"
+                                    data-{{ e($actionPrefix) }}-label="{{ e($rowLabel) }}"
                                     aria-label="Eliminar registro"
                                     @disabled(! $hasRowId)
                                 >
@@ -215,7 +220,9 @@
                 return rowId !== '' ? ('ID ' + rowId) : 'ID';
             }
 
-            function renderActions(row) {
+            function renderActions(row, actionPrefix) {
+                actionPrefix = String(actionPrefix || 'user').trim() || 'user';
+
                 var rowId = getRowId(row);
                 var userLabel = resolveUserLabel(row, rowId);
                 var hasRowId = rowId !== '';
@@ -238,10 +245,10 @@
 
                 var editButtonClasses = 'inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:border-[#F5C2D6] hover:bg-[#FFF1F6] hover:text-[#B5114A]'
                     + (hasRowId ? '' : ' opacity-50 cursor-not-allowed');
-                var editButtonAttributes = 'data-user-edit data-user-id="' + escapeHtml(rowId) + '" data-user-first-name="' + escapeHtml(firstName) + '" data-user-last-name="' + escapeHtml(lastName) + '" data-user-role-id="' + escapeHtml(roleId) + '" data-user-status="' + escapeHtml(status) + '"';
+                var editButtonAttributes = 'data-' + escapeHtml(actionPrefix) + '-edit data-' + escapeHtml(actionPrefix) + '-id="' + escapeHtml(rowId) + '" data-' + escapeHtml(actionPrefix) + '-first-name="' + escapeHtml(firstName) + '" data-' + escapeHtml(actionPrefix) + '-last-name="' + escapeHtml(lastName) + '" data-' + escapeHtml(actionPrefix) + '-role-id="' + escapeHtml(roleId) + '" data-' + escapeHtml(actionPrefix) + '-status="' + escapeHtml(status) + '"';
                 var deleteButtonClasses = 'inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition'
                     + (hasRowId ? ' hover:border-red-200 hover:bg-red-50 hover:text-red-600' : ' opacity-50 cursor-not-allowed');
-                var deleteButtonAttributes = 'data-user-delete data-user-id="' + escapeHtml(rowId) + '" data-user-label="' + escapeHtml(userLabel) + '"';
+                var deleteButtonAttributes = 'data-' + escapeHtml(actionPrefix) + '-delete data-' + escapeHtml(actionPrefix) + '-id="' + escapeHtml(rowId) + '" data-' + escapeHtml(actionPrefix) + '-label="' + escapeHtml(userLabel) + '"';
 
                 if (!hasRowId) {
                     editButtonAttributes += ' disabled';
@@ -305,7 +312,7 @@
                     }).join('');
 
                     if (hasActions) {
-                        cells += '<td class="whitespace-nowrap px-4 py-3 align-top text-slate-700">' + renderActions(row) + '</td>';
+                        cells += '<td class="whitespace-nowrap px-4 py-3 align-top text-slate-700">' + renderActions(row, table.dataset.uiTableActionPrefix || 'user') + '</td>';
                     }
 
                     return '<tr class="border-t border-slate-200">' + cells + '</tr>';
