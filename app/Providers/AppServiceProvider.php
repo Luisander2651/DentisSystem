@@ -13,6 +13,20 @@ use Illuminate\Http\Request;
 use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
 
+
+use App\Modules\Patients\Domain\Repositories\AddressesRepositoryInterface;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentAddressRepository;
+
+use App\Modules\Patients\Domain\Repositories\ContactInfoRepositoryInterface;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentContactInfoRepository;
+
+
+use App\Modules\Patients\Domain\Repositories\MedicalDataRepositoryInterface;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentMedicalDataRepository;
+
+use App\Modules\Patients\Domain\Repositories\PatientRecordRepositoryInterface;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\PatientRecordRepository as EloquentPatientRecordRepository;
+
 use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentPatientRepository;
 
@@ -36,6 +50,26 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             PatientsRepositoryInterface::class,
             EloquentPatientRepository::class,
+        );
+
+        $this->app->bind(
+            AddressesRepositoryInterface::class,
+            EloquentAddressRepository::class,
+        );
+
+        $this->app->bind(
+            ContactInfoRepositoryInterface::class,
+            EloquentContactInfoRepository::class,
+        );
+
+        $this->app->bind(
+            MedicalDataRepositoryInterface::class,
+            EloquentMedicalDataRepository::class,
+        );
+
+        $this->app->bind(
+            PatientRecordRepositoryInterface::class,
+            EloquentPatientRecordRepository::class,
         );
     }
 
