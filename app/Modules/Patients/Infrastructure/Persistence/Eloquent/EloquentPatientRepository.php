@@ -8,7 +8,6 @@ use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
 use App\Modules\Patients\Domain\Entities\Patient;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientEmail;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
-use App\Modules\Patients\Domain\ValueObjects\Patients\PatientRole;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientStatus;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel;
 
