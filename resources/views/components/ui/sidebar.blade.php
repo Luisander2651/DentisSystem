@@ -44,7 +44,7 @@
     $roleTabs = [
         'administrador' => ['inicio', 'agenda', 'pacientes', 'expedientes', 'contenido', 'usuarios'],
         'asistente' => ['inicio', 'agenda', 'expedientes'],
-        'patient' => ['inicio', 'agenda', 'expedientes'],
+        'patient' => ['inicio', 'agenda'],
     ];
 
     $allowedTabs = $roleTabs[$normalizedRole] ?? [];

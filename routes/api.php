@@ -47,12 +47,12 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             Route::prefix('patients')->group(function (): void {
                 Route::post('/', CreatePatientController::class);
                 Route::delete('/{id}', DeletePatientByIdController::class);
-                Route::get('/', GetPatientsByStatusController::class);
             });
         });
         
         Route::middleware('auth:sanctum')->group(function (): void {
             Route::prefix('patients')->group(function (): void {
+                Route::get('/', GetPatientsByStatusController::class);
                 Route::put('/{id}', UpdatePatientController::class);
                 Route::get('/{id}', GetPatientByIdController::class);
 
