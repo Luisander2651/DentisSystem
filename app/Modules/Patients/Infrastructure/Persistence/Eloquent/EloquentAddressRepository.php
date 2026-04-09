@@ -21,19 +21,19 @@ class EloquentAddressRepository implements AddressesRepositoryInterface
             'postal_code' => $address->PostalCode()->value,
         ];
 
-        AddressesModel::updateOrCreate(['id' => $address->Id()->value], $data);
+        AddressesModel::updateOrCreate(['patient_id' => $address->PatientId()->value], $data);
     }
 
     public function findByPatientId(PatientId $patientId): ?Address
     {
-       $pateintAdress = AddressesModel::find($patientId->value);
+         $pateintAdress = AddressesModel::where('patient_id', $patientId->value)->first();
 
        return $pateintAdress ? $this->mapToAddressModel($pateintAdress) : null;
     }
 
     public function deleteByPatientId(PatientId $patientId): void
     {
-        AddressesModel::destroy($patientId->value);
+        AddressesModel::where('patient_id', $patientId->value)->delete();
     }
 
     private function mapToAddressModel(object $model): Address

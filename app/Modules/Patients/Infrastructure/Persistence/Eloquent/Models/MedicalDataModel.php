@@ -17,7 +17,10 @@ final class MedicalDataModel extends Model
 
     protected $casts = [
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
+        'allergies' => 'array',
+        'medications' => 'array',
+        'last_dentist_visit' => 'array',
     ];
 
     protected $fillable = [
