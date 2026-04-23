@@ -13,6 +13,7 @@ use App\Modules\Users\Domain\ValueObjects\UserId;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 
 use DateTimeImmutable;
+use Illuminate\Support\Facades\App;
 
 final class AppointmentEntity
 {
@@ -38,7 +39,7 @@ final class AppointmentEntity
         bool $whatsappReminder = false,
     ): self {
         return new self(
-            AppointmentId::fromInt(0), // Se ignorará en BD (autoincrement)
+            AppointmentId::random(),
             $date,
             $time,
             $whatsappReminder,
