@@ -13,8 +13,8 @@ final class AppointmentModel extends Model
 {
     protected $table = 'appointments';
 
-    public $incrementing = true;
-    public $keyType = 'int';
+    public $incrementing = false;
+    public $keyType = 'string';
     public $timestamps = true;
 
     protected $casts = [
