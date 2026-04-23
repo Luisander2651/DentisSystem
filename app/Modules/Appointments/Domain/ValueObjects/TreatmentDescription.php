@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\Appointments\Domain\Exceptions\ValueObjects\TreatmentDescriptionException;
 
 final readonly class TreatmentDescription
 {
@@ -13,9 +13,7 @@ final readonly class TreatmentDescription
     ) {
         $trimmed = trim($value);
         if (empty($trimmed)) {
-            throw new InvalidArgumentException(
-                sprintf("<%s> must be a non-empty string.", static::class)
-            );
+            throw TreatmentDescriptionException::emptyDescription();
         }
     }
 

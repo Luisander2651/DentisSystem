@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\Appointments\Domain\Exceptions\ValueObjects\AppointmentDateException;
 use DateTime;
 
 final readonly class AppointmentDate
@@ -14,7 +14,7 @@ final readonly class AppointmentDate
     ) {
         $date = DateTime::createFromFormat('Y-m-d', $value);
         if (!$date || $date->format('Y-m-d') !== $value) {
-            throw new InvalidArgumentException(sprintf("<%s> does not allow the value <%s>. Expected format: Y-m-d", static::class, $value));
+            throw AppointmentDateException::invalidFormat($value, 'Y-m-d');
         }
     }
 

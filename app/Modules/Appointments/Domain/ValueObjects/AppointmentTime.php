@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\Appointments\Domain\Exceptions\ValueObjects\AppointmentTimeException;
 use DateTime;
 
 final readonly class AppointmentTime
@@ -14,7 +14,7 @@ final readonly class AppointmentTime
     ) {
         $time = DateTime::createFromFormat('H:i', $value);
         if (!$time || $time->format('H:i') !== $value) {
-            throw new InvalidArgumentException(sprintf("<%s> does not allow the value <%s>. Expected format: H:i", static::class, $value));
+            throw AppointmentTimeException::invalidFormat($value, 'H:i');
         }
     }
 

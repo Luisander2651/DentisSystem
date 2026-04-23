@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\Appointments\Domain\Exceptions\ValueObjects\TreatmentIdException;
 
 final readonly class TreatmentId
 {
@@ -12,7 +12,7 @@ final readonly class TreatmentId
         public string $value,
     ) {
         if (!is_numeric($value) || (int)$value <= 0) {
-            throw new InvalidArgumentException(sprintf("<%s> does not allow the value <%s>.", static::class, $value));
+            throw TreatmentIdException::invalidValue($value);
         }
     }
 

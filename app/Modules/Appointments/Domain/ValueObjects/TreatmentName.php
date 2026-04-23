@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\Appointments\Domain\Exceptions\ValueObjects\TreatmentNameException;
 
 final readonly class TreatmentName
 {
@@ -13,9 +13,7 @@ final readonly class TreatmentName
     ) {
         $trimmed = trim($value);
         if (empty($trimmed) || strlen($trimmed) > 255) {
-            throw new InvalidArgumentException(
-                sprintf("<%s> must be a non-empty string up to 255 characters.", static::class)
-            );
+            throw TreatmentNameException::invalidLength(255);
         }
     }
 

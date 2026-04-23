@@ -6,6 +6,6 @@ namespace App\Modules\Appointments\Domain\ValueObjects;
 
 use App\Core\Domain\UuidIdentifier;
 
-final readonly class AppointmentId extends UuidIdentifier
+final readonly class AppointmentPateintId extends UuidIdentifier
 {
 }

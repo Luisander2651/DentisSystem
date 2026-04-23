@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\Appointments\Domain\Exceptions\ValueObjects\AppointmentStatusException;
 
 final readonly class AppointmentStatus
 {
@@ -14,14 +14,7 @@ final readonly class AppointmentStatus
         public string $value,
     ) {
         if (!in_array($value, self::VALID_STATUSES, true)) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    "<%s> does not allow the value <%s>. Valid values: %s",
-                    static::class,
-                    $value,
-                    implode(', ', self::VALID_STATUSES)
-                )
-            );
+            throw AppointmentStatusException::invalidStatus($value, self::VALID_STATUSES);
         }
     }
 
