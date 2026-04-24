@@ -30,6 +30,8 @@ use App\Modules\Patients\Infrastructure\Persistence\Eloquent\PatientRecordReposi
 use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentPatientRepository;
 
+use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
+use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\EloquentAppointmentRepository;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -70,6 +72,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             PatientRecordRepositoryInterface::class,
             EloquentPatientRecordRepository::class,
+        );
+
+        $this->app->bind(
+            AppointmentsRepositoryInterface::class,
+            EloquentAppointmentRepository::class,
         );
     }
 
