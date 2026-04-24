@@ -8,12 +8,12 @@ use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentTime;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
+use App\Modules\Appointments\Domain\ValueObjects\AppointmentWhatsAppReminder;
 use App\Modules\Appointments\Domain\ValueObjects\TreatmentId;
 use App\Modules\Users\Domain\ValueObjects\UserId;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 
 use DateTimeImmutable;
-use Illuminate\Support\Facades\App;
 
 final class AppointmentEntity
 {
@@ -21,8 +21,8 @@ final class AppointmentEntity
         private readonly AppointmentId $id,
         private AppointmentDate $date,
         private AppointmentTime $time,
-        private bool $whatsappReminder,
         private AppointmentStatus $status,
+        private AppointmentWhatsAppReminder $whatsAppReminder,
         private readonly TreatmentId $treatmentId,
         private readonly UserId $userId,
         private readonly PatientId $patientId,
@@ -36,14 +36,13 @@ final class AppointmentEntity
         TreatmentId $treatmentId,
         UserId $userId,
         PatientId $patientId,
-        bool $whatsappReminder = false,
     ): self {
         return new self(
             AppointmentId::random(),
             $date,
             $time,
-            $whatsappReminder,
             AppointmentStatus::assigned(),
+            AppointmentWhatsAppReminder::default(),
             $treatmentId,
             $userId,
             $patientId,
@@ -68,8 +67,8 @@ final class AppointmentEntity
             new AppointmentId($id),
             new AppointmentDate($date),
             new AppointmentTime($time),
-            $whatsappReminder,
             new AppointmentStatus($status),
+            AppointmentWhatsAppReminder::fromBool($whatsappReminder),
             new TreatmentId($treatmentId),
             new UserId($userId),
             new PatientId($patientId),
@@ -98,9 +97,9 @@ final class AppointmentEntity
         $this->updatedAt = new DateTimeImmutable();
     }
 
-    public function updateWhatsappReminder(bool $enabled): void
+    public function updateWhatsappReminder(): void
     {
-        $this->whatsappReminder = $enabled;
+        $this->whatsAppReminder = AppointmentWhatsAppReminder::fromBool(!$this->whatsAppReminder->value());
         $this->updatedAt = new DateTimeImmutable();
     }
 
@@ -122,7 +121,7 @@ final class AppointmentEntity
 
     public function WhatsappReminder(): bool
     {
-        return $this->whatsappReminder;
+        return $this->whatsAppReminder->value();
     }
 
     public function Status(): AppointmentStatus
