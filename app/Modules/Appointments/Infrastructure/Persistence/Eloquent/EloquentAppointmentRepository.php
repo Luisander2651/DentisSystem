@@ -15,7 +15,9 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
 {
     public function save(AppointmentEntity $appointment): void
     {
+        $appointmentId = $appointment->Id()->value;
         $data = [
+            'id' => $appointmentId,
             'date' => $appointment->Date()->value,
             'time' => $appointment->Time()->value,
             'status' => $appointment->Status()->value,
@@ -25,7 +27,7 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
             'patient_id' => $appointment->PatientId()->value,
         ];
 
-        AppointmentModel::updateOrCreate(['id' => $appointment->Id()->value], $data);
+        AppointmentModel::query()->updateOrCreate(['id' => $appointmentId], $data);
     }
 
     public function findById(AppointmentId $id): ?AppointmentEntity

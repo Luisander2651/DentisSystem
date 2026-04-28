@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Domain\Entities;
 
+use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentTime;
@@ -77,11 +78,15 @@ final class AppointmentEntity
         );
     }
 
-    public function reschedule(AppointmentDate $newDate, AppointmentTime $newTime): void
+    public function reschedule(?AppointmentDate $newDate, ?AppointmentTime $newTime): void
     {
-        $this->date = $newDate;
-        $this->time = $newTime;
-        $this->status = AppointmentStatus::rescheduled();
+        if ($newDate === null && $newTime === null) {
+            throw AppointmentException::rescheduleRequiresDateOrTime();
+        }
+
+        $newDate !== null && $this->date = $newDate;
+        $newTime !== null && $this->time = $newTime;
+        $this->status !== AppointmentStatus::rescheduled() && $this->status = AppointmentStatus::rescheduled();
         $this->updatedAt = new DateTimeImmutable();
     }
 

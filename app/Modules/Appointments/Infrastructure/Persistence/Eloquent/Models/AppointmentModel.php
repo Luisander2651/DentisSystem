@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class AppointmentModel extends Model
 {
     protected $table = 'appointments';
+    protected $primaryKey = 'id';
 
     public $incrementing = false;
     public $keyType = 'string';
@@ -23,6 +24,7 @@ final class AppointmentModel extends Model
     ];
 
     protected $fillable = [
+        'id',
         'date',
         'time',
         'whatsapp_reminder',

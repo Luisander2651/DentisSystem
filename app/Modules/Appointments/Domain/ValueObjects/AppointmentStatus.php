@@ -8,8 +8,16 @@ use App\Modules\Appointments\Domain\Exceptions\ValueObjects\AppointmentStatusExc
 
 final readonly class AppointmentStatus
 {
-    private const VALID_STATUSES = ['asignada', 'completada', 'cancelada', 'reprogramada'];
-
+    private const completed = 'completada';
+    private const cancelled = 'cancelada';
+    private const rescheduled = 'reprogramada';
+    private const assigned = 'asignada';
+    private const VALID_STATUSES = [
+        self::assigned,
+        self::completed,
+        self::cancelled,
+        self::rescheduled,
+    ];
     public function __construct(
         public string $value,
     ) {
@@ -20,22 +28,22 @@ final readonly class AppointmentStatus
 
     public static function assigned(): self
     {
-        return new self('asignada');
+        return new self(self::assigned);
     }
 
     public static function completed(): self
     {
-        return new self('completada');
+        return new self(self::completed);
     }
 
     public static function cancelled(): self
     {
-        return new self('cancelada');
+        return new self(self::cancelled);
     }
 
     public static function rescheduled(): self
     {
-        return new self('reprogramada');
+        return new self(self::rescheduled);
     }
 
     public static function fromString(string $status): self
@@ -45,22 +53,22 @@ final readonly class AppointmentStatus
 
     public function isAssigned(): bool
     {
-        return $this->value === 'asignada';
+        return $this->value === self::assigned;
     }
 
     public function isCompleted(): bool
     {
-        return $this->value === 'completada';
+        return $this->value === self::completed;
     }
 
     public function isCancelled(): bool
     {
-        return $this->value === 'cancelada';
+        return $this->value === self::cancelled;
     }
 
     public function isRescheduled(): bool
     {
-        return $this->value === 'reprogramada';
+        return $this->value === self::rescheduled;
     }
 
     public function equals(self $other): bool

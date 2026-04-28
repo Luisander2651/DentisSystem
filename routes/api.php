@@ -1,5 +1,7 @@
 <?php
 
+use App\Modules\Appointments\Infrastructure\Http\Controllers\CreateAppointmentController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAllApointmentsByStatusAndDateController;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Auth\Infrastructure\Http\Controllers\LoginController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\RegisterController;
@@ -70,7 +72,11 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
 
                 Route::get('/{patientId}/record', GetPatientRecordByPatientIdController::class);
             });
+
+            Route::prefix('appointments')->group(function (): void {
+                Route::get('/', GetAllApointmentsByStatusAndDateController::class);
+                Route::post('/', CreateAppointmentController::class);
+            });
         });
     });
-    
 });

@@ -12,10 +12,17 @@ final readonly class AppointmentTime
     public function __construct(
         public string $value,
     ) {
-        $time = DateTime::createFromFormat('H:i', $value);
-        if (!$time || $time->format('H:i') !== $value) {
-            throw AppointmentTimeException::invalidFormat($value, 'H:i');
+        $acceptedFormats = ['H:i', 'H:i:s'];
+
+        foreach ($acceptedFormats as $format) {
+            $time = DateTime::createFromFormat($format, $value);
+
+            if ($time && $time->format($format) === $value) {
+                return;
+            }
         }
+
+        throw AppointmentTimeException::invalidFormat($value, 'H:i or H:i:s');
     }
 
     public static function fromString(string $timeString): self
