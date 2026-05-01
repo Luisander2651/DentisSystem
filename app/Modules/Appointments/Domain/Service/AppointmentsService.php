@@ -9,6 +9,8 @@ use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
+use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
+
 
 class AppointmentsService
 {
@@ -26,9 +28,9 @@ class AppointmentsService
         return $this->repository->findById($id);
     }
 
-    public function findByStatusAndDate(?AppointmentStatus $status, ?AppointmentDate $date): array
+    public function findByStatusAndDate(?AppointmentStatus $status, ?AppointmentDate $date, ?PatientId $patientId = null): array
     {
-        return $this->repository->findAllByStatusAndDate($status, $date);
+        return $this->repository->findAllByStatusAndDateOrPatientId($status, $date, $patientId);
     }
 
     public function deleteAppointment(AppointmentId $id): void

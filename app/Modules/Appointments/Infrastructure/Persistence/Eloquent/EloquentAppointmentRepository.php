@@ -10,6 +10,8 @@ use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentModel;
+use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
+
 
 class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
 {
@@ -37,7 +39,7 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
         return $appointment ? $this->mapToDomain($appointment) : null;
     }
 
-    public function findAllByStatusAndDate(?AppointmentStatus $status, ?AppointmentDate $date): array
+    public function findAllByStatusAndDateOrPatientId(?AppointmentStatus $status, ?AppointmentDate $date, ?PatientId $patientId = null): array
     {
         $query = AppointmentModel::query();
 
@@ -48,6 +50,11 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
         if ($date) {
             $query->where('date', $date->value);
         }
+
+        if ($patientId) {
+            $query->where('patient_id', $patientId->value);
+        }
+
 
         $appointments = $query->get();
 

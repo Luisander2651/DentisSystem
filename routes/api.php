@@ -25,6 +25,10 @@ use App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData\CreateMedic
 use App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData\UpdateMedicalDataController;
 use App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData\DeleteMedicalDataByPatientIdController;
 use App\Modules\Patients\Infrastructure\Http\Controllers\PatientRecord\GetPatientRecordByPatientIdController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentByIdController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\DeleteAppointmentController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateAppointmentController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentsByPatientIdController;
 
 Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
 
@@ -76,6 +80,10 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             Route::prefix('appointments')->group(function (): void {
                 Route::get('/', GetAllApointmentsByStatusAndDateController::class);
                 Route::post('/', CreateAppointmentController::class);
+                Route::get('/patient/{patientId}', GetAppointmentsByPatientIdController::class);
+                Route::get('/{id}', GetAppointmentByIdController::class);
+                Route::put('/{id}', UpdateAppointmentController::class);
+                Route::delete('/{id}', DeleteAppointmentController::class);
             });
         });
     });

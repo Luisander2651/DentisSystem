@@ -20,6 +20,8 @@ final readonly class GetAllApointmentsByStatusAndDateUseCase
 
     public function execute(GetAllAppointmentsByStatusAndDateDTO $getAllAppointmentsByStatusAndDateDTO): array
     {
+        $this->authorization->assertCan('appointments.view');
+
         $status = null;
         $date = null;
 
@@ -31,7 +33,6 @@ final readonly class GetAllApointmentsByStatusAndDateUseCase
             $date = AppointmentDate::fromString($getAllAppointmentsByStatusAndDateDTO->date);
         }
 
-        $this->authorization->assertCan('appointments.view');
         $appointments = $this->appointmentsService->findByStatusAndDate(
             status: $status,
             date: $date,

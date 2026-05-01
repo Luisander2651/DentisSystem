@@ -22,4 +22,9 @@ final class AppointmentAplicationExceptions extends Exception
     {
         return new self('At least one of date or time must be provided for rescheduling.');
     }
+
+    public static function invalidPatientId(): self
+    {
+        return new self('Patient ID cannot be empty');
+    }
 }
