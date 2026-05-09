@@ -14,7 +14,7 @@ use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 
 interface AppointmentsRepositoryInterface
 {
-    public function save(AppointmentEntity $appointment): void;
+    public function save(AppointmentEntity $appointment): AppointmentEntity;
 
     public function findById(AppointmentId $id): ?AppointmentEntity;
 

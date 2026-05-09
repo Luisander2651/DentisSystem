@@ -15,7 +15,7 @@ use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 
 class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
 {
-    public function save(AppointmentEntity $appointment): void
+    public function save(AppointmentEntity $appointment): AppointmentEntity
     {
         $appointmentId = $appointment->Id()->value;
         $data = [
@@ -29,7 +29,9 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
             'patient_id' => $appointment->PatientId()->value,
         ];
 
-        AppointmentModel::query()->updateOrCreate(['id' => $appointmentId], $data);
+        $model = AppointmentModel::query()->updateOrCreate(['id' => $appointmentId], $data);
+
+        return $this->mapToDomain($model);
     }
 
     public function findById(AppointmentId $id): ?AppointmentEntity

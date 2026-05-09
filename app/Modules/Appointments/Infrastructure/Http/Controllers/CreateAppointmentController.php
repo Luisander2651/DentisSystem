@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Infrastructure\Http\Controllers;
 
+use App\Modules\Appointments\Domain\Events\ScheduledAppointment;
 use App\Modules\Appointments\Aplication\DTOs\CreateAppointmentDTO;
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptions;
 use App\Modules\Appointments\Aplication\UseCases\CreateAppointmentUseCase;
@@ -12,6 +13,7 @@ use App\Modules\Appointments\Domain\Exceptions\ValueObjectsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
+
 
 
 final readonly class CreateAppointmentController
@@ -31,7 +33,9 @@ final readonly class CreateAppointmentController
                 patientId: $request->string('patient_id')->value(),
             );
 
-            $this->createAppointmentUseCase->execute($createAppointmentDTO);
+            $appointment = $this->createAppointmentUseCase->execute($createAppointmentDTO);
+
+            event(new ScheduledAppointment($appointment));
 
             return response()->json([
                 'message' => 'Appointment created successfully',

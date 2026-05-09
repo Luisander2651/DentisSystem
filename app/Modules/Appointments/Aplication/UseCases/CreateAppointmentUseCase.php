@@ -19,7 +19,7 @@ final readonly class CreateAppointmentUseCase
         private AppointmentsService $appointmentsService,
     ) {}
 
-    public function execute(CreateAppointmentDTO $createAppointmentDTO): void
+    public function execute(CreateAppointmentDTO $createAppointmentDTO): AppointmentEntity
     {
 
         $appointment = AppointmentEntity::create(
@@ -31,6 +31,6 @@ final readonly class CreateAppointmentUseCase
 
         );
 
-        $this->appointmentsService->saveAppointment($appointment);
+        return $this->appointmentsService->saveAppointment($appointment);
     }
 }

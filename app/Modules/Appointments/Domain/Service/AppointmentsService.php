@@ -18,9 +18,9 @@ class AppointmentsService
         private readonly AppointmentsRepositoryInterface $repository
     ) {}
 
-    public function saveAppointment(AppointmentEntity $appointmentEntity): void
+    public function saveAppointment(AppointmentEntity $appointmentEntity): AppointmentEntity
     {
-        $this->repository->save($appointmentEntity);
+        return $this->repository->save($appointmentEntity);
     }
 
     public function findById(AppointmentId $id): ?AppointmentEntity
