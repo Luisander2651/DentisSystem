@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\ContentManagement\Promociones\Domain\ValueObjects;
+namespace App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects;
 
 use InvalidArgumentException;
 
@@ -10,7 +10,7 @@ final readonly class PromotionStatus
 {
     private const VALID_STATUSES = ['visible', 'oculto'];
 
-    public function __construct(
+    private function __construct(
         public string $value,
     ) {
         if (!in_array($value, self::VALID_STATUSES, true)) {
@@ -23,6 +23,11 @@ final readonly class PromotionStatus
                 )
             );
         }
+    }
+
+    public static function default(): self
+    {
+        return new self('visible');
     }
 
     public static function visible(): self
@@ -40,14 +45,14 @@ final readonly class PromotionStatus
         return new self($status);
     }
 
-    public function isActive(): bool
+    public function isVisible(): bool
     {
-        return $this->value === 'activa';
+        return $this->value === 'visible';
     }
 
-    public function isInactive(): bool
+    public function isHidden(): bool
     {
-        return $this->value === 'inactiva';
+        return $this->value === 'oculto';
     }
 
     public function equals(self $other): bool

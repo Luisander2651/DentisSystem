@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\ContentManagement\Certificaciones\Domain\Entities;
+namespace App\Modules\ContentManagement\Modules\Certificaciones\Domain\Entities;
 
-use App\Modules\ContentManagement\Certificaciones\Domain\ValueObjects\CertificationId;
-use App\Modules\ContentManagement\Certificaciones\Domain\ValueObjects\CertificationName;
-use App\Modules\ContentManagement\Certificaciones\Domain\ValueObjects\CertificationDescription;
-use App\Modules\ContentManagement\Certificaciones\Domain\ValueObjects\CertificationStatus;
-use App\Modules\ContentManagement\Certificaciones\Domain\ValueObjects\CertificationDate;
-use App\Modules\ContentManagement\Certificaciones\Domain\ValueObjects\ImageUrl;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationId;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationName;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationDescription;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationStatus;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationDate;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\ImageUrl;
 
 use DateTimeImmutable;
 

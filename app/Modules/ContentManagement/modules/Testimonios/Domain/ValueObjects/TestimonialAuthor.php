@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\ContentManagement\Testimonios\Domain\ValueObjects;
+namespace App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects;
 
 use InvalidArgumentException;
 

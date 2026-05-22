@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\ContentManagement\Galeria\Infrastructure\Persistence\Eloquent\Models;
+namespace App\Modules\ContentManagement\Modules\Galeria\Infrastructure\Persistence\Eloquent\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

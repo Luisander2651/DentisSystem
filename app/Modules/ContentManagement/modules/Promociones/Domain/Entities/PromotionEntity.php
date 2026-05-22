@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\ContentManagement\Promociones\Domain\Entities;
+namespace App\Modules\ContentManagement\Modules\Promociones\Domain\Entities;
 
-use App\Modules\ContentManagement\Promociones\Domain\ValueObjects\PromotionId;
-use App\Modules\ContentManagement\Promociones\Domain\ValueObjects\PromotionName;
-use App\Modules\ContentManagement\Promociones\Domain\ValueObjects\PromotionDescription;
-use App\Modules\ContentManagement\Promociones\Domain\ValueObjects\PromotionStatus;
-use App\Modules\ContentManagement\Promociones\Domain\ValueObjects\DiscountPercentage;
-use App\Modules\ContentManagement\Promociones\Domain\ValueObjects\StartDate;
-use App\Modules\ContentManagement\Promociones\Domain\ValueObjects\EndDate;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionId;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionName;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionDescription;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionStatus;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\DiscountPercentage;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\StartDate;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\EndDate;
 
 use DateTimeImmutable;
 use DateTime;
@@ -64,7 +64,7 @@ final class PromotionEntity
             new PromotionId($id),
             new PromotionName($name),
             new PromotionDescription($description),
-            new PromotionStatus($status),
+            PromotionStatus::default(),
             new DiscountPercentage($discountPercentage),
             new StartDate($startDate),
             new EndDate($endDate),
@@ -87,7 +87,7 @@ final class PromotionEntity
 
     public function isActive(): bool
     {
-        return $this->status->isActive();
+        return $this->status->isVisible();
     }
 
     public function isExpired(): bool

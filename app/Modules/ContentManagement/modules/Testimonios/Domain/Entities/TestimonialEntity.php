@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\ContentManagement\Testimonios\Domain\Entities;
+namespace App\Modules\ContentManagement\Modules\Testimonios\Domain\Entities;
 
-use App\Modules\ContentManagement\Testimonios\Domain\ValueObjects\TestimonialId;
-use App\Modules\ContentManagement\Testimonios\Domain\ValueObjects\TestimonialAuthor;
-use App\Modules\ContentManagement\Testimonios\Domain\ValueObjects\TestimonialDescription;
-use App\Modules\ContentManagement\Testimonios\Domain\ValueObjects\TestimonialStatus;
-use App\Modules\ContentManagement\Testimonios\Domain\ValueObjects\TestimonialDate;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialId;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialAuthor;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialDescription;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialStatus;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialDate;
 
 use DateTimeImmutable;
 

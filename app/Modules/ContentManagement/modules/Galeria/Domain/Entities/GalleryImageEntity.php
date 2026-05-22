@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\ContentManagement\Galeria\Domain\Entities;
+namespace App\Modules\ContentManagement\Modules\Galeria\Domain\Entities;
 
-use App\Modules\ContentManagement\Galeria\Domain\ValueObjects\GalleryImageId;
-use App\Modules\ContentManagement\Galeria\Domain\ValueObjects\GalleryImageUrl;
-use App\Modules\ContentManagement\Galeria\Domain\ValueObjects\ImageDescription;
+use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageId;
+use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageUrl;
+use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\ImageDescription;
 
 use DateTimeImmutable;
 

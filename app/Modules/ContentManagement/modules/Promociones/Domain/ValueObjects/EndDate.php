@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\ContentManagement\Promociones\Domain\ValueObjects;
+namespace App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects;
 
 use InvalidArgumentException;
 use DateTime;

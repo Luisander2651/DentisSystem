@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\ContentManagement\Promociones\Infrastructure\Persistence\Eloquent\Models;
+namespace App\Modules\ContentManagement\Modules\Promociones\Infrastructure\Persistence\Eloquent\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
