@@ -43,7 +43,11 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
 
     public function findAllByStatusAndDateOrPatientId(?AppointmentStatus $status, ?AppointmentDate $date, ?PatientId $patientId = null): array
     {
-        $query = AppointmentModel::query();
+        $query = AppointmentModel::query()->with([
+            'user:id,first_name,last_name',
+            'patient:id,first_name,last_name',
+            'treatment:id,name'
+        ]);
 
         if ($status) {
             $query->where('status', $status->value);
@@ -79,6 +83,9 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
             (string) $model->treatment_id,
             (string) $model->user_id,
             (string) $model->patient_id,
+            (string) $model->treatment?->name,
+            (string) $model->user?->first_name . ' ' . $model->user?->last_name,
+            (string) $model->patient?->first_name . ' ' . $model->patient?->last_name,
             $model->created_at->toDateTimeString(),
             $model->updated_at->toDateTimeString(),
         );

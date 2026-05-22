@@ -13,6 +13,9 @@ use App\Modules\Appointments\Domain\ValueObjects\AppointmentWhatsAppReminder;
 use App\Modules\Appointments\Domain\ValueObjects\TreatmentId;
 use App\Modules\Users\Domain\ValueObjects\UserId;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
+use App\Modules\Users\Domain\ValueObjects\UserName;
+use App\Modules\Patients\Domain\ValueObjects\Patients\PatientName;
+use App\Modules\Appointments\Domain\ValueObjects\TreatmentName;
 
 use DateTimeImmutable;
 
@@ -27,6 +30,9 @@ final class AppointmentEntity
         private readonly TreatmentId $treatmentId,
         private readonly UserId $userId,
         private readonly PatientId $patientId,
+        private readonly ?TreatmentName $treatmentName,
+        private readonly ?UserName $userName,
+        private readonly ?PatientName $patientName,
         private readonly DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
     ) {}
@@ -47,6 +53,9 @@ final class AppointmentEntity
             $treatmentId,
             $userId,
             $patientId,
+            null,
+            null,
+            null,
             new DateTimeImmutable(),
             new DateTimeImmutable()
         );
@@ -61,6 +70,9 @@ final class AppointmentEntity
         string $treatmentId,
         string $userId,
         string $patientId,
+        ?string $treatmentName,
+        ?string $userName,
+        ?string $patientName,
         string $createdAt,
         string $updatedAt
     ): self {
@@ -73,6 +85,9 @@ final class AppointmentEntity
             new TreatmentId($treatmentId),
             new UserId($userId),
             new PatientId($patientId),
+            $treatmentName ? new TreatmentName($treatmentName) : null,
+            $userName ? UserName::fromString($userName) : null,
+            $patientName ? PatientName::fromString($patientName) : null,
             new DateTimeImmutable($createdAt),
             new DateTimeImmutable($updatedAt)
         );
@@ -147,6 +162,21 @@ final class AppointmentEntity
     public function PatientId(): PatientId
     {
         return $this->patientId;
+    }
+
+    public function TreatmentName(): ?TreatmentName
+    {
+        return $this->treatmentName;
+    }
+
+    public function UserName(): ?UserName
+    {
+        return $this->userName;
+    }
+
+    public function PatientName(): ?PatientName
+    {
+        return $this->patientName;
     }
 
     public function CreatedAt(): DateTimeImmutable
