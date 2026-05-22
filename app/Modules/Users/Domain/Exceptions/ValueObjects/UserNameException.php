@@ -13,4 +13,9 @@ final class UserNameException extends ValueObjectsException
     {
         return new self("The username length is invalid: {$name->full()}. Expected between {$minLength} and {$maxLength} characters.");
     }
+
+    public static function invalidFormat(string $fullName): self
+    {
+        return new self("The username format is invalid: '{$fullName}'. Expected format: 'FirstName LastName'.");
+    }
 }

@@ -48,6 +48,30 @@ final readonly class UserName
         return $firstLetter . $rest;
     }
 
+    public static function fromString(string $fullName): self
+    {
+        $parts = preg_split('/\s+/', trim($fullName), 4, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        $countedParts = count($parts);
+
+        if ($countedParts < 2) {
+            throw UserNameException::invalidFormat($fullName);
+        }
+
+        if ($countedParts === 2) {
+            $firstName = self::formatName($parts[0]);
+            $lastName = self::formatName($parts[1]);
+        } elseif ($countedParts === 3) {
+            $firstName = self::formatName($parts[0]);
+            $lastName = self::formatName($parts[1] . ' ' . $parts[2]);
+        } else {
+            $firstName = self::formatName($parts[0] . ' ' . $parts[1]);
+            $lastName = self::formatName($parts[2] . ' ' . $parts[3]);
+        }
+
+        return new self($firstName, $lastName);
+    }
+
     public function full(): string
     {
         return "{$this->firstName} {$this->lastName}";
