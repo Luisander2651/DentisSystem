@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Galeria\Domain\Exceptions\GalleryImageException;
 
 final readonly class GalleryImageId
 {
@@ -12,7 +12,7 @@ final readonly class GalleryImageId
         public string $value,
     ) {
         if (!is_numeric($value) || (int)$value <= 0) {
-            throw new InvalidArgumentException(sprintf("<%s> does not allow the value <%s>.", static::class, $value));
+            throw GalleryImageException::invalidValue(static::class, $value);
         }
     }
 

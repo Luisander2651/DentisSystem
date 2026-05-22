@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Galeria\Domain\Exceptions\GalleryImageException;
 
 final readonly class ImageDescription
 {
@@ -13,9 +13,7 @@ final readonly class ImageDescription
     ) {
         $trimmed = trim($value);
         if (empty($trimmed)) {
-            throw new InvalidArgumentException(
-                sprintf("<%s> must be a non-empty string.", static::class)
-            );
+            throw GalleryImageException::empty(static::class);
         }
     }
 

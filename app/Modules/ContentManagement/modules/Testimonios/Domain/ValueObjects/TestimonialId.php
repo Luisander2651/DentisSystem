@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\Exceptions\TestimonialException;
 
 final readonly class TestimonialId
 {
@@ -12,7 +12,7 @@ final readonly class TestimonialId
         public string $value,
     ) {
         if (!is_numeric($value) || (int)$value <= 0) {
-            throw new InvalidArgumentException(sprintf("<%s> does not allow the value <%s>.", static::class, $value));
+            throw TestimonialException::invalidValue(static::class, $value);
         }
     }
 

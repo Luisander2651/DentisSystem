@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\Exceptions\PromotionException;
 
 final readonly class DiscountPercentage
 {
@@ -12,9 +12,7 @@ final readonly class DiscountPercentage
         public float $value,
     ) {
         if ($value < 0 || $value > 100) {
-            throw new InvalidArgumentException(
-                sprintf("<%s> must be between 0 and 100. Got: %s", static::class, $value)
-            );
+            throw PromotionException::outOfRange(static::class, $value, 0, 100);
         }
     }
 

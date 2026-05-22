@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\Exceptions\PromotionException;
 
 final readonly class PromotionName
 {
@@ -13,9 +13,7 @@ final readonly class PromotionName
     ) {
         $trimmed = trim($value);
         if (empty($trimmed) || strlen($trimmed) > 255) {
-            throw new InvalidArgumentException(
-                sprintf("<%s> must be a non-empty string up to 255 characters.", static::class)
-            );
+            throw PromotionException::empty(static::class);
         }
     }
 

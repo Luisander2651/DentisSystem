@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\Exceptions\TestimonialException;
 
 final readonly class TestimonialAuthor
 {
@@ -13,9 +13,7 @@ final readonly class TestimonialAuthor
     ) {
         $trimmed = trim($value);
         if (empty($trimmed) || strlen($trimmed) > 255) {
-            throw new InvalidArgumentException(
-                sprintf("<%s> must be a non-empty string up to 255 characters.", static::class)
-            );
+            throw TestimonialException::empty(static::class);
         }
     }
 

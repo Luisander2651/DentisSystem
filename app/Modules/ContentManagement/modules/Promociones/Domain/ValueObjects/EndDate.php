@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\Exceptions\PromotionException;
 use DateTime;
 
 final readonly class EndDate
@@ -14,7 +14,7 @@ final readonly class EndDate
     ) {
         $date = DateTime::createFromFormat('Y-m-d', $value);
         if (!$date || $date->format('Y-m-d') !== $value) {
-            throw new InvalidArgumentException(sprintf("<%s> does not allow the value <%s>. Expected format: Y-m-d", static::class, $value));
+            throw PromotionException::invalidFormat(static::class, $value, 'Y-m-d');
         }
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Exceptions\CertificationException;
 
 final readonly class CertificationStatus
 {
@@ -14,13 +14,14 @@ final readonly class CertificationStatus
         public string $value,
     ) {
         if (!in_array($value, self::VALID_STATUSES, true)) {
-            throw new InvalidArgumentException(
+            throw CertificationException::invalidValue(
                 sprintf(
                     "<%s> does not allow the value <%s>. Valid values: %s",
                     static::class,
                     $value,
                     implode(', ', self::VALID_STATUSES)
                 )
+            , $value
             );
         }
     }

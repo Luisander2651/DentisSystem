@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\Exceptions\TestimonialException;
 
 final readonly class TestimonialStatus
 {
@@ -14,14 +14,7 @@ final readonly class TestimonialStatus
         public string $value,
     ) {
         if (!in_array($value, self::VALID_STATUSES, true)) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    "<%s> does not allow the value <%s>. Valid values: %s",
-                    static::class,
-                    $value,
-                    implode(', ', self::VALID_STATUSES)
-                )
-            );
+            throw TestimonialException::invalidValue(static::class, $value);
         }
     }
 

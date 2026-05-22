@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Exceptions\CertificationException;
 
 final readonly class CertificationId
 {
@@ -12,7 +12,7 @@ final readonly class CertificationId
         public string $value,
     ) {
         if (!is_numeric($value) || (int)$value <= 0) {
-            throw new InvalidArgumentException(sprintf("<%s> does not allow the value <%s>.", static::class, $value));
+            throw CertificationException::invalidValue(static::class, $value);
         }
     }
 

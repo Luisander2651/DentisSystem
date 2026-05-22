@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\Exceptions\PromotionException;
 
 final readonly class PromotionId
 {
@@ -12,7 +12,7 @@ final readonly class PromotionId
         public string $value,
     ) {
         if (!is_numeric($value) || (int)$value <= 0) {
-            throw new InvalidArgumentException(sprintf("<%s> does not allow the value <%s>.", static::class, $value));
+            throw PromotionException::invalidValue(static::class, $value);
         }
     }
 

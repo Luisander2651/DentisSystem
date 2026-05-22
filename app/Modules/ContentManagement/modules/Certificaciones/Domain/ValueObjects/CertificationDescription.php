@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Exceptions\CertificationException;
 
 final readonly class CertificationDescription
 {
@@ -13,9 +13,7 @@ final readonly class CertificationDescription
     ) {
         $trimmed = trim($value);
         if (empty($trimmed)) {
-            throw new InvalidArgumentException(
-                sprintf("<%s> must be a non-empty string.", static::class)
-            );
+            throw CertificationException::empty(static::class);
         }
     }
 

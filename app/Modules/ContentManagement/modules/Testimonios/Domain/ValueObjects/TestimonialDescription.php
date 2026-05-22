@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects;
 
-use InvalidArgumentException;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\Exceptions\TestimonialException;
 
 final readonly class TestimonialDescription
 {
@@ -13,9 +13,7 @@ final readonly class TestimonialDescription
     ) {
         $trimmed = trim($value);
         if (empty($trimmed)) {
-            throw new InvalidArgumentException(
-                sprintf("<%s> must be a non-empty string.", static::class)
-            );
+            throw TestimonialException::empty(static::class);
         }
     }
 
