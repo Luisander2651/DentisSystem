@@ -2,6 +2,7 @@
 
 namespace App\Modules\ContentManagement;
 
+use App\Modules\ContentManagement\Domain\Exceptions\StorageException;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -17,11 +18,11 @@ final class StorageProvider
         public string $storagePath,
     ) {
         if (trim($moduleName) === '') {
-            throw new \InvalidArgumentException('Module name cannot be empty.');
+            throw StorageException::emptyModuleName();
         }
 
         if (trim($storagePath) === '') {
-            throw new \InvalidArgumentException('Storage path cannot be empty.');
+            throw StorageException::emptyStoragePath();
         }
 
         $this->storagePath = rtrim($storagePath, '/');
@@ -36,7 +37,7 @@ final class StorageProvider
     {
         $file = $request->file('image');
         if (! $file instanceof UploadedFile || ! $file->isValid()) {
-            throw new \InvalidArgumentException('No valid image uploaded.');
+            throw StorageException::invalidUploadedImage();
         }
 
         $this->verifyImageExtension($file->getClientOriginalExtension(), $file->getMimeType());
@@ -48,13 +49,19 @@ final class StorageProvider
         $storedPath = Storage::disk(self::DEFAULT_DISK)->putFileAs($directory, $file, $filename);
 
         if ($storedPath === false) {
-            throw new \RuntimeException('Failed to store uploaded image.');
+            throw StorageException::storeFailed();
         }
 
         /** @var FilesystemAdapter $disk */
         $disk = Storage::disk(self::DEFAULT_DISK);
 
         return $disk->url($storedPath);
+    }
+
+    public function updateImage(string $currentImagePath, Request $request): string
+    {
+        $this->deleteImage($currentImagePath);
+        return $this->saveImage($request);
     }
 
     public function deleteImage(string $imagePath): void
@@ -67,11 +74,11 @@ final class StorageProvider
     {
         $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'];
         if (! in_array(strtolower($extension), $allowed, true)) {
-            throw new \InvalidArgumentException('Unsupported image extension.');
+            throw StorageException::unsupportedImageExtension();
         }
 
         if ($mime !== null && ! str_starts_with($mime, 'image/')) {
-            throw new \InvalidArgumentException('Uploaded file is not an image.');
+            throw StorageException::invalidImageMime();
         }
     }
 
