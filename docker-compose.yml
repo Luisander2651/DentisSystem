@@ -12,6 +12,7 @@ services:
       - .:/var/www/html
       - /var/www/html/node_modules
       - /var/www/html/vendor
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
     networks:
       - laravel
     ports:
