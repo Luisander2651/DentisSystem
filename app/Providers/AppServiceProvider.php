@@ -32,6 +32,15 @@ use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentPatientRepo
 
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\EloquentAppointmentRepository;
+
+use App\Modules\ContentManagement\StorageProviderInterface;
+use App\Modules\ContentManagement\StorageProvider;
+    
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Repositories\CertificationRepositoryInterface;
+use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\Persistence\Eloquent\EloquentCertificationRepository;
+use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\SaveCertificationUseCase;
+use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\UpdateCertificationUseCase;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -78,6 +87,26 @@ class AppServiceProvider extends ServiceProvider
             AppointmentsRepositoryInterface::class,
             EloquentAppointmentRepository::class,
         );
+
+        $this->app->bind(
+            CertificationRepositoryInterface::class,
+            EloquentCertificationRepository::class,
+        );
+
+        // Contextual binding for the certifications module: when the SaveCertificationUseCase
+        // requires StorageProviderInterface, provide a StorageProvider configured for this module.
+        $this->app->when(SaveCertificationUseCase::class)
+            ->needs(StorageProviderInterface::class)
+            ->give(function ($app) {
+                return StorageProvider::new('certificaciones', 'uploads/content');
+            });
+
+        // Also provide the same configured StorageProvider for the update use case.
+        $this->app->when(UpdateCertificationUseCase::class)
+            ->needs(StorageProviderInterface::class)
+            ->give(function ($app) {
+                return StorageProvider::new('certificaciones', 'uploads/content');
+            });
     }
 
     /**
