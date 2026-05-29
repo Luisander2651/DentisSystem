@@ -55,7 +55,7 @@ final class CertificationEntity
         string $updatedAt
     ): self {
         return new self(
-            new CertificationId($id),
+            CertificationId::fromPrimitive($id),
             new CertificationName($name),
             new CertificationDescription($description),
             new CertificationStatus($status),

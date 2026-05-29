@@ -28,6 +28,11 @@ final class StorageException extends RuntimeException
         return new self('Failed to store uploaded image.');
     }
 
+    public static function imageConversionFailed(): self
+    {
+        return new self('Failed to convert image to AVIF format.');
+    }
+
     public static function unsupportedImageExtension(): self
     {
         return new self('Unsupported image extension.');

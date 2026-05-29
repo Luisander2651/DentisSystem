@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Filesystem\FilesystemAdapter;
 
-final class StorageProvider
+final class StorageProvider implements StorageProviderInterface
 {
     private const DEFAULT_DISK = 'public';
 
@@ -33,20 +33,19 @@ final class StorageProvider
         return new self($moduleName, $storagePath);
     }
 
-    public function saveImage(Request $request): string
+    public function saveImage(UploadedFile $image): string
     {
-        $file = $request->file('image');
-        if (! $file instanceof UploadedFile || ! $file->isValid()) {
+        if (! $image instanceof UploadedFile || ! $image->isValid()) {
             throw StorageException::invalidUploadedImage();
         }
 
-        $this->verifyImageExtension($file->getClientOriginalExtension(), $file->getMimeType());
+        $this->verifyImageExtension($image->getClientOriginalExtension(), $image->getMimeType());
 
-        $extension = strtolower($file->getClientOriginalExtension());
+        $extension = strtolower($image->getClientOriginalExtension());
         $filename = $this->generateFilename($extension);
 
         $directory = trim($this->storagePath, '/') . '/' . trim($this->moduleName, '/');
-        $storedPath = Storage::disk(self::DEFAULT_DISK)->putFileAs($directory, $file, $filename);
+        $storedPath = Storage::disk(self::DEFAULT_DISK)->putFileAs($directory, $image, $filename);
 
         if ($storedPath === false) {
             throw StorageException::storeFailed();
@@ -58,10 +57,10 @@ final class StorageProvider
         return $disk->url($storedPath);
     }
 
-    public function updateImage(string $currentImagePath, Request $request): string
+    public function updateImage(string $currentImagePath, UploadedFile $newImage): string
     {
         $this->deleteImage($currentImagePath);
-        return $this->saveImage($request);
+        return $this->saveImage($newImage);
     }
 
     public function deleteImage(string $imagePath): void
