@@ -29,6 +29,10 @@ use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentByIdC
 use App\Modules\Appointments\Infrastructure\Http\Controllers\DeleteAppointmentController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateAppointmentController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentsByPatientIdController;
+use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\SaveCertificationController;
+use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\UpdateCertificationController;
+use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\DeleteCertificationController;
+use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\GetCertificationsController;
 
 Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
 
@@ -53,6 +57,13 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             Route::prefix('patients')->group(function (): void {
                 Route::post('/', CreatePatientController::class);
                 Route::delete('/{id}', DeletePatientByIdController::class);
+            });
+
+            Route::prefix('certifications')->group(function (): void {
+                Route::post('/', SaveCertificationController::class);
+                Route::put('/{id}', UpdateCertificationController::class);
+                Route::delete('/{id}', DeleteCertificationController::class);
+                Route::get('/', GetCertificationsController::class);
             });
         });
         
