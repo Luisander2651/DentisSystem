@@ -19,8 +19,6 @@ final readonly class EloquentTestimonialRepository implements TestimonialReposit
                 'author' => $data->Author()->value,
                 'description' => $data->Description()->value,
                 'status' => $data->Status()->value,
-                'date' => $data->Date()->value,
-                'state' => $data->Status()->value,
             ]
         );
     }
@@ -58,8 +56,6 @@ final readonly class EloquentTestimonialRepository implements TestimonialReposit
             author: $model->author,
             description: $model->description,
             status: $model->status,
-            date: $model->date,
-            state: $model->state,
             createdAt: $model->created_at->toDateTimeString(),
             updatedAt: $model->updated_at->toDateTimeString(),
         );

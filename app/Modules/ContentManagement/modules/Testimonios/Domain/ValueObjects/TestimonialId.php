@@ -11,7 +11,7 @@ final readonly class TestimonialId
     public function __construct(
         public string $value,
     ) {
-        if (!is_numeric($value) || (int)$value <= 0) {
+        if (!is_numeric($value)) {
             throw TestimonialException::invalidValue(static::class, $value);
         }
     }

@@ -24,6 +24,5 @@ final class TestimonialModel extends Model
         'description',
         'status',
         'date',
-        'state',
     ];
 }

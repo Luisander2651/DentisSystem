@@ -8,7 +8,6 @@ use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\Testim
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialAuthor;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialDescription;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialStatus;
-use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialDate;
 
 use DateTimeImmutable;
 
@@ -19,7 +18,6 @@ final class TestimonialEntity
         private TestimonialAuthor $author,
         private TestimonialDescription $description,
         private TestimonialStatus $status,
-        private readonly TestimonialDate $date,
         private readonly DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
     ) {}
@@ -27,14 +25,12 @@ final class TestimonialEntity
     public static function create(
         TestimonialAuthor $author,
         TestimonialDescription $description,
-        TestimonialDate $date,
     ): self {
         return new self(
             TestimonialId::fromInt(0), // Se ignorará en BD (autoincrement)
             $author,
             $description,
             TestimonialStatus::visible(),
-            $date,
             new DateTimeImmutable(),
             new DateTimeImmutable()
         );
@@ -45,8 +41,6 @@ final class TestimonialEntity
         string $author,
         string $description,
         string $status,
-        string $date,
-        string $state,
         string $createdAt,
         string $updatedAt
     ): self {
@@ -54,11 +48,30 @@ final class TestimonialEntity
             new TestimonialId($id),
             new TestimonialAuthor($author),
             new TestimonialDescription($description),
-            new TestimonialStatus($status),
-            new TestimonialDate($date),
+            TestimonialStatus::fromString($status),
             new DateTimeImmutable($createdAt),
             new DateTimeImmutable($updatedAt)
         );
+    }
+
+    public function update(
+        ?string $author = null,
+        ?string $description = null,
+        ?string $status = null,
+    ): void {
+        if ($author !== null) {
+            $this->author = new TestimonialAuthor($author);
+        }
+
+        if ($description !== null) {
+            $this->description = new TestimonialDescription($description);
+        }
+
+        if ($status !== null) {
+            $this->status = TestimonialStatus::fromString($status);
+        }
+
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     public function visible(): void
@@ -92,11 +105,6 @@ final class TestimonialEntity
     public function Status(): TestimonialStatus
     {
         return $this->status;
-    }
-
-    public function Date(): TestimonialDate
-    {
-        return $this->date;
     }
 
     public function CreatedAt(): DateTimeImmutable
