@@ -3,11 +3,11 @@
 namespace App\Modules\ContentManagement;
 
 use App\Modules\ContentManagement\Domain\Exceptions\StorageException;
-use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Filesystem\FilesystemAdapter;
+
 
 final class StorageProvider implements StorageProviderInterface
 {
@@ -65,8 +65,35 @@ final class StorageProvider implements StorageProviderInterface
 
     public function deleteImage(string $imagePath): void
     {
-        $relative = ltrim(preg_replace('#^/storage/#', '', $imagePath), '/');
-        Storage::disk(self::DEFAULT_DISK)->delete($relative);
+        $relativePath = $this->normalizeStoredImagePath($imagePath);
+
+        if ($relativePath === '') {
+            return;
+        }
+
+        Storage::disk(self::DEFAULT_DISK)->delete($relativePath);
+    }
+
+    private function normalizeStoredImagePath(string $imagePath): string
+    {
+        $trimmedPath = trim($imagePath);
+
+        if ($trimmedPath === '') {
+            return '';
+        }
+
+        $path = parse_url($trimmedPath, PHP_URL_PATH);
+        if (! is_string($path) || $path === '') {
+            $path = $trimmedPath;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (str_starts_with($path, 'storage/')) {
+            return substr($path, strlen('storage/'));
+        }
+
+        return $path;
     }
 
     private function verifyImageExtension(string $extension, ?string $mime = null): void
