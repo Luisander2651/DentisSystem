@@ -11,7 +11,7 @@ final readonly class GalleryImageId
     public function __construct(
         public string $value,
     ) {
-        if (!is_numeric($value) || (int)$value <= 0) {
+        if (!is_numeric($value)) {
             throw GalleryImageException::invalidValue(static::class, $value);
         }
     }

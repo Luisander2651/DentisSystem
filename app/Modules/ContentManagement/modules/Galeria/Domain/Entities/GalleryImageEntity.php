@@ -14,7 +14,7 @@ final class GalleryImageEntity
 {
     private function __construct(
         private readonly GalleryImageId $id,
-        private readonly GalleryImageUrl $url,
+        private  GalleryImageUrl $url,
         private ImageDescription $description,
         private readonly DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,

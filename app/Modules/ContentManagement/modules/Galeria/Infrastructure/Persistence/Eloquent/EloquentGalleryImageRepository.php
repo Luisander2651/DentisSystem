@@ -48,7 +48,7 @@ final readonly class EloquentGalleryImageRepository implements GalleryImageRepos
         return GalleryImageEntity::fromPrimitives(
             id: (string) $model->id,
             url: $model->url,
-            description: $model->description,
+            description: (string) ($model->description ?? ''),
             createdAt: $model->created_at->toDateTimeString(),
             updatedAt: $model->updated_at->toDateTimeString(),
         );
