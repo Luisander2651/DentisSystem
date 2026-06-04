@@ -33,6 +33,9 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
             'appointments.view',
             'appointments.delete',
             'manage.certifications',
+            'manage.gallery',
+            'manage.promotions',
+            'manage.testimonials',
         ];
 
         if (!in_array($permission, $adminPermissions, true)) {
