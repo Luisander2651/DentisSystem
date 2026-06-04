@@ -33,6 +33,18 @@ use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Co
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\UpdateCertificationController;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\DeleteCertificationController;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\GetCertificationsController;
+use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\SaveGalleryImageController;
+use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\UpdateGalleryImageController;
+use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\DeleteGalleryImageController;
+use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\GetGalleryImagesController;
+use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\SavePromotionController;
+use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\UpdatePromotionController;
+use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\DeletePromotionController;
+use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\GetPromotionsController;
+use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\SaveTestimonialController;
+use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\UpdateTestimonialController;
+use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\DeleteTestimonialController;
+use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\GetTestimonialsController;
 
 Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
 
@@ -64,6 +76,27 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::put('/{id}', UpdateCertificationController::class);
                 Route::delete('/{id}', DeleteCertificationController::class);
                 Route::get('/', GetCertificationsController::class);
+            });
+
+            Route::prefix('gallery-images')->group(function (): void {
+                Route::post('/', SaveGalleryImageController::class);
+                Route::put('/{id}', UpdateGalleryImageController::class);
+                Route::delete('/{id}', DeleteGalleryImageController::class);
+                Route::get('/', GetGalleryImagesController::class);
+            });
+
+            Route::prefix('promotions')->group(function (): void {
+                Route::post('/', SavePromotionController::class);
+                Route::put('/{id}', UpdatePromotionController::class);
+                Route::delete('/{id}', DeletePromotionController::class);
+                Route::get('/', GetPromotionsController::class);
+            });
+
+            Route::prefix('testimonials')->group(function (): void {
+                Route::post('/', SaveTestimonialController::class);
+                Route::put('/{id}', UpdateTestimonialController::class);
+                Route::delete('/{id}', DeleteTestimonialController::class);
+                Route::get('/', GetTestimonialsController::class);
             });
         });
         
