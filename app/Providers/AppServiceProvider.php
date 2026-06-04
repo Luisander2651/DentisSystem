@@ -40,6 +40,18 @@ use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Repositories\Ce
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\Persistence\Eloquent\EloquentCertificationRepository;
 use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\SaveCertificationUseCase;
 use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\UpdateCertificationUseCase;
+use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\DeleteCertificationUseCase;
+
+use App\Modules\ContentManagement\Modules\Galeria\Domain\Repositories\GalleryImageRepositoryInterface;
+use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\Persistence\Eloquent\EloquentGalleryImageRepository;
+use App\Modules\ContentManagement\Modules\Galeria\Aplication\UseCases\SaveGalleryImageUseCase;
+use App\Modules\ContentManagement\Modules\Galeria\Aplication\UseCases\UpdateGalleryImageUseCase;
+use App\Modules\ContentManagement\Modules\Galeria\Aplication\UseCases\DeleteGalleryImageUseCase;
+
+use App\Modules\ContentManagement\Modules\Promociones\Domain\Repositories\PromotionRepositoryInterface;
+use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\Persistence\Eloquent\EloquentPromotionRepository;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\Repositories\TestimonialRepositoryInterface;
+use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\Persistence\Eloquent\EloquentTestimonialRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -93,6 +105,21 @@ class AppServiceProvider extends ServiceProvider
             EloquentCertificationRepository::class,
         );
 
+        $this->app->bind(
+            GalleryImageRepositoryInterface::class,
+            EloquentGalleryImageRepository::class,
+        );
+
+        $this->app->bind(
+            PromotionRepositoryInterface::class,
+            EloquentPromotionRepository::class,
+        );
+
+        $this->app->bind(
+            TestimonialRepositoryInterface::class,
+            EloquentTestimonialRepository::class,
+        );
+
         // Contextual binding for the certifications module: when the SaveCertificationUseCase
         // requires StorageProviderInterface, provide a StorageProvider configured for this module.
         $this->app->when(SaveCertificationUseCase::class)
@@ -106,6 +133,30 @@ class AppServiceProvider extends ServiceProvider
             ->needs(StorageProviderInterface::class)
             ->give(function ($app) {
                 return StorageProvider::new('certificaciones', 'uploads/content');
+            });
+
+        $this->app->when(DeleteCertificationUseCase::class)
+            ->needs(StorageProviderInterface::class)
+            ->give(function ($app) {
+                return StorageProvider::new('certificaciones', 'uploads/content');
+            });
+
+        $this->app->when(SaveGalleryImageUseCase::class)
+            ->needs(StorageProviderInterface::class)
+            ->give(function ($app) {
+                return StorageProvider::new('galeria', 'uploads/content');
+            });
+
+        $this->app->when(UpdateGalleryImageUseCase::class)
+            ->needs(StorageProviderInterface::class)
+            ->give(function ($app) {
+                return StorageProvider::new('galeria', 'uploads/content');
+            });
+
+        $this->app->when(DeleteGalleryImageUseCase::class)
+            ->needs(StorageProviderInterface::class)
+            ->give(function ($app) {
+                return StorageProvider::new('galeria', 'uploads/content');
             });
     }
 
