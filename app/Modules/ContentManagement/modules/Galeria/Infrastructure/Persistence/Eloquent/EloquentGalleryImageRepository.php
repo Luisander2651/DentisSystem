@@ -7,6 +7,7 @@ use App\Modules\ContentManagement\Modules\Galeria\Domain\Repositories\GalleryIma
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageId;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageUrl;
 use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\Persistence\Eloquent\Models\GalleryImageModel;
+use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryStatus;
 
 final readonly class EloquentGalleryImageRepository implements GalleryImageRepositoryInterface
 {
@@ -17,6 +18,7 @@ final readonly class EloquentGalleryImageRepository implements GalleryImageRepos
             [
                 'url' => $data->Url()->value,
                 'description' => $data->Description()->value,
+                'status' => $data->Status()->value,
             ]
         );
     }
@@ -26,7 +28,7 @@ final readonly class EloquentGalleryImageRepository implements GalleryImageRepos
         GalleryImageModel::destroy($id->value);
     }
 
-    public function findByIdAndUrl(?GalleryImageId $id, ?GalleryImageUrl $url): array
+    public function findByIdAndUrlAndStatus(?GalleryImageId $id, ?GalleryImageUrl $url, ?GalleryStatus $status): array
     {
         $query = GalleryImageModel::query();
 
@@ -49,6 +51,7 @@ final readonly class EloquentGalleryImageRepository implements GalleryImageRepos
             id: (string) $model->id,
             url: $model->url,
             description: (string) ($model->description ?? ''),
+            status: (string) ($model->status ?? 'visible'),
             createdAt: $model->created_at->toDateTimeString(),
             updatedAt: $model->updated_at->toDateTimeString(),
         );

@@ -24,7 +24,7 @@ final readonly class DeleteGalleryImageUseCase
         $this->authorizationService->assertCan('manage.gallery');
 
         $idVo = GalleryImageId::fromInt((int) $dto->id);
-        $found = $this->service->getAllByUrlOrId($idVo, null);
+        $found = $this->service->getAllByUrlOrId($idVo, null, null);
 
         if (empty($found)) {
             throw GalleryImageException::notFound($idVo);

@@ -22,5 +22,6 @@ final class GalleryImageModel extends Model
     protected $fillable = [
         'url',
         'description',
+        'status',
     ];
 }

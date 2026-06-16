@@ -13,12 +13,13 @@ final readonly class UpdateGalleryImageDTO
         public string $id,
         public ?string $description = null,
         public ?UploadedFile $image = null,
+        public ?string $status = null,
     ) {
         if (empty($id)) {
             throw GalleryImageInputException::missingRequiredFields();
         }
 
-        if (empty($description) && $image === null) {
+        if (empty($description) && $image === null && empty($status)) {
             throw GalleryImageInputException::atLeastOneFieldRequired();
         }
     }

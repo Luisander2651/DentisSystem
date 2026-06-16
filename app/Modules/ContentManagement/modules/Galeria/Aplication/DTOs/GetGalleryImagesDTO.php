@@ -9,5 +9,6 @@ final readonly class GetGalleryImagesDTO
     public function __construct(
         public ?string $id = null,
         public ?string $url = null,
+        public ?string $status = null,
     ) {}
 }

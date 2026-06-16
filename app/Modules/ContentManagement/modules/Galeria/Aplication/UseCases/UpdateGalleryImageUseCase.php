@@ -26,7 +26,7 @@ final readonly class UpdateGalleryImageUseCase
         $this->authorizationService->assertCan('manage.gallery');
 
         $idVo = GalleryImageId::fromInt((int) $dto->id);
-        $found = $this->service->getAllByUrlOrId($idVo, null);
+        $found = $this->service->getAllByUrlOrId($idVo, null, null);
 
         if (empty($found)) {
             throw GalleryImageException::notFound($idVo);
@@ -39,7 +39,7 @@ final readonly class UpdateGalleryImageUseCase
             $newUrl = $this->storageProvider->updateImage($entity->Url()->value, $dto->image);
         }
 
-        $entity->update($dto->description, $newUrl);
+        $entity->update($dto->description, $newUrl, $dto->status);
 
         $this->service->save($entity);
     }

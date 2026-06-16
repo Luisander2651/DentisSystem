@@ -23,6 +23,7 @@ final readonly class GetGalleryImagesController
             $dto = new GetGalleryImagesDTO(
                 id: $request->query('id'),
                 url: $request->query('url'),
+                status: $request->query('status'),
             );
 
             $result = $this->useCase->execute($dto);

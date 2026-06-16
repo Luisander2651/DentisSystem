@@ -9,6 +9,7 @@ use App\Modules\ContentManagement\Modules\Galeria\Aplication\DTOs\GetGalleryImag
 use App\Modules\ContentManagement\Modules\Galeria\Domain\Service\GalleryService;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageId;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageUrl;
+use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryStatus;
 
 final readonly class GetGalleryImagesUseCase
 {
@@ -23,7 +24,8 @@ final readonly class GetGalleryImagesUseCase
 
         $idVo = $dto->id ? GalleryImageId::fromInt((int) $dto->id) : null;
         $urlVo = $dto->url ? new GalleryImageUrl($dto->url) : null;
+        $statusVo = $dto->status ? GalleryStatus::fromString($dto->status) : null;
 
-        return $this->service->getAllByUrlOrId($idVo, $urlVo);
+        return $this->service->getAllByUrlOrId($idVo, $urlVo, $statusVo);
     }
 }

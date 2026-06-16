@@ -33,6 +33,7 @@ final readonly class UpdateGalleryImageController
                 id: $id,
                 description: $request->input('description'),
                 image: $image,
+                status: $request->has('status') ? (string) $request->input('status') : null,
             );
 
             $this->useCase->execute($dto);

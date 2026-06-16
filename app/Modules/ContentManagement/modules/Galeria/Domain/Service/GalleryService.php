@@ -8,6 +8,7 @@ use App\Modules\ContentManagement\Modules\Galeria\Domain\Entities\GalleryImageEn
 use App\Modules\ContentManagement\Modules\Galeria\Domain\Repositories\GalleryImageRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageId;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageUrl;
+use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryStatus;
 
 final readonly class GalleryService
 {
@@ -26,11 +27,12 @@ final readonly class GalleryService
         $this->repository->destroy($id);
     }
 
-    public function getAllByUrlOrId(?GalleryImageId $id, ?GalleryImageUrl $url): array
+    public function getAllByUrlOrId(?GalleryImageId $id, ?GalleryImageUrl $url, ?GalleryStatus $status): array
     {
-        return $this->repository->findByIdAndUrl(
+        return $this->repository->findByIdAndUrlAndStatus(
             id: $id,
             url: $url,
+            status: $status
         );
     }
 }

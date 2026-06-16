@@ -7,6 +7,7 @@ namespace App\Modules\ContentManagement\Modules\Galeria\Domain\Entities;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageId;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageUrl;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\ImageDescription;
+use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryStatus;
 
 use DateTimeImmutable;
 
@@ -16,6 +17,7 @@ final class GalleryImageEntity
         private readonly GalleryImageId $id,
         private  GalleryImageUrl $url,
         private ImageDescription $description,
+        private GalleryStatus $status,
         private readonly DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
     ) {}
@@ -28,6 +30,7 @@ final class GalleryImageEntity
             GalleryImageId::fromInt(0), // Se ignorará en BD (autoincrement)
             $url,
             $description,
+            GalleryStatus::visible(),
             new DateTimeImmutable(),
             new DateTimeImmutable()
         );
@@ -37,6 +40,7 @@ final class GalleryImageEntity
         string $id,
         string $url,
         string $description,
+        string $status,
         string $createdAt,
         string $updatedAt
     ): self {
@@ -44,18 +48,22 @@ final class GalleryImageEntity
             new GalleryImageId($id),
             new GalleryImageUrl($url),
             new ImageDescription($description),
+            GalleryStatus::fromString($status),
             new DateTimeImmutable($createdAt),
             new DateTimeImmutable($updatedAt)
         );
     }
 
-    public function update(?string $newDescription, ?string $newUrl): void
+    public function update(?string $newDescription, ?string $newUrl, ?string $newStatus = null): void
     {
         if ($newDescription !== null) {
             $this->description = new ImageDescription($newDescription);
         }
         if ($newUrl !== null) {
             $this->url = new GalleryImageUrl($newUrl);
+        }
+        if ($newStatus !== null && $newStatus !== '') {
+            $this->status = GalleryStatus::fromString($newStatus);
         }
         $this->updatedAt = new DateTimeImmutable();
     }
@@ -74,6 +82,11 @@ final class GalleryImageEntity
     public function Description(): ImageDescription
     {
         return $this->description;
+    }
+
+    public function Status(): GalleryStatus
+    {
+        return $this->status;
     }
 
     public function CreatedAt(): DateTimeImmutable
