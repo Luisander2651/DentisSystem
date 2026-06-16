@@ -6,8 +6,15 @@
     window.__recordsIndexInit = true;
 
     var page = document.querySelector('[data-records-page]');
-    var tableBody = document.getElementById('records-patients-table-body');
+    var recordsGrid = document.getElementById('records-table-container');
     var errorBox = document.getElementById('records-error');
+    var loadingBox = document.getElementById('records-loading');
+    var emptyBox = document.getElementById('records-empty');
+    
+    var countTotal = document.querySelector('[data-records-total-count]');
+    var countActive = document.querySelector('[data-records-active-count]');
+    var countInactive = document.querySelector('[data-records-inactive-count]');
+
     var detailSection = document.getElementById('record-detail-section');
     var selectedPatientLabel = document.getElementById('record-selected-patient-label');
     var contactForm = document.getElementById('record-contact-form');
@@ -23,9 +30,9 @@
     var addressFormError = document.getElementById('record-address-form-error');
     var medicalFormError = document.getElementById('record-medical-form-error');
     var deleteModal = document.getElementById('record-delete-modal');
-    var deleteConfirmTarget = deleteModal ? deleteModal.querySelector('[data-confirm-target]') : null;
-    var deleteCancelButton = deleteModal ? deleteModal.querySelector('[data-confirm-cancel]') : null;
-    var deleteAcceptButton = deleteModal ? deleteModal.querySelector('[data-confirm-accept]') : null;
+    var deleteConfirmTarget = deleteModal ? deleteModal.querySelector('[data-confirm-delete-name]') : null;
+    var deleteCancelButtons = deleteModal ? Array.from(deleteModal.querySelectorAll('[data-confirm-delete-cancel]')) : [];
+    var deleteAcceptButton = deleteModal ? deleteModal.querySelector('[data-confirm-delete-submit]') : null;
     var hasContactInfo = false;
     var hasAddress = false;
     var hasMedicalData = false;
@@ -33,7 +40,7 @@
     var pendingDeleteLabel = null;
     var isDeleting = false;
 
-    if (!page || !tableBody || !detailSection || !selectedPatientLabel) {
+    if (!page || !recordsGrid || !detailSection || !selectedPatientLabel) {
         return;
     }
 
@@ -272,36 +279,72 @@
         }).join(', ');
     }
 
-    function renderPatientsTable(payload) {
+    function renderPatientCards(payload) {
         var records = Array.isArray(payload && payload.data)
             ? payload.data
             : (Array.isArray(payload) ? payload : []);
 
+        let activeCount = 0;
+        let inactiveCount = 0;
+
+        records.forEach(patient => {
+            if (patient.status === 'active') activeCount++;
+            else if (patient.status === 'inactive') inactiveCount++;
+        });
+
+        if (countTotal) countTotal.textContent = String(records.length);
+        if (countActive) countActive.textContent = String(activeCount);
+        if (countInactive) countInactive.textContent = String(inactiveCount);
+
+        if (emptyBox) emptyBox.classList.toggle('hidden', records.length !== 0);
+
         if (records.length === 0) {
-            tableBody.innerHTML = '<tr class="border-t border-slate-200"><td colspan="5" class="px-4 py-6 text-center text-sm text-slate-500">Sin pacientes disponibles.</td></tr>';
+            recordsGrid.innerHTML = '';
             return;
         }
 
-        tableBody.innerHTML = records.map(function (patient) {
+        recordsGrid.innerHTML = records.map(function (patient) {
             var id = patient && patient.id ? String(patient.id).trim() : '';
-            var firstName = patient && patient.first_name ? String(patient.first_name).trim() : '-';
-            var lastName = patient && patient.last_name ? String(patient.last_name).trim() : '-';
-            var email = patient && patient.email ? String(patient.email).trim() : '-';
-            var status = normalizeStatus(patient && patient.status ? patient.status : '');
+            var firstName = patient && patient.first_name ? String(patient.first_name).trim() : '';
+            var lastName = patient && patient.last_name ? String(patient.last_name).trim() : '';
+            var fullName = (firstName + ' ' + lastName).trim() || 'Paciente sin nombre';
+            var email = patient && patient.email ? String(patient.email).trim() : 'Sin correo';
+            var status = patient && patient.status ? patient.status : '';
+            var statusLabel = normalizeStatus(status);
             var href = '/expedientes-clinicos/' + encodeURIComponent(id);
 
+            var statusClasses = status === 'active'
+                ? 'bg-emerald-50 text-emerald-700'
+                : 'bg-red-50 text-red-700';
+
+            var initial = (firstName.charAt(0) || lastName.charAt(0) || 'P').toUpperCase();
+
             return [
-                '<tr class="border-t border-slate-200">',
-                '<td class="whitespace-nowrap px-4 py-3 align-top text-slate-700">' + escapeHtml(firstName || '-') + '</td>',
-                '<td class="whitespace-nowrap px-4 py-3 align-top text-slate-700">' + escapeHtml(lastName || '-') + '</td>',
-                '<td class="whitespace-nowrap px-4 py-3 align-top text-slate-700">' + escapeHtml(email || '-') + '</td>',
-                '<td class="whitespace-nowrap px-4 py-3 align-top text-slate-700">' + escapeHtml(status) + '</td>',
-                '<td class="whitespace-nowrap px-4 py-3 align-top text-slate-700">',
-                id !== ''
-                    ? '<a class="font-medium text-[#B5114A] underline-offset-2 hover:underline" href="' + escapeHtml(href) + '">Ver expediente</a>'
-                    : '-',
-                '</td>',
-                '</tr>'
+                '<article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">',
+                    '<div class="flex items-start justify-between gap-4">',
+                        '<div class="flex items-center gap-3">',
+                            '<div class="flex h-12 w-12 items-center justify-center rounded-full bg-[#FDF1F6] text-sm font-semibold text-[#B5114A]">', escapeHtml(initial), '</div>',
+                            '<div>',
+                                '<h3 class="text-base font-semibold text-slate-900 break-words">', escapeHtml(fullName), '</h3>',
+                                '<p class="text-xs text-slate-500">Expediente Clinico</p>',
+                            '</div>',
+                        '</div>',
+                        '<span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold ' + statusClasses + '">', escapeHtml(statusLabel), '</span>',
+                    '</div>',
+                    
+                    '<div class="mt-4 grid gap-2">',
+                        '<div class="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-600">',
+                            '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+                            '<span class="break-all">', escapeHtml(email), '</span>',
+                        '</div>',
+                    '</div>',
+
+                    '<div class="mt-4 flex flex-wrap gap-2">',
+                        id !== ''
+                            ? '<a href="' + escapeHtml(href) + '" class="rounded-full bg-[#B5114A] px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-[#960d3d]">Consultar Expediente</a>'
+                            : '',
+                    '</div>',
+                '</article>'
             ].join('');
         }).join('');
     }
@@ -406,6 +449,7 @@
 
     async function loadPatients() {
         hideError();
+        if (loadingBox) loadingBox.classList.remove('hidden');
 
         try {
             var response = await fetch('/api/v1/patients', {
@@ -422,15 +466,17 @@
             });
 
             if (!response.ok) {
-                tableBody.innerHTML = '<tr class="border-t border-slate-200"><td colspan="5" class="px-4 py-6 text-center text-sm text-slate-500">No fue posible cargar pacientes.</td></tr>';
-                showError(payload.error || payload.message || 'No fue posible cargar pacientes.');
+                if (recordsGrid) recordsGrid.innerHTML = '';
+                showError(payload.error || payload.message || 'No se pudieron cargar los pacientes.');
                 return;
             }
 
-            renderPatientsTable(payload);
+            renderPatientCards(payload);
         } catch (error) {
-            tableBody.innerHTML = '<tr class="border-t border-slate-200"><td colspan="5" class="px-4 py-6 text-center text-sm text-slate-500">Error de conexion.</td></tr>';
+            if (recordsGrid) recordsGrid.innerHTML = '';
             showError('Error de conexion al cargar pacientes.');
+        } finally {
+            if (loadingBox) loadingBox.classList.add('hidden');
         }
     }
 
@@ -625,8 +671,10 @@
         openDeleteModal(label, endpointSuffix);
     });
 
-    if (deleteCancelButton) {
-        deleteCancelButton.addEventListener('click', closeDeleteModal);
+    if (deleteCancelButtons && deleteCancelButtons.length) {
+        deleteCancelButtons.forEach(function (btn) {
+            btn.addEventListener('click', closeDeleteModal);
+        });
     }
 
     if (deleteModal) {
@@ -645,6 +693,9 @@
 
             isDeleting = true;
             deleteAcceptButton.disabled = true;
+            if (deleteCancelButtons && deleteCancelButtons.length) {
+                deleteCancelButtons.forEach(function (btn) { btn.disabled = true; });
+            }
 
             hideError();
             closeAllForms();
@@ -659,6 +710,9 @@
             } finally {
                 isDeleting = false;
                 deleteAcceptButton.disabled = false;
+                if (deleteCancelButtons && deleteCancelButtons.length) {
+                    deleteCancelButtons.forEach(function (btn) { btn.disabled = false; });
+                }
             }
         });
     }

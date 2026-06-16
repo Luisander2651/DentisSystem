@@ -23,9 +23,9 @@
         return;
     }
 
-    var confirmTarget = modal.querySelector('[data-confirm-target]');
-    var cancelButton = modal.querySelector('[data-confirm-cancel]');
-    var acceptButton = modal.querySelector('[data-confirm-accept]');
+    var confirmTarget = modal.querySelector('[data-confirm-delete-name]');
+    var cancelButtons = modal.querySelectorAll('[data-confirm-delete-cancel]');
+    var acceptButton = modal.querySelector('[data-confirm-delete-submit]');
 
     var currentUserId = null;
     var isDeleting = false;
@@ -34,17 +34,17 @@
         currentUserId = userId;
 
         if (confirmTarget) {
-            confirmTarget.textContent = userLabel || 'este registro';
+            confirmTarget.textContent = userLabel || 'este usuario';
         }
 
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
         currentUserId = null;
         modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        document.body.style.overflow = '';
     }
 
     async function deleteUserById(userId) {
@@ -77,7 +77,7 @@
         }
 
         var userId = deleteButton.getAttribute('data-user-id');
-        var userLabel = deleteButton.getAttribute('data-user-label');
+        var userLabel = deleteButton.getAttribute('data-user-first-name') + ' ' + deleteButton.getAttribute('data-user-last-name');
 
         if (!userId) {
             return;
@@ -86,14 +86,8 @@
         openModal(userId, userLabel);
     });
 
-    if (cancelButton) {
-        cancelButton.addEventListener('click', closeModal);
-    }
-
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
+    cancelButtons.forEach(function (btn) {
+        btn.addEventListener('click', closeModal);
     });
 
     if (acceptButton) {
@@ -117,6 +111,8 @@
                     await window.usersPage.reload();
                 }
             } catch (error) {
+                closeModal();
+
                 if (window.usersPage && typeof window.usersPage.showError === 'function') {
                     window.usersPage.showError(error.message || 'No se pudo eliminar el usuario.');
                 }

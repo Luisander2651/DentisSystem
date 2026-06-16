@@ -32,10 +32,10 @@
         return 'active';
     }
 
-    var table = document.getElementById('patients-table');
+    var container = document.getElementById('patients-list');
     var modal = document.getElementById('patients-edit-modal');
 
-    if (!table || !modal) {
+    if (!container || !modal) {
         return;
     }
 
@@ -45,11 +45,11 @@
     var lastNameInput = modal.querySelector('[data-edit-patient-last-name]');
     var newPasswordInput = modal.querySelector('[data-edit-patient-new-password]');
     var statusSelect = modal.querySelector('[data-edit-patient-status]');
-    var cancelButton = modal.querySelector('[data-edit-patient-cancel]');
+    var cancelButtons = modal.querySelectorAll('[data-edit-patient-cancel]');
     var submitButton = modal.querySelector('[data-edit-patient-submit]');
     var errorBox = modal.querySelector('[data-edit-patient-error]');
 
-    if (!form || !patientIdInput || !firstNameInput || !lastNameInput || !newPasswordInput || !statusSelect || !cancelButton || !submitButton || !errorBox) {
+    if (!form || !patientIdInput || !firstNameInput || !lastNameInput || !newPasswordInput || !statusSelect || !cancelButtons.length || !submitButton || !errorBox) {
         return;
     }
 
@@ -74,7 +74,7 @@
     function setSubmittingState(submitting) {
         isSubmitting = submitting;
         submitButton.disabled = submitting;
-        cancelButton.disabled = submitting;
+        cancelButtons.forEach(function(btn) { btn.disabled = submitting; });
     }
 
     function resetPasswordField() {
@@ -115,7 +115,7 @@
         resetPasswordField();
 
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
@@ -128,7 +128,7 @@
         resetPasswordField();
         hideModalError();
         modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        document.body.style.overflow = '';
     }
 
     function buildPayload() {
@@ -180,7 +180,7 @@
         }
     }
 
-    table.addEventListener('click', function (event) {
+    container.addEventListener('click', function (event) {
         var editButton = event.target.closest('[data-patient-edit]');
 
         if (!editButton || editButton.disabled) {
@@ -195,12 +195,8 @@
         });
     });
 
-    cancelButton.addEventListener('click', closeModal);
-
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
+    cancelButtons.forEach(function (btn) {
+        btn.addEventListener('click', closeModal);
     });
 
     form.addEventListener('submit', async function (event) {

@@ -28,11 +28,11 @@
     var lastNameInput = modal.querySelector('[data-create-patient-last-name]');
     var emailInput = modal.querySelector('[data-create-patient-email]');
     var passwordInput = modal.querySelector('[data-create-patient-password]');
-    var cancelButton = modal.querySelector('[data-create-patient-cancel]');
+    var cancelButtons = modal.querySelectorAll('[data-create-patient-cancel]');
     var submitButton = modal.querySelector('[data-create-patient-submit]');
     var errorBox = modal.querySelector('[data-create-patient-error]');
 
-    if (!form || !firstNameInput || !lastNameInput || !emailInput || !passwordInput || !cancelButton || !submitButton || !errorBox) {
+    if (!form || !firstNameInput || !lastNameInput || !emailInput || !passwordInput || !cancelButtons.length || !submitButton || !errorBox) {
         return;
     }
 
@@ -84,7 +84,7 @@
     function setSubmittingState(submitting) {
         isSubmitting = submitting;
         submitButton.disabled = submitting || !isFormValid();
-        cancelButton.disabled = submitting;
+        cancelButtons.forEach(function(btn) { btn.disabled = submitting; });
     }
 
     function openModal() {
@@ -94,7 +94,7 @@
         updateSubmitState();
 
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
@@ -107,7 +107,7 @@
         hideModalError();
         updateSubmitState();
         modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        document.body.style.overflow = '';
     }
 
     async function createPatient(payload) {
@@ -138,12 +138,8 @@
         openModal();
     });
 
-    cancelButton.addEventListener('click', closeModal);
-
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
+    cancelButtons.forEach(function (btn) {
+        btn.addEventListener('click', closeModal);
     });
 
     [firstNameInput, lastNameInput, emailInput, passwordInput].forEach(function (input) {

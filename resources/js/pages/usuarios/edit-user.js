@@ -62,11 +62,11 @@
     var newPasswordInput = modal.querySelector('[data-edit-user-new-password]');
     var roleSelect = modal.querySelector('[data-edit-user-role]');
     var statusSelect = modal.querySelector('[data-edit-user-status]');
-    var cancelButton = modal.querySelector('[data-edit-user-cancel]');
+    var cancelButtons = modal.querySelectorAll('[data-edit-user-cancel]');
     var submitButton = modal.querySelector('[data-edit-user-submit]');
     var errorBox = modal.querySelector('[data-edit-user-error]');
 
-    if (!form || !userIdInput || !firstNameInput || !lastNameInput || !newPasswordInput || !roleSelect || !statusSelect || !cancelButton || !submitButton || !errorBox) {
+    if (!form || !userIdInput || !firstNameInput || !lastNameInput || !newPasswordInput || !roleSelect || !statusSelect || !cancelButtons.length || !submitButton || !errorBox) {
         return;
     }
 
@@ -85,7 +85,7 @@
     function setSubmittingState(submitting) {
         isSubmitting = submitting;
         submitButton.disabled = submitting;
-        cancelButton.disabled = submitting;
+        cancelButtons.forEach(function(btn) { btn.disabled = submitting; });
     }
 
     function resetPasswordField() {
@@ -120,7 +120,7 @@
         statusSelect.value = normalizeStatus(userData.status || 'active');
 
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
@@ -133,7 +133,7 @@
         resetPasswordField();
         hideModalError();
         modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        document.body.style.overflow = '';
     }
 
     async function updateUser(userId, payload) {
@@ -176,12 +176,8 @@
         });
     });
 
-    cancelButton.addEventListener('click', closeModal);
-
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
+    cancelButtons.forEach(function (btn) {
+        btn.addEventListener('click', closeModal);
     });
 
     form.addEventListener('submit', async function (event) {

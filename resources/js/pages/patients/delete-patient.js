@@ -16,16 +16,16 @@
         return null;
     }
 
-    var table = document.getElementById('patients-table');
+    var container = document.getElementById('patients-list');
     var modal = document.getElementById('patients-delete-modal');
 
-    if (!table || !modal) {
+    if (!container || !modal) {
         return;
     }
 
-    var confirmTarget = modal.querySelector('[data-confirm-target]');
-    var cancelButton = modal.querySelector('[data-confirm-cancel]');
-    var acceptButton = modal.querySelector('[data-confirm-accept]');
+    var confirmTarget = modal.querySelector('[data-confirm-delete-name]');
+    var cancelButtons = modal.querySelectorAll('[data-confirm-delete-cancel]');
+    var acceptButton = modal.querySelector('[data-confirm-delete-submit]');
 
     var currentPatientId = null;
     var isDeleting = false;
@@ -38,13 +38,13 @@
         }
 
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
         currentPatientId = null;
         modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        document.body.style.overflow = '';
     }
 
     async function deletePatientById(patientId) {
@@ -69,7 +69,7 @@
         }
     }
 
-    table.addEventListener('click', function (event) {
+    container.addEventListener('click', function (event) {
         var deleteButton = event.target.closest('[data-patient-delete]');
 
         if (!deleteButton || deleteButton.disabled) {
@@ -86,14 +86,8 @@
         openModal(patientId, patientLabel);
     });
 
-    if (cancelButton) {
-        cancelButton.addEventListener('click', closeModal);
-    }
-
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
+    cancelButtons.forEach(function (btn) {
+        btn.addEventListener('click', closeModal);
     });
 
     if (acceptButton) {

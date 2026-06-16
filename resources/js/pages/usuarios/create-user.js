@@ -29,11 +29,11 @@
     var emailInput = modal.querySelector('[data-create-user-email]');
     var passwordInput = modal.querySelector('[data-create-user-password]');
     var roleSelect = modal.querySelector('[data-create-user-role]');
-    var cancelButton = modal.querySelector('[data-create-user-cancel]');
+    var cancelButtons = modal.querySelectorAll('[data-create-user-cancel]');
     var submitButton = modal.querySelector('[data-create-user-submit]');
     var errorBox = modal.querySelector('[data-create-user-error]');
 
-    if (!form || !firstNameInput || !lastNameInput || !emailInput || !passwordInput || !roleSelect || !cancelButton || !submitButton || !errorBox) {
+    if (!form || !firstNameInput || !lastNameInput || !emailInput || !passwordInput || !roleSelect || !cancelButtons.length || !submitButton || !errorBox) {
         return;
     }
 
@@ -52,7 +52,7 @@
     function setSubmittingState(submitting) {
         isSubmitting = submitting;
         submitButton.disabled = submitting;
-        cancelButton.disabled = submitting;
+        cancelButtons.forEach(function(btn) { btn.disabled = submitting; });
     }
 
     function resetPasswordField() {
@@ -83,7 +83,7 @@
         roleSelect.value = 'admin';
 
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
@@ -95,7 +95,7 @@
         resetPasswordField();
         hideModalError();
         modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        document.body.style.overflow = '';
     }
 
     async function createUser(payload) {
@@ -126,12 +126,8 @@
         openModal();
     });
 
-    cancelButton.addEventListener('click', closeModal);
-
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
+    cancelButtons.forEach(function (btn) {
+        btn.addEventListener('click', closeModal);
     });
 
     form.addEventListener('submit', async function (event) {
