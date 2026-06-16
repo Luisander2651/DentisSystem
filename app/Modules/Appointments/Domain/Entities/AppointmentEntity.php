@@ -11,6 +11,7 @@ use App\Modules\Appointments\Domain\ValueObjects\AppointmentTime;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentWhatsAppReminder;
 use App\Modules\Appointments\Domain\ValueObjects\TreatmentId;
+use App\Modules\Appointments\Domain\ValueObjects\TreatmentTime;
 use App\Modules\Users\Domain\ValueObjects\UserId;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 use App\Modules\Users\Domain\ValueObjects\UserName;
@@ -33,6 +34,7 @@ final class AppointmentEntity
         private readonly ?TreatmentName $treatmentName,
         private readonly ?UserName $userName,
         private readonly ?PatientName $patientName,
+        private readonly ?TreatmentTime $treatmentTime,
         private readonly DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
     ) {}
@@ -56,6 +58,7 @@ final class AppointmentEntity
             null,
             null,
             null,
+            null,
             new DateTimeImmutable(),
             new DateTimeImmutable()
         );
@@ -73,6 +76,7 @@ final class AppointmentEntity
         ?string $treatmentName,
         ?string $userName,
         ?string $patientName,
+        ?string $treatmentTime,
         string $createdAt,
         string $updatedAt
     ): self {
@@ -88,6 +92,7 @@ final class AppointmentEntity
             $treatmentName ? new TreatmentName($treatmentName) : null,
             $userName ? UserName::fromString($userName) : null,
             $patientName ? PatientName::fromString($patientName) : null,
+            $treatmentTime ? TreatmentTime::fromInt((int)$treatmentTime) : null,
             new DateTimeImmutable($createdAt),
             new DateTimeImmutable($updatedAt)
         );
@@ -187,5 +192,10 @@ final class AppointmentEntity
     public function UpdatedAt(): DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    public function TreatmentTime(): ?TreatmentTime
+    {
+        return $this->treatmentTime;
     }
 }

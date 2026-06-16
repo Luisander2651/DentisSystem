@@ -46,7 +46,7 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
         $query = AppointmentModel::query()->with([
             'user:id,first_name,last_name',
             'patient:id,first_name,last_name',
-            'treatment:id,name'
+            'treatment:id,name,time',
         ]);
 
         if ($status) {
@@ -86,6 +86,7 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
             (string) $model->treatment?->name,
             (string) $model->user?->first_name . ' ' . $model->user?->last_name,
             (string) $model->patient?->first_name . ' ' . $model->patient?->last_name,
+            (string) $model->treatment?->time,
             $model->created_at->toDateTimeString(),
             $model->updated_at->toDateTimeString(),
         );

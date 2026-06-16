@@ -7,6 +7,7 @@ namespace App\Modules\Appointments\Domain\Entities;
 use App\Modules\Appointments\Domain\ValueObjects\TreatmentId;
 use App\Modules\Appointments\Domain\ValueObjects\TreatmentName;
 use App\Modules\Appointments\Domain\ValueObjects\TreatmentDescription;
+use App\Modules\Appointments\Domain\ValueObjects\TreatmentTime;
 
 use DateTimeImmutable;
 
@@ -16,6 +17,7 @@ final class TreatmentEntity
         private readonly TreatmentId $id,
         private TreatmentName $name,
         private TreatmentDescription $description,
+        private TreatmentTime $time,
         private readonly DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
     ) {}
@@ -23,11 +25,13 @@ final class TreatmentEntity
     public static function create(
         TreatmentName $name,
         TreatmentDescription $description,
+        TreatmentTime $time
     ): self {
         return new self(
             TreatmentId::fromInt(0), // Se ignorará en BD (autoincrement)
             $name,
             $description,
+            $time,
             new DateTimeImmutable(),
             new DateTimeImmutable()
         );
@@ -36,6 +40,7 @@ final class TreatmentEntity
     public static function fromPrimitives(
         string $id,
         string $name,
+        string $time,
         string $description,
         string $createdAt,
         string $updatedAt
@@ -44,6 +49,7 @@ final class TreatmentEntity
             new TreatmentId($id),
             new TreatmentName($name),
             new TreatmentDescription($description),
+            TreatmentTime::fromInt((int)$time),
             new DateTimeImmutable($createdAt),
             new DateTimeImmutable($updatedAt)
         );
@@ -52,12 +58,16 @@ final class TreatmentEntity
     public function update(
         ?string $name = null,
         ?string $description = null,
+        ?string $time = null
     ): void {
         if ($name !== null) {
             $this->name = new TreatmentName($name);
         }
         if ($description !== null) {
             $this->description = new TreatmentDescription($description);
+        }
+        if ($time !== null) {
+            $this->time = TreatmentTime::fromInt((int)$time);
         }
         $this->updatedAt = new DateTimeImmutable();
     }
@@ -76,6 +86,11 @@ final class TreatmentEntity
     public function Description(): TreatmentDescription
     {
         return $this->description;
+    }
+
+    public function Time(): TreatmentTime
+    {
+        return $this->time;
     }
 
     public function CreatedAt(): DateTimeImmutable

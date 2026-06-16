@@ -21,7 +21,8 @@ final class TreatmentModel extends Model
 
     protected $fillable = [
         'name',
-        'description'
+        'description',
+        'time',
     ];
 
     // Relaciones

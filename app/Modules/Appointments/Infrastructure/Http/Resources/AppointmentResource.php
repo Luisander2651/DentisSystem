@@ -29,6 +29,7 @@ final class AppointmentResource extends JsonResource
             'treatment_name' => $this->TreatmentName()?->value,
             'user_name' => $this->UserName()?->full(),
             'patient_name' => $this->PatientName()?->full(),
+            'treatment_time' => $this->TreatmentTime()?->value,
         ];
     }
 }
