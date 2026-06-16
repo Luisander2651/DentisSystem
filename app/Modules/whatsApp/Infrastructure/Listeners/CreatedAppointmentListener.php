@@ -8,9 +8,25 @@ use App\Modules\Appointments\Domain\Events\ScheduledAppointment;
 use App\Modules\whatsApp\Aplication\DTOs\SendConfirmationAppointmentMessageDTO;
 use App\Modules\whatsApp\Aplication\UseCases\SendAppointmentConfirmationUseCase;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 
-class CreatedAppointmentListener
+class CreatedAppointmentListener implements ShouldQueue
 {
+
+    use InteractsWithQueue;
+
+    /**
+     * El número de veces que el trabajo puede ser intentado si falla.
+     * Ideal para llamadas a APIs externas como WhatsApp.
+     */
+    public int $tries = 3;
+
+    /**
+     * Segundos a esperar antes de reintentar el trabajo.
+     */
+    public int $backoff = 15;
+
     public function __construct(
         private SendAppointmentConfirmationUseCase $useCase
     )
