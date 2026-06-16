@@ -54,7 +54,15 @@ Route::middleware(['auth:sanctum', 'only.admin'])->group(function () {
         return view('pages.usuarios.index');
     })->name('usuarios.index');
 
+    Route::get('/contenido', function () {
+        return view('pages.contenido.index');
+    })->name('contenido.index');
+
     Route::get('/pacientes', function () {
         return view('pages.patients.index');
     })->name('patients.index');
-});
+
+    Route::get('/agenda', function () {
+        return view('pages.agenda.index');
+    })->name('agenda.index');
+    });
