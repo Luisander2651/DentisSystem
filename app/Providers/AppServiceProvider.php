@@ -128,7 +128,6 @@ class AppServiceProvider extends ServiceProvider
                 return StorageProvider::new('certificaciones', 'uploads/content');
             });
 
-        // Also provide the same configured StorageProvider for the update use case.
         $this->app->when(UpdateCertificationUseCase::class)
             ->needs(StorageProviderInterface::class)
             ->give(function ($app) {

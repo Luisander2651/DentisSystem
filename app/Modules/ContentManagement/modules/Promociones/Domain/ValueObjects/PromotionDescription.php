@@ -11,10 +11,6 @@ final readonly class PromotionDescription
     public function __construct(
         public string $value,
     ) {
-        $trimmed = trim($value);
-        if (empty($trimmed)) {
-            throw PromotionException::empty(static::class);
-        }
     }
 
     public static function fromString(string $description): self

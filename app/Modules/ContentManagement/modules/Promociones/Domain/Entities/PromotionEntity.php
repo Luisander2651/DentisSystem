@@ -22,9 +22,9 @@ final class PromotionEntity
         private PromotionName $name,
         private PromotionDescription $description,
         private PromotionStatus $status,
-        private readonly DiscountPercentage $discountPercentage,
-        private readonly StartDate $startDate,
-        private readonly EndDate $endDate,
+        private DiscountPercentage $discountPercentage,
+        private StartDate $startDate,
+        private EndDate $endDate,
         private readonly DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
     ) {}
@@ -64,7 +64,7 @@ final class PromotionEntity
             new PromotionId($id),
             new PromotionName($name),
             new PromotionDescription($description),
-            PromotionStatus::default(),
+            PromotionStatus::fromString($status),
             new DiscountPercentage($discountPercentage),
             new StartDate($startDate),
             new EndDate($endDate),
@@ -100,12 +100,28 @@ final class PromotionEntity
     public function update(
         ?string $name = null,
         ?string $description = null,
+        ?float $discountPercentage = null,
+        ?string $startDate = null,
+        ?string $endDate = null,
+        ?string $status = null,
     ): void {
         if ($name !== null) {
             $this->name = new PromotionName($name);
         }
         if ($description !== null) {
             $this->description = new PromotionDescription($description);
+        }
+        if ($discountPercentage !== null) {
+            $this->discountPercentage = new DiscountPercentage($discountPercentage);
+        }
+        if ($startDate !== null) {
+            $this->startDate = new StartDate($startDate);
+        }
+        if ($endDate !== null) {
+            $this->endDate = new EndDate($endDate);
+        }
+        if ($status !== null) {
+            $this->status = PromotionStatus::fromString($status);
         }
         $this->updatedAt = new DateTimeImmutable();
     }
