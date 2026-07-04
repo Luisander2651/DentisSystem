@@ -6,6 +6,9 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 use App\Modules\Appointments\Domain\Events\ScheduledAppointment;
 use App\Modules\whatsApp\Infrastructure\Listeners\CreatedAppointmentListener;
 
+use App\Modules\Auth\Domain\Events\SendEmailForChangePasswordEvent;
+use App\Modules\Email\Infrastructure\Listeners\SendPasswordResetListener;
+
 class EventServiceProvider extends ServiceProvider
 {
     /**
@@ -16,6 +19,10 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         ScheduledAppointment::class => [
             CreatedAppointmentListener::class,
+        ],
+
+        SendEmailForChangePasswordEvent::class => [
+            SendPasswordResetListener::class,
         ],
     ];
 

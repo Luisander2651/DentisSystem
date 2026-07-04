@@ -17,4 +17,9 @@ final class AuthAplicationExceptions extends Exception
     {
         return new self('No authenticated user context found.');
     }
+
+    public static function invalidCredentials(): self
+    {
+        return new self('Invalid credentials provided.');
+    }
 }

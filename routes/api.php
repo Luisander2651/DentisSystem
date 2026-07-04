@@ -45,6 +45,8 @@ use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Contro
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\UpdateTestimonialController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\DeleteTestimonialController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\GetTestimonialsController;
+use App\Modules\Auth\Infrastructure\Http\Controllers\SendResetPasswordEmailController;
+use App\Modules\Auth\Infrastructure\Http\Controllers\ResetPasswordController;
 
 Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
 
@@ -56,6 +58,8 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             Route::middleware('auth:sanctum')->group(function (): void {
                 Route::post('/logout', LogoutController::class);
             });
+            Route::post('/send-reset-password-email', SendResetPasswordEmailController::class);
+            Route::post('/reset-password', ResetPasswordController::class);
         });
 
         Route::middleware(['auth:sanctum', 'only.admin'])->group(function (): void {

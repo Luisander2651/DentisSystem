@@ -53,6 +53,9 @@ use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\Persistence
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Repositories\TestimonialRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\Persistence\Eloquent\EloquentTestimonialRepository;
 
+use App\Modules\Email\Infrastructure\ExternalApi\BrevoApi;
+use App\Modules\Email\Aplication\UseCases\SendResetPasswordEmailUseCase;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -156,6 +159,12 @@ class AppServiceProvider extends ServiceProvider
             ->needs(StorageProviderInterface::class)
             ->give(function ($app) {
                 return StorageProvider::new('galeria', 'uploads/content');
+            });
+
+        $this->app->when(SendResetPasswordEmailUseCase::class)
+            ->needs(BrevoApi::class)
+            ->give(function ($app) {
+                return new BrevoApi(TemplateId: config('services.brevo.reset_password_template_id'));
             });
     }
 

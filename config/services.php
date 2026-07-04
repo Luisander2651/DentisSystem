@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'brevo' => [
+        'reset_password_template_id' => (int) env('BREVO_RESET_PASSWORD_TEMPLATE_ID'),
+    ],
+
 ];

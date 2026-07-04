@@ -48,9 +48,22 @@ services:
     networks:
       - laravel
 
+  # Servicio de Caché y Almacenamiento en Memoria (Redis)
+  redis:
+    image: redis:7-alpine
+    container_name: laravel-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379" # Por si quieres conectarte desde TablePlus/RedisInsight localmente
+    volumes:
+      - redis-data:/data # Conservar datos/backups si se reinicia el contenedor
+    networks:
+      - laravel
+
 networks:
   laravel:
     driver: bridge
 
 volumes:
   db-data:
+  redis-data:
