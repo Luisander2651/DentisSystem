@@ -12,7 +12,7 @@ use App\Modules\Email\Infrastructure\ExternalApi\BrevoApi;
 final readonly class SendResetPasswordEmailUseCase
 {
 
-    private const URL_RESET_PASSWORD = 'http://localhost:8000/reset-password?token='; // El token expirará en 60 minutos
+    private const URL_RESET_PASSWORD = 'http://localhost:8000/reset-password?token=';
     public function __construct(
         private BrevoApi $brevoApi,
     ) {}
