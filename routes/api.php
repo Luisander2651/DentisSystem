@@ -29,6 +29,15 @@ use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentByIdC
 use App\Modules\Appointments\Infrastructure\Http\Controllers\DeleteAppointmentController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateAppointmentController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentsByPatientIdController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodayAppointmentsController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentsController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\CreateTreatmentController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateTreatmentController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\DeleteTreatmentController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentsAdminController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentByIdController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPatientsForAppointmentSelectController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetDoctorsForAppointmentSelectController;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\SaveCertificationController;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\UpdateCertificationController;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\DeleteCertificationController;
@@ -52,6 +61,24 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
 
     Route::prefix('v1')->group(function (): void {
 
+        Route::prefix('public')->group(function (): void {
+            Route::prefix('certifications')->group(function (): void {
+                Route::get('/', GetCertificationsController::class);
+            });
+
+            Route::prefix('gallery-images')->group(function (): void {
+                Route::get('/', GetGalleryImagesController::class);
+            });
+
+            Route::prefix('promotions')->group(function (): void {
+                Route::get('/', GetPromotionsController::class);
+            });
+
+            Route::prefix('testimonials')->group(function (): void {
+                Route::get('/', GetTestimonialsController::class);
+            });
+        });
+
         Route::prefix('auth')->group(function (): void {
             Route::post('/login', LoginController::class);
             Route::post('/register', RegisterController::class);
@@ -73,6 +100,14 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             Route::prefix('patients')->group(function (): void {
                 Route::post('/', CreatePatientController::class);
                 Route::delete('/{id}', DeletePatientByIdController::class);
+            });
+
+            Route::prefix('treatments')->group(function (): void {
+                Route::post('/', CreateTreatmentController::class);
+                Route::get('/', GetTreatmentsAdminController::class);
+                Route::get('/{id}', GetTreatmentByIdController::class);
+                Route::put('/{id}', UpdateTreatmentController::class);
+                Route::delete('/{id}', DeleteTreatmentController::class);
             });
 
             Route::prefix('certifications')->group(function (): void {
@@ -105,6 +140,13 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
         });
         
         Route::middleware('auth:sanctum')->group(function (): void {
+            Route::prefix('agenda')->group(function (): void {
+                Route::get('/patients', GetPatientsForAppointmentSelectController::class);
+                Route::get('/doctors', GetDoctorsForAppointmentSelectController::class);
+                Route::get('/treatments', GetTreatmentsController::class);
+                Route::get('/today-appointments', GetTodayAppointmentsController::class);
+            });
+
             Route::prefix('patients')->group(function (): void {
                 Route::get('/', GetPatientsByStatusController::class);
                 Route::put('/{id}', UpdatePatientController::class);
