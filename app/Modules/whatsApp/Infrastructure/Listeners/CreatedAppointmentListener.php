@@ -40,6 +40,15 @@ class CreatedAppointmentListener implements ShouldQueue
             'appointmentId' => $event->appointmentEntity->Id()->value,
         ]);
 
+        if (trim($event->customerPhone) === '') {
+            Log::warning('CreatedAppointmentListener: Se omite el envío de WhatsApp porque no existe teléfono de contacto', [
+                'appointmentId' => $event->appointmentEntity->Id()->value,
+                'patientId' => $event->appointmentEntity->PatientId()->value,
+            ]);
+
+            return;
+        }
+
         try {
             $dto = new SendConfirmationAppointmentMessageDTO(
                 customerPhone: $event->customerPhone,
