@@ -19,8 +19,6 @@ final readonly class GetTestimonialsUseCase
 
     public function execute(GetTestimonialsDTO $dto): array
     {
-        $this->authorizationService->assertCan('manage.testimonials');
-
         $idVo = $dto->id ? TestimonialId::fromInt((int) $dto->id) : null;
         $statusVo = $dto->status ? TestimonialStatus::fromString($dto->status) : null;
 

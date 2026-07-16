@@ -20,8 +20,6 @@ final readonly class GetPromotionsUseCase
 
     public function execute(GetPromotionsDTO $dto): array
     {
-        $this->authorizationService->assertCan('manage.promotions');
-
         $idVo = $dto->id ? PromotionId::fromInt((int) $dto->id) : null;
         $nameVo = $dto->name ? new PromotionName($dto->name) : null;
         $statusVo = $dto->status ? PromotionStatus::fromString($dto->status) : null;

@@ -22,8 +22,6 @@ final readonly class GetCertificationsUseCase
      */
     public function execute(GetCertificationsDTO $dto): array
     {
-        $this->authorizationService->assertCan('manage.certifications');
-
         $idVo = $dto->id ? CertificationId::fromPrimitive($dto->id) : null;
         $nameVo = $dto->name ? new CertificationName($dto->name) : null;
 

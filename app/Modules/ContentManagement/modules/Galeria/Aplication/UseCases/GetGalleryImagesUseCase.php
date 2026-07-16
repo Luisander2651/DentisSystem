@@ -20,8 +20,6 @@ final readonly class GetGalleryImagesUseCase
 
     public function execute(GetGalleryImagesDTO $dto): array
     {
-        $this->authorizationService->assertCan('manage.gallery');
-
         $idVo = $dto->id ? GalleryImageId::fromInt((int) $dto->id) : null;
         $urlVo = $dto->url ? new GalleryImageUrl($dto->url) : null;
         $statusVo = $dto->status ? GalleryStatus::fromString($dto->status) : null;
