@@ -28,11 +28,11 @@ class ScheduledAppointment
      */
     public function __construct(
         public AppointmentEntity $appointmentEntity,
-        public ContactInfo $ContactInfoEntity,
+        public ?ContactInfo $ContactInfoEntity,
         public Patient $PatientEntity 
    )
     {
-        $this->customerPhone = $ContactInfoEntity->PhoneNumber()->value;
+        $this->customerPhone = $ContactInfoEntity?->PhoneNumber()?->value ?? '';
         $this->customerName = $PatientEntity->Name()->full();
         $this->date = $appointmentEntity->Date()->value;
         $this->time = $appointmentEntity->Time()->value;

@@ -14,7 +14,7 @@ use DateTimeImmutable;
 final class TreatmentEntity
 {
     private function __construct(
-        private readonly TreatmentId $id,
+        private readonly ?TreatmentId $id,
         private TreatmentName $name,
         private TreatmentDescription $description,
         private TreatmentTime $time,
@@ -28,7 +28,7 @@ final class TreatmentEntity
         TreatmentTime $time
     ): self {
         return new self(
-            TreatmentId::fromInt(0), // Se ignorará en BD (autoincrement)
+            null,
             $name,
             $description,
             $time,
@@ -73,7 +73,7 @@ final class TreatmentEntity
     }
 
     // Getters
-    public function Id(): TreatmentId
+    public function Id(): ?TreatmentId
     {
         return $this->id;
     }

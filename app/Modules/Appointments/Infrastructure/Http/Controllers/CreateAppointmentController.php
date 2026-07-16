@@ -7,6 +7,7 @@ namespace App\Modules\Appointments\Infrastructure\Http\Controllers;
 use App\Modules\Appointments\Domain\Events\ScheduledAppointment;
 use App\Modules\Appointments\Aplication\DTOs\CreateAppointmentDTO;
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptions;
+use App\Modules\Appointments\Aplication\Exceptions\AppointmentScheduleConflictException;
 use App\Modules\Appointments\Aplication\UseCases\RetriveDataForScheduledAppointmenEventUseCase;
 use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
 use App\Modules\Appointments\Domain\Exceptions\ValueObjectsException;
@@ -67,6 +68,9 @@ final readonly class CreateAppointmentController
         } catch (ValueObjectsException $e) {
             Log::error('CreateAppointmentController: ValueObjectsException', ['error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 400);
+        } catch (AppointmentScheduleConflictException $e) {
+            Log::error('CreateAppointmentController: AppointmentScheduleConflictException', ['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 409);
         } catch (AppointmentAplicationExceptions $e) {
             Log::error('CreateAppointmentController: AppointmentAplicationExceptions', ['error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 409);
