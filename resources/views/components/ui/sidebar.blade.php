@@ -19,6 +19,11 @@
             'url' => '/agenda',
             'icon' => 'calendar',
         ],
+        'tratamientos' => [
+            'label' => 'Tratamientos',
+            'url' => '/tratamientos',
+            'icon' => 'treatment',
+        ],
         'pacientes' => [
             'label' => 'Pacientes',
             'url' => '/pacientes',
@@ -42,7 +47,7 @@
     ];
 
     $roleTabs = [
-        'administrador' => ['inicio', 'agenda', 'pacientes', 'expedientes', 'contenido', 'usuarios'],
+        'administrador' => ['inicio', 'agenda', 'tratamientos', 'pacientes', 'expedientes', 'contenido', 'usuarios'],
         'asistente' => ['inicio', 'agenda', 'expedientes'],
         'paciente' => ['inicio', 'agenda', 'expedientes'],
     ];
@@ -143,6 +148,11 @@
                                     <line x1="16" y1="2" x2="16" y2="6" />
                                     <line x1="8" y1="2" x2="8" y2="6" />
                                     <line x1="3" y1="10" x2="21" y2="10" />
+                                </svg>
+                            @elseif ($item['icon'] === 'treatment')
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M8.5 3.5a4 4 0 0 0-4 4c0 1.2.5 2.3 1.3 3.2L12 17l6.2-6.2c.8-.9 1.3-2 1.3-3.2a4 4 0 0 0-4-4c-1.2 0-2.3.5-3.2 1.3L12 6.2l-.3-.4A4.5 4.5 0 0 0 8.5 3.5Z" />
+                                    <path d="M9 13h6" />
                                 </svg>
                             @elseif ($item['icon'] === 'users')
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

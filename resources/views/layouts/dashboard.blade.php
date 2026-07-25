@@ -7,7 +7,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="w-full min-h-screen bg-slate-50">
+<body class="w-full min-h-screen bg-gradient-to-br from-[#FFF7FA] via-slate-50 to-white text-slate-900">
     <div class="flex gap-6 p-4 md:p-6">
         <!-- Sidebar -->
         <div class="hidden md:block md:sticky md:top-6 md:h-fit">
@@ -41,7 +41,7 @@
     </div>
 
     <!-- Footer (opcional) -->
-    <footer class="mt-12 border-t border-slate-200 bg-white py-6 px-4 text-center text-sm text-slate-600">
+    <footer class="mt-12 border-t border-[#F5C2D6] bg-white/90 py-6 px-4 text-center text-sm text-slate-600 backdrop-blur">
         <p>&copy; {{ date('Y') }} Dentissa. Todos los derechos reservados.</p>
     </footer>
 </body>

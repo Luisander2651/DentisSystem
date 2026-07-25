@@ -40,9 +40,30 @@
             updateStats();
             renderCalendar();
             renderTodayAppointments();
+
+            if (window.agendaAppointmentModal && typeof window.agendaAppointmentModal.refreshAvailability === 'function') {
+                window.agendaAppointmentModal.refreshAvailability();
+            }
         } catch (error) {
             console.error('Error fetching appointments:', error);
         }
+    }
+
+    function normalizeAppointmentStatus(status) {
+        const normalized = String(status || '').trim().toLowerCase();
+        const mapping = {
+            pending: 'asignada',
+            confirmed: 'asignada',
+            assigned: 'asignada',
+            completed: 'completada',
+            cancelled: 'cancelada',
+            cancelada: 'cancelada',
+            completada: 'completada',
+            asignada: 'asignada',
+            reprogramada: 'reprogramada',
+        };
+
+        return mapping[normalized] || 'asignada';
     }
 
     function updateStats() {
@@ -51,9 +72,9 @@
         const todayStr = new Date().toISOString().split('T')[0];
         
         const todayCount = appointments.filter(a => a.date === todayStr).length;
-        const pendingCount = appointments.filter(a => a.status === 'pending' || a.status === 'assigned').length;
-        const confirmedCount = appointments.filter(a => a.status === 'confirmed').length;
-        const completedCount = appointments.filter(a => a.status === 'completed').length;
+        const pendingCount = appointments.filter(a => normalizeAppointmentStatus(a.status) === 'asignada').length;
+        const confirmedCount = appointments.filter(a => normalizeAppointmentStatus(a.status) === 'reprogramada').length;
+        const completedCount = appointments.filter(a => normalizeAppointmentStatus(a.status) === 'completada').length;
 
         if (statToday) statToday.textContent = todayCount;
         if (statPending) statPending.textContent = pendingCount;
@@ -80,26 +101,25 @@
 
     function createAppointmentCard(appt) {
         const article = document.createElement('article');
-        article.className = 'relative box-border flex gap-4 rounded-2xl bg-white p-4 shadow-sm transition-transform hover:scale-[1.02] mb-3';
+        article.className = 'relative box-border flex gap-4 rounded-2xl bg-white p-4 shadow-sm transition-transform hover:scale-[1.02]';
         
         const timeParts = appt.time.split(':');
         const hour = parseInt(timeParts[0]);
         const ampm = hour >= 12 ? 'PM' : 'AM';
         const formattedTime = `${hour % 12 || 12}:${timeParts[1]}`;
 
+        const normalizedStatus = normalizeAppointmentStatus(appt.status);
         const statusColors = {
-            'confirmed': 'bg-emerald-50 text-emerald-700',
-            'pending': 'bg-amber-50 text-amber-700',
-            'assigned': 'bg-blue-50 text-blue-700',
-            'completed': 'bg-slate-50 text-slate-700',
-            'cancelled': 'bg-red-50 text-red-700'
+            'asignada': 'bg-amber-50 text-amber-700',
+            'completada': 'bg-emerald-50 text-emerald-700',
+            'cancelada': 'bg-red-50 text-red-700',
+            'reprogramada': 'bg-blue-50 text-blue-700'
         };
         const statusLabel = {
-            'confirmed': 'Confirmada',
-            'pending': 'Pendiente',
-            'assigned': 'Asignada',
-            'completed': 'Completada',
-            'cancelled': 'Cancelada'
+            'asignada': 'Asignada',
+            'completada': 'Completada',
+            'cancelada': 'Cancelada',
+            'reprogramada': 'Reprogramada'
         };
 
         article.innerHTML = `
@@ -111,12 +131,28 @@
                 <h4 class="text-sm font-bold text-slate-900">${appt.patient_name || 'Paciente'}</h4>
                 <p class="text-xs text-slate-500">${appt.treatment_name || 'Consulta'}</p>
                 <div class="mt-2 flex items-center gap-2">
-                    <span class="rounded-full ${statusColors[appt.status] || 'bg-slate-50 text-slate-500'} px-2 py-0.5 text-[10px] font-bold">
-                        ${statusLabel[appt.status] || appt.status}
+                    <span class="rounded-full ${statusColors[normalizedStatus] || 'bg-slate-50 text-slate-500'} px-2 py-0.5 text-[10px] font-bold">
+                        ${statusLabel[normalizedStatus] || appt.status}
                     </span>
                 </div>
             </div>
+            <button type="button" class="ml-auto rounded-full border border-slate-200 bg-white p-2 text-slate-500 transition hover:border-[#B5114A] hover:text-[#B5114A]" data-edit-appointment-trigger data-appointment-id="${appt.id}">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L7.5 21H3v-4.5L15.232 5.232z" />
+                </svg>
+            </button>
         `;
+
+        const editButton = article.querySelector('[data-edit-appointment-trigger]');
+        if (editButton) {
+            editButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                if (window.agendaAppointmentModal && typeof window.agendaAppointmentModal.openEdit === 'function') {
+                    window.agendaAppointmentModal.openEdit(appt.id);
+                }
+            });
+        }
+
         return article;
     }
 
@@ -185,7 +221,8 @@
             appointmentsDiv.className = 'mt-2 space-y-1';
             
             dayAppointments.slice(0, 3).forEach(appt => {
-                const colorClass = appt.status === 'confirmed' ? 'bg-[#FDF1F6] text-[#B5114A] border-[#B5114A]' : 'bg-sky-50 text-sky-700 border-sky-600';
+                const normalizedStatus = normalizeAppointmentStatus(appt.status);
+                const colorClass = normalizedStatus === 'completada' ? 'bg-[#FDF1F6] text-[#B5114A] border-[#B5114A]' : 'bg-sky-50 text-sky-700 border-sky-600';
                 
                 const apptEl = document.createElement('div');
                 apptEl.className = `rounded-lg ${colorClass} p-1.5 text-[10px] font-bold border-l-2 truncate`;
@@ -250,14 +287,13 @@
         btn.addEventListener('click', closeModal);
     });
 
-    const createBtn = document.querySelector('[data-create-appointment-open]');
-    if (createBtn) {
-        createBtn.addEventListener('click', () => {
-            alert('Proximamente: Modal para agendar nueva cita');
-        });
-    }
+    window.agendaPage = {
+        reload: fetchAppointments,
+        getAppointments: () => appointments.slice(),
+    };
 
     // Initialize
+    renderCalendar();
     fetchAppointments();
 
 })();

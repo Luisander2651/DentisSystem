@@ -34,46 +34,42 @@
 @section('content')
 <div class="space-y-8">
     <!-- Welcome Section -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <x-ui.h1 as="h1" class="text-xl! sm:text-3xl! text-slate-900 font-semibold tracking-tight">
-                ¡Hola, {{ $user ? ($user->first_name ?? 'Usuario') : 'Usuario' }}!
-            </x-ui.h1>
-            <p class="mt-3 max-w-2xl text-base leading-7 text-slate-600">
-                @if (strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin')
-                    Bienvenido al centro de control de Dentissa.
-                @elseif (strtolower($userRole) === 'asistente')
-                    Listos para gestionar las sonrisas de hoy.
-                @else
-                    Tu salud dental, siempre a un clic de distancia.
-                @endif
-            </p>
-        </div>
+    <x-ui.page-hero
+        :title="'¡Hola, '.($user ? ($user->first_name ?? 'Usuario') : 'Usuario').'!'"
+        :description="strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin' ? 'Bienvenido al centro de control de Dentissa.' : (strtolower($userRole) === 'asistente' ? 'Listos para gestionar las sonrisas de hoy.' : 'Tu salud dental, siempre a un clic de distancia.')"
+    >
+        <x-slot:icon>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 2 4 5v6c0 5 3.4 9.74 8 11 4.6-1.26 8-6 8-11V5l-8-3z" />
+            </svg>
+        </x-slot:icon>
 
         @if ($user)
-            <div class="flex items-center gap-3 rounded-3xl border border-slate-200 bg-white p-2 pr-4 shadow-sm">
-                <div class="h-10 w-10 rounded-2xl bg-[#FDF1F6] flex items-center justify-center text-[#B5114A] font-bold">
-                    {{ substr($user->first_name ?? 'U', 0, 1) }}
+            <x-slot:actions>
+                <div class="flex items-center gap-3 rounded-3xl border border-slate-200 bg-[#FFF7FA] p-2 pr-4 shadow-sm">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FDF1F6] font-bold text-[#B5114A]">
+                        {{ substr($user->first_name ?? 'U', 0, 1) }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold leading-tight text-slate-900">{{ $user->email ?? 'N/A' }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-[#B5114A]">{{ $rawRole ?: $userRole }}</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-sm font-semibold text-slate-900 leading-tight">{{ $user->email ?? 'N/A' }}</p>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-[#B5114A]">{{ $rawRole ?: $userRole }}</p>
-                </div>
-            </div>
+            </x-slot:actions>
         @endif
-    </div>
+    </x-ui.page-hero>
 
     <!-- Dashboard Content by Role -->
     @if (strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin')
         <!-- Admin Dashboard Stats -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+            <div class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Pacientes</p>
                         <p class="mt-2 text-xl font-semibold text-slate-900">-</p>
                     </div>
-                    <div class="rounded-2xl bg-pink-50 p-3 text-[#B5114A] transition-colors group-hover:bg-[#B5114A] group-hover:text-white">
+                    <div class="rounded-2xl bg-[#FDF1F6] p-3 text-[#B5114A] transition-colors group-hover:bg-[#B5114A] group-hover:text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                             <circle cx="9" cy="7" r="4" />
@@ -82,13 +78,13 @@
                 </div>
             </div>
 
-            <div class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+            <div class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Citas 30D</p>
                         <p class="mt-2 text-xl font-semibold text-slate-900">-</p>
                     </div>
-                    <div class="rounded-2xl bg-blue-50 p-3 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                    <div class="rounded-2xl bg-[#FFF7FA] p-3 text-[#B5114A] transition-colors group-hover:bg-[#B5114A] group-hover:text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                             <path d="M16 2v4M8 2v4M3 10h18" />
@@ -97,13 +93,13 @@
                 </div>
             </div>
 
-            <div class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+            <div class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Usuarios</p>
                         <p class="mt-2 text-xl font-semibold text-slate-900">-</p>
                     </div>
-                    <div class="rounded-2xl bg-emerald-50 p-3 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+                    <div class="rounded-2xl bg-[#FDF1F6] p-3 text-[#B5114A] transition-colors group-hover:bg-[#B5114A] group-hover:text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 2 4 5v6c0 5 3.4 9.74 8 11 4.6-1.26 8-6 8-11V5l-8-3z" />
                         </svg>
@@ -111,16 +107,16 @@
                 </div>
             </div>
 
-            <div class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+            <div class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Estado</p>
                         <p class="mt-2 text-xl font-semibold text-emerald-600">En línea</p>
                     </div>
-                    <div class="rounded-2xl bg-emerald-50 p-3 text-emerald-600">
+                    <div class="rounded-2xl bg-[#FDF1F6] p-3 text-[#B5114A]">
                         <span class="relative flex h-3 w-3">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F5C2D6] opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-[#B5114A]"></span>
                         </span>
                     </div>
                 </div>
@@ -144,7 +140,7 @@
 
             <!-- Quick Actions -->
             <div class="lg:col-span-4 space-y-6">
-                <div class="rounded-3xl border border-[#F5C2D6] bg-[#FFF7FA] p-8">
+                <div class="rounded-3xl border border-[#F5C2D6] bg-[#FFF7FA] p-8 shadow-sm">
                     <h2 class="text-sm font-semibold uppercase tracking-widest text-[#B5114A] mb-6">Accesos Rápidos</h2>
                     <div class="space-y-3">
                         <button type="button" data-create-patient-open class="w-full group flex items-center justify-between rounded-2xl bg-white p-4 text-sm font-semibold text-slate-900 shadow-sm transition-all hover:scale-[1.02]">

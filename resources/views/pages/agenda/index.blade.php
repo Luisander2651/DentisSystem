@@ -1,3 +1,13 @@
+@php
+    $agendaUser = auth('sanctum')->user() ?? auth()->user();
+
+    if ($agendaUser && method_exists($agendaUser, 'loadMissing')) {
+        $agendaUser->loadMissing('role');
+    }
+
+    $sidebarRole = strtolower((string) ($agendaUser?->role?->name ?? ''));
+@endphp
+
 @extends('layouts.admin')
 
 @section('title', 'Agenda - Dentissa')
@@ -5,17 +15,10 @@
 @section('content')
 <div class="space-y-6">
     {{-- Header Section --}}
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <x-ui.h1 as="h2" class="text-xl! text-slate-900">Agenda de Citas</x-ui.h1>
-            <p class="mt-2 text-sm text-slate-500">Gestiona los horarios y citas medicas de la clinica.</p>
-        </div>
-
-        <button type="button" data-create-appointment-open class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#E91E63] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d61b5b]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7v14"/></svg>
-            Nueva cita
-        </button>
-    </div>
+    <x-ui.page-hero
+        title="Agenda de Citas"
+        description="Gestiona los horarios y citas medicas de la clinica."
+    />
 
     {{-- Stats/Counters --}}
     <div class="grid gap-3 sm:grid-cols-4">
@@ -45,34 +48,22 @@
         </div>
 
         {{-- Right: Appointments List / Details --}}
-        <div class="lg:col-span-4 space-y-6">
-            <section class="rounded-3xl border border-[#F5C2D6] bg-[#FFF7FA] p-6">
-                <h3 class="text-sm font-bold text-[#B5114A] uppercase tracking-wider">Citas para Hoy</h3>
-                <p class="mt-1 text-xs text-slate-500">{{ now()->translatedFormat('l d \d\e F') }}</p>
+        <div class="lg:col-span-4 flex h-full flex-col">
+            <section class="flex min-h-[34rem] flex-1 flex-col overflow-hidden rounded-3xl border border-[#F5C2D6] bg-[#FFF7FA] p-6 shadow-sm">
+                <div>
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-[#B5114A]">Citas para Hoy</h3>
+                    <p class="mt-1 text-xs text-slate-500">{{ now()->translatedFormat('l d \d\e F') }}</p>
+                </div>
 
-                <div class="mt-6 space-y-4">
+                <div class="mt-6 flex min-h-0 flex-1 flex-col gap-4">
                     {{-- Appointment Card Item --}}
-                    <div id="today-appointments-container">
+                    <div id="today-appointments-container" class="min-h-0 flex-1 space-y-3 pr-1">
                         {{-- Populated by JS --}}
                     </div>
 
-                    <button class="w-full rounded-2xl bg-[#E91E63] p-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#d61b5b]">
+                    <button type="button" data-create-appointment-open class="sticky bottom-0 w-full rounded-2xl bg-[#E91E63] p-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#d61b5b]">
                         + Agendar nueva cita
                     </button>
-                </div>
-            </section>
-
-            <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Tratamientos Populares</h3>
-                <div class="mt-4 space-y-3">
-                    <div class="flex items-center justify-between rounded-xl bg-slate-50 p-3">
-                        <span class="text-xs font-medium text-slate-600">Limpieza</span>
-                        <span class="rounded-lg bg-white px-2 py-1 text-[10px] font-bold text-[#B5114A] shadow-sm">12 hoy</span>
-                    </div>
-                    <div class="flex items-center justify-between rounded-xl bg-slate-50 p-3">
-                        <span class="text-xs font-medium text-slate-600">Extraccion</span>
-                        <span class="rounded-lg bg-white px-2 py-1 text-[10px] font-bold text-sky-600 shadow-sm">5 hoy</span>
-                    </div>
                 </div>
             </section>
         </div>
@@ -81,6 +72,9 @@
 
 {{-- Modals --}}
 <x-calendar.day-details-modal />
+<x-calendar.create-appointment-modal :is-admin="in_array($sidebarRole, ['admin', 'administrador'], true)" />
+<x-calendar.edit-appointment-modal />
 
 @vite('resources/js/pages/agenda/index.js')
+@vite('resources/js/pages/agenda/create-appointment.js')
 @endsection
