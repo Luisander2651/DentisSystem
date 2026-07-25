@@ -1,20 +1,29 @@
 <section data-content-panel="testimonios" class="content-panel hidden space-y-6">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <x-ui.h1 as="h2" class="text-xl! text-slate-900">Testimonios</x-ui.h1>
-            <p class="mt-2 text-sm text-slate-500">Administra las opiniones y experiencias compartidas por los pacientes.</p>
-        </div>
-
-        <div class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#B5114A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <x-ui.page-hero
+        title="Testimonios"
+        description="Administra las opiniones y experiencias compartidas por los pacientes."
+    >
+        <x-slot:icon>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M7 8h10" />
                 <path d="M7 12h6" />
                 <path d="M7 16h4" />
                 <path d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H9l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
             </svg>
-            Gestion exclusiva de visibilidad
-        </div>
-    </div>
+        </x-slot:icon>
+
+        <x-slot:actions>
+            <div class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#B5114A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M7 8h10" />
+                    <path d="M7 12h6" />
+                    <path d="M7 16h4" />
+                    <path d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H9l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+                </svg>
+                Gestion exclusiva de visibilidad
+            </div>
+        </x-slot:actions>
+    </x-ui.page-hero>
 
     <div class="grid gap-3 sm:grid-cols-3">
         <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">

@@ -5,12 +5,10 @@
 @section('content')
 <div class="space-y-6" data-records-page data-selected-patient-id="{{ (string) ($selectedPatientId ?? '') }}">
     {{-- Header Section --}}
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <x-ui.h1 as="h2" class="text-xl! text-slate-900">Expedientes clinicos</x-ui.h1>
-            <p class="mt-2 text-sm text-slate-500">Selecciona un paciente para gestionar su historia clinica y datos de contacto.</p>
-        </div>
-    </div>
+    <x-ui.page-hero
+        title="Expedientes clinicos"
+        description="Selecciona un paciente para gestionar su historia clinica y datos de contacto."
+    />
 
     {{-- Counters Section --}}
     <div class="grid gap-3 sm:grid-cols-3">

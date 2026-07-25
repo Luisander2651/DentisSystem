@@ -65,15 +65,12 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             Route::prefix('certifications')->group(function (): void {
                 Route::get('/', GetCertificationsController::class);
             });
-
             Route::prefix('gallery-images')->group(function (): void {
                 Route::get('/', GetGalleryImagesController::class);
             });
-
             Route::prefix('promotions')->group(function (): void {
                 Route::get('/', GetPromotionsController::class);
             });
-
             Route::prefix('testimonials')->group(function (): void {
                 Route::get('/', GetTestimonialsController::class);
             });

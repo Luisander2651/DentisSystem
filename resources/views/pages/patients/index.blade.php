@@ -5,17 +5,21 @@
 @section('content')
 <div class="space-y-6">
     {{-- Header Section --}}
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <x-ui.h1 as="h2" class="text-xl! text-slate-900">Pacientes</x-ui.h1>
-            <p class="mt-2 text-sm text-slate-500">Gestiona la base de datos de pacientes de la clinica.</p>
-        </div>
+    <x-ui.page-hero
+        title="Pacientes"
+        description="Gestiona la base de datos de pacientes de la clinica."
+    >
+        <x-slot:icon>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </x-slot:icon>
 
-        <button type="button" data-create-patient-open class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#E91E63] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d61b5b]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7v14"/></svg>
-            Nuevo paciente
-        </button>
-    </div>
+        <x-slot:actions>
+            <button type="button" data-create-patient-open class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#E91E63] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d61b5b]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7v14"/></svg>
+                Nuevo paciente
+            </button>
+        </x-slot:actions>
+    </x-ui.page-hero>
 
     {{-- Counters Section --}}
     <div class="grid gap-3 sm:grid-cols-3">
