@@ -28,7 +28,7 @@ final class TreatmentEntity
         TreatmentTime $time
     ): self {
         return new self(
-            null,
+            TreatmentId::fromInt(0),
             $name,
             $description,
             $time,

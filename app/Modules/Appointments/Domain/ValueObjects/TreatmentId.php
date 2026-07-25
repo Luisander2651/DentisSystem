@@ -11,7 +11,7 @@ final readonly class TreatmentId
     public function __construct(
         public string $value,
     ) {
-        if (!is_numeric($value) || (int)$value <= 0) {
+        if (!is_numeric($value) || (int)$value < 0) {
             throw TreatmentIdException::invalidValue($value);
         }
     }
