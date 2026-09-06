@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases;
 
-use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\DTOs\DeleteCertificationDTO;
-use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationId;
-use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Service\CertificationsService;
 use App\Core\Authorization\AuthorizationServiceInterface;
-use App\Modules\ContentManagement\StorageProviderInterface;
+use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\DTOs\DeleteCertificationDTO;
 use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\Exceptions\CertificationException;
-
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Service\CertificationsService;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationId;
+use App\Modules\ContentManagement\StorageProviderInterface;
 
 final readonly class DeleteCertificationUseCase
 {
@@ -25,7 +24,7 @@ final readonly class DeleteCertificationUseCase
         $this->authorizationService->assertCan('manage.certifications');
 
         $idVo = CertificationId::fromPrimitive($dto->id);
-        $found = $this->service->getAllByNameOrId($idVo, null);
+        $found = $this->service->getAllByNameOrId($idVo, null, null);
 
         if (empty($found)) {
             throw CertificationException::notFound($idVo);

@@ -182,29 +182,51 @@
             <a href="https://wa.me/521234567890" target="_blank" class="text-sm font-semibold text-[#B5114A] hover:underline">Preguntar por otras promociones &rarr;</a>
         </div>
 
-        <!-- Loading / Errors / Cards List -->
-        <div data-promotions-loading class="py-12 text-center text-slate-400">
-            <svg class="animate-spin mx-auto h-8 w-8 text-[#B5114A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p class="mt-2 text-sm">Cargando promociones...</p>
-        </div>
-
-        <div data-promotions-error class="hidden rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-600 text-center"></div>
-
-        <div data-promotions-list class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"></div>
-
-        <div data-promotions-empty class="hidden py-12 text-center bg-slate-50 rounded-3xl border border-slate-100">
-            <svg class="mx-auto h-10 w-10 text-[#B5114A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M20 7H4v4h16V7z" />
-                <path d="M6 11v8h12v-8" />
-                <path d="M12 7v12" />
-                <path d="M12 7c-1.7 0-3-1.1-3-2.5S10.3 2 12 7z" />
-                <path d="M12 7c1.7 0 3-1.1 3-2.5S13.7 2 12 7z" />
-            </svg>
-            <h3 class="mt-4 text-sm font-semibold text-slate-900">Sin promociones por el momento</h3>
-            <p class="mt-2 text-xs text-slate-500">Suscríbete o contáctanos para conocer sobre futuros descuentos.</p>
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            @forelse ($promotions as $promotion)
+                <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs hover:shadow-md transition-all duration-300">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <span class="inline-flex items-center gap-1 rounded-full bg-pink-50 px-3 py-1 text-xs font-semibold text-[#B5114A]">
+                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M20 7H4v4h16V7z" />
+                                    <path d="M6 11v8h12v-8" />
+                                    <path d="M12 7v12" />
+                                </svg>
+                                <span>Promoción</span>
+                            </span>
+                            <h3 class="mt-3 text-lg font-bold text-slate-900 wrap-break-word">{{ $promotion['name'] }}</h3>
+                        </div>
+                        <span class="shrink-0 rounded-2xl bg-amber-50 px-3 py-2 text-center shadow-xs border border-amber-100">
+                            <span class="block text-sm font-extrabold text-amber-600">{{ $promotion['discount_percentage'] }}%</span>
+                            <span class="block text-[9px] uppercase tracking-wider font-bold text-amber-500">Desc</span>
+                        </span>
+                    </div>
+                    <p class="mt-4 text-sm leading-6 text-slate-500 wrap-break-word line-clamp-3">{{ $promotion['description'] }}</p>
+                    <div class="mt-6 border-t border-slate-50 pt-4 flex flex-col gap-2">
+                        <div class="flex items-center justify-between text-xs text-slate-400">
+                            <span>Válido del:</span>
+                            <span class="font-semibold text-slate-600">{{ \Illuminate\Support\Carbon::parse($promotion['start_date'])->translatedFormat('d M Y') }}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-slate-400">
+                            <span>Al:</span>
+                            <span class="font-semibold text-slate-600">{{ \Illuminate\Support\Carbon::parse($promotion['end_date'])->translatedFormat('d M Y') }}</span>
+                        </div>
+                    </div>
+                </article>
+            @empty
+                <div class="md:col-span-2 lg:col-span-3 py-12 text-center bg-slate-50 rounded-3xl border border-slate-100">
+                    <svg class="mx-auto h-10 w-10 text-[#B5114A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 7H4v4h16V7z" />
+                        <path d="M6 11v8h12v-8" />
+                        <path d="M12 7v12" />
+                        <path d="M12 7c-1.7 0-3-1.1-3-2.5S10.3 2 12 7z" />
+                        <path d="M12 7c1.7 0 3-1.1 3-2.5S13.7 2 12 7z" />
+                    </svg>
+                    <h3 class="mt-4 text-sm font-semibold text-slate-900">Sin promociones por el momento</h3>
+                    <p class="mt-2 text-xs text-slate-500">Suscríbete o contáctanos para conocer sobre futuros descuentos.</p>
+                </div>
+            @endforelse
         </div>
     </section>
 
@@ -218,25 +240,38 @@
             <p class="text-sm font-medium text-slate-500">Estándares, reconocimientos y validaciones institucionales.</p>
         </div>
 
-        <div data-certifications-loading class="py-12 text-center text-slate-400">
-            <svg class="animate-spin mx-auto h-8 w-8 text-[#B5114A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p class="mt-2 text-sm">Cargando certificaciones...</p>
-        </div>
-
-        <div data-certifications-error class="hidden rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-600 text-center"></div>
-
-        <div data-certifications-list class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"></div>
-
-        <div data-certifications-empty class="hidden py-12 text-center bg-white rounded-3xl border border-[#F5C2D6]">
-            <svg class="mx-auto h-10 w-10 text-[#B5114A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 15l-4.5 2.5 1-5L5 9.5l5.1-.5L12 4l1.9 5 5.1.5-3.5 3 1 5z" />
-                <path d="M12 15v5" />
-            </svg>
-            <h3 class="mt-4 text-sm font-semibold text-slate-900">Sin certificaciones por el momento</h3>
-            <p class="mt-2 text-xs text-slate-500">Muy pronto compartiremos los sellos que avalan nuestra práctica clínica.</p>
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            @forelse ($certifications as $certification)
+                <article class="overflow-hidden rounded-3xl border border-[#F5C2D6] bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                    <div class="aspect-[4/3] bg-gradient-to-br from-[#FFF7FA] to-white p-4">
+                        <div class="flex h-full items-center justify-center overflow-hidden rounded-2xl border border-dashed border-[#F5C2D6] bg-white/80">
+                            @if (!empty($certification['image_url']))
+                                <img src="{{ $certification['image_url'] }}" alt="{{ $certification['name'] }}" class="h-full w-full object-cover" loading="lazy" />
+                            @else
+                                <div class="px-6 text-center"><span class="text-4xl">🏅</span><p class="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#B5114A]">Certificación</p></div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-[#FDF1F6] px-3 py-1 text-xs font-semibold text-[#B5114A]">Reconocimiento</span>
+                        <h3 class="mt-3 text-lg font-bold text-slate-900 wrap-break-word">{{ $certification['name'] }}</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-500 wrap-break-word line-clamp-3">{{ $certification['description'] }}</p>
+                        <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400">
+                            <span class="font-semibold uppercase tracking-wider text-[#B5114A]">Fecha</span>
+                            <span class="font-medium text-slate-500">{{ \Illuminate\Support\Carbon::parse($certification['date'])->translatedFormat('d M Y') }}</span>
+                        </div>
+                    </div>
+                </article>
+            @empty
+                <div class="md:col-span-2 lg:col-span-3 py-12 text-center bg-white rounded-3xl border border-[#F5C2D6]">
+                    <svg class="mx-auto h-10 w-10 text-[#B5114A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 15l-4.5 2.5 1-5L5 9.5l5.1-.5L12 4l1.9 5 5.1.5-3.5 3 1 5z" />
+                        <path d="M12 15v5" />
+                    </svg>
+                    <h3 class="mt-4 text-sm font-semibold text-slate-900">Sin certificaciones por el momento</h3>
+                    <p class="mt-2 text-xs text-slate-500">Muy pronto compartiremos los sellos que avalan nuestra práctica clínica.</p>
+                </div>
+            @endforelse
         </div>
     </section>
 
@@ -249,24 +284,32 @@
                 <p class="text-slate-600">Nuestra prioridad es tu comodidad y satisfacción. Estas son algunas de sus experiencias.</p>
             </div>
 
-            <!-- Loading / Errors / Cards List -->
-            <div data-testimonials-loading class="py-12 text-center text-slate-500">
-                <svg class="animate-spin mx-auto h-8 w-8 text-[#B5114A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <p class="mt-2 text-sm">Cargando comentarios...</p>
-            </div>
-
-            <div data-testimonials-error class="hidden rounded-2xl border border-red-100 bg-white p-4 text-sm text-red-600 text-center shadow-sm"></div>
-
-            <div data-testimonials-list class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"></div>
-
-            <div data-testimonials-empty class="hidden py-12 text-center text-slate-500">
-                <svg class="mx-auto h-10 w-10 text-[#B5114A]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M12 17.3l-6.18 3.25 1.18-6.88L2 8.9l6.91-1L12 1.6l3.09 6.3 6.91 1-5 4.77 1.18 6.88z" />
-                </svg>
-                <p class="mt-4 text-sm">Próximamente estaremos compartiendo las opiniones de nuestros pacientes.</p>
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                @forelse ($testimonials as $testimonial)
+                    <div class="rounded-3xl border border-[#F5C2D6] bg-white p-6 flex flex-col justify-between shadow-sm hover:-translate-y-1 hover:shadow-md transition duration-300">
+                        <div>
+                            <div class="mb-4 flex items-center gap-1 text-amber-400">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.3l-6.18 3.25 1.18-6.88L2 8.9l6.91-1L12 1.6l3.09 6.3 6.91 1-5 4.77 1.18 6.88z" /></svg>
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.3l-6.18 3.25 1.18-6.88L2 8.9l6.91-1L12 1.6l3.09 6.3 6.91 1-5 4.77 1.18 6.88z" /></svg>
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.3l-6.18 3.25 1.18-6.88L2 8.9l6.91-1L12 1.6l3.09 6.3 6.91 1-5 4.77 1.18 6.88z" /></svg>
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.3l-6.18 3.25 1.18-6.88L2 8.9l6.91-1L12 1.6l3.09 6.3 6.91 1-5 4.77 1.18 6.88z" /></svg>
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.3l-6.18 3.25 1.18-6.88L2 8.9l6.91-1L12 1.6l3.09 6.3 6.91 1-5 4.77 1.18 6.88z" /></svg>
+                            </div>
+                            <p class="text-sm leading-6 text-slate-600 italic wrap-break-word">"{{ $testimonial['description'] }}"</p>
+                        </div>
+                        <div class="mt-6 border-t border-slate-100 pt-4 flex items-center justify-between">
+                            <span class="text-sm font-bold text-slate-900">{{ $testimonial['author'] }}</span>
+                            <span class="text-[10px] text-slate-500 uppercase font-semibold">{{ \Illuminate\Support\Carbon::parse($testimonial['created_at'])->translatedFormat('d M Y') }}</span>
+                        </div>
+                    </div>
+                @empty
+                    <div class="md:col-span-2 lg:col-span-3 py-12 text-center text-slate-500">
+                        <svg class="mx-auto h-10 w-10 text-[#B5114A]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 17.3l-6.18 3.25 1.18-6.88L2 8.9l6.91-1L12 1.6l3.09 6.3 6.91 1-5 4.77 1.18 6.88z" />
+                        </svg>
+                        <p class="mt-4 text-sm">Próximamente estaremos compartiendo las opiniones de nuestros pacientes.</p>
+                    </div>
+                @endforelse
             </div>
         </div>
     </section>

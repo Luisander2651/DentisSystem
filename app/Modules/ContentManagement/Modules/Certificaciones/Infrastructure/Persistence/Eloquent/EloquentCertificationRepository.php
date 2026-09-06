@@ -5,11 +5,12 @@ namespace App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\P
 use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Entities\CertificationEntity;
 use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Repositories\CertificationRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationId;
-use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\Persistence\Eloquent\Models\CertificationModel;
 use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationName;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationStatus;
+use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\Persistence\Eloquent\Models\CertificationModel;
 
-
-final readonly class EloquentCertificationRepository implements CertificationRepositoryInterface {
+final readonly class EloquentCertificationRepository implements CertificationRepositoryInterface
+{
     public function save(CertificationEntity $data): void
     {
         CertificationModel::updateOrCreate(
@@ -29,7 +30,7 @@ final readonly class EloquentCertificationRepository implements CertificationRep
         CertificationModel::destroy($id->value);
     }
 
-    public function findByIdAndName(?CertificationId $id, ?CertificationName $name): array
+    public function findByIdAndNameAndStatus(?CertificationId $id, ?CertificationName $name, ?CertificationStatus $status): array
     {
         $query = CertificationModel::query();
 
@@ -41,11 +42,14 @@ final readonly class EloquentCertificationRepository implements CertificationRep
             $query->where('name', $name->value);
         }
 
+        if ($status) {
+            $query->where('status', $status->value);
+        }
+
         $certifications = $query->get();
 
-        return $certifications->map(fn($cert) => $this->mapToDomain($cert))->toArray();
+        return $certifications->map(fn ($cert) => $this->mapToDomain($cert))->toArray();
     }
-
 
     private function mapToDomain(object $model): CertificationEntity
     {

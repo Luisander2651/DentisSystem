@@ -8,13 +8,13 @@ use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Entities\Certif
 use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Repositories\CertificationRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationId;
 use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationName;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationStatus;
 
 final readonly class CertificationsService
 {
     public function __construct(
         private CertificationRepositoryInterface $repository,
-    ) {
-    }
+    ) {}
 
     public function save(CertificationEntity $certification): void
     {
@@ -26,11 +26,12 @@ final readonly class CertificationsService
         $this->repository->destroy($id);
     }
 
-    public function getAllByNameOrId(?CertificationId $id, ?CertificationName $name): array
+    public function getAllByNameOrId(?CertificationId $id, ?CertificationName $name, ?CertificationStatus $status): array
     {
-        return $this->repository->findByIdAndName(
+        return $this->repository->findByIdAndNameAndStatus(
             id: $id,
             name: $name,
+            status: $status,
         );
     }
 }

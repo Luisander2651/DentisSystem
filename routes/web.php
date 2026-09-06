@@ -1,10 +1,9 @@
 <?php
 
+use App\Modules\ContentManagement\Infrastructure\HTTP\Controllers\ShowLandingPageController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('pages.landing.inicio');
-})->name('inicio');
+Route::get('/', ShowLandingPageController::class)->name('inicio');
 
 Route::get('/contacto', function () {
     return view('pages.landing.contacto');
@@ -38,7 +37,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/logout', function () {
         return view('pages.auth.logout');
     })->name('logout.page');
-    
+
     Route::get('/dashboard', function () {
         return view('pages.dashboard');
     })->name('dashboard');
@@ -47,7 +46,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         $user = request()->user();
         $roleName = strtolower((string) optional($user?->role)->name);
 
-        if (!in_array($roleName, ['administrador', 'asistente'], true)) {
+        if (! in_array($roleName, ['administrador', 'asistente'], true)) {
             abort(403, 'No autorizado.');
         }
 
@@ -58,7 +57,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         $user = request()->user();
         $roleName = strtolower((string) optional($user?->role)->name);
 
-        if (!in_array($roleName, ['administrador', 'asistente'], true)) {
+        if (! in_array($roleName, ['administrador', 'asistente'], true)) {
             abort(403, 'No autorizado.');
         }
 
@@ -88,4 +87,4 @@ Route::middleware(['auth:sanctum', 'only.admin'])->group(function () {
     Route::get('/agenda', function () {
         return view('pages.agenda.index');
     })->name('agenda.index');
-    });
+});
