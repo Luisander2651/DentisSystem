@@ -3,15 +3,14 @@
 namespace App\Modules\ContentManagement;
 
 use App\Modules\ContentManagement\Domain\Exceptions\StorageException;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Filesystem\FilesystemAdapter;
-
 
 final class StorageProvider implements StorageProviderInterface
 {
-    private const DEFAULT_DISK = 'public';
+    private const DEFAULT_DISK = 's3';
 
     public function __construct(
         public string $moduleName,
@@ -44,7 +43,7 @@ final class StorageProvider implements StorageProviderInterface
         $extension = strtolower($image->getClientOriginalExtension());
         $filename = $this->generateFilename($extension);
 
-        $directory = trim($this->storagePath, '/') . '/' . trim($this->moduleName, '/');
+        $directory = trim($this->storagePath, '/').'/'.trim($this->moduleName, '/');
         $storedPath = Storage::disk(self::DEFAULT_DISK)->putFileAs($directory, $image, $filename);
 
         if ($storedPath === false) {
@@ -60,6 +59,7 @@ final class StorageProvider implements StorageProviderInterface
     public function updateImage(string $currentImagePath, UploadedFile $newImage): string
     {
         $this->deleteImage($currentImagePath);
+
         return $this->saveImage($newImage);
     }
 
@@ -110,6 +110,6 @@ final class StorageProvider implements StorageProviderInterface
 
     private function generateFilename(string $extension): string
     {
-        return Str::uuid()->toString() . '.' . $extension;
+        return Str::uuid()->toString().'.'.$extension;
     }
 }
