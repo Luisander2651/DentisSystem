@@ -1,19 +1,10 @@
-@php
-    $agendaUser = auth('sanctum')->user() ?? auth()->user();
-
-    if ($agendaUser && method_exists($agendaUser, 'loadMissing')) {
-        $agendaUser->loadMissing('role');
-    }
-
-    $sidebarRole = strtolower((string) ($agendaUser?->role?->name ?? ''));
-@endphp
-
 @extends('layouts.admin')
 
 @section('title', 'Agenda - Dentissa')
 
 @section('content')
-<div class="space-y-6">
+@php $isAdmin = in_array($sidebarRole, ['admin', 'administrador'], true); @endphp
+<div class="space-y-6" data-agenda-is-admin="{{ $isAdmin ? 'true' : 'false' }}">
     {{-- Header Section --}}
     <x-ui.page-hero
         title="Agenda de Citas"
@@ -40,6 +31,16 @@
         </div>
     </div>
 
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm" data-agenda-status-filter>
+            <button type="button" class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50" data-status-value="">Todos</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50" data-status-value="asignada">Asignadas</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50" data-status-value="reprogramada">Reprogramadas</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50" data-status-value="completada">Completadas</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50" data-status-value="cancelada">Canceladas</button>
+        </div>
+    </div>
+
     {{-- Main Layout: Calendar + Side Info --}}
     <div class="grid gap-6 lg:grid-cols-12">
         {{-- Left: Calendar View --}}
@@ -49,7 +50,7 @@
 
         {{-- Right: Appointments List / Details --}}
         <div class="lg:col-span-4 flex h-full flex-col">
-            <section class="flex min-h-[34rem] flex-1 flex-col overflow-hidden rounded-3xl border border-[#F5C2D6] bg-[#FFF7FA] p-6 shadow-sm">
+            <section class="flex min-h-136 flex-1 flex-col overflow-hidden rounded-3xl border border-[#F5C2D6] bg-[#FFF7FA] p-6 shadow-sm">
                 <div>
                     <h3 class="text-sm font-bold uppercase tracking-wider text-[#B5114A]">Citas para Hoy</h3>
                     <p class="mt-1 text-xs text-slate-500">{{ now()->translatedFormat('l d \d\e F') }}</p>
@@ -72,9 +73,17 @@
 
 {{-- Modals --}}
 <x-calendar.day-details-modal />
-<x-calendar.create-appointment-modal :is-admin="in_array($sidebarRole, ['admin', 'administrador'], true)" />
+<x-calendar.create-appointment-modal :is-admin="$isAdmin" />
 <x-calendar.edit-appointment-modal />
+<x-calendar.view-appointment-modal :is-admin="$isAdmin" />
+@if ($isAdmin)
+    <x-calendar.complete-appointment-modal />
+@endif
 
 @vite('resources/js/pages/agenda/index.js')
 @vite('resources/js/pages/agenda/create-appointment.js')
+@vite('resources/js/pages/agenda/view-appointment.js')
+@if ($isAdmin)
+    @vite('resources/js/pages/agenda/complete-appointment.js')
+@endif
 @endsection

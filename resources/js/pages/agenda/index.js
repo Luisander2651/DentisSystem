@@ -8,6 +8,15 @@
     // State
     let currentDate = new Date();
     let appointments = [];
+    let appointmentsByDate = new Map();
+    let appointmentsToday = [];
+    let appointmentStats = {
+        today: 0,
+        pending: 0,
+        confirmed: 0,
+        completed: 0,
+    };
+    let selectedStatus = '';
     
     // Selectors
     const calendarGrid = document.getElementById('calendar-grid');
@@ -15,6 +24,7 @@
     const prevMonthBtn = document.getElementById('prev-month');
     const nextMonthBtn = document.getElementById('next-month');
     const todayAppointmentsContainer = document.getElementById('today-appointments-container');
+    const statusFilter = document.querySelector('[data-agenda-status-filter]');
 
     // Stats Selectors
     const statToday = document.querySelector('[data-stat-today]');
@@ -28,6 +38,15 @@
     const modalAppointmentsList = document.getElementById('modal-appointments-list');
     const closeModalBtns = document.querySelectorAll('[data-close-modal]');
 
+    const isAdminUser = document.querySelector('[data-agenda-is-admin]')?.getAttribute('data-agenda-is-admin') === 'true';
+
+    function toLocalDateString(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
     const monthNames = [
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
@@ -35,8 +54,15 @@
 
     async function fetchAppointments() {
         try {
-            const response = await window.axios.get('/api/v1/appointments');
+            const params = new URLSearchParams();
+
+            if (selectedStatus) {
+                params.set('status', selectedStatus);
+            }
+
+            const response = await window.axios.get('/api/v1/appointments' + (params.toString() ? '?' + params.toString() : ''));
             appointments = response.data.data || [];
+            buildAppointmentIndexes();
             updateStats();
             renderCalendar();
             renderTodayAppointments();
@@ -47,6 +73,42 @@
         } catch (error) {
             console.error('Error fetching appointments:', error);
         }
+    }
+
+    function buildAppointmentIndexes() {
+        appointmentsByDate = new Map();
+        appointmentsToday = [];
+        appointmentStats = {
+            today: 0,
+            pending: 0,
+            confirmed: 0,
+            completed: 0,
+        };
+
+        const todayStr = toLocalDateString(new Date());
+
+        for (const appointment of appointments) {
+            const dateKey = String(appointment.date || '');
+            const bucket = appointmentsByDate.get(dateKey) || [];
+            bucket.push(appointment);
+            appointmentsByDate.set(dateKey, bucket);
+
+            const normalizedStatus = normalizeAppointmentStatus(appointment.status);
+
+            if (normalizedStatus === 'asignada') {
+                appointmentStats.pending += 1;
+            } else if (normalizedStatus === 'reprogramada') {
+                appointmentStats.confirmed += 1;
+            } else if (normalizedStatus === 'completada') {
+                appointmentStats.completed += 1;
+            }
+
+            if (dateKey === todayStr) {
+                appointmentsToday.push(appointment);
+            }
+        }
+
+        appointmentStats.today = appointmentsToday.length;
     }
 
     function normalizeAppointmentStatus(status) {
@@ -69,31 +131,21 @@
     function updateStats() {
         if (!appointments.length) return;
 
-        const todayStr = new Date().toISOString().split('T')[0];
-        
-        const todayCount = appointments.filter(a => a.date === todayStr).length;
-        const pendingCount = appointments.filter(a => normalizeAppointmentStatus(a.status) === 'asignada').length;
-        const confirmedCount = appointments.filter(a => normalizeAppointmentStatus(a.status) === 'reprogramada').length;
-        const completedCount = appointments.filter(a => normalizeAppointmentStatus(a.status) === 'completada').length;
-
-        if (statToday) statToday.textContent = todayCount;
-        if (statPending) statPending.textContent = pendingCount;
-        if (statConfirmed) statConfirmed.textContent = confirmedCount;
-        if (statCompleted) statCompleted.textContent = completedCount;
+        if (statToday) statToday.textContent = appointmentStats.today;
+        if (statPending) statPending.textContent = appointmentStats.pending;
+        if (statConfirmed) statConfirmed.textContent = appointmentStats.confirmed;
+        if (statCompleted) statCompleted.textContent = appointmentStats.completed;
     }
 
     function renderTodayAppointments() {
         if (!todayAppointmentsContainer) return;
-
-        const todayStr = new Date().toISOString().split('T')[0];
-        const todayAppointments = appointments.filter(a => a.date === todayStr);
         
         todayAppointmentsContainer.innerHTML = '';
 
-        if (todayAppointments.length === 0) {
+        if (appointmentsToday.length === 0) {
             todayAppointmentsContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">No hay citas para hoy</p>';
         } else {
-            todayAppointments.forEach(appt => {
+            appointmentsToday.forEach(appt => {
                 todayAppointmentsContainer.appendChild(createAppointmentCard(appt));
             });
         }
@@ -122,6 +174,50 @@
             'reprogramada': 'Reprogramada'
         };
 
+        const isActionable = normalizedStatus === 'asignada' || normalizedStatus === 'reprogramada';
+        const eyeIcon = `
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        `;
+        const pencilIcon = `
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L7.5 21H3v-4.5L15.232 5.232z" />
+            </svg>
+        `;
+
+        let actionsHtml;
+        if (isActionable && isAdminUser) {
+            actionsHtml = `
+                <div class="ml-auto flex shrink-0 flex-col items-end gap-2">
+                    <button type="button" class="rounded-xl bg-[#E91E63] px-3 py-2 text-[11px] font-bold text-white transition hover:bg-[#d61b5b]" data-complete-appointment-trigger data-appointment-id="${appt.id}">
+                        Completar
+                    </button>
+                    <button type="button" class="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 transition hover:border-[#B5114A] hover:text-[#B5114A]" data-view-appointment-trigger data-appointment-id="${appt.id}" aria-label="Ver detalles">
+                        ${eyeIcon}
+                    </button>
+                </div>
+            `;
+        } else if (isActionable) {
+            actionsHtml = `
+                <div class="ml-auto flex shrink-0 items-center gap-2">
+                    <button type="button" class="rounded-full border border-slate-200 bg-white p-2 text-slate-500 transition hover:border-[#B5114A] hover:text-[#B5114A]" data-view-appointment-trigger data-appointment-id="${appt.id}" aria-label="Ver detalles">
+                        ${eyeIcon}
+                    </button>
+                    <button type="button" class="rounded-full border border-slate-200 bg-white p-2 text-slate-500 transition hover:border-[#B5114A] hover:text-[#B5114A]" data-edit-appointment-trigger data-appointment-id="${appt.id}" aria-label="Editar cita">
+                        ${pencilIcon}
+                    </button>
+                </div>
+            `;
+        } else {
+            actionsHtml = `
+                <button type="button" class="ml-auto shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 transition hover:border-[#B5114A] hover:text-[#B5114A]" data-view-appointment-trigger data-appointment-id="${appt.id}" aria-label="Ver detalles">
+                    ${eyeIcon}
+                </button>
+            `;
+        }
+
         article.innerHTML = `
             <div class="flex flex-col items-center justify-center border-r border-slate-100 pr-4 text-center">
                 <span class="text-sm font-bold text-slate-900">${formattedTime}</span>
@@ -136,12 +232,28 @@
                     </span>
                 </div>
             </div>
-            <button type="button" class="ml-auto rounded-full border border-slate-200 bg-white p-2 text-slate-500 transition hover:border-[#B5114A] hover:text-[#B5114A]" data-edit-appointment-trigger data-appointment-id="${appt.id}">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L7.5 21H3v-4.5L15.232 5.232z" />
-                </svg>
-            </button>
+            ${actionsHtml}
         `;
+
+        const completeButton = article.querySelector('[data-complete-appointment-trigger]');
+        if (completeButton) {
+            completeButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                if (window.agendaCompleteAppointmentModal && typeof window.agendaCompleteAppointmentModal.open === 'function') {
+                    window.agendaCompleteAppointmentModal.open(appt.id);
+                }
+            });
+        }
+
+        const viewButton = article.querySelector('[data-view-appointment-trigger]');
+        if (viewButton) {
+            viewButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                if (window.agendaViewAppointmentModal && typeof window.agendaViewAppointmentModal.open === 'function') {
+                    window.agendaViewAppointmentModal.open(appt.id);
+                }
+            });
+        }
 
         const editButton = article.querySelector('[data-edit-appointment-trigger]');
         if (editButton) {
@@ -193,9 +305,9 @@
 
     function createDayElement(dayNumber, year, month, isPadding, isToday = false) {
         const d = new Date(year, month, dayNumber);
-        const dateStr = d.toISOString().split('T')[0];
+        const dateStr = toLocalDateString(d);
         
-        const dayAppointments = appointments.filter(a => a.date === dateStr);
+        const dayAppointments = appointmentsByDate.get(dateStr) || [];
 
         const div = document.createElement('div');
         div.className = `min-h-[100px] rounded-2xl border ${
@@ -268,6 +380,31 @@
         }
     }
 
+    function setActiveStatusButton(value) {
+        if (!statusFilter) {
+            return;
+        }
+
+        statusFilter.querySelectorAll('[data-status-value]').forEach(function (button) {
+            var isActive = String(button.getAttribute('data-status-value') || '') === String(value || '');
+            button.classList.toggle('bg-[#FDF1F6]', isActive);
+            button.classList.toggle('text-[#B5114A]', isActive);
+            button.classList.toggle('text-slate-600', !isActive);
+        });
+    }
+
+    function handleStatusFilter(event) {
+        var button = event.target.closest('[data-status-value]');
+
+        if (!button || !statusFilter || !statusFilter.contains(button)) {
+            return;
+        }
+
+        selectedStatus = String(button.getAttribute('data-status-value') || '');
+        setActiveStatusButton(selectedStatus);
+        fetchAppointments();
+    }
+
     // Event Listeners
     if (prevMonthBtn) {
         prevMonthBtn.addEventListener('click', () => {
@@ -286,6 +423,11 @@
     closeModalBtns.forEach(btn => {
         btn.addEventListener('click', closeModal);
     });
+
+    if (statusFilter) {
+        statusFilter.addEventListener('click', handleStatusFilter);
+        setActiveStatusButton(selectedStatus);
+    }
 
     window.agendaPage = {
         reload: fetchAppointments,

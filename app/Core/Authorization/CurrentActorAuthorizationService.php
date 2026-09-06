@@ -14,7 +14,7 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
     {
         $actor = Auth::user();
 
-        if (!$actor instanceof UserModel) {
+        if (! $actor instanceof UserModel) {
             throw AuthorizationException::unauthenticated();
         }
 
@@ -40,9 +40,15 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
             'treatments.create',
             'treatments.update',
             'treatments.delete',
+            'appointment-tracking.create',
+            'appointment-tracking.view',
+            'appointment-tracking.update',
+            'appointment-tracking.prescriptions.create',
+            'appointment-tracking.prescriptions.update',
+            'appointment-tracking.prescriptions.delete',
         ];
 
-        if (!in_array($permission, $adminPermissions, true)) {
+        if (! in_array($permission, $adminPermissions, true)) {
             throw AuthorizationException::forbidden($permission);
         }
 

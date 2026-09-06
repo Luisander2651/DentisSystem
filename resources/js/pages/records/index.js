@@ -14,6 +14,7 @@
     var countTotal = document.querySelector('[data-records-total-count]');
     var countActive = document.querySelector('[data-records-active-count]');
     var countInactive = document.querySelector('[data-records-inactive-count]');
+    var statusFilter = document.querySelector('[data-records-status-filter]');
 
     var detailSection = document.getElementById('record-detail-section');
     var selectedPatientLabel = document.getElementById('record-selected-patient-label');
@@ -39,6 +40,7 @@
     var pendingDeleteEndpoint = null;
     var pendingDeleteLabel = null;
     var isDeleting = false;
+    var selectedStatus = '';
 
     if (!page || !recordsGrid || !detailSection || !selectedPatientLabel) {
         return;
@@ -77,6 +79,19 @@
         if (status === 'active') return 'Activo';
         if (status === 'inactive') return 'Inactivo';
         return '-';
+    }
+
+    function setActiveStatusButton(value) {
+        if (!statusFilter) {
+            return;
+        }
+
+        statusFilter.querySelectorAll('[data-status-value]').forEach(function (button) {
+            var isActive = String(button.getAttribute('data-status-value') || '') === String(value || '');
+            button.classList.toggle('bg-[#FDF1F6]', isActive);
+            button.classList.toggle('text-[#B5114A]', isActive);
+            button.classList.toggle('text-slate-600', !isActive);
+        });
     }
 
     function getCookie(name) {
@@ -325,7 +340,7 @@
                         '<div class="flex items-center gap-3">',
                             '<div class="flex h-12 w-12 items-center justify-center rounded-full bg-[#FDF1F6] text-sm font-semibold text-[#B5114A]">', escapeHtml(initial), '</div>',
                             '<div>',
-                                '<h3 class="text-base font-semibold text-slate-900 break-words">', escapeHtml(fullName), '</h3>',
+                                '<h3 class="text-base font-semibold text-slate-900 wrap-break-word">', escapeHtml(fullName), '</h3>',
                                 '<p class="text-xs text-slate-500">Expediente Clinico</p>',
                             '</div>',
                         '</div>',
@@ -423,6 +438,119 @@
         ].join('');
     }
 
+    function normalizeAppointmentStatus(status) {
+        var normalized = String(status || '').trim().toLowerCase();
+        var mapping = {
+            pending: 'asignada',
+            confirmed: 'asignada',
+            assigned: 'asignada',
+            completed: 'completada',
+            cancelled: 'cancelada',
+            cancelada: 'cancelada',
+            completada: 'completada',
+            asignada: 'asignada',
+            reprogramada: 'reprogramada'
+        };
+
+        return mapping[normalized] || 'asignada';
+    }
+
+    function formatAppointmentTime(time) {
+        var parts = String(time || '').split(':');
+        if (parts.length < 2) return toDisplay(time);
+
+        var hour = parseInt(parts[0], 10);
+        var ampm = hour >= 12 ? 'PM' : 'AM';
+
+        return (hour % 12 || 12) + ':' + parts[1] + ' ' + ampm;
+    }
+
+    function renderAppointmentsHistory(appointments) {
+        var tbody = document.getElementById('record-appointments-body');
+        if (!tbody) return;
+
+        var list = Array.isArray(appointments) ? appointments.slice() : [];
+
+        if (!list.length) {
+            tbody.innerHTML = '<tr class="border-t border-slate-200"><td colspan="6" class="px-4 py-6 text-center text-sm text-slate-500">Sin citas registradas.</td></tr>';
+            return;
+        }
+
+        list.sort(function (a, b) {
+            var aKey = String(a.date || '') + ' ' + String(a.time || '');
+            var bKey = String(b.date || '') + ' ' + String(b.time || '');
+            return bKey.localeCompare(aKey);
+        });
+
+        var statusColors = {
+            asignada: 'bg-amber-50 text-amber-700',
+            completada: 'bg-emerald-50 text-emerald-700',
+            cancelada: 'bg-red-50 text-red-700',
+            reprogramada: 'bg-blue-50 text-blue-700'
+        };
+        var statusLabel = {
+            asignada: 'Asignada',
+            completada: 'Completada',
+            cancelada: 'Cancelada',
+            reprogramada: 'Reprogramada'
+        };
+
+        tbody.innerHTML = list.map(function (appointment) {
+            var normalizedStatus = normalizeAppointmentStatus(appointment.status);
+            var badgeClass = statusColors[normalizedStatus] || 'bg-slate-50 text-slate-500';
+            var badgeLabel = statusLabel[normalizedStatus] || toDisplay(appointment.status);
+
+            return [
+                '<tr class="border-t border-slate-200">',
+                '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(appointment.date)) + '</td>',
+                '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(formatAppointmentTime(appointment.time)) + '</td>',
+                '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(appointment.treatment_name)) + '</td>',
+                '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(appointment.user_name)) + '</td>',
+                '<td class="px-4 py-3 align-top">',
+                '  <span class="rounded-full ' + badgeClass + ' px-2 py-0.5 text-[10px] font-bold">' + escapeHtml(badgeLabel) + '</span>',
+                '</td>',
+                '<td class="px-4 py-3 align-top text-slate-700">',
+                '  <button type="button" data-record-view-appointment data-appointment-id="' + escapeHtml(appointment.id) + '" class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#B5114A] hover:text-[#B5114A]">Ver</button>',
+                '</td>',
+                '</tr>'
+            ].join('');
+        }).join('');
+    }
+
+    async function loadAppointments(patientId) {
+        var tbody = document.getElementById('record-appointments-body');
+        if (!tbody) return;
+
+        if (!patientId) {
+            renderAppointmentsHistory([]);
+            return;
+        }
+
+        try {
+            var response = await fetch('/api/v1/appointments/patient/' + encodeURIComponent(patientId), {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            var payload = await response.json().catch(function () {
+                return {};
+            });
+
+            if (!response.ok) {
+                renderAppointmentsHistory([]);
+                return;
+            }
+
+            renderAppointmentsHistory(payload.data || []);
+        } catch (error) {
+            renderAppointmentsHistory([]);
+        }
+    }
+
     function renderRecord(recordPayload) {
         var data = recordPayload && recordPayload.data ? recordPayload.data : null;
 
@@ -452,7 +580,13 @@
         if (loadingBox) loadingBox.classList.remove('hidden');
 
         try {
-            var response = await fetch('/api/v1/patients', {
+            var params = new URLSearchParams();
+
+            if (selectedStatus) {
+                params.set('status', selectedStatus);
+            }
+
+            var response = await fetch('/api/v1/patients' + (params.toString() ? '?' + params.toString() : ''), {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -478,6 +612,18 @@
         } finally {
             if (loadingBox) loadingBox.classList.add('hidden');
         }
+    }
+
+    function handleStatusFilter(event) {
+        var button = event.target.closest('[data-status-value]');
+
+        if (!button || !statusFilter || !statusFilter.contains(button)) {
+            return;
+        }
+
+        selectedStatus = String(button.getAttribute('data-status-value') || '');
+        setActiveStatusButton(selectedStatus);
+        loadPatients();
     }
 
     async function loadRecord(patientId) {
@@ -671,6 +817,16 @@
         openDeleteModal(label, endpointSuffix);
     });
 
+    document.addEventListener('click', function (event) {
+        var viewButton = event.target.closest('[data-record-view-appointment]');
+        if (!viewButton) return;
+
+        var appointmentId = viewButton.getAttribute('data-appointment-id');
+        if (appointmentId && window.agendaViewAppointmentModal && typeof window.agendaViewAppointmentModal.open === 'function') {
+            window.agendaViewAppointmentModal.open(appointmentId);
+        }
+    });
+
     if (deleteCancelButtons && deleteCancelButtons.length) {
         deleteCancelButtons.forEach(function (btn) {
             btn.addEventListener('click', closeDeleteModal);
@@ -717,6 +873,11 @@
         });
     }
 
+    if (statusFilter) {
+        statusFilter.addEventListener('click', handleStatusFilter);
+        setActiveStatusButton(selectedStatus);
+    }
+
     document.addEventListener('DOMContentLoaded', async function () {
         syncEntityActions();
 
@@ -728,7 +889,10 @@
             });
         }
 
-        await loadPatients();
-        await loadRecord(selectedPatientId);
+        await Promise.all([
+            loadPatients(),
+            loadRecord(selectedPatientId),
+            loadAppointments(selectedPatientId),
+        ]);
     });
 })();

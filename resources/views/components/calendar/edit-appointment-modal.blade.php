@@ -62,7 +62,6 @@
                                     required
                                 >
                                     <option value="asignada">Asignada</option>
-                                    <option value="completada">Completada</option>
                                     <option value="cancelada">Cancelada</option>
                                     <option value="reprogramada">Reprogramada</option>
                                 </select>

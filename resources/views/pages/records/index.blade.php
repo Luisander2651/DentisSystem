@@ -3,6 +3,7 @@
 @section('title', 'Expedientes clinicos - Dentissa')
 
 @section('content')
+@php $isAdmin = in_array($sidebarRole, ['admin', 'administrador'], true); @endphp
 <div class="space-y-6" data-records-page data-selected-patient-id="{{ (string) ($selectedPatientId ?? '') }}">
     {{-- Header Section --}}
     <x-ui.page-hero
@@ -39,6 +40,14 @@
         </div>
     </article>
 
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm" data-records-status-filter>
+            <button type="button" class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50" data-status-value="">Todos</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50" data-status-value="active">Activos</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50" data-status-value="inactive">Inactivos</button>
+        </div>
+    </div>
+
     <div id="records-error" class="hidden rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
 
     {{-- Loading State --}}
@@ -72,6 +81,7 @@
             <x-records.contact-info-table />
             <x-records.address-table />
             <x-records.medical-data-table />
+            <x-records.appointments-history-table />
         </div>
     </section>
 
@@ -83,7 +93,9 @@
         confirm-text="Eliminar"
         cancel-text="Cancelar"
     />
+    <x-calendar.view-appointment-modal :is-admin="$isAdmin" />
 </div>
 
 @vite('resources/js/pages/records/index.js')
+@vite('resources/js/pages/agenda/view-appointment.js')
 @endsection

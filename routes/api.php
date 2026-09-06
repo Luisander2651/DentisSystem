@@ -1,61 +1,67 @@
 <?php
 
 use App\Modules\Appointments\Infrastructure\Http\Controllers\CreateAppointmentController;
-use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAllApointmentsByStatusAndDateController;
-use Illuminate\Support\Facades\Route;
-use App\Modules\Auth\Infrastructure\Http\Controllers\LoginController;
-use App\Modules\Auth\Infrastructure\Http\Controllers\RegisterController;
-use App\Modules\Auth\Infrastructure\Http\Controllers\LogoutController;
-use App\Modules\Users\Infrastructure\Http\Controllers\RegisterUserController;
-use App\Modules\Users\Infrastructure\Http\Controllers\UpdateUserController;
-use App\Modules\Users\Infrastructure\Http\Controllers\GetUsersByRoleAndStatusController;
-use App\Modules\Users\Infrastructure\Http\Controllers\DeleteUserByIdController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\CreatePatientController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\GetPatientsByStatusController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\UpdatePatientController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\DeletePatientByIdController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\GetPatientByIdController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\Addresses\CreateAddressController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\Addresses\UpdateAddressController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\Addresses\DeleteAddressByPatientIdController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\ContactInfo\CreateContactInfoController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\ContactInfo\UpdateContactInfoController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\ContactInfo\DeleteContactInfoByPatientIdController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData\CreateMedicalDataController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData\UpdateMedicalDataController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData\DeleteMedicalDataByPatientIdController;
-use App\Modules\Patients\Infrastructure\Http\Controllers\PatientRecord\GetPatientRecordByPatientIdController;
-use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentByIdController;
-use App\Modules\Appointments\Infrastructure\Http\Controllers\DeleteAppointmentController;
-use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateAppointmentController;
-use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentsByPatientIdController;
-use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodayAppointmentsController;
-use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\CreateTreatmentController;
-use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateTreatmentController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\DeleteAppointmentController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\DeleteTreatmentController;
-use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentsAdminController;
-use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentByIdController;
-use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPatientsForAppointmentSelectController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAllApointmentsByStatusAndDateController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentByIdController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentsByPatientIdController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetDoctorsForAppointmentSelectController;
-use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\SaveCertificationController;
-use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\UpdateCertificationController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPatientsForAppointmentSelectController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodayAppointmentsController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentByIdController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentsAdminController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentsController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateAppointmentController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateTreatmentController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\CompleteAppointmentController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\CreatePrescriptionController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\DeletePrescriptionController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetAppointmentTrackingByAppointmentIdController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdateAppointmentTrackingController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdatePrescriptionController;
+use App\Modules\Auth\Infrastructure\Http\Controllers\LoginController;
+use App\Modules\Auth\Infrastructure\Http\Controllers\LogoutController;
+use App\Modules\Auth\Infrastructure\Http\Controllers\RegisterController;
+use App\Modules\Auth\Infrastructure\Http\Controllers\ResetPasswordController;
+use App\Modules\Auth\Infrastructure\Http\Controllers\SendResetPasswordEmailController;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\DeleteCertificationController;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\GetCertificationsController;
-use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\SaveGalleryImageController;
-use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\UpdateGalleryImageController;
+use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\SaveCertificationController;
+use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\UpdateCertificationController;
 use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\DeleteGalleryImageController;
 use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\GetGalleryImagesController;
-use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\SavePromotionController;
-use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\UpdatePromotionController;
+use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\SaveGalleryImageController;
+use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\UpdateGalleryImageController;
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\DeletePromotionController;
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\GetPromotionsController;
-use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\SaveTestimonialController;
-use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\UpdateTestimonialController;
+use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\SavePromotionController;
+use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\UpdatePromotionController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\DeleteTestimonialController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\GetTestimonialsController;
-use App\Modules\Auth\Infrastructure\Http\Controllers\SendResetPasswordEmailController;
-use App\Modules\Auth\Infrastructure\Http\Controllers\ResetPasswordController;
+use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\SaveTestimonialController;
+use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\UpdateTestimonialController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\Addresses\CreateAddressController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\Addresses\DeleteAddressByPatientIdController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\Addresses\UpdateAddressController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\ContactInfo\CreateContactInfoController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\ContactInfo\DeleteContactInfoByPatientIdController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\ContactInfo\UpdateContactInfoController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\CreatePatientController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\DeletePatientByIdController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\GetPatientByIdController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\GetPatientsByStatusController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData\CreateMedicalDataController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData\DeleteMedicalDataByPatientIdController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData\UpdateMedicalDataController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\PatientRecord\GetPatientRecordByPatientIdController;
+use App\Modules\Patients\Infrastructure\Http\Controllers\UpdatePatientController;
+use App\Modules\Users\Infrastructure\Http\Controllers\DeleteUserByIdController;
+use App\Modules\Users\Infrastructure\Http\Controllers\GetUsersByRoleAndStatusController;
+use App\Modules\Users\Infrastructure\Http\Controllers\RegisterUserController;
+use App\Modules\Users\Infrastructure\Http\Controllers\UpdateUserController;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
 
@@ -134,8 +140,20 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::delete('/{id}', DeleteTestimonialController::class);
                 Route::get('/', GetTestimonialsController::class);
             });
+
+            Route::prefix('appointments')->group(function (): void {
+                Route::post('/{id}/complete', CompleteAppointmentController::class);
+                Route::get('/{id}/tracking', GetAppointmentTrackingByAppointmentIdController::class);
+            });
+
+            Route::prefix('appointment-tracking')->group(function (): void {
+                Route::put('/{id}', UpdateAppointmentTrackingController::class);
+                Route::post('/{appointmentTrackingId}/prescriptions', CreatePrescriptionController::class);
+                Route::put('/prescriptions/{id}', UpdatePrescriptionController::class);
+                Route::delete('/prescriptions/{id}', DeletePrescriptionController::class);
+            });
         });
-        
+
         Route::middleware('auth:sanctum')->group(function (): void {
             Route::prefix('agenda')->group(function (): void {
                 Route::get('/patients', GetPatientsForAppointmentSelectController::class);

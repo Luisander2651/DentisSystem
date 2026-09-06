@@ -4,57 +4,51 @@ namespace App\Providers;
 
 use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Core\Authorization\CurrentActorAuthorizationService;
-use Illuminate\Support\ServiceProvider;
-
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Http\Request;
-
-use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
-use App\Modules\Users\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
-
-
-use App\Modules\Patients\Domain\Repositories\AddressesRepositoryInterface;
-use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentAddressRepository;
-
-use App\Modules\Patients\Domain\Repositories\ContactInfoRepositoryInterface;
-use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentContactInfoRepository;
-
-
-use App\Modules\Patients\Domain\Repositories\MedicalDataRepositoryInterface;
-use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentMedicalDataRepository;
-
-use App\Modules\Patients\Domain\Repositories\PatientRecordRepositoryInterface;
-use App\Modules\Patients\Infrastructure\Persistence\Eloquent\PatientRecordRepository as EloquentPatientRecordRepository;
-
-use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
-use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentPatientRepository;
-
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\EloquentAppointmentRepository;
-
-use App\Modules\ContentManagement\StorageProviderInterface;
-use App\Modules\ContentManagement\StorageProvider;
-    
-use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Repositories\CertificationRepositoryInterface;
-use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\Persistence\Eloquent\EloquentCertificationRepository;
+use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentCompletionRepositoryInterface;
+use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentTrackingRepositoryInterface;
+use App\Modules\AppointmentTracking\Domain\Repositories\PrescriptionRepositoryInterface;
+use App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent\EloquentAppointmentCompletionRepository;
+use App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent\EloquentAppointmentTrackingRepository;
+use App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent\EloquentPrescriptionRepository;
+use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\DeleteCertificationUseCase;
 use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\SaveCertificationUseCase;
 use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\UpdateCertificationUseCase;
-use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\DeleteCertificationUseCase;
-
-use App\Modules\ContentManagement\Modules\Galeria\Domain\Repositories\GalleryImageRepositoryInterface;
-use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\Persistence\Eloquent\EloquentGalleryImageRepository;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Repositories\CertificationRepositoryInterface;
+use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\Persistence\Eloquent\EloquentCertificationRepository;
+use App\Modules\ContentManagement\Modules\Galeria\Aplication\UseCases\DeleteGalleryImageUseCase;
 use App\Modules\ContentManagement\Modules\Galeria\Aplication\UseCases\SaveGalleryImageUseCase;
 use App\Modules\ContentManagement\Modules\Galeria\Aplication\UseCases\UpdateGalleryImageUseCase;
-use App\Modules\ContentManagement\Modules\Galeria\Aplication\UseCases\DeleteGalleryImageUseCase;
-
+use App\Modules\ContentManagement\Modules\Galeria\Domain\Repositories\GalleryImageRepositoryInterface;
+use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\Persistence\Eloquent\EloquentGalleryImageRepository;
 use App\Modules\ContentManagement\Modules\Promociones\Domain\Repositories\PromotionRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\Persistence\Eloquent\EloquentPromotionRepository;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Repositories\TestimonialRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\Persistence\Eloquent\EloquentTestimonialRepository;
-
-use App\Modules\Email\Infrastructure\ExternalApi\BrevoApi;
+use App\Modules\ContentManagement\StorageProvider;
+use App\Modules\ContentManagement\StorageProviderInterface;
 use App\Modules\Email\Aplication\UseCases\SendResetPasswordEmailUseCase;
+use App\Modules\Email\Infrastructure\ExternalApi\BrevoApi;
+use App\Modules\Patients\Domain\Repositories\AddressesRepositoryInterface;
+use App\Modules\Patients\Domain\Repositories\ContactInfoRepositoryInterface;
+use App\Modules\Patients\Domain\Repositories\MedicalDataRepositoryInterface;
+use App\Modules\Patients\Domain\Repositories\PatientRecordRepositoryInterface;
+use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentAddressRepository;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentContactInfoRepository;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentMedicalDataRepository;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentPatientRepository;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\PatientRecordRepository as EloquentPatientRecordRepository;
+use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
+use App\Modules\Users\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -101,6 +95,21 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             AppointmentsRepositoryInterface::class,
             EloquentAppointmentRepository::class,
+        );
+
+        $this->app->bind(
+            AppointmentTrackingRepositoryInterface::class,
+            EloquentAppointmentTrackingRepository::class,
+        );
+
+        $this->app->bind(
+            PrescriptionRepositoryInterface::class,
+            EloquentPrescriptionRepository::class,
+        );
+
+        $this->app->bind(
+            AppointmentCompletionRepositoryInterface::class,
+            EloquentAppointmentCompletionRepository::class,
         );
 
         $this->app->bind(
@@ -173,20 +182,34 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-    // 1. Obtenemos todas las rutas de migraciones de los módulos
-    $paths = array_merge(
-        glob(base_path('app/Modules/*/Infrastructure/Persistence/Eloquent/Migrations')) ?: [],
-        glob(base_path('app/Modules/ContentManagement/Modules/*/Infrastructure/Persistence/Eloquent/Migrations')) ?: []
-    );
+        Carbon::setLocale(config('app.locale'));
 
-    RateLimiter::for('api', function (Request $request) {
-    return $request->user()
-        ? Limit::perMinute(100)->by($request->user()->id) // 100 por min por usuario
-        : Limit::perMinute(10)->by($request->ip()); // 10 por min por IP
-    });
+        // 1. Obtenemos todas las rutas de migraciones de los módulos
+        $paths = array_merge(
+            glob(base_path('app/Modules/*/Infrastructure/Persistence/Eloquent/Migrations')) ?: [],
+            glob(base_path('app/Modules/ContentManagement/Modules/*/Infrastructure/Persistence/Eloquent/Migrations')) ?: []
+        );
 
-    // 2. Le decimos a Laravel que cargue todos los archivos de migración encontrados
-    $this->loadMigrationsFrom($paths);
-    
+        RateLimiter::for('api', function (Request $request) {
+            return $request->user()
+                ? Limit::perMinute(100)->by($request->user()->id) // 100 por min por usuario
+                : Limit::perMinute(10)->by($request->ip()); // 10 por min por IP
+        });
+
+        View::composer(['layouts.admin', 'pages.agenda.index', 'pages.records.index'], function ($view) {
+            $user = Auth::user();
+
+            if ($user && method_exists($user, 'loadMissing')) {
+                $user->loadMissing('role');
+            }
+
+            $view->with([
+                'authenticatedUser' => $user,
+                'sidebarRole' => strtolower((string) ($user?->role?->name ?? '')),
+            ]);
+        });
+
+        // 2. Le decimos a Laravel que cargue todos los archivos de migración encontrados
+        $this->loadMigrationsFrom($paths);
     }
 }
