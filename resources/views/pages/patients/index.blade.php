@@ -50,6 +50,12 @@
                 class="block w-full rounded-2xl border-slate-200 bg-white py-3.5 pl-11 pr-4 text-sm placeholder:text-slate-400 focus:border-[#F5C2D6] focus:ring-4 focus:ring-[#F5C2D6]/10 transition-all shadow-sm"
             >
         </div>
+
+        <div class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm" data-patients-status-filter>
+            <button type="button" class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50" data-status-value="">Todos</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50" data-status-value="active">Activos</button>
+            <button type="button" class="rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50" data-status-value="inactive">Inactivos</button>
+        </div>
     </div>
 
     {{-- Info Card --}}

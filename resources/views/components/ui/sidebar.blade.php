@@ -84,7 +84,7 @@
     }
 @endphp
 
-<aside id="{{ $sidebarId }}" {{ $attributes->merge(['class' => 'w-full md:w-72 lg:w-80 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm']) }}>
+<aside id="{{ $sidebarId }}" data-sidebar-root {{ $attributes->merge(['class' => 'w-full md:w-72 lg:w-80 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm']) }}>
     <div class="mb-8 border-b border-slate-100 pb-6 px-2">
         <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -123,7 +123,7 @@
         </div>
     </div>
 
-    <nav id="{{ $sidebarId }}-menu" class="hidden md:block" aria-label="Sidebar navigation">
+    <nav id="{{ $sidebarId }}-menu" data-sidebar-menu class="hidden md:block" aria-label="Sidebar navigation">
         <ul class="space-y-1.5">
             @foreach ($menuItems as $item)
                 @php
@@ -201,52 +201,3 @@
         </div>
     </nav>
 </aside>
-
-<script>
-    (function () {
-        var sidebar = document.getElementById('{{ $sidebarId }}');
-        if (!sidebar) {
-            return;
-        }
-
-        var toggleButton = sidebar.querySelector('[data-sidebar-toggle]');
-        var menu = sidebar.querySelector('#{{ $sidebarId }}-menu');
-        var openIcon = sidebar.querySelector('[data-icon-open]');
-        var closeIcon = sidebar.querySelector('[data-icon-close]');
-
-        if (!toggleButton || !menu) {
-            return;
-        }
-
-        toggleButton.addEventListener('click', function () {
-            var isHidden = menu.classList.contains('hidden');
-
-            if (isHidden) {
-                menu.classList.remove('hidden');
-                toggleButton.setAttribute('aria-expanded', 'true');
-                if (openIcon) openIcon.classList.add('hidden');
-                if (closeIcon) closeIcon.classList.remove('hidden');
-                return;
-            }
-
-            menu.classList.add('hidden');
-            toggleButton.setAttribute('aria-expanded', 'false');
-            if (openIcon) openIcon.classList.remove('hidden');
-            if (closeIcon) closeIcon.classList.add('hidden');
-        });
-
-        window.addEventListener('resize', function () {
-            if (window.innerWidth >= 768) {
-                menu.classList.remove('hidden');
-                toggleButton.setAttribute('aria-expanded', 'true');
-                if (openIcon) openIcon.classList.remove('hidden');
-                if (closeIcon) closeIcon.classList.add('hidden');
-                return;
-            }
-
-            if (toggleButton.getAttribute('aria-expanded') !== 'true') {
-                menu.classList.add('hidden');
-            }
-        });
-    })();
-</script>

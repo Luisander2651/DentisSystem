@@ -94,7 +94,8 @@
     var closingHour = 18 * 60;
 
     function todayString() {
-        return new Date().toISOString().split('T')[0];
+        var now = new Date();
+        return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
     }
 
     function normalizeAppointmentStatus(status) {
@@ -315,11 +316,28 @@
         updateSubmitState();
     }
 
+    var modalDataLoaded = false;
+
+    async function ensureModalData() {
+        if (modalDataLoaded) {
+            await refreshAvailability();
+            return;
+        }
+
+        await loadModalData();
+        modalDataLoaded = true;
+    }
+
     async function openModal() {
         resetFormState();
-        await refreshAvailability();
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+
+        try {
+            await ensureModalData();
+        } catch (error) {
+            showModalError(error.message || 'No se pudieron cargar los datos de la cita.');
+        }
     }
 
     function closeModal(force) {
@@ -629,10 +647,18 @@
         });
     });
 
+    async function refreshAvailabilityIfLoaded() {
+        if (!modalDataLoaded) {
+            return;
+        }
+
+        await refreshAvailability();
+    }
+
     window.agendaAppointmentModal = {
         open: openModal,
         close: closeModal,
-        refreshAvailability: refreshAvailability,
+        refreshAvailability: refreshAvailabilityIfLoaded,
         loadData: loadModalData,
         openEdit: openEditAppointment,
         closeEdit: closeEditModal,
@@ -640,8 +666,4 @@
 
     dateInput.value = todayString();
     updateSubmitState();
-
-    loadModalData().catch(function (error) {
-        showModalError(error.message || 'No se pudieron cargar los datos de la cita.');
-    });
 })();

@@ -10,12 +10,19 @@
     const emptyBox = document.getElementById('patients-empty');
     const patientsList = document.getElementById('patients-list');
     const searchInput = document.getElementById('patient-search');
+    const statusFilter = document.querySelector('[data-patients-status-filter]');
 
     const countTotal = document.querySelector('[data-patients-total-count]');
     const countActive = document.querySelector('[data-patients-active-count]');
     const countInactive = document.querySelector('[data-patients-inactive-count]');
 
     let allPatients = [];
+    let patientCounters = {
+        total: 0,
+        active: 0,
+        inactive: 0,
+    };
+    let selectedStatus = '';
 
     function showError(message) {
         if (!errorBox) return;
@@ -50,20 +57,58 @@
             .replace(/'/g, '&#039;');
     }
 
-    function renderPatientCards(records) {
-        if (!patientsList) return;
+    function normalizePatientRecord(patient) {
+        const firstName = patient.first_name ?? '';
+        const lastName = patient.last_name ?? '';
+        const email = patient.email ?? '';
 
+        return Object.assign({}, patient, {
+            _searchText: `${firstName} ${lastName} ${email}`.toLowerCase(),
+        });
+    }
+
+    function rebuildCounters(records) {
         let activeCount = 0;
         let inactiveCount = 0;
 
-        allPatients.forEach(p => {
-            if (p.status === 'active') activeCount++;
-            else if (p.status === 'inactive') inactiveCount++;
+        records.forEach(function (patient) {
+            if (patient.status === 'active') {
+                activeCount += 1;
+            } else if (patient.status === 'inactive') {
+                inactiveCount += 1;
+            }
         });
 
-        if (countTotal) countTotal.textContent = String(allPatients.length);
-        if (countActive) countActive.textContent = String(activeCount);
-        if (countInactive) countInactive.textContent = String(inactiveCount);
+        patientCounters = {
+            total: records.length,
+            active: activeCount,
+            inactive: inactiveCount,
+        };
+    }
+
+    function renderCounters() {
+        if (countTotal) countTotal.textContent = String(patientCounters.total);
+        if (countActive) countActive.textContent = String(patientCounters.active);
+        if (countInactive) countInactive.textContent = String(patientCounters.inactive);
+    }
+
+    function setActiveStatusButton(value) {
+        if (!statusFilter) {
+            return;
+        }
+
+        statusFilter.querySelectorAll('[data-status-value]').forEach(function (button) {
+            var isActive = String(button.getAttribute('data-status-value') || '') === String(value || '');
+            button.classList.toggle('bg-[#FDF1F6]', isActive);
+            button.classList.toggle('text-[#B5114A]', isActive);
+            button.classList.toggle('text-slate-600', !isActive);
+        });
+    }
+
+    function renderPatientCards(records) {
+        if (!patientsList) return;
+
+        renderCounters();
 
         if (records.length === 0) {
             patientsList.innerHTML = '';
@@ -99,7 +144,7 @@
                         '<div class="flex items-center gap-3">',
                             '<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ' + avatarClasses + ' text-sm font-bold transition-transform group-hover:scale-110">', escapeHtml(initial), '</div>',
                             '<div>',
-                                '<h3 class="text-base font-semibold text-slate-900 break-words group-hover:text-[#B5114A] transition-colors">', escapeHtml(fullName), '</h3>',
+                                '<h3 class="text-base font-semibold text-slate-900 wrap-break-word group-hover:text-[#B5114A] transition-colors">', escapeHtml(fullName), '</h3>',
                                 '<span class="inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ' + statusClasses + '">', escapeHtml(statusLabel), '</span>',
                             '</div>',
                         '</div>',
@@ -136,7 +181,13 @@
         setLoading(true);
 
         try {
-            const response = await fetch('/api/v1/patients', {
+            const params = new URLSearchParams();
+
+            if (selectedStatus) {
+                params.set('status', selectedStatus);
+            }
+
+            const response = await fetch('/api/v1/patients' + (params.toString() ? '?' + params.toString() : ''), {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -154,7 +205,10 @@
                 return;
             }
 
-            allPatients = Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : []);
+            allPatients = (Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : []))
+                .map(normalizePatientRecord);
+
+            rebuildCounters(allPatients);
             renderPatientCards(allPatients);
         } catch (error) {
             showError('Error de conexion. Intentalo de nuevo.');
@@ -162,6 +216,18 @@
         } finally {
             setLoading(false);
         }
+    }
+
+    function handleStatusFilter(event) {
+        var button = event.target.closest('[data-status-value]');
+
+        if (!button || !statusFilter || !statusFilter.contains(button)) {
+            return;
+        }
+
+        selectedStatus = String(button.getAttribute('data-status-value') || '');
+        setActiveStatusButton(selectedStatus);
+        loadPatients();
     }
 
     function handleSearch() {
@@ -172,9 +238,7 @@
         }
 
         const filtered = allPatients.filter(p => {
-            const fullName = `${p.first_name || ''} ${p.last_name || ''}`.toLowerCase();
-            const email = (p.email || '').toLowerCase();
-            return fullName.includes(query) || email.includes(query);
+            return String(p._searchText || '').includes(query);
         });
 
         renderPatientCards(filtered);
@@ -182,6 +246,11 @@
 
     if (searchInput) {
         searchInput.addEventListener('input', handleSearch);
+    }
+
+    if (statusFilter) {
+        statusFilter.addEventListener('click', handleStatusFilter);
+        setActiveStatusButton(selectedStatus);
     }
 
     window.patientsPage = {
