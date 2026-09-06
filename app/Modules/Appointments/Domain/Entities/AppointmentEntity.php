@@ -5,19 +5,18 @@ declare(strict_types=1);
 namespace App\Modules\Appointments\Domain\Entities;
 
 use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
-use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
-use App\Modules\Appointments\Domain\ValueObjects\AppointmentTime;
+use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
+use App\Modules\Appointments\Domain\ValueObjects\AppointmentTime;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentWhatsAppReminder;
 use App\Modules\Appointments\Domain\ValueObjects\TreatmentId;
-use App\Modules\Appointments\Domain\ValueObjects\TreatmentTime;
-use App\Modules\Users\Domain\ValueObjects\UserId;
-use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
-use App\Modules\Users\Domain\ValueObjects\UserName;
-use App\Modules\Patients\Domain\ValueObjects\Patients\PatientName;
 use App\Modules\Appointments\Domain\ValueObjects\TreatmentName;
-
+use App\Modules\Appointments\Domain\ValueObjects\TreatmentTime;
+use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
+use App\Modules\Patients\Domain\ValueObjects\Patients\PatientName;
+use App\Modules\Users\Domain\ValueObjects\UserId;
+use App\Modules\Users\Domain\ValueObjects\UserName;
 use DateTimeImmutable;
 
 final class AppointmentEntity
@@ -59,8 +58,8 @@ final class AppointmentEntity
             null,
             null,
             null,
-            new DateTimeImmutable(),
-            new DateTimeImmutable()
+            new DateTimeImmutable,
+            new DateTimeImmutable
         );
     }
 
@@ -92,7 +91,7 @@ final class AppointmentEntity
             $treatmentName ? new TreatmentName($treatmentName) : null,
             $userName ? UserName::fromString($userName) : null,
             $patientName ? PatientName::fromString($patientName) : null,
-            $treatmentTime ? TreatmentTime::fromInt((int)$treatmentTime) : null,
+            $treatmentTime ? TreatmentTime::fromInt((int) $treatmentTime) : null,
             new DateTimeImmutable($createdAt),
             new DateTimeImmutable($updatedAt)
         );
@@ -106,26 +105,26 @@ final class AppointmentEntity
 
         $newDate !== null && $this->date = $newDate;
         $newTime !== null && $this->time = $newTime;
-        $this->status !== AppointmentStatus::rescheduled() && $this->status = AppointmentStatus::rescheduled();
-        $this->updatedAt = new DateTimeImmutable();
+        ! $this->status->equals(AppointmentStatus::rescheduled()) && $this->status = AppointmentStatus::rescheduled();
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     public function complete(): void
     {
         $this->status = AppointmentStatus::completed();
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     public function cancel(): void
     {
         $this->status = AppointmentStatus::cancelled();
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     public function updateWhatsappReminder(): void
     {
-        $this->whatsAppReminder = AppointmentWhatsAppReminder::fromBool(!$this->whatsAppReminder->value());
-        $this->updatedAt = new DateTimeImmutable();
+        $this->whatsAppReminder = AppointmentWhatsAppReminder::fromBool(! $this->whatsAppReminder->value());
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     // Getters
