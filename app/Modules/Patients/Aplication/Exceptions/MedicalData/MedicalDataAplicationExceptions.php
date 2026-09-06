@@ -25,6 +25,6 @@ final class MedicalDataAplicationExceptions extends Exception
 
     public static function NotFound(): self
     {
-        return new self('Medical data not found.');
+        return new self('Medical data not found.', 404);
     }
 }

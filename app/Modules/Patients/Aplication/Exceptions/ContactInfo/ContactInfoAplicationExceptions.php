@@ -25,6 +25,6 @@ final class ContactInfoAplicationExceptions extends Exception
 
     public static function NotFound(): self
     {
-        return new self('Contact info not found.');
+        return new self('Contact info not found.', 404);
     }
 }

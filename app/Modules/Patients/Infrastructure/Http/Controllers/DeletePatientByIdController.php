@@ -29,13 +29,15 @@ final class DeletePatientByIdController
                 'message' => 'Patient deleted successfully',
             ], 200);
         } catch (PatientException $e) {
-            return response()->json(['error' => $e->getMessage()], 409);
+            return response()->json(['error' => $e->getMessage()], 404);
         } catch (AuthorizationException $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         } catch (ValueObjectsException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (PatientAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 409);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
         }

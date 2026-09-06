@@ -9,6 +9,7 @@ use App\Modules\Patients\Aplication\Exceptions\ContactInfo\ContactInfoAplication
 use App\Modules\Patients\Domain\Entities\ContactInfo;
 use App\Modules\Patients\Domain\Repositories\ContactInfoRepositoryInterface;
 use App\Modules\Patients\Domain\Service\ContactInfoService;
+use App\Modules\Patients\Domain\Service\PatientService;
 use App\Modules\Patients\Domain\ValueObjects\ContactInfo\ContactEmail;
 use App\Modules\Patients\Domain\ValueObjects\ContactInfo\ContactInfoPatientId;
 use App\Modules\Patients\Domain\ValueObjects\ContactInfo\EmergencyContact;
@@ -20,6 +21,7 @@ final readonly class SaveContactInfoUseCase
     public function __construct(
         private ContactInfoRepositoryInterface $contactInfoRepository,
         private ContactInfoService $contactInfoService,
+        private PatientService $patientService,
     ) {}
 
     public function execute(CreateContactInfoDTO $dto): void
@@ -28,7 +30,10 @@ final readonly class SaveContactInfoUseCase
             throw ContactInfoAplicationExceptions::IdNotProvided();
         }
 
-        $existingContactInfo = $this->contactInfoRepository->findByPatientId(new PatientId($dto->patientId));
+        $patientId = new PatientId($dto->patientId);
+        $this->patientService->findById($patientId);
+
+        $existingContactInfo = $this->contactInfoRepository->findByPatientId($patientId);
 
         if ($existingContactInfo !== null) {
             throw ContactInfoAplicationExceptions::AlreadyExists();

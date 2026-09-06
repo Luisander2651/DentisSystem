@@ -25,6 +25,6 @@ final class AddressAplicationExceptions extends Exception
 
     public static function NotFound(): self
     {
-        return new self('Address not found.');
+        return new self('Address not found.', 404);
     }
 }

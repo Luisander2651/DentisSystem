@@ -15,6 +15,6 @@ final class PatientRecordAplicationExceptions extends Exception
 
     public static function NotFound(): self
     {
-        return new self('Patient record not found.');
+        return new self('Patient record not found.', 404);
     }
 }

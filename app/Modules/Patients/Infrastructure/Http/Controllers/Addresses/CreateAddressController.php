@@ -7,6 +7,7 @@ namespace App\Modules\Patients\Infrastructure\Http\Controllers\Addresses;
 use App\Modules\Patients\Aplication\DTOs\Addresses\CreateAddressDTO;
 use App\Modules\Patients\Aplication\Exceptions\Addresses\AddressAplicationExceptions;
 use App\Modules\Patients\Aplication\UseCases\Addresses\SaveAddressUseCase;
+use App\Modules\Patients\Domain\Exceptions\PatientException;
 use App\Modules\Patients\Domain\Exceptions\ValueObjectsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,10 +36,14 @@ final class CreateAddressController
             return response()->json([
                 'message' => 'Address created successfully',
             ], 201);
+        } catch (PatientException $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
         } catch (ValueObjectsException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (AddressAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 409);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
         }

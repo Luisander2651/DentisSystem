@@ -9,11 +9,12 @@ use App\Modules\Patients\Aplication\Exceptions\MedicalData\MedicalDataAplication
 use App\Modules\Patients\Domain\Entities\MedicalData;
 use App\Modules\Patients\Domain\Repositories\MedicalDataRepositoryInterface;
 use App\Modules\Patients\Domain\Service\MedicalDataService;
+use App\Modules\Patients\Domain\Service\PatientService;
 use App\Modules\Patients\Domain\ValueObjects\MedicalData\Allergies;
 use App\Modules\Patients\Domain\ValueObjects\MedicalData\BloodType;
 use App\Modules\Patients\Domain\ValueObjects\MedicalData\LastDentistVisit;
-use App\Modules\Patients\Domain\ValueObjects\MedicalData\Medications;
 use App\Modules\Patients\Domain\ValueObjects\MedicalData\MedicalDataPatientId;
+use App\Modules\Patients\Domain\ValueObjects\MedicalData\Medications;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 
 final readonly class SaveMedicalDataUseCase
@@ -21,6 +22,7 @@ final readonly class SaveMedicalDataUseCase
     public function __construct(
         private MedicalDataRepositoryInterface $medicalDataRepository,
         private MedicalDataService $medicalDataService,
+        private PatientService $patientService,
     ) {}
 
     public function execute(CreateMedicalDataDTO $dto): void
@@ -29,7 +31,10 @@ final readonly class SaveMedicalDataUseCase
             throw MedicalDataAplicationExceptions::IdNotProvided();
         }
 
-        $existingMedicalData = $this->medicalDataRepository->findByPatientId(new PatientId($dto->patientId));
+        $patientId = new PatientId($dto->patientId);
+        $this->patientService->findById($patientId);
+
+        $existingMedicalData = $this->medicalDataRepository->findByPatientId($patientId);
 
         if ($existingMedicalData !== null) {
             throw MedicalDataAplicationExceptions::AlreadyExists();

@@ -33,6 +33,8 @@ final class DeleteAddressByPatientIdController
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (AddressAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 409);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
         }

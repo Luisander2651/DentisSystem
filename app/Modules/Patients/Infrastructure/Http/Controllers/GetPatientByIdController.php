@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Patients\Infrastructure\Http\Controllers;
 
 use App\Modules\Patients\Aplication\Exceptions\PatientAplicationExceptions;
-use App\Modules\Patients\Domain\Exceptions\PatientException;
 use App\Modules\Patients\Aplication\UseCases\GetPatientByIdUseCase;
+use App\Modules\Patients\Domain\Exceptions\PatientException;
 use App\Modules\Patients\Domain\Exceptions\ValueObjectsException;
 use App\Modules\Patients\Infrastructure\Http\Resources\PatientResource;
 use Illuminate\Http\JsonResponse;
@@ -26,10 +26,14 @@ final class GetPatientByIdController
             return response()->json([
                 'data' => new PatientResource($patients),
             ], 200);
-        } catch (PatientException | ValueObjectsException $e) {
+        } catch (PatientException $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        } catch (ValueObjectsException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (PatientAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 409);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
         }

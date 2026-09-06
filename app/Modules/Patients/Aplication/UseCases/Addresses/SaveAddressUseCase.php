@@ -6,21 +6,23 @@ namespace App\Modules\Patients\Aplication\UseCases\Addresses;
 
 use App\Modules\Patients\Aplication\DTOs\Addresses\CreateAddressDTO;
 use App\Modules\Patients\Aplication\Exceptions\Addresses\AddressAplicationExceptions;
-use App\Modules\Patients\Domain\Repositories\AddressesRepositoryInterface;
-use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 use App\Modules\Patients\Domain\Entities\Address;
+use App\Modules\Patients\Domain\Repositories\AddressesRepositoryInterface;
 use App\Modules\Patients\Domain\Service\AdressesService;
+use App\Modules\Patients\Domain\Service\PatientService;
 use App\Modules\Patients\Domain\ValueObjects\Addresses\AddressPatientId;
 use App\Modules\Patients\Domain\ValueObjects\Addresses\City;
 use App\Modules\Patients\Domain\ValueObjects\Addresses\PostalCode;
 use App\Modules\Patients\Domain\ValueObjects\Addresses\State;
 use App\Modules\Patients\Domain\ValueObjects\Addresses\Street;
+use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 
 final readonly class SaveAddressUseCase
 {
     public function __construct(
         private AddressesRepositoryInterface $addressesRepository,
         private AdressesService $addressesService,
+        private PatientService $patientService,
     ) {}
 
     public function execute(CreateAddressDTO $dto): void
@@ -29,7 +31,10 @@ final readonly class SaveAddressUseCase
             throw AddressAplicationExceptions::IdNotProvided();
         }
 
-        $existingAddress = $this->addressesRepository->findByPatientId(new PatientId($dto->patientId));
+        $patientId = new PatientId($dto->patientId);
+        $this->patientService->findById($patientId);
+
+        $existingAddress = $this->addressesRepository->findByPatientId($patientId);
 
         if ($existingAddress !== null) {
             throw AddressAplicationExceptions::AlreadyExists();

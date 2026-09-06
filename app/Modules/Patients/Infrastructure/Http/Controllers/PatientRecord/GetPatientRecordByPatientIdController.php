@@ -33,7 +33,9 @@ final class GetPatientRecordByPatientIdController
         } catch (ValueObjectsException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (PatientRecordAplicationExceptions $e) {
-            return response()->json(['error' => $e->getMessage()], 409);
+            return response()->json(['error' => $e->getMessage()], $e->getCode() === 404 ? 404 : 409);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
         }

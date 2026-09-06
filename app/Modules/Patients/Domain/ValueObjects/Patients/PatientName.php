@@ -9,6 +9,7 @@ use App\Modules\Patients\Domain\Exceptions\ValueObjects\Patients\PatientNameExce
 final readonly class PatientName
 {
     private const MIN_LENGTH = 3;
+
     private const MAX_LENGTH = 50;
 
     private function __construct(
@@ -20,10 +21,9 @@ final readonly class PatientName
     {
 
         $formattedFirst = self::formatName($firstName);
-        $formattedLast  = self::formatName($lastName);
+        $formattedLast = self::formatName($lastName);
 
-
-        $full = $formattedFirst . ' ' . $formattedLast;
+        $full = $formattedFirst.' '.$formattedLast;
         $length = mb_strlen(trim($full));
 
         if ($length < self::MIN_LENGTH || $length > self::MAX_LENGTH) {
@@ -40,17 +40,26 @@ final readonly class PatientName
     private static function formatName(string $name): string
     {
         $name = trim($name);
-        if ($name === '') return '';
+        if ($name === '') {
+            return '';
+        }
 
-        $firstLetter = mb_strtoupper(mb_substr($name, 0, 1));
-        $rest = mb_strtolower(mb_substr($name, 1));
+        $words = preg_split('/\s+/', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
-        return $firstLetter . $rest;
+        return implode(' ', array_map(
+            static function (string $word): string {
+                $firstLetter = mb_strtoupper(mb_substr($word, 0, 1));
+                $rest = mb_strtolower(mb_substr($word, 1));
+
+                return $firstLetter.$rest;
+            },
+            $words,
+        ));
     }
 
     public static function fromString(string $fullName): self
     {
-        $parts = preg_split('/\s+/', trim($fullName), 4, PREG_SPLIT_NO_EMPTY) ?: [];
+        $parts = preg_split('/\s+/', trim($fullName), -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
         $countedParts = count($parts);
 
@@ -59,17 +68,15 @@ final readonly class PatientName
         }
 
         if ($countedParts === 2) {
-            $firstName = self::formatName($parts[0]);
-            $lastName = self::formatName($parts[1]);
-        } elseif ($countedParts === 3) {
-            $firstName = self::formatName($parts[0]);
-            $lastName = self::formatName($parts[1] . ' ' . $parts[2]);
+            $firstName = $parts[0];
+            $lastName = $parts[1];
         } else {
-            $firstName = self::formatName($parts[0] . ' ' . $parts[1]);
-            $lastName = self::formatName($parts[2] . ' ' . $parts[3]);
+            // Los últimos 2 tokens son siempre los apellidos; el resto (1 o más) son los nombres.
+            $firstName = implode(' ', array_slice($parts, 0, -2));
+            $lastName = implode(' ', array_slice($parts, -2));
         }
 
-        return new self($firstName, $lastName);
+        return self::create($firstName, $lastName);
     }
 
     public function full(): string
