@@ -35,7 +35,7 @@ RUN apk add --no-cache --virtual .build-deps \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
 # 4. Instalar extensiones de PHP
-RUN docker-php-ext-install -j$(nproc) pdo_pgsql mbstring exif pcntl bcmath gd zip
+RUN docker-php-ext-install -j$(nproc) pdo_pgsql mbstring exif pcntl bcmath gd zip opcache
 
 # 5. Limpieza INTELIGENTE
 # Esto borra solo el grupo virtual .build-deps, pero MANTIENE las librerías del paso 1

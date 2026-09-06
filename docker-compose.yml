@@ -13,10 +13,16 @@ services:
       - /var/www/html/node_modules
       - /var/www/html/vendor
       - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+      - ./docker/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
     networks:
       - laravel
     ports:
        - "5173:5173"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # Servicio Web (Nginx)
   nginx:
@@ -25,6 +31,12 @@ services:
     restart: unless-stopped
     ports:
       - "8000:80" # Accederás a tu app en http://localhost:8000
+      - "443:443" # Para HTTPS (si configuras certificados)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - .:/var/www/html # Nginx también necesita ver tus archivos públicos
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
@@ -60,6 +72,93 @@ services:
     networks:
       - laravel
 
+  # --- SISTEMA DE OBSERVABILIDAD (LOGS) ---
+
+  # Base de datos para almacenar los logs
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: laravel-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - laravel
+    restart: unless-stopped
+
+  # Panel web para buscar y visualizar los logs
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: laravel-grafana
+    ports:
+      - "3000:3000" # Accederás a tus paneles en http://tu-vps-ip:3000
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - laravel
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+    # Recolector automático de logs para Docker
+  # Recolector automático de logs para Docker
+  alloy:
+    image: grafana/alloy:v1.1.0
+    container_name: laravel-alloy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    entrypoint:
+      - /bin/sh
+      - -euc
+      - |
+        cat << 'EOF' > /etc/alloy/config.alloy
+        loki.write "local" {
+          endpoint {
+            url = "http://loki:3100/loki/api/v1/push"
+          }
+        }
+
+        discovery.docker "containers" {
+          host             = "unix:///var/run/docker.sock"
+          refresh_interval = "5s"
+        }
+
+        discovery.relabel "containers" {
+          targets = discovery.docker.containers.targets
+
+          rule {
+            source_labels = ["__meta_docker_container_name"]
+            regex         = "/(.*)"
+            target_label  = "container"
+          }
+          rule {
+            source_labels = ["__meta_docker_container_log_stream"]
+            target_label  = "stream"
+          }
+          rule {
+            target_label = "job"
+            replacement  = "docker"
+          }
+        }
+
+        loki.source.docker "logs" {
+          host             = "unix:///var/run/docker.sock"
+          targets          = discovery.relabel.containers.output
+          forward_to       = [loki.write.local.receiver]
+          refresh_interval = "5s"
+        }
+        EOF
+        exec /bin/alloy run --server.http.listen-addr=0.0.0.0:12345 /etc/alloy/config.alloy
+    networks:
+      - laravel
+    depends_on:
+      - loki
+    restart: unless-stopped
+
 networks:
   laravel:
     driver: bridge
@@ -67,3 +166,5 @@ networks:
 volumes:
   db-data:
   redis-data:
+  grafana-data:
+  loki-data:
