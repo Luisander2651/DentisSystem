@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Auth\Aplication\Dtos;
+namespace App\Modules\Auth\Aplication\DTOs;
 
 use App\Modules\Auth\Aplication\Exceptions\AuthAplicationExceptions;
 

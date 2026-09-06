@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Infrastructure\Http\Controllers;
 
-use App\Modules\Auth\Aplication\Dtos\SendEmailForChangePasswordDTO;
+use App\Modules\Auth\Aplication\DTOs\SendEmailForChangePasswordDTO;
 use App\Modules\Auth\Aplication\UseCases\SendEmailForChangePasswordUseCase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

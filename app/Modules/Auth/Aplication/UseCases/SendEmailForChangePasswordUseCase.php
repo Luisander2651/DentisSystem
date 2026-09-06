@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Auth\Aplication\UseCases;
 
 use App\Modules\Auth\Domain\Events\SendEmailForChangePasswordEvent;
-use App\Modules\Auth\Aplication\Dtos\SendEmailForChangePasswordDTO;
+use App\Modules\Auth\Aplication\DTOs\SendEmailForChangePasswordDTO;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentPatientRepository;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientEmail;
