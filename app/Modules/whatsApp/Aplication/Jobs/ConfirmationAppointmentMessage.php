@@ -9,13 +9,11 @@ use Illuminate\Support\Facades\Log;
 
 class ConfirmationAppointmentMessage
 {
-    private TwilioConection $twilio;
     private string $templateName = 'appointment_scheduled';
 
-    public function __construct()
-    {
-        $this->twilio = new TwilioConection();
-    }
+    public function __construct(
+        private TwilioConection $twilio
+    ) {}
 
     public function handle(string $to, array $templateVariables = []): void
     {

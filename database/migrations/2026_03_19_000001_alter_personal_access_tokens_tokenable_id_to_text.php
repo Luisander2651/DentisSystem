@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -12,15 +14,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('DROP INDEX IF EXISTS personal_access_tokens_tokenable_type_tokenable_id_index');
+        Schema::table('personal_access_tokens', function (Blueprint $table) {
+            $table->dropIndex('personal_access_tokens_tokenable_type_tokenable_id_index');
+        });
 
-        DB::statement(
-            'ALTER TABLE personal_access_tokens ALTER COLUMN tokenable_id TYPE text USING tokenable_id::text'
-        );
+        Schema::table('personal_access_tokens', function (Blueprint $table) {
+            $table->string('tokenable_id')->change();
+        });
 
-        DB::statement(
-            'CREATE INDEX personal_access_tokens_tokenable_type_tokenable_id_index ON personal_access_tokens (tokenable_type, tokenable_id)'
-        );
+        Schema::table('personal_access_tokens', function (Blueprint $table) {
+            $table->index(['tokenable_type', 'tokenable_id'], 'personal_access_tokens_tokenable_type_tokenable_id_index');
+        });
     }
 
     /**
