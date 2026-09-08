@@ -8,8 +8,9 @@ use App\Modules\Auth\Aplication\DTOs\LoginDTO;
 use App\Modules\Auth\Aplication\Exceptions\AuthAplicationExceptions;
 use App\Modules\Auth\Aplication\UseCases\LoginUseCase;
 use App\Modules\Auth\Domain\Exceptions\AuthException;
+use App\Modules\Auth\Infrastructure\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 final class LoginController
 {
@@ -17,7 +18,7 @@ final class LoginController
         private LoginUseCase $useCase,
     ) {}
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(LoginRequest $request): JsonResponse
     {
         try {
             $dto = LoginDTO::create(
@@ -52,10 +53,12 @@ final class LoginController
         } catch (AuthAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Internal server error',
-                'message' => $e->getMessage(),
-            ], 500);
+            Log::error('LoginController: unexpected error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json(['error' => 'Internal server error'], 500);
         }
     }
 }
