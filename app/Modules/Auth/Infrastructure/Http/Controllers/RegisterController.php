@@ -10,9 +10,10 @@ use App\Modules\Auth\Aplication\Exceptions\AuthAplicationExceptions;
 use App\Modules\Auth\Aplication\UseCases\LoginUseCase;
 use App\Modules\Auth\Aplication\UseCases\RegisterUseCase;
 use App\Modules\Auth\Domain\Exceptions\AuthException;
+use App\Modules\Auth\Infrastructure\Http\Requests\RegisterRequest;
 use App\Modules\Patients\Domain\Exceptions\ValueObjectsException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 final class RegisterController
 {
@@ -21,7 +22,7 @@ final class RegisterController
         private LoginUseCase $loginUseCase,
     ) {}
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(RegisterRequest $request): JsonResponse
     {
         try {
             $dto = RegisterDTO::create(
@@ -47,7 +48,7 @@ final class RegisterController
                 minutes: (int) config('sanctum.expiration', 1440),
                 path: (string) config('session.path', '/'),
                 domain: config('session.domain'),
-                secure: (bool) config('session.secure', false),
+                secure: $request->isSecure(),
                 httpOnly: true,
                 raw: false,
                 sameSite: (string) config('session.same_site', 'lax'),
@@ -66,10 +67,12 @@ final class RegisterController
         } catch (AuthAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Internal server error',
-                'message' => $e->getMessage(),
-            ], 500);
+            Log::error('RegisterController: unexpected error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json(['error' => 'Internal server error'], 500);
         }
     }
 }

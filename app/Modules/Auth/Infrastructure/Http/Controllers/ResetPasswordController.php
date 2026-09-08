@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Infrastructure\Http\Controllers;
 
-use App\Modules\Auth\Aplication\UseCases\ResetPasswordUseCase;
 use App\Modules\Auth\Aplication\DTOs\ResetPasswordDTO;
+use App\Modules\Auth\Aplication\UseCases\ResetPasswordUseCase;
 use App\Modules\Auth\Domain\Exceptions\PasswordResetServiceException;
 use App\Modules\Auth\Infrastructure\Exceptions\Repositories\PasswordResetException;
-use Illuminate\Http\Request;
+use App\Modules\Auth\Infrastructure\Http\Requests\ResetPasswordRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
 final readonly class ResetPasswordController
@@ -18,12 +19,12 @@ final readonly class ResetPasswordController
         private ResetPasswordUseCase $resetPasswordUseCase,
     ) {}
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(ResetPasswordRequest $request): JsonResponse
     {
         try {
             $dto = new ResetPasswordDTO(
-                token: (string) $request->query('token'),
-                newPassword: (string) $request->input('new_password')
+                token: $request->string('token')->value(),
+                newPassword: $request->string('new_password')->value(),
             );
 
             $this->resetPasswordUseCase->execute($dto);
@@ -40,10 +41,12 @@ final readonly class ResetPasswordController
                 'error' => $e->getMessage(),
             ], 422);
         } catch (\Throwable $e) {
-            return response()->json([
-                'error' => 'Internal server error',
-                'message' => $e->getMessage(),
-            ], 500);
+            Log::error('ResetPasswordController: unexpected error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json(['error' => 'Internal server error'], 500);
         }
     }
 }

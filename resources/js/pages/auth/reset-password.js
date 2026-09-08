@@ -41,8 +41,10 @@
         const passwordInput = form.querySelector('input[name="password"]');
         const confirmPasswordInput = form.querySelector('input[name="confirm_password"]');
 
-        const password = passwordInput ? passwordInput.value : '';
-        const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
+        // BR-23: trim the borders here too, so what the user sees compared on screen
+        // is exactly what the server will store. Internal spaces are preserved.
+        const password = passwordInput ? passwordInput.value.trim() : '';
+        const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value.trim() : '';
 
         if (errorBox) {
             errorBox.classList.add('hidden');
@@ -75,8 +77,9 @@
 
             const xsrfToken = getCookie('XSRF-TOKEN');
 
-            // Enviar petición POST con el token en la query y el password en el body
-            const response = await fetch(`/api/v1/auth/reset-password?token=${encodeURIComponent(token)}`, {
+            // Enviar el token y el password en el body: el token no debe viajar en la
+            // query string, donde quedaría registrado en logs de acceso e historial.
+            const response = await fetch('/api/v1/auth/reset-password', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -85,6 +88,7 @@
                 },
                 credentials: 'include',
                 body: JSON.stringify({
+                    token: token,
                     new_password: password
                 }),
             });

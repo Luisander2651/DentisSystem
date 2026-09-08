@@ -143,8 +143,10 @@
 			const firstName = firstNameInput ? firstNameInput.value.trim() : '';
 			const lastName = lastNameInput ? lastNameInput.value.trim() : '';
 			const email = emailInput ? emailInput.value.trim() : '';
-			const password = passwordInput ? passwordInput.value : '';
-			const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
+			// BR-23: recortar bordes igual que el resto de campos, para que lo que el
+			// usuario ve sea exactamente lo que se guarda. Los espacios internos se respetan.
+			const password = passwordInput ? passwordInput.value.trim() : '';
+			const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value.trim() : '';
 
 			if (errorBox) {
 				errorBox.classList.add('hidden');

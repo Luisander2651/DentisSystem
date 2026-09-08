@@ -11,11 +11,58 @@ use Illuminate\Support\Str;
 
 trait ActingAsStaff
 {
+    /**
+     * UserRoleId::fromDatabaseId() only maps the database ids 1, 2 and 3, and
+     * Postgres sequences are NOT rolled back by RefreshDatabase, so an
+     * auto-incremented roles.id climbs past 3 as the suite runs and every code
+     * path that rebuilds a UserEntity from the database starts throwing. Ids are
+     * therefore pinned here: 1 = admin, 2 = asistent, 3 = doctor.
+     */
     protected function createRole(string $name): RoleModel
     {
-        return RoleModel::query()->firstOrCreate(
-            ['name' => $name],
-            ['description' => null],
+        $existing = RoleModel::query()->where('name', $name)->first();
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $preferred = match (strtolower($name)) {
+            'administrador', 'admin' => 1,
+            'doctor', 'odontologo' => 3,
+            default => 2,
+        };
+
+        $taken = RoleModel::query()->pluck('id')->all();
+        $id = $this->firstFreeRoleId($preferred, array_map('intval', $taken));
+
+        // `id` is not fillable, so it has to be assigned outside mass assignment,
+        // otherwise Eloquent drops it and Postgres hands out a sequence value again.
+        $role = new RoleModel(['name' => $name, 'description' => null]);
+        $role->id = $id;
+        $role->save();
+
+        return $role;
+    }
+
+    /**
+     * Distinct role names can map to the same preferred slot - a test may create
+     * both 'administrador' and 'ADMINISTRADOR' to exercise case-insensitive
+     * matching - so the preferred id is only used when free.
+     *
+     * @param  list<int>  $taken
+     */
+    private function firstFreeRoleId(int $preferred, array $taken): int
+    {
+        foreach ([$preferred, 1, 2, 3] as $candidate) {
+            if (! in_array($candidate, $taken, true)) {
+                return $candidate;
+            }
+        }
+
+        throw new \RuntimeException(
+            'All three role slots (1, 2, 3) are in use. UserRoleId::fromDatabaseId '
+            .'only maps those ids, so this test must reuse an existing role instead '
+            .'of creating a fourth one.'
         );
     }
 
