@@ -18,7 +18,7 @@ it('permanently invalidates every revoked token (property)', function () {
     $this->forAll(Eris\Generator\elements(['patient', 'staff']))->then(function (string $actorType) {
         $actor = $actorType === 'patient'
             ? $this->createPatient(['password' => Hash::make('Sup3rSecret!')])
-            : $this->createUserWithRole('recepcionista', ['password' => Hash::make('Sup3rSecret!')]);
+            : $this->createUserWithRole('Asistente', ['password' => Hash::make('Sup3rSecret!')]);
 
         $login = $this->postJson($this->loginUrl(), [
             'email' => $actor->email,

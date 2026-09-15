@@ -38,7 +38,7 @@ it('rejects an email already used by another patient with 409', function () {
 });
 
 it('rejects an email already used by a staff member with 409 (BR-13)', function () {
-    $staff = $this->createUserWithRole('recepcionista');
+    $staff = $this->createUserWithRole('Asistente');
 
     $this->postJson($this->registerUrl(), $this->validRegisterPayload([
         'email' => $staff->email,
@@ -49,7 +49,7 @@ it('rejects an email already used by a staff member with 409 (BR-13)', function 
 
 it('returns the same error message whether the colliding account is a patient or staff (BR-13)', function () {
     $patient = $this->createPatient();
-    $staff = $this->createUserWithRole('recepcionista');
+    $staff = $this->createUserWithRole('Asistente');
 
     $viaPatient = $this->postJson($this->registerUrl(), $this->validRegisterPayload(['email' => $patient->email]));
     $viaStaff = $this->postJson($this->registerUrl(), $this->validRegisterPayload(['email' => $staff->email]));

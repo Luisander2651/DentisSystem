@@ -24,7 +24,7 @@
     </x-ui.page-hero>
 
     {{-- Counters Section --}}
-    <div class="grid gap-3 sm:grid-cols-3">
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
             <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Total Personal</p>
             <p class="mt-2 text-xl font-semibold text-slate-900" data-users-count>0</p>
@@ -36,6 +36,10 @@
         <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
             <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Asistentes</p>
             <p class="mt-2 text-xl font-semibold text-sky-600" data-users-asistent-count>0</p>
+        </div>
+        <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Doctores</p>
+            <p class="mt-2 text-xl font-semibold text-sky-600" data-users-doctor-count>0</p>
         </div>
     </div>
 
@@ -91,6 +95,7 @@
         const countAll = document.querySelector('[data-users-count]');
         const countAdmin = document.querySelector('[data-users-admin-count]');
         const countAsistent = document.querySelector('[data-users-asistent-count]');
+        const countDoctor = document.querySelector('[data-users-doctor-count]');
 
         function showError(message) {
             if (!errorBox) return;
@@ -117,12 +122,11 @@
                 .replace(/'/g, '&#039;');
         }
 
-        function normalizeRole(roleId) {
-            switch (roleId) {
-                case "admin": return 'Administrador';
-                case "asistent": return 'Asistente';
-                default: return roleId;
-            }
+        // BR-16: the API returns the canonical literal the roles table stores
+        // ('Administrador', 'Asistente', 'Doctor'), which is already the display label, so
+        // the old admin -> Administrador translation table is gone.
+        function isAdminRole(roleId) {
+            return roleId === 'Administrador';
         }
 
         function normalizeStatus(status) {
@@ -138,15 +142,18 @@
 
             let adminCount = 0;
             let asistentCount = 0;
+            let doctorCount = 0;
 
             records.forEach(user => {
-                if (user.role_id === 'admin') adminCount++;
-                else if (user.role_id === 'asistent') asistentCount++;
+                if (user.role_id === 'Administrador') adminCount++;
+                else if (user.role_id === 'Asistente') asistentCount++;
+                else if (user.role_id === 'Doctor') doctorCount++;
             });
 
             if (countAll) countAll.textContent = String(records.length);
             if (countAdmin) countAdmin.textContent = String(adminCount);
             if (countAsistent) countAsistent.textContent = String(asistentCount);
+            if (countDoctor) countDoctor.textContent = String(doctorCount);
 
             if (emptyBox) emptyBox.classList.toggle('hidden', records.length !== 0);
 
@@ -157,7 +164,7 @@
                 const fullName = `${firstName} ${lastName}`.trim();
                 const email = user.email ?? 'Sin correo';
                 const roleId = user.role_id ?? '';
-                const roleLabel = normalizeRole(roleId);
+                const roleLabel = roleId || 'Sin rol';
                 const status = user.status ?? '';
                 const statusLabel = normalizeStatus(status);
                 
@@ -165,7 +172,7 @@
                     ? 'bg-emerald-50 text-emerald-700'
                     : 'bg-slate-100 text-slate-500';
 
-                const roleClasses = roleId === 'admin'
+                const roleClasses = isAdminRole(roleId)
                     ? 'bg-[#FDF1F6] text-[#B5114A]'
                     : 'bg-sky-50 text-sky-700';
 
@@ -178,7 +185,7 @@
                                 '<div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ' + roleClasses + ' text-base font-bold transition-transform group-hover:scale-105">', escapeHtml(initial), '</div>',
                                 '<div>',
                                     '<h3 class="text-base font-semibold text-slate-900 break-words group-hover:text-[#B5114A] transition-colors">', escapeHtml(fullName), '</h3>',
-                                    '<p class="text-[10px] font-bold uppercase tracking-wider ' + (roleId === 'admin' ? 'text-[#B5114A]' : 'text-sky-700') + '">', escapeHtml(roleLabel), '</p>',
+                                    '<p class="text-[10px] font-bold uppercase tracking-wider ' + (isAdminRole(roleId) ? 'text-[#B5114A]' : 'text-sky-700') + '">', escapeHtml(roleLabel), '</p>',
                                 '</div>',
                             '</div>',
                             '<span class="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest ' + statusClasses + '">', escapeHtml(statusLabel), '</span>',

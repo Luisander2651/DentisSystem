@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Domain\Service;
 
-use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\Users\Domain\Entities\UserEntity;
 use App\Modules\Users\Domain\Exceptions\UserException;
+use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\Users\Domain\ValueObjects\UserId;
 use App\Modules\Users\Domain\ValueObjects\UserRoleId;
 use App\Modules\Users\Domain\ValueObjects\UserStatus;
@@ -35,14 +35,13 @@ class UserService
         $this->userRepository->save($user);
     }
 
+    /**
+     * BR-26: existence is not re-checked here. The only caller, UpdateUserUseCase, has
+     * already obtained this entity through findById(), which throws when the user is
+     * missing - so a second query could only confirm what the first one proved.
+     */
     public function updateUser(UserEntity $user): void
     {
-        $userExist = $this->userRepository->findById($user->id());
-
-        if (!$userExist) {
-            throw UserException::notFound($user->id());
-        }
-        
         $this->userRepository->save($user);
     }
 
@@ -58,7 +57,7 @@ class UserService
     {
         $user = $this->userRepository->findById($id);
 
-        if (!$user) {
+        if (! $user) {
             throw UserException::notFound($id);
         }
 
@@ -67,11 +66,11 @@ class UserService
 
     public function deleteById(UserId $id): void
     {
-        // ¿Existe el usuario antes de intentar borrarlo? 
+        // ¿Existe el usuario antes de intentar borrarlo?
         // Esto permite lanzar una excepción de dominio clara si el ID es basura.
         $user = $this->userRepository->findById($id);
 
-        if (!$user) {
+        if (! $user) {
             throw UserException::notFound($id);
         }
 

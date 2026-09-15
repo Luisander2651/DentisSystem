@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Infrastructure\Http\Requests;
 
+use App\Core\Http\Requests\TrimsPasswordFields;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class RegisterRequest extends FormRequest

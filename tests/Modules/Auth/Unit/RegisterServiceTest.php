@@ -64,7 +64,7 @@ it('rejects an email already held by a staff member (BR-13)', function () {
         name: UserName::create('Staff', 'Member'),
         email: new UserEmail('john.doe@example.com'),
         password: UserPasswordHash::createFromPlainText('Sup3rSecret!'),
-        roleId: UserRoleId::admin(),
+        roleId: UserRoleId::administrador(),
     );
 
     $users = Mockery::mock(UserRepositoryInterface::class);

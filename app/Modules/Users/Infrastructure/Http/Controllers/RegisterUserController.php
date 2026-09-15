@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace App\Modules\Users\Infrastructure\Http\Controllers;
 
 use App\Core\Authorization\Exceptions\AuthorizationException;
-use App\Modules\Users\Aplication\UseCases\SaveUserUseCase;
 use App\Modules\Users\Aplication\DTOs\SaveUserDTO;
-
 use App\Modules\Users\Aplication\Exceptions\UserAplicationExceptions;
+use App\Modules\Users\Aplication\UseCases\SaveUserUseCase;
 use App\Modules\Users\Domain\Exceptions\UserException;
 use App\Modules\Users\Domain\Exceptions\ValueObjectsException;
-
-use Illuminate\Http\Request;
+use App\Modules\Users\Infrastructure\Http\Requests\RegisterUserRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 final class RegisterUserController
 {
@@ -21,40 +20,39 @@ final class RegisterUserController
         private SaveUserUseCase $useCase
     ) {}
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(RegisterUserRequest $request): JsonResponse
     {
+        /** @var array{first_name:string,last_name:string,email:string,password:string,role_id:string} $data */
+        $data = $request->validated();
+
         try {
-            // 1. Recibimos los datos y creamos el DTO
-            // Nota: Aquí podrías usar un FormRequest de Laravel para validar tipos
-            $dto = SaveUserDTO::create(
-                firstName: $request->string('first_name')->value(),
-                lastName:  $request->string('last_name')->value(),
-                email:     $request->string('email')->value(),
-                password:  $request->string('password')->value(),
-                roleId:    $request->string('role_id')->value(),
-            );
+            $this->useCase->execute(SaveUserDTO::create(
+                firstName: $data['first_name'],
+                lastName: $data['last_name'],
+                email: $data['email'],
+                password: $data['password'],
+                roleId: $data['role_id'],
+            ));
 
-            // 2. Ejecutamos el Caso de Uso
-            $this->useCase->execute($dto);
-
-            // 3. Respuesta de éxito
-            return response()->json([
-                'message' => 'User registered successfully'
-            ], 201);
-
+            return response()->json(['message' => 'User registered successfully'], 201);
         } catch (UserException $e) {
-            // Capturamos errores de negocio (ej: email duplicado)
+            // Business conflict: the email already belongs to another staff member (BR-2).
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (AuthorizationException $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         } catch (ValueObjectsException $e) {
-            // Capturamos errores de validación de Value Objects (ej: nombre corto)
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (UserAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 409);
-        }catch (\Exception $e) {
-            // Errores inesperados
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+        } catch (\Exception $e) {
+            // BR-13 (SECURITY-15): the internal message stays in the log, never in the
+            // response.
+            Log::error('RegisterUserController: unexpected error', [
+                'exception' => $e::class,
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json(['error' => 'Internal server error'], 500);
         }
     }
 }

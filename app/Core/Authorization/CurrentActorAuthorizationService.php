@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Authorization;
 
 use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Modules\Users\Domain\ValueObjects\UserRoleId;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Support\Facades\Auth;
 
@@ -52,9 +53,10 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
             throw AuthorizationException::forbidden($permission);
         }
 
-        $roleName = strtolower((string) ($actor->role?->name ?? ''));
+        // BR-16: same single source of truth as OnlyAdmin.
+        $roleName = mb_strtolower((string) ($actor->role?->name ?? ''));
 
-        if ($roleName !== 'administrador') {
+        if ($roleName !== mb_strtolower(UserRoleId::administrador()->value)) {
             throw AuthorizationException::forbidden($permission);
         }
     }

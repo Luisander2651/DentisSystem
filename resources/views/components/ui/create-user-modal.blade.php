@@ -78,20 +78,23 @@
                             <select
                                 name="role_id"
                                 data-create-user-role
+                                data-testid="create-user-role-select"
                                 class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10 transition-all"
                                 required
                             >
-                                <option value="admin">Administrador</option>
-                                <option value="asistent">Asistente</option>
+                                <option value="Administrador">Administrador</option>
+                                <option value="Asistente">Asistente</option>
+                                <option value="Doctor">Doctor</option>
                             </select>
                         </div>
 
-                        <p data-create-user-error class="hidden rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"></p>
+                        <p data-create-user-error data-testid="create-user-error" class="hidden rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"></p>
 
                         <div class="flex items-center justify-end gap-3 pt-4">
                             <button
                                 type="button"
                                 data-create-user-cancel
+                                data-testid="create-user-cancel-button"
                                 class="cursor-pointer rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 active:scale-95"
                             >
                                 {{ $cancelText }}

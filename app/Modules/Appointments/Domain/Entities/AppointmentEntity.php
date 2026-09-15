@@ -73,7 +73,8 @@ final class AppointmentEntity
         string $userId,
         string $patientId,
         ?string $treatmentName,
-        ?string $userName,
+        ?string $userFirstName,
+        ?string $userLastName,
         ?string $patientName,
         ?string $treatmentTime,
         string $createdAt,
@@ -89,12 +90,29 @@ final class AppointmentEntity
             new UserId($userId),
             new PatientId($patientId),
             $treatmentName ? new TreatmentName($treatmentName) : null,
-            $userName ? UserName::fromString($userName) : null,
+            self::staffName($userFirstName, $userLastName),
             $patientName ? PatientName::fromString($patientName) : null,
             $treatmentTime ? TreatmentTime::fromInt((int) $treatmentTime) : null,
             new DateTimeImmutable($createdAt),
             new DateTimeImmutable($updatedAt)
         );
+    }
+
+    /**
+     * Finding 20 (Unit 4, option B). The staff name is built from the two columns it is
+     * stored in. It used to arrive as one concatenated string that UserName::fromString()
+     * split again, which bought nothing and cost two defects: the first/last boundary could
+     * land somewhere else, and a record with an empty surname threw on read - and since the
+     * repository maps the whole collection, one such doctor took the entire listing down
+     * with a 500.
+     */
+    private static function staffName(?string $firstName, ?string $lastName): ?UserName
+    {
+        if (trim(($firstName ?? '').($lastName ?? '')) === '') {
+            return null;
+        }
+
+        return UserName::create($firstName ?? '', $lastName ?? '');
     }
 
     public function reschedule(?AppointmentDate $newDate, ?AppointmentTime $newTime): void

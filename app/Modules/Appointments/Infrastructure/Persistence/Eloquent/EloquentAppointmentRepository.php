@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Modules\Appointments\Infrastructure\Persistence\Eloquent;
 
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
-use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
-use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
-use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
+use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
+use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
+use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentModel;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
-
 
 class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
 {
@@ -61,17 +60,16 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
             $query->where('patient_id', $patientId->value);
         }
 
-
         $appointments = $query->get();
 
-        return $appointments ? $appointments->map(fn($appointment) => $this->mapToDomain($appointment))->toArray() : [];
+        return $appointments ? $appointments->map(fn ($appointment) => $this->mapToDomain($appointment))->toArray() : [];
     }
 
     public function delete(AppointmentId $id): void
     {
         AppointmentModel::destroy($id->value);
     }
-    
+
     public function mapToDomain(object $model): AppointmentEntity
     {
         return AppointmentEntity::fromPrimitives(
@@ -84,8 +82,9 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
             (string) $model->user_id,
             (string) $model->patient_id,
             (string) $model->treatment?->name,
-            (string) $model->user?->first_name . ' ' . $model->user?->last_name,
-            (string) $model->patient?->first_name . ' ' . $model->patient?->last_name,
+            $model->user?->first_name,
+            $model->user?->last_name,
+            (string) $model->patient?->first_name.' '.$model->patient?->last_name,
             (string) $model->treatment?->time,
             $model->created_at->toDateTimeString(),
             $model->updated_at->toDateTimeString(),

@@ -4,68 +4,46 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Modules\Users\Domain\ValueObjects\UserRoleId;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\RoleModel;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 trait ActingAsStaff
 {
     /**
-     * UserRoleId::fromDatabaseId() only maps the database ids 1, 2 and 3, and
-     * Postgres sequences are NOT rolled back by RefreshDatabase, so an
-     * auto-incremented roles.id climbs past 3 as the suite runs and every code
-     * path that rebuilds a UserEntity from the database starts throwing. Ids are
-     * therefore pinned here: 1 = admin, 2 = asistent, 3 = doctor.
+     * Resolves a role by name, seeding the three canonical rows on first use.
+     *
+     * Unit 3 had to pin ids by hand here, because UserRoleId::fromDatabaseId() only maps
+     * 1, 2 and 3 while Postgres sequences are not rolled back by RefreshDatabase, so
+     * roles.id climbed past 3 as the suite ran and every path that rebuilt a UserEntity
+     * started throwing. BR-17 moved that guarantee into RoleSeeder, a production
+     * artefact, so the helper no longer has to compensate for it - it just seeds and
+     * looks the row up.
+     *
+     * Names are matched case-insensitively, so a test may ask for 'administrador' or
+     * 'Administrador' and get the same row.
      */
     protected function createRole(string $name): RoleModel
     {
-        $existing = RoleModel::query()->where('name', $name)->first();
+        $this->seedRoles();
 
-        if ($existing !== null) {
-            return $existing;
-        }
-
-        $preferred = match (strtolower($name)) {
-            'administrador', 'admin' => 1,
-            'doctor', 'odontologo' => 3,
-            default => 2,
-        };
-
-        $taken = RoleModel::query()->pluck('id')->all();
-        $id = $this->firstFreeRoleId($preferred, array_map('intval', $taken));
-
-        // `id` is not fillable, so it has to be assigned outside mass assignment,
-        // otherwise Eloquent drops it and Postgres hands out a sequence value again.
-        $role = new RoleModel(['name' => $name, 'description' => null]);
-        $role->id = $id;
-        $role->save();
-
-        return $role;
+        return RoleModel::query()->findOrFail(UserRoleId::fromString($name)->toDatabaseId());
     }
 
     /**
-     * Distinct role names can map to the same preferred slot - a test may create
-     * both 'administrador' and 'ADMINISTRADOR' to exercise case-insensitive
-     * matching - so the preferred id is only used when free.
-     *
-     * @param  list<int>  $taken
+     * Idempotent, and cheap after the first call: the seeder itself is an upsert.
      */
-    private function firstFreeRoleId(int $preferred, array $taken): int
+    protected function seedRoles(): void
     {
-        foreach ([$preferred, 1, 2, 3] as $candidate) {
-            if (! in_array($candidate, $taken, true)) {
-                return $candidate;
-            }
-        }
-
-        throw new \RuntimeException(
-            'All three role slots (1, 2, 3) are in use. UserRoleId::fromDatabaseId '
-            .'only maps those ids, so this test must reuse an existing role instead '
-            .'of creating a fourth one.'
-        );
+        (new RoleSeeder)->run();
     }
 
+    /**
+     * @param  array<string, mixed>  $overrides
+     */
     protected function createUserWithRole(string $roleName, array $overrides = []): UserModel
     {
         $roleId = $overrides['role_id'] ?? $this->createRole($roleName)->id;
@@ -82,9 +60,12 @@ trait ActingAsStaff
         ]));
     }
 
+    /**
+     * @param  array<string, mixed>  $overrides
+     */
     protected function actingAsAdmin(array $overrides = []): UserModel
     {
-        $user = $this->createUserWithRole('administrador', $overrides);
+        $user = $this->createUserWithRole('Administrador', $overrides);
         $this->actingAs($user, 'sanctum');
 
         return $user;
@@ -95,7 +76,12 @@ trait ActingAsStaff
         return $this->actingAsAdmin(['status' => 'inactive']);
     }
 
-    protected function actingAsNonAdminUser(string $roleName = 'recepcionista'): UserModel
+    /**
+     * Any staff member who is not an administrator. Defaults to Asistente; 'Doctor' is
+     * the other option. The pre-BR-16 default was 'recepcionista', a role that never
+     * existed in the roles table.
+     */
+    protected function actingAsNonAdminUser(string $roleName = 'Asistente'): UserModel
     {
         $user = $this->createUserWithRole($roleName);
         $this->actingAs($user, 'sanctum');
