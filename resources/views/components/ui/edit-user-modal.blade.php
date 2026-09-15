@@ -71,11 +71,13 @@
                                 <select
                                     name="role_id"
                                     data-edit-user-role
+                                    data-testid="edit-user-role-select"
                                     class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10 transition-all"
                                     required
                                 >
-                                    <option value="admin">Administrador</option>
-                                    <option value="asistent">Asistente</option>
+                                    <option value="Administrador">Administrador</option>
+                                    <option value="Asistente">Asistente</option>
+                                    <option value="Doctor">Doctor</option>
                                 </select>
                             </div>
 
@@ -84,6 +86,7 @@
                                 <select
                                     name="status"
                                     data-edit-user-status
+                                    data-testid="edit-user-status-select"
                                     class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10 transition-all"
                                     required
                                 >
@@ -93,7 +96,7 @@
                             </div>
                         </div>
 
-                        <p data-edit-user-error class="hidden rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"></p>
+                        <p data-edit-user-error data-testid="edit-user-error" class="hidden rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700"></p>
 
                         <div class="flex items-center justify-end gap-3 pt-4">
                             <button

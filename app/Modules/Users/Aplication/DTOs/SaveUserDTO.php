@@ -12,7 +12,6 @@ final readonly class SaveUserDTO
         public string $email,
         public string $password,
         public string $roleId,
-        public ?string $status = null,
     ) {}
 
     public static function create(
@@ -21,7 +20,6 @@ final readonly class SaveUserDTO
         string $email,
         string $password,
         string $roleId,
-        ?string $status = null,
     ): self {
         return new self(
             firstName: $firstName,
@@ -29,7 +27,6 @@ final readonly class SaveUserDTO
             email: $email,
             password: $password,
             roleId: $roleId,
-            status: $status,
         );
     }
 }

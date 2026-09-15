@@ -45,7 +45,7 @@ it('logs a staff member in', function () {
 it('resolves a shared email to the staff account first (BR-1)', function () {
     $sharedEmail = 'shared@example.com';
 
-    $this->createUserWithRole('recepcionista', [
+    $this->createUserWithRole('Asistente', [
         'email' => $sharedEmail,
         'password' => Hash::make('StaffPass1!'),
     ]);
@@ -63,7 +63,7 @@ it('resolves a shared email to the staff account first (BR-1)', function () {
 it('still authenticates the patient behind a shared email with their own password (BR-1)', function () {
     $sharedEmail = 'shared-fallthrough@example.com';
 
-    $this->createUserWithRole('recepcionista', [
+    $this->createUserWithRole('Asistente', [
         'email' => $sharedEmail,
         'password' => Hash::make('StaffPass1!'),
     ]);

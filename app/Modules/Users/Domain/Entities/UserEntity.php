@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Domain\Entities;
 
-use App\Core\Domain\UuidIdentifier;
 use App\Modules\Users\Domain\ValueObjects\PasswordHash;
 use App\Modules\Users\Domain\ValueObjects\UserEmail;
 use App\Modules\Users\Domain\ValueObjects\UserId;
+use App\Modules\Users\Domain\ValueObjects\UserName;
 use App\Modules\Users\Domain\ValueObjects\UserRoleId;
 use App\Modules\Users\Domain\ValueObjects\UserStatus;
-use App\Modules\Users\Domain\ValueObjects\UserName;
-
 use DateTimeImmutable;
 
 final class UserEntity
@@ -40,8 +38,8 @@ final class UserEntity
             $password,
             $roleId,
             UserStatus::active(),
-            new DateTimeImmutable(),
-            new DateTimeImmutable()
+            new DateTimeImmutable,
+            new DateTimeImmutable
         );
     }
 
@@ -89,25 +87,7 @@ final class UserEntity
             $this->status = UserStatus::fromString($status);
         }
 
-        $this->updatedAt = new DateTimeImmutable();
-    }
-
-    public function activate(): void
-    {
-        if ($this->status->isActive()) {
-            return;
-        }
-        $this->status = UserStatus::active();
-        $this->updatedAt = new DateTimeImmutable();
-    }
-
-    public function deactivate(): void
-    {
-        if ($this->status->isInactive()) {
-            return;
-        }
-        $this->status = UserStatus::inactive();
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     public function isPasswordValid(string $plainPassword): bool
@@ -118,13 +98,7 @@ final class UserEntity
     public function changePassword(PasswordHash $newPassword): void
     {
         $this->password = $newPassword;
-        $this->updatedAt = new DateTimeImmutable();
-    }
-
-    public function changeName(UserName $newName): void
-    {
-        $this->name = $newName;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     // Getters para que el Repositorio pueda leer los datos al guardar
@@ -132,30 +106,37 @@ final class UserEntity
     {
         return $this->id;
     }
+
     public function name(): UserName
     {
         return $this->name;
     }
+
     public function email(): UserEmail
     {
         return $this->email;
     }
+
     public function password(): PasswordHash
     {
         return $this->password;
     }
+
     public function role(): UserRoleId
     {
         return $this->role;
     }
+
     public function status(): UserStatus
     {
         return $this->status;
     }
+
     public function createdAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }
+
     public function updatedAt(): DateTimeImmutable
     {
         return $this->updatedAt;

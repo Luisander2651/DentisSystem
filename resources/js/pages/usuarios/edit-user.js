@@ -5,6 +5,21 @@
 
     window.__usersEditInit = true;
 
+    // The API answers 422 with Laravel's validation shape ({message, errors:{field:[...]}})
+    // since BR-12, and 4xx business errors with {error}. Reading only `error`/`message`
+    // would surface the generic "The given data was invalid." instead of the actual reason.
+    function extractErrorMessage(data, fallback) {
+        if (data && data.errors) {
+            var fields = Object.keys(data.errors);
+
+            if (fields.length && Array.isArray(data.errors[fields[0]]) && data.errors[fields[0]].length) {
+                return data.errors[fields[0]][0];
+            }
+        }
+
+        return (data && (data.error || data.message)) || fallback;
+    }
+
     function getCookie(name) {
         var value = '; ' + document.cookie;
         var parts = value.split('; ' + name + '=');
@@ -16,20 +31,11 @@
         return null;
     }
 
-    function normalizeRole(roleId) {
-        if (roleId === 'admin' || roleId === 'asistent') {
-            return roleId;
-        }
+    // BR-16: one vocabulary, the one the roles table stores, so no translation is needed.
+    var KNOWN_ROLES = ['Administrador', 'Asistente', 'Doctor'];
 
-        if (roleId === 'Administrador') {
-            return 'admin';
-        }
-
-        if (roleId === 'Asistente') {
-            return 'asistent';
-        }
-
-        return 'asistent';
+    function isKnownRole(roleId) {
+        return KNOWN_ROLES.indexOf(roleId) !== -1;
     }
 
     function normalizeStatus(status) {
@@ -116,7 +122,15 @@
         firstNameInput.value = userData.firstName || '';
         lastNameInput.value = userData.lastName || '';
         resetPasswordField();
-        roleSelect.value = normalizeRole(userData.roleId || 'asistent');
+        // BR-28: an unrecognised role is surfaced, never silently rewritten. The previous
+        // fall-through to 'asistent' meant opening and saving a Doctor demoted them.
+        if (isKnownRole(userData.roleId)) {
+            roleSelect.value = userData.roleId;
+        } else {
+            roleSelect.selectedIndex = -1;
+            showModalError('El rol "' + (userData.roleId || 'desconocido') + '" no es valido. Selecciona uno antes de guardar.');
+        }
+
         statusSelect.value = normalizeStatus(userData.status || 'active');
 
         modal.classList.remove('hidden');
@@ -156,7 +170,12 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo actualizar el usuario.');
+            // BR-18: a missing user is now 404 where this endpoint used to answer 409.
+            if (response.status === 404) {
+                throw new Error('El usuario ya no existe. Actualiza la lista.');
+            }
+
+            throw new Error(extractErrorMessage(data, 'No se pudo actualizar el usuario.'));
         }
     }
 
@@ -197,7 +216,7 @@
         var payload = {
             first_name: firstNameInput.value.trim(),
             last_name: lastNameInput.value.trim(),
-            role_id: normalizeRole(roleSelect.value),
+            role_id: roleSelect.value,
             status: normalizeStatus(statusSelect.value),
             new_password: newPasswordInput.value.trim(),
         };

@@ -5,6 +5,21 @@
 
     window.__usersCreateInit = true;
 
+    // The API answers 422 with Laravel's validation shape ({message, errors:{field:[...]}})
+    // since BR-12, and 4xx business errors with {error}. Reading only `error`/`message`
+    // would surface the generic "The given data was invalid." instead of the actual reason.
+    function extractErrorMessage(data, fallback) {
+        if (data && data.errors) {
+            var fields = Object.keys(data.errors);
+
+            if (fields.length && Array.isArray(data.errors[fields[0]]) && data.errors[fields[0]].length) {
+                return data.errors[fields[0]][0];
+            }
+        }
+
+        return (data && (data.error || data.message)) || fallback;
+    }
+
     function getCookie(name) {
         var value = '; ' + document.cookie;
         var parts = value.split('; ' + name + '=');
@@ -80,7 +95,7 @@
         hideModalError();
         form.reset();
         resetPasswordField();
-        roleSelect.value = 'admin';
+        roleSelect.value = 'Administrador';
 
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
@@ -118,7 +133,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo crear el usuario.');
+            throw new Error(extractErrorMessage(data, 'No se pudo crear el usuario.'));
         }
     }
 

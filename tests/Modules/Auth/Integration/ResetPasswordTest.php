@@ -132,7 +132,7 @@ it('returns 404 when the account behind the token no longer exists', function ()
 it('resets only the staff password when the email exists on both tables (BR-19)', function () {
     $sharedEmail = 'shared-reset@example.com';
 
-    $staff = $this->createUserWithRole('recepcionista', [
+    $staff = $this->createUserWithRole('Asistente', [
         'email' => $sharedEmail,
         'password' => Hash::make('StaffOld1!'),
     ]);

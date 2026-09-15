@@ -5,6 +5,21 @@
 
     window.__usersDeleteInit = true;
 
+    // The API answers 422 with Laravel's validation shape ({message, errors:{field:[...]}})
+    // since BR-12, and 4xx business errors with {error}. Reading only `error`/`message`
+    // would surface the generic "The given data was invalid." instead of the actual reason.
+    function extractErrorMessage(data, fallback) {
+        if (data && data.errors) {
+            var fields = Object.keys(data.errors);
+
+            if (fields.length && Array.isArray(data.errors[fields[0]]) && data.errors[fields[0]].length) {
+                return data.errors[fields[0]][0];
+            }
+        }
+
+        return (data && (data.error || data.message)) || fallback;
+    }
+
     function getCookie(name) {
         var value = '; ' + document.cookie;
         var parts = value.split('; ' + name + '=');
@@ -65,7 +80,13 @@
         });
 
         if (!response.ok) {
-            throw new Error(payload.error || payload.message || 'No se pudo eliminar el usuario.');
+            // BR-18: a missing user is now 404 where this endpoint used to answer 409,
+            // and BR-21 answers 403 when an administrator tries to delete themselves.
+            if (response.status === 404) {
+                throw new Error('El usuario ya no existe. Actualiza la lista.');
+            }
+
+            throw new Error(extractErrorMessage(payload, 'No se pudo eliminar el usuario.'));
         }
     }
 

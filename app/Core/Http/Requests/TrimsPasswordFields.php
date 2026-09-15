@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Auth\Infrastructure\Http\Requests;
+namespace App\Core\Http\Requests;
 
 /**
- * BR-23: normalises password fields by trimming leading and trailing whitespace.
+ * Normalises password fields by trimming leading and trailing whitespace.
+ *
+ * Introduced by Unit 3 as BR-23 for the Auth module and moved to Core by Unit 4 (BR-14),
+ * where the Users module needs exactly the same rule for `password` and `new_password`.
+ * Keeping one copy is deliberate: two implementations of the same credential-normalising
+ * rule can drift, and a drift here silently locks accounts out.
  *
  * Laravel's TrimStrings middleware exempts `current_password`, `password` and
  * `password_confirmation`, but this project uses `confirm_password` and
