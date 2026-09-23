@@ -10,7 +10,7 @@ Una clínica dental necesita coordinar tres cosas a la vez: quién atiende a qui
 
 ## Funcionalidades principales
 
-- **Agenda de citas**: creación, edición, cancelación y reprogramación de citas, con validación automática de solapamiento de horarios por doctor/día.
+- **Agenda de citas**: creación, edición, cancelación y reprogramación de citas, con validación automática de solapamiento de horarios para toda la clínica (dos citas no canceladas del mismo día no pueden coincidir, sin importar el doctor).
 - **Confirmación por WhatsApp**: al crear una cita, se dispara automáticamente un mensaje de confirmación al paciente vía Twilio (envío asíncrono, no bloquea la respuesta al usuario).
 - **Gestión de pacientes**: datos de contacto, dirección y datos médicos (alergias, medicamentos, tipo de sangre) por paciente.
 - **Seguimiento clínico / expedientes**: al completar una cita se registra diagnóstico, síntomas, procedimiento realizado y recomendaciones, junto con las recetas asociadas (medicamento, dosis, frecuencia, duración).
