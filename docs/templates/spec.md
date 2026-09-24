@@ -4,6 +4,7 @@ slug: {{slug}}
 status: {{draft|inferred|approved|implemented|released}}
 confidence: {{alta|media|baja}}   # solo si status=inferred
 created: {{date}}
+extends: []   # specs cuyo comportamiento cambia esta spec, p. ej. [005, 006]
 ---
 
 # {{NNN}} · {{nombre de la feature}}
@@ -25,6 +26,13 @@ created: {{date}}
 - Quién puede hacer qué: {{rol → acción permitida / denegada}}
 - Casos de abuso (cada uno con su criterio `CA` marcado `(abuso)`):
   - Como {{atacante o usuario malintencionado}}, intento {{acción}} → {{resultado esperado: se rechaza, se limita, se registra}}
+
+<!-- if la feature toca datos sensibles, autenticación o permisos -->
+
+## Auditoría
+Eventos que deben quedar registrados, cada uno como criterio `CA` verificable:
+- {{evento}} → registra {{actor, acción, recurso, resultado}} (ver `docs/observability.md`)
+<!-- endif -->
 
 ## Requisitos no funcionales
 - {{performance, seguridad, accesibilidad}}

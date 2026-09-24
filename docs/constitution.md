@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 ratified: 2026-09-23
-last_amended: 2026-09-23
+last_amended: 2026-09-24
 status: approved
 ---
 
@@ -81,6 +81,11 @@ Los principios se exigen a todo código **nuevo o modificado**.
 **Cómo se verifica:** `/review` del JS y Blade tocados.
 **Por qué:** Hoy la interfaz muestra acciones que el backend rechaza (asistente y paciente en el sidebar), y la futura app Android debe obtener las mismas reglas.
 
+### P14. Trazabilidad: correlación y auditoría
+**Regla:** Cada petición lleva un identificador (`X-Request-Id`, aceptado del cliente si es válido o generado) que se devuelve en la respuesta y se añade al contexto de todos sus logs y de los trabajos en cola que dispare. Los logs nuevos usan contexto estructurado (`Log::info('evento', [...])`). Toda feature que toca datos sensibles, autenticación o permisos emite en el registro de auditoría (solo anexado) los eventos que define su spec, con actor, acción, recurso, resultado y fecha. Nivel de log por defecto en producción: `info`.
+**Cómo se verifica:** `aidd.py validate` (secciones "Auditoría" en la spec y "Observabilidad" en el plan); un test por evento de auditoría; `/review`.
+**Por qué:** La LFPDPPP trata los datos de salud como sensibles y hoy no queda rastro de quién accede a un expediente (riesgo 11 de [security.md](security.md), roadmap objetivo 5). Detalle en [observability.md](observability.md).
+
 ## Restricciones
 - Stack fijo: PHP 8.4, Laravel 12, PostgreSQL 16, Pest 3, Tailwind 4; cambiarlo requiere ADR.
 - Prototipo sin datos reales de pacientes. **Antes de cargar datos reales**: cerrar el control de acceso (roadmap objetivo 1), cumplir las obligaciones de la LFPDPPP para datos personales sensibles (aviso de privacidad, consentimiento expreso, derechos ARCO; ver [security.md](security.md)) y cifrar en reposo los datos de salud.
@@ -108,3 +113,4 @@ Los principios se exigen a todo código **nuevo o modificado**.
 |---|---|---|---|
 | 1.0.0 | 2026-09-22 | Versión inicial | /init |
 | 1.0.0 | 2026-09-23 | Ratificada por el usuario, sin cambios de contenido | Aprobación explícita |
+| 1.1.0 | 2026-09-24 | Añade P14 (trazabilidad: correlación y auditoría) | Propuesta de `/init --upgrade` a 1.5.3, aprobada por el usuario |

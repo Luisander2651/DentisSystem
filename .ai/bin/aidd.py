@@ -17,7 +17,7 @@ import os
 import re
 import sys
 
-VERSION = "1.4.1"
+VERSION = "1.5.2"
 
 SPEC_STATES = {"draft", "inferred", "approved", "implemented", "released"}
 PLAN_STATES = {"draft", "approved", "blocked"}
@@ -218,6 +218,15 @@ def validate_spec_dir(d, root):
         rep.err("spec: quedan {{placeholders}} sin sustituir")
     cas = spec_cas(s["spec"])
     ids = [c[0] for c in cas]
+    own = os.path.basename(os.path.normpath(d))[:3]
+    extends = re.findall(r"\d{3}", fm.get("extends", ""))
+    if extends and root:
+        existing = {os.path.basename(x)[:3] for x in spec_dirs(root)}
+        for n in extends:
+            if n == own:
+                rep.err("spec: extends se incluye a sí misma")
+            elif n not in existing:
+                rep.err(f"spec: extends apunta a {n}, que no existe en docs/specs/")
     if not cas:
         rep.err("spec: no hay criterios de aceptación numerados (CA1, CA2…)")
     dup = {i for i in ids if ids.count(i) > 1}
@@ -232,10 +241,18 @@ def validate_spec_dir(d, root):
         if section(body(s["spec"]), title) is None:
             rep.err(f"spec: falta la sección '{title}'")
     sec_sec = section(body(s["spec"]), "Seguridad y privacidad")
+    sensitive = sec_sec is not None and "no aplica" not in sec_sec.lower()
     if sec_sec is None:
         (rep.warn if st == "inferred" else rep.err)("spec: falta la sección 'Seguridad y privacidad'")
-    elif "no aplica" not in sec_sec.lower() and not any(c[2] for c in cas):
+    elif sensitive and not any(c[2] for c in cas):
         rep.warn("spec: la sección de seguridad no dice 'No aplica' y no hay criterios '(abuso)'")
+    if sensitive and st != "inferred" and section(body(s["spec"]), "Auditoría") is None:
+        rep.warn("spec: toca datos sensibles o permisos pero no tiene sección 'Auditoría' "
+                 "(eventos que deben registrarse)")
+    for line in (section(body(s["spec"]), "Criterios de aceptación") or "").splitlines():
+        m = CA_DEF_RE.match(line)
+        if m and m.group(1).lower() == "x" and "HOY NO SE CUMPLE" in line.upper():
+            rep.err(f"spec: {m.group(2)} está marcado [x] pero dice 'HOY NO SE CUMPLE'")
     if st in {"implemented", "released"}:
         open_cas = [c[0] for c in cas if not c[1]]
         if open_cas:
@@ -276,6 +293,9 @@ def validate_spec_dir(d, root):
             rep.warn("plan: no tiene sección 'Modelo de amenazas'")
         if section(body(ptext), "Rollout") is None:
             rep.err("plan: falta la sección 'Rollout'")
+        if sensitive and section(body(ptext), "Observabilidad") is None:
+            rep.warn("plan: la spec toca datos sensibles o permisos y el plan no tiene sección "
+                     "'Observabilidad' (logs, eventos de auditoría, métricas)")
 
     # --- tasks
     if s["tasks"]:

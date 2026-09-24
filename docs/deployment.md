@@ -107,7 +107,7 @@ curl -fsS https://TODO-dominio/up
 ## Verificación post-deploy
 - Health check: `GET /up` (Laravel, `bootstrap/app.php`).
 - Smoke tests: login de un administrador, carga de `/agenda`, creación de una cita de prueba y comprobación de que el worker procesa el evento.
-- Logs: Alloy → Loki → Grafana (puerto 3000, solo por túnel SSH). Métricas y alertas: TODO(init): no existen.
+- Logs: Alloy → Loki → Grafana (puerto 3000, solo por túnel SSH) recoge el stdout/stderr de los contenedores; los logs de Laravel llegan porque en local se usa `LOG_CHANNEL=stderr` (confirmado por el usuario); `.env.example` todavía declara `stack` → `single`, así que el `.env` del VPS debe usar `stderr`. Métricas y alertas: TODO(init): no existen. Ver [observability.md](observability.md).
 
 ## Riesgos conocidos
 - **Sin rollback probado** ni backups automáticos de PostgreSQL.

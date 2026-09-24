@@ -11,13 +11,13 @@ stack:
   database: "PostgreSQL 16 (Eloquent); Redis 7 (tokens de reset)"
   package_manager: "composer + npm"
 packages: []
-constitution_version: 1.0.0
+constitution_version: 1.1.0
 workflow:
   enforcement: warn            # off | warn (pide aprobación) | block — lo aplica el hook del plugin
   # Flujo AI-DLC previo en pausa: reglas en AIDLC.md, estado en aidlc-docs/aidlc-state.md
   # (Unidad 5 ContentManagement a medias; Unidades 6 Email y 7 whatsApp pendientes).
   legacy_workflow: aidlc-paused
-skills_version: 1.4.1   # versión del paquete de skills con que se inicializó
+skills_version: 1.5.3   # versión del paquete de skills con que se inicializó
 deploy:
   strategy: manual             # none | manual | ci-on-merge | ci-on-tag
   platform: "VPS con Docker Compose (planificado, aún no existe)"
@@ -44,6 +44,13 @@ security:
       - docker-compose.yml
       - docker/
       - phpunit.xml
+observability:
+  log_level_prod: info         # roadmap objetivo 5
+  correlation_header: X-Request-Id   # propuesto; el objetivo 5 pide un identificador por petición en logs y respuesta
+  audit:
+    required: true             # LFPDPPP: datos de salud = datos personales sensibles
+    events: [login, login_failed, access_denied, sensitive_read, sensitive_write, role_change]
+    retention: "5 años (como el expediente clínico); base legal por confirmar"
 skills:
   enabled: [design]
 paths:
@@ -52,6 +59,7 @@ paths:
   roadmap: docs/roadmap.md
   deployment: docs/deployment.md
   security: docs/security.md
+  observability: docs/observability.md
   changelog: CHANGELOG.md
   specs: docs/specs
   adr: docs/adr

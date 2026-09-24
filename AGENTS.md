@@ -73,6 +73,7 @@ en el flujo AI-DLC. Sus reglas están en [AIDLC.md](AIDLC.md) y su estado en
 - [Arquitectura](docs/architecture.md)
 - [Despliegue](docs/deployment.md) — entornos, deploy y rollback
 - [Seguridad](docs/security.md) — datos sensibles, auth, herramientas y excepciones
+- [Observabilidad](docs/observability.md) — logs, correlación, auditoría, métricas y brechas
 - [Roadmap](docs/roadmap.md) — etapa actual y objetivos
 - [Specs](docs/specs/README.md)
 - [ADRs](docs/adr/)

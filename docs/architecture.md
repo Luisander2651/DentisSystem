@@ -117,7 +117,7 @@ Crear una cita:
 ## Backend
 - Contratos de API: no hay OpenAPI. El contrato implícito son los `JsonResource` de cada módulo; forma de respuesta `{"message"}` en escrituras, `{"error"}` en errores y `{"data": [...]}` en lecturas.
 - Autenticación y autorización: tokens personales de Sanctum en cookie `auth_token` (httpOnly); middleware `only.admin` y `assertCan` para permisos (solo el administrador tiene permisos en la lista actual). Detalle y riesgos en [security.md](security.md).
-- Observabilidad: logs de Laravel (`stack` → `single`) recogidos por Alloy → Loki → Grafana en `docker-compose.yml`; health check `/up`; sin métricas de aplicación.
+- Observabilidad: logs de Laravel en `storage/logs/laravel.log` (`stack` → `single`); Alloy → Loki → Grafana (`docker-compose.yml`) recoge solo el stdout/stderr de los contenedores, así que hoy **no** recibe los logs de la aplicación; health check `/up`; sin métricas, correlación ni auditoría. Detalle en [observability.md](observability.md).
 - Seguridad: rate limiting `throttle:api` (10/min por IP sin autenticar, 100/min por usuario); ver [security.md](security.md).
 
 ## Contrato entre capas
