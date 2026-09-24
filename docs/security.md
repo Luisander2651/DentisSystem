@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # Seguridad de Dentissa
@@ -91,19 +91,96 @@ Reglas base en `shared/agent-security.md` del plugin. Específicas de este proye
 Ordenados por severidad. Ninguno bloquea mientras el prototipo no tenga datos reales; **todos los
 de severidad alta bloquean el primer despliegue a producción** (P12) salvo excepción registrada arriba.
 
-1. **Alta — Control de acceso roto (A01).** Las rutas de pacientes, subrecursos, expediente y citas solo exigen `auth:sanctum`, y el guard `sanctum` no fija provider en `config/auth.php`, así que acepta tokens de pacientes. Un paciente autorregistrado puede leer y modificar datos de salud de otros pacientes y crear o modificar citas ajenas; cualquier staff puede cambiar la contraseña de un paciente. Corrección: restringir a staff, comprobar la propiedad del recurso, fijar el provider y añadir tests de acceso denegado. (Roadmap objetivo 1; specs 005, 006, 007.)
-2. **Alta — Datos de salud sin cifrar en reposo.** Corrección: casts `encrypted` en los campos clínicos y de contacto, más cifrado de volumen y backups.
-3. **Media — Fuga de detalles internos.** 48 controladores devuelven `$e->getMessage()` en respuestas 500 (Patients, Appointments, AppointmentTracking, ContentManagement).
-4. **Media — Contenido oculto expuesto en la API pública** (spec 011).
-5. **Media — CSRF.** El Bearer inyectado desde la cookie no pasa por la protección CSRF de Sanctum; depende de `SameSite=lax`. Corrección: `SameSite=strict` o una cabecera o token anti-CSRF en peticiones que cambian estado.
-6. **Media — Sin cabeceras de seguridad** (CSP, HSTS, X-Frame-Options, X-Content-Type-Options) ni `config/cors.php` publicado.
-7. **Media — Subida de imágenes sin límite de tamaño ni re-codificación** (spec 012).
-8. **Media — Los tokens de sesión no se revocan tras restablecer la contraseña** (spec 003).
-9. **Media — Datos personales en logs:** el flujo de WhatsApp registra el teléfono y las variables de la plantilla; `.env.example` trae `LOG_LEVEL=debug`.
-10. **Baja — Configuración por defecto insegura en `.env.example`:** `APP_DEBUG=true`, `SESSION_ENCRYPT=false`.
-11. **Baja — Sin eventos de auditoría:** logins fallidos, accesos denegados y lecturas de expedientes no se registran.
-12. **Baja — `PatientModel` sin `$hidden`** para el hash de la contraseña; `$fillable` amplio en `PatientModel` y `UserModel`.
-13. **Baja — Acciones de GitHub fijadas por tag, no por SHA.**
+Formato 1.5.6 (numeración añadida por `/init --upgrade` a 1.6.0, 2026-09-24; contenido sin
+cambios). Estados: pendiente · en curso (spec NNN) · mitigada (vX.Y.Z) · aceptada (excepción EX<n>).
+"(derivada)" marca una corrección que el riesgo no escribía de forma explícita y se deduce de su
+descripción o del principio que la exige. Un riesgo solo está mitigado cuando todas sus
+correcciones están mitigadas o aceptadas.
+
+### RS1 · Alta — Control de acceso roto (A01)
+Las rutas de pacientes, subrecursos, expediente y citas solo exigen `auth:sanctum`, y el guard `sanctum` no fija provider en `config/auth.php`, así que acepta tokens de pacientes. Un paciente autorregistrado puede leer y modificar datos de salud de otros pacientes y crear o modificar citas ajenas; cualquier staff puede cambiar la contraseña de un paciente. (Roadmap objetivo 1; specs 005, 006, 007.)
+
+Correcciones:
+- RS1.a Restringir las rutas de pacientes, subrecursos, expediente y citas a staff — estado: en curso (spec 014)
+- RS1.b Comprobar la propiedad del recurso — estado: pendiente (spec 013, CA24)
+- RS1.c Fijar el provider del guard `sanctum` — estado: pendiente (spec 013, CA23)
+- RS1.d Añadir tests de acceso denegado — estado: en curso (spec 014)
+
+### RS2 · Alta — Datos de salud sin cifrar en reposo
+
+Correcciones:
+- RS2.a Casts `encrypted` en los campos clínicos y de contacto — estado: pendiente (roadmap, Próxima etapa)
+- RS2.b Cifrado de volumen y de backups — estado: pendiente (roadmap, Próxima etapa)
+
+### RS3 · Media — Fuga de detalles internos
+48 controladores devuelven `$e->getMessage()` en respuestas 500 (Patients, Appointments, AppointmentTracking, ContentManagement).
+
+Correcciones:
+- RS3.a Respuestas 500 genéricas, sin `$e->getMessage()` (derivada, P7) — estado: en curso (spec 014)
+
+### RS4 · Media — Contenido oculto expuesto en la API pública
+(spec 011).
+
+Correcciones:
+- RS4.a No exponer contenido oculto en la API pública (derivada, spec 011) — estado: pendiente
+
+### RS5 · Media — CSRF
+El Bearer inyectado desde la cookie no pasa por la protección CSRF de Sanctum; depende de `SameSite=lax`.
+
+Correcciones:
+- RS5.a `SameSite=strict` o una cabecera o token anti-CSRF en peticiones que cambian estado — estado: pendiente
+
+### RS6 · Media — Sin cabeceras de seguridad
+(CSP, HSTS, X-Frame-Options, X-Content-Type-Options) ni `config/cors.php` publicado.
+
+Correcciones:
+- RS6.a Cabeceras de seguridad CSP, HSTS, X-Frame-Options y X-Content-Type-Options (derivada) — estado: pendiente
+- RS6.b Publicar `config/cors.php` restrictivo (derivada) — estado: pendiente
+
+### RS7 · Media — Subida de imágenes sin límite de tamaño ni re-codificación
+(spec 012).
+
+Correcciones:
+- RS7.a Límite de tamaño en la subida de imágenes (derivada, spec 012) — estado: pendiente
+- RS7.b Re-codificar las imágenes subidas (derivada, spec 012) — estado: pendiente
+
+### RS8 · Media — Los tokens de sesión no se revocan tras restablecer la contraseña
+(spec 003).
+
+Correcciones:
+- RS8.a Revocar los tokens de sesión al restablecer la contraseña (derivada, spec 003) — estado: pendiente
+
+### RS9 · Media — Datos personales en logs
+el flujo de WhatsApp registra el teléfono y las variables de la plantilla; `.env.example` trae `LOG_LEVEL=debug`.
+
+Correcciones:
+- RS9.a Retirar teléfono, nombre y variables de plantilla de los logs (derivada; detalle en OB2) — estado: pendiente (roadmap objetivo 5; la spec 014 retira los de `CreateAppointmentController`)
+- RS9.b `LOG_LEVEL=info` por defecto en `.env.example` (derivada) — estado: pendiente (roadmap objetivo 5)
+
+### RS10 · Baja — Configuración por defecto insegura en `.env.example`
+`APP_DEBUG=true`, `SESSION_ENCRYPT=false`.
+
+Correcciones:
+- RS10.a `APP_DEBUG=false` en `.env.example` (derivada) — estado: pendiente
+- RS10.b `SESSION_ENCRYPT=true` en `.env.example` (derivada) — estado: pendiente
+
+### RS11 · Baja — Sin eventos de auditoría
+logins fallidos, accesos denegados y lecturas de expedientes no se registran.
+
+Correcciones:
+- RS11.a Registrar eventos de auditoría de logins, accesos denegados y lecturas de expedientes (derivada; detalle en OB1) — estado: pendiente (roadmap objetivo 5)
+
+### RS12 · Baja — `PatientModel` sin `$hidden`
+para el hash de la contraseña; `$fillable` amplio en `PatientModel` y `UserModel`.
+
+Correcciones:
+- RS12.a `$hidden` para el hash de la contraseña en `PatientModel` (derivada) — estado: pendiente
+- RS12.b Acotar `$fillable` en `PatientModel` y `UserModel` (derivada) — estado: pendiente
+
+### RS13 · Baja — Acciones de GitHub fijadas por tag, no por SHA
+
+Correcciones:
+- RS13.a Fijar las acciones de GitHub a un SHA (derivada) — estado: pendiente
 
 Controles verificados: sin `DB::raw`/`whereRaw` con entrada del usuario; sin `{!! !!}` en Blade;
 versiones de Composer fijadas (SECURITY-10); respuesta neutra en el reset (sin enumeración); rate

@@ -17,7 +17,7 @@ workflow:
   # Flujo AI-DLC previo en pausa: reglas en AIDLC.md, estado en aidlc-docs/aidlc-state.md
   # (Unidad 5 ContentManagement a medias; Unidades 6 Email y 7 whatsApp pendientes).
   legacy_workflow: aidlc-paused
-skills_version: 1.5.3   # versión del paquete de skills con que se inicializó
+skills_version: 1.6.0   # versión del paquete de skills con que se inicializó
 deploy:
   strategy: manual             # none | manual | ci-on-merge | ci-on-tag
   platform: "VPS con Docker Compose (planificado, aún no existe)"

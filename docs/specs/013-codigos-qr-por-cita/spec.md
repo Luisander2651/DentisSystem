@@ -18,7 +18,7 @@ extends: [014]
 La clínica quiere que el paciente registre su llegada sin intervención del personal: el paciente
 muestra en su app el QR de su cita, un lector fijo en recepción lo escanea y el sistema valida y
 registra la entrada automáticamente. Hoy la cita solo existe en el panel web y no hay forma
-verificable de registrar la llegada.
+verificable de registrar la llegada. Además, esta spec atiende **parcialmente** RS1 de `docs/security.md` (correcciones RS1.b y RS1.c; RS1.a y RS1.d las cubre la spec 014).
 
 ## Historias de usuario
 - Como paciente, quiero ver en mi app el QR de mis próximas citas para presentarlo al llegar.
@@ -48,8 +48,8 @@ verificable de registrar la llegada.
 - [ ] CA20 · (abuso) Como observador en recepción, leo la respuesta del lector → solo indica concedido o el motivo del rechazo; nunca incluye datos personales ni clínicos del paciente.
 - [ ] CA21 · (abuso) Sin autenticar, pido el QR de una cita → 401.
 - [ ] CA22 · (abuso) Como atacante, provoco un fallo del almacenamiento o de la generación del QR → la respuesta no revela detalles de la infraestructura.
-- [ ] CA23 · (abuso) Como paciente autenticado, uso mi token en cualquier ruta de staff (pacientes, expedientes, agenda, citas, usuarios, contenido) → la autenticación de staff lo rechaza por sí misma, sin depender del middleware de staff de la spec 014. Y un token de staff no sirve en las rutas de paciente. Los pacientes y el staff se autentican por separado (riesgo 1 de `docs/security.md`: "fijar el provider").
-- [ ] CA24 · (abuso) Como paciente autenticado, intento leer o modificar por cualquier ruta de paciente (citas, QR y cualquier otra que añada esta spec) un recurso de otro paciente, cambiando el identificador en la petición → se rechaza igual que si no existiera y no se lee ni cambia ningún dato (riesgo 1: "comprobar la propiedad del recurso").
+- [ ] CA23 · (abuso) Como paciente autenticado, uso mi token en cualquier ruta de staff (pacientes, expedientes, agenda, citas, usuarios, contenido) → la autenticación de staff lo rechaza por sí misma, sin depender del middleware de staff de la spec 014. Y un token de staff no sirve en las rutas de paciente. Los pacientes y el staff se autentican por separado (RS1.c de `docs/security.md`).
+- [ ] CA24 · (abuso) Como paciente autenticado, intento leer o modificar por cualquier ruta de paciente (citas, QR y cualquier otra que añada esta spec) un recurso de otro paciente, cambiando el identificador en la petición → se rechaza igual que si no existiera y no se lee ni cambia ningún dato (RS1.b de `docs/security.md`).
 
 ## Fuera de alcance
 - Firmware del ESP32 y hardware del lector (solo se define lo que el servidor recibe y responde).
@@ -59,6 +59,17 @@ verificable de registrar la llegada.
 - Expiración automática por tiempo (cron o columna `expires_at`); la regla "solo el día de la cita" se evalúa al escanear.
 - Envío del QR al paciente por WhatsApp o email.
 - Limpieza periódica de imágenes huérfanas (CA11 solo las registra).
+
+## Cobertura de riesgos
+Esta spec atiende **parcialmente** RS1 de `docs/security.md` (sus correcciones b y c, traídas desde la
+spec 014).
+
+| Corrección | Alcance | Criterios / motivo y destino |
+|---|---|---|
+| RS1.a Restringir a staff | fuera | Ya la cubre la spec 014 |
+| RS1.b Propiedad del recurso | dentro | CA16, CA24 |
+| RS1.c Provider del guard `sanctum` | dentro | CA23 |
+| RS1.d Tests de acceso denegado | fuera | Los cubre la spec 014; aquí, los casos de abuso CA16, CA21, CA23 y CA24 |
 
 ## Seguridad y privacidad
 - Datos sensibles involucrados: el QR es una **credencial de acceso** a la cita; contiene solo un identificador firmado, nunca datos personales ni clínicos. El registro de entrada guarda fecha, hora y lector.
@@ -86,7 +97,7 @@ verificable de registrar la llegada.
 - Los controles de acceso de esta feature (CA16, CA17, CA21) se implementan en sus propios endpoints, sin depender de que el objetivo 1 del roadmap (cerrar el control de acceso general) esté terminado.
 - El paciente usa su cuenta actual (registro de la spec 002 o alta por el staff) para iniciar sesión en la app Android.
 - Las rutas de paciente de esta spec quedan fuera del grupo de rutas de staff de la spec 014.
-- CA23 y CA24 cierran las dos correcciones del riesgo 1 de `docs/security.md` que la spec 014 dejó fuera (decisión del usuario, 2026-09-24).
+- CA23 y CA24 cierran RS1.c y RS1.b de `docs/security.md`, que la spec 014 dejó fuera (decisión del usuario, 2026-09-24).
 
 ## Notas para /plan
 - **Integración nueva de hardware:** el lector ESP32 es un cliente máquina que llama a un endpoint tipo webhook. Requiere ADR (P3/P10) y modelo de amenazas (P11): cómo se registra y autentica cada dispositivo (credencial por dispositivo revocable, firma HMAC de la petición con marca de tiempo contra repetición, TLS), limitación por dispositivo y qué registra el servidor.
@@ -97,7 +108,7 @@ verificable de registrar la llegada.
 - La spec 009 (completar cita) se modifica: completar debe expirar el QR (CA7).
 - CA23: hoy `config/auth.php` define el guard `api` (driver `sanctum`, provider `users`) y un provider `patients`, pero `auth:sanctum` acepta tokens de `UserModel` y de `PatientModel`. Separar staff y pacientes afecta al login y al logout de pacientes (spec 001) y al middleware `staff` de la spec 014. Revisar ambos en el modelo de amenazas.
 - Se implementa **después** de la 014 (decisión del usuario, 2026-09-24) y parte de su código: middleware `staff`, mapa de permisos por rol y patrón de error en los controladores de citas. CA23 cambia el código que recibe un paciente en rutas de staff: hoy es 403 (`EnsureActiveStaff`, spec 014 CA5) y con la autenticación separada será probablemente 401. Declararlo en el plan y actualizar los datasets de acceso de la 014. La 013 también modifica `Create/Update/DeleteAppointmentController` y sus casos de uso, que la 014 ya habrá tocado.
-- CA24: generaliza CA16 a toda ruta de paciente. Al cerrarla, marcar el riesgo 1 de `docs/security.md` como mitigado.
+- CA24: generaliza CA16 a toda ruta de paciente. Al cerrarla, marcar RS1.b y RS1.c como mitigadas; RS1 queda mitigado si la 014 ya mitigó RS1.a y RS1.d.
 
 ## Historial
 | Fecha | Cambio | Motivo |
@@ -105,6 +116,7 @@ verificable de registrar la llegada.
 | 2026-09-22 | Migrada desde `features/QRModule/` como draft | /init |
 | 2026-09-22 | Rediseño de actores: QR en la app del paciente, lector fijo ESP32; vigencia el día de la cita; expiración al completar; imagen privada | /clarify |
 | 2026-09-22 | Aprobada por el usuario | Confirmación explícita |
+| 2026-09-24 | Sección "Cobertura de riesgos" y citas por ID (RS/OB) | `/init --upgrade` a 1.6.0 (formato 1.5.6); decisión del usuario |
 | 2026-09-24 | `extends: [014]` y orden de implementación después de la 014 | Segundo `/analyze 014` (B6); decisión del usuario |
 | 2026-09-24 | CA23 (autenticación separada de pacientes y staff) y CA24 (propiedad del recurso en toda ruta de paciente), traídos desde la spec 014 | Riesgo 1 de `docs/security.md`; decisión del usuario |
 

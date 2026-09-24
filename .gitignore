@@ -32,3 +32,6 @@ PROPUESTA_ESQUEMA_PRUEBAS_PEST.txt
 # AIDLC workflow artifacts
 /aidlc-docs
 /.aidlc-rule-details
+
+# AI-DD: copias locales para /analyze delta
+/.ai/cache/

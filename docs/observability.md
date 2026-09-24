@@ -85,29 +85,81 @@ Hoy no se registra ningún evento de esta tabla.
 Ninguna existe hoy; las dos primeras forman parte del criterio del objetivo 4 del roadmap.
 
 ## Brechas
-1. **Alta — Sin registro de auditoría** de logins, accesos denegados, lecturas o cambios de datos de
-   salud y cambios de rol (riesgo 11 de [security.md](security.md)). → [roadmap objetivo 5](roadmap.md)
-2. **Alta — Datos personales en logs** (teléfono, nombre, email, variables de la plantilla de
-   WhatsApp): `RetriveDataForScheduledAppointmenEventUseCase.php:55`,
-   `CreateAppointmentController.php:51-52`, `CreatedAppointmentListener.php:38-39,61`,
-   `SendAppointmentConfirmationUseCase.php:20-21,34-35,45`, `ConfirmationAppointmentMessage.php:21,31`,
-   `TwilioConection.php:31,43,69,74,90`, `SendPasswordResetListener.php:44-45,50`,
-   `BrevoApi.php:43` (riesgo 9). → [roadmap objetivo 5](roadmap.md)
-3. **Media — Sin correlación por petición.** → [roadmap objetivo 5](roadmap.md)
-4. **Baja — `.env.example` no refleja el canal real de logs.** En local se usa `LOG_CHANNEL=stderr`
-   (los logs llegan a Loki vía Alloy), pero `.env.example` declara `stack` → `single`: un entorno
-   nuevo creado desde el ejemplo (p. ej. el VPS) escribiría en archivo y no enviaría logs a Loki.
-   Corrección: `LOG_CHANNEL=stderr` en `.env.example`. → [roadmap objetivo 5](roadmap.md)
-5. **Media — `LOG_LEVEL=debug` y `APP_DEBUG=true` por defecto** en `.env.example`. → [roadmap objetivo 5](roadmap.md)
-6. **Media — Grafana (3000) y Loki (3100) publicados en el host**, aunque
-   [deployment.md](deployment.md) prevé acceso solo por túnel SSH. → [roadmap objetivo 4](roadmap.md)
-7. **Media — Sin métricas ni alertas.** → [roadmap objetivo 4](roadmap.md) (5xx y logins fallidos)
-8. **Baja — Loki sin retención configurada.** → [roadmap objetivo 4](roadmap.md)
-9. **Baja — `/up` no comprueba PostgreSQL ni Redis.** → [roadmap objetivo 4](roadmap.md)
-10. **Baja — Trazas completas (`getTraceAsString`) en logs de Auth y whatsApp** pueden incluir
-    argumentos con datos; y las 500 devuelven el mensaje de la excepción. → [roadmap objetivo 1](roadmap.md)
-11. **Baja — Posible doble registro de listeners** (descubrimiento automático + `$listen`):
-    envío y log duplicados; comprobar con `php artisan event:list`. → roadmap, "Pendientes y deuda"
+Formato 1.5.6 (numeración añadida por `/init --upgrade` a 1.6.0, 2026-09-24; contenido sin
+cambios). Estados: pendiente · en curso (spec NNN) · mitigada (vX.Y.Z) · aceptada (excepción EX<n>).
+"(derivada)" marca una corrección que el riesgo no escribía de forma explícita y se deduce de su
+descripción o del principio que la exige. Un riesgo solo está mitigado cuando todas sus
+correcciones están mitigadas o aceptadas.
+
+### OB1 · Alta — Sin registro de auditoría
+de logins, accesos denegados, lecturas o cambios de datos de salud y cambios de rol (RS11 de [security.md](security.md)). → [roadmap objetivo 5](roadmap.md)
+
+Correcciones:
+- OB1.a Registro de auditoría de solo anexado para logins (también fallidos), accesos denegados, lecturas y cambios de datos de salud y cambios de rol (derivada) — estado: pendiente (roadmap objetivo 5)
+
+### OB2 · Alta — Datos personales en logs
+(teléfono, nombre, email, variables de la plantilla de WhatsApp): `RetriveDataForScheduledAppointmenEventUseCase.php:55`, `CreateAppointmentController.php:51-52`, `CreatedAppointmentListener.php:38-39,61`, `SendAppointmentConfirmationUseCase.php:20-21,34-35,45`, `ConfirmationAppointmentMessage.php:21,31`, `TwilioConection.php:31,43,69,74,90`, `SendPasswordResetListener.php:44-45,50`, `BrevoApi.php:43` (RS9 de [security.md](security.md)). → [roadmap objetivo 5](roadmap.md)
+
+Correcciones:
+- OB2.a Retirar teléfono y nombre de los `Log::` de `CreateAppointmentController` (derivada) — estado: en curso (spec 014)
+- OB2.b Retirar datos personales del resto de logs citados (whatsApp, Email, `RetriveDataForScheduledAppointmenEventUseCase`) (derivada) — estado: pendiente (roadmap objetivo 5)
+
+### OB3 · Media — Sin correlación por petición
+→ [roadmap objetivo 5](roadmap.md)
+
+Correcciones:
+- OB3.a Identificador `X-Request-Id` por petición en logs y respuesta (derivada) — estado: pendiente (roadmap objetivo 5)
+
+### OB4 · Baja — `.env.example` no refleja el canal real de logs
+En local se usa `LOG_CHANNEL=stderr` (los logs llegan a Loki vía Alloy), pero `.env.example` declara `stack` → `single`: un entorno nuevo creado desde el ejemplo (p. ej. el VPS) escribiría en archivo y no enviaría logs a Loki. → [roadmap objetivo 5](roadmap.md)
+
+Correcciones:
+- OB4.a `LOG_CHANNEL=stderr` en `.env.example` — estado: pendiente (roadmap objetivo 5)
+
+### OB5 · Media — `LOG_LEVEL=debug` y `APP_DEBUG=true` por defecto
+en `.env.example`. → [roadmap objetivo 5](roadmap.md)
+
+Correcciones:
+- OB5.a `LOG_LEVEL=info` por defecto (derivada) — estado: pendiente (roadmap objetivo 5)
+- OB5.b `APP_DEBUG=false` por defecto (derivada) — estado: pendiente (roadmap objetivo 5)
+
+### OB6 · Media — Grafana (3000) y Loki (3100) publicados en el host
+, aunque [deployment.md](deployment.md) prevé acceso solo por túnel SSH. → [roadmap objetivo 4](roadmap.md)
+
+Correcciones:
+- OB6.a No publicar Grafana ni Loki en el host; acceso por túnel SSH (derivada) — estado: pendiente (roadmap objetivo 4)
+
+### OB7 · Media — Sin métricas ni alertas
+→ [roadmap objetivo 4](roadmap.md) (5xx y logins fallidos)
+
+Correcciones:
+- OB7.a Alerta de tasa de errores 5xx (derivada) — estado: pendiente (roadmap objetivo 4)
+- OB7.b Alerta de logins fallidos (derivada) — estado: pendiente (roadmap objetivo 4)
+
+### OB8 · Baja — Loki sin retención configurada
+→ [roadmap objetivo 4](roadmap.md)
+
+Correcciones:
+- OB8.a Configurar la retención de Loki (derivada) — estado: pendiente (roadmap objetivo 4)
+
+### OB9 · Baja — `/up` no comprueba PostgreSQL ni Redis
+→ [roadmap objetivo 4](roadmap.md)
+
+Correcciones:
+- OB9.a `/up` comprueba PostgreSQL y Redis (derivada) — estado: pendiente (roadmap objetivo 4)
+
+### OB10 · Baja — Trazas completas (`getTraceAsString`) en logs de Auth y whatsApp
+pueden incluir argumentos con datos; y las 500 devuelven el mensaje de la excepción. → [roadmap objetivo 1](roadmap.md)
+
+Correcciones:
+- OB10.a Respuestas 500 sin el mensaje de la excepción (derivada) — estado: en curso (spec 014)
+- OB10.b Retirar `getTraceAsString()` y `getMessage()` de los logs de Auth y whatsApp (derivada) — estado: pendiente (roadmap, Pendientes y deuda)
+
+### OB11 · Baja — Posible doble registro de listeners
+(descubrimiento automático + `$listen`): envío y log duplicados; comprobar con `php artisan event:list`. → roadmap, "Pendientes y deuda"
+
+Correcciones:
+- OB11.a Comprobar con `php artisan event:list` y eliminar el registro duplicado (derivada) — estado: pendiente (roadmap, Pendientes y deuda)
 
 ## Brechas por confirmar
 - Que los logs de la aplicación se vean en Loki en local — depende de que php-fpm reenvíe la

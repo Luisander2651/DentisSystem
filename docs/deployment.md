@@ -110,11 +110,49 @@ curl -fsS https://TODO-dominio/up
 - Logs: Alloy → Loki → Grafana (puerto 3000, solo por túnel SSH) recoge el stdout/stderr de los contenedores; los logs de Laravel llegan porque en local se usa `LOG_CHANNEL=stderr` (confirmado por el usuario); `.env.example` todavía declara `stack` → `single`, así que el `.env` del VPS debe usar `stderr`. Métricas y alertas: TODO(init): no existen. Ver [observability.md](observability.md).
 
 ## Riesgos conocidos
-- **Sin rollback probado** ni backups automáticos de PostgreSQL.
-- `Dockerfile` solo de desarrollo; no hay imagen de producción.
-- Sin worker de colas en `docker-compose.yml`: WhatsApp y el correo de reset no se enviarían.
-- `env()` fuera de `config/` en Twilio y Brevo: `config:cache` los deja en null.
-- `.env.example` trae `APP_DEBUG=true`, `SESSION_ENCRYPT=false`, `DB_CONNECTION=sqlite` y `REDIS_CLIENT=phpredis` (el Dockerfile no instala phpredis).
-- `docker-compose.yml` publica PostgreSQL y Redis en el host y escribe credenciales en el archivo.
-- `phpunit.xml` apunta a `DB_HOST=db`: `composer run test` fuera de Docker falla sin override.
-- `Docker.md` usa `docker exec app`, pero el contenedor se llama `laravel-app`; usar `docker compose exec app`.
+Formato 1.5.6 (numeración añadida por `/init --upgrade` a 1.6.0, 2026-09-24; contenido sin
+cambios; la prioridad de cada riesgo está por asignar: el documento no la indicaba). Estados como en
+[security.md](security.md).
+
+### RD1 · Prioridad por asignar — Sin rollback probado ni backups automáticos de PostgreSQL.
+
+Correcciones:
+- RD1.a Ensayar el rollback una vez (derivada) — estado: pendiente (roadmap objetivo 4)
+- RD1.b Backups automáticos de PostgreSQL (derivada) — estado: pendiente (roadmap objetivo 4)
+
+### RD2 · Prioridad por asignar — `Dockerfile` solo de desarrollo; no hay imagen de producción.
+
+Correcciones:
+- RD2.a Imagen de producción (derivada) — estado: pendiente (roadmap objetivo 4)
+
+### RD3 · Prioridad por asignar — Sin worker de colas en `docker-compose.yml`: WhatsApp y el correo de reset no se enviarían.
+
+Correcciones:
+- RD3.a Worker de colas en `docker-compose.yml` (derivada) — estado: pendiente (roadmap objetivo 4)
+
+### RD4 · Prioridad por asignar — `env()` fuera de `config/` en Twilio y Brevo: `config:cache` los deja en null.
+
+Correcciones:
+- RD4.a Leer Twilio y Brevo con `config('services.*')` en lugar de `env()` (derivada, P8) — estado: pendiente (roadmap, Pendientes y deuda)
+
+### RD5 · Prioridad por asignar — `.env.example` trae `APP_DEBUG=true`, `SESSION_ENCRYPT=false`, `DB_CONNECTION=sqlite` y `REDIS_CLIENT=phpredis` (el Dockerfile no instala phpredis).
+
+Correcciones:
+- RD5.a `APP_DEBUG=false` y `SESSION_ENCRYPT=true` en `.env.example` (derivada; = RS10) — estado: pendiente
+- RD5.b `DB_CONNECTION=pgsql` y `REDIS_CLIENT=predis` en `.env.example` (derivada) — estado: pendiente (roadmap, Pendientes y deuda)
+
+### RD6 · Prioridad por asignar — `docker-compose.yml` publica PostgreSQL y Redis en el host y escribe credenciales en el archivo.
+
+Correcciones:
+- RD6.a No publicar PostgreSQL ni Redis en el host (derivada) — estado: pendiente
+- RD6.b Credenciales de `docker-compose.yml` desde `.env` (derivada) — estado: pendiente
+
+### RD7 · Prioridad por asignar — `phpunit.xml` apunta a `DB_HOST=db`: `composer run test` fuera de Docker falla sin override.
+
+Correcciones:
+- RD7.a Ejecutar los tests dentro de Docker (documentado en `AGENTS.md`) o un override para el host (derivada) — estado: pendiente
+
+### RD8 · Prioridad por asignar — `Docker.md` usa `docker exec app`, pero el contenedor se llama `laravel-app`; usar `docker compose exec app`.
+
+Correcciones:
+- RD8.a Corregir el nombre del contenedor en `Docker.md` (derivada) — estado: pendiente (roadmap, Pendientes y deuda)
