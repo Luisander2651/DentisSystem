@@ -1,5 +1,5 @@
 ---
-version: 1.1.0
+version: 1.1.2
 ratified: 2026-09-23
 last_amended: 2026-09-24
 status: approved
@@ -37,17 +37,17 @@ Los principios se exigen a todo código **nuevo o modificado**.
 **Por qué:** El frontend JS y la futura app Android consumen la API sin tipos compartidos; el contrato escrito es el único acuerdo entre capas.
 
 ### P5. Autorización en el servidor, por rol y por recurso
-**Regla:** Todo endpoint nuevo o modificado verifica en el servidor el tipo de actor (staff/paciente), el rol y la propiedad del recurso (middleware + `assertCan` + comprobación de pertenencia), y tiene al menos un test de acceso denegado por cada actor no autorizado.
+**Regla:** Todo endpoint nuevo, o existente cuya autorización cambia (middleware, permisos o actores admitidos), verifica en el servidor el tipo de actor (staff/paciente), el rol y la propiedad del recurso (middleware + `assertCan` + comprobación de pertenencia), y tiene al menos un test de acceso denegado por cada actor no autorizado. Cambiar solo el manejo de errores de un endpoint no obliga a añadirle esos tests.
 **Cómo se verifica:** Tests `(abuso)` en la spec y en `tests/Modules/*/Integration`; `/review` con `shared/security-checklist.md`.
 **Por qué:** La API maneja datos de salud y hoy varios endpoints solo exigen `auth:sanctum` (riesgo A01 documentado en [security.md](security.md)).
 
 ### P6. Validación de entrada con FormRequest
-**Regla:** Todo endpoint nuevo o modificado valida su entrada con un `FormRequest` (reglas en array, mensajes propios), además de las invariantes de los value objects. Entrada inválida → 422.
+**Regla:** Todo endpoint nuevo, o existente cuya entrada cambia (parámetros, cuerpo o reglas de validación), valida su entrada con un `FormRequest` (reglas en array, mensajes propios), además de las invariantes de los value objects. Entrada inválida → 422. Cambiar solo la autorización o el manejo de errores de un endpoint no obliga a añadirle un `FormRequest`.
 **Cómo se verifica:** Test de integración con payload inválido por endpoint; `/review`.
 **Por qué:** Patrón ya adoptado en Auth y Users (SECURITY-05); evita que entradas malformadas degraden a 500.
 
 ### P7. Errores sin detalles internos
-**Regla:** Ninguna respuesta HTTP incluye `$e->getMessage()`, trazas ni SQL. Un 500 devuelve `{"error": "Internal server error"}` y el detalle va a `Log::error` con contexto.
+**Regla:** Ninguna respuesta a un error inesperado (500) incluye `$e->getMessage()`, trazas ni SQL: devuelve `{"error": "Internal server error"}` y el detalle va a `Log::error` con contexto. Los errores de negocio esperados (400, 404, 409, 422) pueden devolver su mensaje, siempre que no contenga datos personales ni de salud (P11).
 **Cómo se verifica:** Test que fuerza la excepción y afirma el cuerpo genérico; `grep -rn "getMessage()" app/Modules/*/Infrastructure/Http*` en código tocado.
 **Por qué:** Corregido en Auth y Users (SECURITY-15), pendiente en 48 controladores.
 
@@ -114,3 +114,5 @@ Los principios se exigen a todo código **nuevo o modificado**.
 | 1.0.0 | 2026-09-22 | Versión inicial | /init |
 | 1.0.0 | 2026-09-23 | Ratificada por el usuario, sin cambios de contenido | Aprobación explícita |
 | 1.1.0 | 2026-09-24 | Añade P14 (trazabilidad: correlación y auditoría) | Propuesta de `/init --upgrade` a 1.5.3, aprobada por el usuario |
+| 1.1.2 | 2026-09-24 | Aclara el alcance de P5 (aplica cuando cambia la autorización del endpoint), con el mismo criterio que P6 | `/analyze 014` (B2); aprobado por el usuario |
+| 1.1.1 | 2026-09-24 | Aclara el alcance de P6 (solo cuando cambia la entrada del endpoint) y de P7 (aplica a errores inesperados; los mensajes de negocio no llevan datos personales ni de salud) | `/analyze 014` (A2, A13); aprobado por el usuario |

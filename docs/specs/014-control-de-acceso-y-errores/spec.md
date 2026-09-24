@@ -3,7 +3,7 @@ id: 014
 slug: control-de-acceso-y-errores
 status: approved
 created: 2026-09-24
-extends: [005, 006, 007, 009]
+extends: [001, 005, 006, 007, 008, 009, 011, 012]
 ---
 
 # 014 · Control de acceso a pacientes y citas, y errores sin detalles internos
@@ -49,14 +49,20 @@ Un miembro del staff inactivo no tiene ningún permiso. Quien no tiene sesión n
 - [ ] CA9 · (abuso) Como visitante sin sesión, intento cualquier operación de la tabla de permisos → se rechaza como no autenticado.
 - [ ] CA10 · (abuso) Como asistente o doctor, pido las citas del día → se rechaza como acceso denegado, no como error interno (hoy responde error interno; spec 007, CA12).
 - [ ] CA11 · Dado un administrador, cuando modifica los datos básicos de un paciente e incluye una contraseña nueva, entonces la contraseña se actualiza; asistente y doctor no pueden hacerlo (CA6, CA7).
-- [ ] CA12 · (abuso) Como atacante, provoco un error inesperado en cualquier operación del sistema (pacientes, expediente, citas, seguimiento clínico, catálogo y contenido del sitio) → la respuesta solo dice que hubo un error interno, sin el mensaje técnico del fallo, trazas, consultas a la base de datos ni nombres internos, y el detalle queda registrado para el equipo.
+- [ ] CA12 · (abuso) Como atacante, provoco un error inesperado en cualquier operación de la API (`/api/v1`: pacientes, expediente, citas, seguimiento clínico, catálogo y contenido del sitio) → la respuesta solo dice que hubo un error interno, sin el mensaje técnico del fallo, trazas, consultas a la base de datos ni nombres internos, y el detalle queda registrado para el equipo.
 - [ ] CA13 · Dado un error inesperado registrado para el equipo, cuando se revisa el registro, entonces no contiene datos de salud ni datos de contacto del paciente (P11).
-- [ ] CA14 · Dado un error esperado de negocio (dato no encontrado, dato inválido, conflicto), cuando ocurre, entonces el mensaje de negocio que se muestra hoy se conserva.
+- [ ] CA14 · Dado un error esperado de negocio (dato no encontrado, dato inválido, conflicto), cuando ocurre, entonces se conserva el mensaje de negocio que se muestra hoy, salvo los datos personales o de salud que contenga, que se retiran del mensaje (CA16).
+- [ ] CA16 · (abuso) Como actor con permiso de escritura, envío un email ya usado por otro paciente, o un email, teléfono, nombre, código postal o tipo de sangre inválidos → el error de negocio (400 o 409) explica qué campo falla sin repetir el valor enviado ni revelar datos de otro paciente (P7, P11).
 - [ ] CA15 · Dado cualquier actor con sesión, cuando ve su menú lateral o su panel de inicio, entonces solo aparecen accesos a pantallas que puede abrir y acciones que puede ejecutar: el asistente no ve "agenda" ni "Registrar nuevo paciente", y el paciente no ve "agenda" ni "expedientes" (hoy aparecen y el servidor los rechaza; P13).
 
 ## Fuera de alcance
 - Portal del paciente: que un paciente consulte o edite sus propios datos (hoy no tiene pantallas).
 - Que el doctor registre o edite el seguimiento clínico y las recetas (spec 009, CA9; spec aparte). El seguimiento clínico sigue siendo solo del administrador, sin cambios de permisos.
+- Dos correcciones del riesgo 1 de `docs/security.md`, que pasan a la spec 013 (decisión del usuario, 2026-09-24):
+  - Separar la autenticación de pacientes y de staff: hoy el guard `sanctum` no fija provider y acepta tokens de pacientes. Aquí lo compensa el middleware de staff, que los rechaza.
+  - Comprobar que cada paciente solo accede a sus propios recursos: hoy ningún paciente tiene acceso a estas operaciones, y las rutas de paciente llegan con la 013.
+- Errores inesperados en las vistas web (Blade): con `APP_DEBUG=true` pueden mostrar trazas; se corrige con la configuración de producción (riesgo 10 de `docs/security.md`).
+- Los logs de los módulos Auth y Users (login, registro de pacientes, usuarios), que registran `getMessage()` y trazas en sus catch genéricos: pasan a la deuda del roadmap junto con sus mensajes que repiten el email.
 - Registro de auditoría de accesos y de accesos denegados, e identificador de traza por petición (riesgo 11 de `docs/security.md`; objetivo 5 del roadmap, spec aparte).
 - Cifrado en reposo de los datos de salud (riesgo 2), CSRF (riesgo 5) y revocar sesiones al cambiar la contraseña (riesgo 8).
 - Que el doctor solo vea a los pacientes que atiende: por ahora ve a todos.
@@ -73,13 +79,14 @@ Un miembro del staff inactivo no tiene ningún permiso. Quien no tiene sesión n
   - Como exempleado desactivado con una sesión abierta, intento seguir consultando expedientes → se rechaza (CA8).
   - Como visitante sin sesión, intento acceder a datos de pacientes → se rechaza (CA9).
   - Como atacante, provoco errores para obtener detalles internos del sistema → respuesta genérica (CA12).
+  - Como staff con permiso de escritura, pruebo emails en el alta o edición de pacientes para saber cuáles existen y ver sus datos en el mensaje de conflicto → el mensaje no repite el email (CA16).
 
 ## Auditoría
 Esta spec no emite eventos de auditoría: el registro de auditoría aún no existe y se construye en
 una spec aparte (objetivo 5 del roadmap, [observability.md](../../observability.md)). Cuando exista,
 los accesos denegados (401/403) de CA5–CA9 quedarán registrados con actor, acción, recurso y fecha
 de forma centralizada, sin cambios en esta spec. Desviación de P14 que se justifica en el
-Constitution Check de `/plan`.
+Constitution Check de `/plan`, junto con la falta de `request_id`.
 
 ## Requisitos no funcionales
 - Cada operación de la tabla de permisos tiene una prueba automatizada de acceso denegado por cada tipo de actor no autorizado: paciente, staff sin permiso para esa operación, staff inactivo y visitante sin sesión (P5, criterio de éxito del objetivo 1 del roadmap).
@@ -92,21 +99,25 @@ Constitution Check de `/plan`.
 ## Supuestos
 - El asistente no modifica los datos básicos del paciente (nombre, email, estado): su pantalla de expedientes hoy solo edita contacto, dirección y datos médicos. Solo el administrador lo hace desde la pantalla de pacientes.
 - El asistente sí puede eliminar contacto, dirección y datos médicos, porque su pantalla lo ofrece hoy.
-- Las listas para los selectores de la agenda quedan solo para el administrador, porque solo la pantalla de agenda las usa y esa pantalla es solo del administrador (spec 007, U1 BR-5).
+- Las listas para los selectores de la agenda quedan solo para el administrador, porque solo la pantalla de agenda las usa (`create-appointment.js`) y esa pantalla es solo del administrador. Esto **revierte** la corrección de U1 BR-5 que abrió `GET /agenda/treatments` a cualquier staff (hoy afirmada en `GetAppointmentsTest`): se hizo cuando la agenda aún admitía a otros roles, y ya no los admite (decisión del usuario, 2026-09-24).
 - "Ver el detalle de una cita" es de todo el staff activo: la pantalla de expedientes lo usa desde el historial de citas (botón "Ver"). En ese detalle, quien no es administrador no ve el seguimiento clínico ni la opción de editar (decisión del usuario, 2026-09-24).
 - El doctor accede a la pantalla de expedientes en modo solo lectura (CA4); sin pantalla, el permiso de lectura no tendría uso.
 - Como ningún paciente tiene acceso a estas operaciones, no hace falta comprobar si un recurso pertenece al paciente. Esa comprobación llega con el portal del paciente.
-- Los mensajes de negocio (no encontrado, inválido, conflicto) no son detalles internos y se mantienen (CA14).
+- Los mensajes de negocio (no encontrado, inválido, conflicto) no son detalles internos y se mantienen, sin datos personales ni de salud (CA14, CA16; constitución 1.1.1, P7).
+- Solo cambian aquí los mensajes de negocio de Patients. Los de Users y Auth que repiten el email (p. ej. `UserException`, `AuthException`) quedan fuera de alcance y pasan a deuda del roadmap.
+- De las specs 001, 011 y 012 solo cambia la respuesta ante un error inesperado (500 genérico) y, en `api/*`, que el 401 sea siempre JSON; su comportamiento de negocio no cambia. De la 008 cambia además CA3: el catálogo para la agenda (`GET /agenda/treatments`) pasa a ser solo del administrador.
+- Orden de implementación: esta spec va antes que la 013 (decisión del usuario, 2026-09-24). La 013 partirá de este código y, con su CA23, el token de un paciente en rutas de staff podrá pasar de 403 a 401; lo declara la 013 al extender esta spec.
 - Incluye la gestión del contenido del sitio (Unidad 5 de AI-DLC, en pausa), pero solo su respuesta ante errores inesperados. Decisión del usuario, 2026-09-24.
 
 ## Notas para /plan
-- Hoy: 24 rutas de `/api/v1` bajo solo `auth:sanctum` (`routes/api.php`: `agenda/*`, `patients/*` salvo POST/DELETE, `appointments/*` salvo complete/tracking). El guard `sanctum` no fija provider en `config/auth.php` y acepta tokens de `PatientModel`.
+- Hoy: 23 rutas de `/api/v1` bajo solo `auth:sanctum` (`routes/api.php`: `agenda/*`, `patients/*` salvo POST/DELETE, `appointments/*` salvo complete/tracking). El guard `sanctum` no fija provider en `config/auth.php` y acepta tokens de `PatientModel`.
 - Propuestas del roadmap y las specs 005 y 006: un middleware de staff por rol (p. ej. `only.staff` o `role:administrador,asistente`), `assertCan` con permisos por rol en `CurrentActorAuthorizationService` (hoy solo el administrador activo tiene permisos) y la comprobación de rol de los closures de `routes/web.php` movida a middleware.
 - Códigos esperados: sin sesión → 401; sin permiso → 403; error inesperado → 500 con `{"error": "Internal server error"}` (P7). `GetTodayAppointmentsController` hoy da 500 ante `assertCan` fallido.
 - 48 controladores con `'message' => $e->getMessage()` en el 500: Patients 15, Appointments 11, AppointmentTracking 6, ContentManagement 16. Auth y Users ya están corregidos y sirven de referencia (SECURITY-15).
 - Los tests existentes que hoy autentican como cualquier actor (`PatientCrudTest`, `AddressTest`, `ContactInfoTest`, `MedicalDataTest`, `PatientRecordTest`, `CreateAppointmentTest`, `UpdateAppointmentTest`, `GetAppointmentsTest`) deben pasar a actores con el rol correcto.
 - Sidebar: `resources/views/components/ui/sidebar.blade.php:50-51` (quitar `agenda` al asistente; añadir `expedientes` al doctor). Dashboard: `resources/views/pages/dashboard.blade.php` enlaza a `/agenda` para el asistente (l. 211) y a `/agenda` y `/expedientes-clinicos` en la rama `@else` que comparten doctor y paciente (l. 238, 243); separar doctor de paciente. Vista de expedientes en solo lectura para el doctor en `resources/js/pages/records/index.js`.
-- Actualizar al cerrar: specs 005 (CA11, CA12), 006 (CA3, CA5), 007 (CA9, CA12, CA13) y 009 (CA8) mediante specs de extensión o notas en su Historial, y los riesgos 1 y 3 de `docs/security.md`.
+- Actualizar al cerrar (`/release`, Historial de cada spec extendida): 005 CA3 y CA4 ("usuario autenticado" pasa a staff con permiso), CA11 y CA12 (resueltos); 006 CA1 y CA2 (staff), CA3 (entra el doctor, en solo lectura) y CA5 (resuelto para pacientes; el doctor sí lee expedientes); 007 CA1, CA3–CA6 y CA10 (solo administrador), CA9 (todo el staff), CA12 y CA13 (resueltos); 009 CA8; 008 CA3 (catálogo de la agenda solo para administrador) y 500 genérico; 011 y 012 (500 genérico); 001 (401 JSON en logout sin sesión). Riesgos 1 (parcialmente: el guard `sanctum` sigue sin provider y la comprobación de propiedad llega con el portal) y 3 de `docs/security.md`.
+- Mensajes de Patients con datos (CA16): `PatientException::shouldBeUniqueEmail`, `EmailException`, `ContactEmailException`, `PhoneNumberException`, `PatientNameException` (2), `PostalCodeException` y `BloodTypeException`.
 
 ## Historial
 | Fecha | Cambio | Motivo |
@@ -115,3 +126,6 @@ Constitution Check de `/plan`.
 | 2026-09-24 | CA4 y CA15 cubren también el panel de inicio (dashboard) | Revisión del impacto en el frontend |
 | 2026-09-24 | Sección Auditoría (diferida a la spec del objetivo 5) y aprobación | Constitución 1.1.0 (P14); aprobada por el usuario |
 | 2026-09-24 | "Ver el detalle de una cita" pasa a todo el staff (CA2, CA3, CA6, CA7, tabla, supuestos); CA15 cubre también acciones | `/plan` detectó que expedientes usa ese detalle y que el asistente ve "Registrar nuevo paciente"; decisión del usuario |
+| 2026-09-24 | CA12 acotado a la API; web y logs de Auth y Users fuera de alcance; 008 CA3 declarado; orden 014 → 013 | Segundo `/analyze 014` (B6, B11, B14, B15); decisión del usuario |
+| 2026-09-24 | Provider del guard y propiedad del recurso (riesgo 1) pasan a la spec 013 | Aclaración del alcance del riesgo 1; decisión del usuario |
+| 2026-09-24 | CA14 sin datos personales y CA16 nuevo; `extends` añade 001, 008, 011 y 012; reversión de U1 BR-5 declarada; criterios de specs extendidas completos | `/analyze 014` (A13, A17–A19, A28) y constitución 1.1.1; decisión del usuario |

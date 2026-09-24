@@ -6,9 +6,8 @@ created: 2026-09-24
 
 # Plan · 014 Control de acceso a pacientes y citas, y errores sin detalles internos
 
-Versión 3. La v2 (`/plan --redo` tras el primer `/analyze`: A1, A3, A8, A9, A11–A14, A20–A22, A26 y
-A29) se ajustó con el segundo `/analyze` (B1, B3, B5, B6, B12, B13, B16, B17, B19 y B21) y la
-constitución 1.1.2. Versiones anteriores: [plan.v1.md](plan.v1.md), [plan.v2.md](plan.v2.md).
+Versión 2 (`/plan --redo` tras `/analyze 014`: A1, A3, A8, A9, A11–A14, A20–A22, A26 y A29).
+La versión anterior está en [plan.v1.md](plan.v1.md).
 
 ## Enfoque técnico
 La autorización se aplica en dos capas, como pide P5:
@@ -24,7 +23,7 @@ El frontend solo deja de ofrecer lo que el servidor rechaza. La decisión de qu�
 aparecen en expedientes se toma en Blade, para poder probarla con Pest (P2).
 
 ## Constitution Check
-Evaluado contra la constitución **1.1.2**.
+Evaluado contra la constitución **1.1.1**.
 
 | Principio | Resultado | Justificación / ajuste |
 |---|---|---|
@@ -32,35 +31,35 @@ Evaluado contra la constitución **1.1.2**.
 | P2 Test que falla antes y pasa después | ✅ | Cada CA y TM tiene un test Pest (Trazabilidad). La ocultación de los botones de escritura se decide en Blade (componentes con prop `$canEdit` y una plantilla `<template>` para "Eliminar"), así que `RecordsScreenTest` la afirma. No hay value objects nuevos ni cambia su comportamiento: solo el texto de sus excepciones. |
 | P3 Capas del módulo | ✅ | Los permisos se comprueban en los casos de uso. `GetTreatmentsController` deja de consultar Eloquent directamente y usa `GetTreatmentsUseCase`, que ya existe. `AuthorizeAgendaSelectorsUseCase` evita lógica en el controlador del selector de pacientes. No hay dependencias nuevas entre módulos (los selectores ya usaban casos de uso de Patients y Users). |
 | P4 Contrato de API primero | ✅ | Los códigos por actor y los cuerpos de 401, 403 y 500 están en "Contratos y datos". El administrador recibe las mismas respuestas (CA1). El único cambio visible en respuestas de negocio es el texto de los mensajes de Patients (CA16), que no forma parte del contrato de tipos. |
-| P5 Autorización en el servidor | ✅ | Constitución 1.1.2: aplica a los endpoints cuya autorización cambia. Son las 25 rutas de pacientes, agenda y citas, que tienen middleware `staff` más `assertCan` por rol y test de acceso denegado por cada actor no autorizado (datasets). Los endpoints de contenido, catálogo y seguimiento clínico solo cambian su manejo de errores y ya tienen `only.admin`. La comprobación de pertenencia no aplica: ningún paciente accede a estas operaciones; llega con la 013 (CA24). |
+| P5 Autorización en el servidor | ✅ | Middleware `staff` más `assertCan` por rol, con test de acceso denegado por cada actor no autorizado y cada ruta (dataset). La comprobación de pertenencia no aplica: ningún paciente accede a estas operaciones (supuesto de la spec). |
 | P6 Validación de entrada con FormRequest | ➖ | Constitución 1.1.1: P6 aplica cuando cambia la entrada del endpoint. Esta spec solo cambia su autorización y su manejo de errores. |
 | P7 Errores sin detalles internos | ✅ | Constitución 1.1.1. Los 500 pasan a respuesta genérica (helper más red global). Los mensajes de negocio se conservan sin datos personales ni de salud (CA14, CA16). |
 | P8 Secretos fuera del repositorio | ➖ | Sin variables ni secretos nuevos. |
 | P9 Migraciones | ➖ | Sin migraciones. |
 | P10 Dependencias con ADR | ➖ | Sin dependencias nuevas. |
-| P11 Datos sensibles y modelo de amenazas | ✅ | Modelo de amenazas abajo. El log de errores registra solo clase, archivo, línea y origen, nunca el mensaje, los bindings ni el cuerpo de la petición. En cada controlador tocado se retira todo `Log::` con datos del paciente o con `getMessage()`, incluidos los `Log::info` con teléfono y nombre de `CreateAppointmentController` (l. 49-53) y los `Log::error` de sus catch de negocio. Los mensajes de negocio de Patients dejan de repetir el dato (TM7, TM11, TM12). |
+| P11 Datos sensibles y modelo de amenazas | ✅ | Modelo de amenazas abajo. El log de errores registra solo clase, archivo, línea y origen, nunca el mensaje, los bindings ni el cuerpo de la petición. Los mensajes de negocio de Patients dejan de repetir el dato (TM7, TM11, TM12). |
 | P12 Producción | ➖ | Sin entorno de producción. Rollback en Rollout. Reduce los riesgos 1 y 3 de security.md. |
 | P13 Lógica en el backend | ✅ | Toda restricción se comprueba en el servidor; el frontend solo refleja. Los tests llaman a la API directamente. |
 | P14 Trazabilidad | ❌ aceptado: el log de los 500 no lleva `request_id` y los accesos denegados no se auditan hasta la spec de auditoría (objetivo 5) — aprobado por el usuario el 2026-09-24 | La spec difiere los eventos de auditoría (sección "Auditoría") y la correlación no existe aún. El helper y los dos puntos únicos de 401/403 (`EnsureActiveStaff`, `AuthorizationException`) son donde se añadirán. |
 
 Restricciones: las pantallas modificadas (menú lateral, panel de inicio y expedientes) mantienen
-WCAG 2.1 AA. Solo se quitan u ocultan controles, sin dejar huecos de foco. Cada tarea de frontend se
-revisa con la skill `design` (está en `skills.enabled`) antes de darla por hecha.
+WCAG 2.1 AA. Solo se quitan u ocultan controles, sin dejar huecos de foco. Hay que revisarlas con la
+skill `design` antes de `/implement`, porque está en `skills.enabled`.
 
 ## Cambios por módulo
 | Módulo | Cambio | Riesgo |
 |---|---|---|
-| Core | **Nuevo** `app/Core/Middlewares/EnsureActiveStaff.php`. Exige `UserModel` con `status = active` y, si recibe parámetros, uno de esos roles (`staff:administrador,asistente,doctor`). En `api/*` responde 403 `{"error"}` con estos textos: no es staff → `"Only staff can access this resource."`; inactivo → `"Your account is inactive."` (el mismo de `OnlyAdmin` y `AuthorizationException`); rol no admitido → `"You are not allowed to access this resource."`. En web, `abort(403)`. | Medio: mal aplicado bloquea al administrador. Lo cubre CA1 (dataset como admin). |
+| Core | **Nuevo** `app/Core/Middlewares/EnsureActiveStaff.php`. Exige `UserModel` con `status = active` y, si recibe parámetros, uno de esos roles (`staff:administrador,asistente,doctor`). En `api/*` responde 403 `{"error"}`; en web, `abort(403)`. | Medio: mal aplicado bloquea al administrador. Lo cubre CA1 (dataset como admin). |
 | Core | `app/Core/Authorization/CurrentActorAuthorizationService.php`: la lista `$adminPermissions` pasa a un mapa `permiso → roles`. Los permisos nuevos están en "Contratos y datos"; los existentes siguen siendo solo del administrador. El actor inactivo o que no es staff sigue siendo rechazado primero. | Alto: es la fuente única. Tests de matriz completa. |
 | Core | **Nuevo** `app/Core/Http/UnexpectedErrorResponse.php` con `::from(Throwable $e, string $origin): JsonResponse`. Registra `Log::error('unexpected_error', ['origin', 'exception', 'file', 'line'])` sin `message`: las excepciones de dominio y de base de datos pueden llevar datos del paciente. Responde 500 `{"error": "Internal server error"}`. | Bajo: se pierde el mensaje al depurar. Se compensa con clase, archivo y línea. |
-| bootstrap | `bootstrap/app.php`: alias `staff`. En `withExceptions`: (1) `shouldRenderJsonWhen` para `api/*`; (2) `AuthorizationException` de Core → 403 `{"error"}` en `api/*`; (3) cualquier otra excepción en `api/*` que no sea `HttpExceptionInterface`, `HttpResponseException`, `ValidationException`, `AuthenticationException` ni `ThrottleRequestsException` → `UnexpectedErrorResponse`. | Medio: no debe alterar los 404, 405, 422 ni 429 del framework. Tests de regresión. |
+| bootstrap | `bootstrap/app.php`: alias `staff`. En `withExceptions`: (1) `shouldRenderJsonWhen` para `api/*`; (2) `AuthorizationException` de Core → 403 `{"error"}` en `api/*`; (3) cualquier otra excepción en `api/*` que no sea `HttpExceptionInterface`, `ValidationException`, `AuthenticationException` ni `ThrottleRequestsException` → `UnexpectedErrorResponse`. | Medio: no debe alterar los 404, 405, 422 ni 429 del framework. Tests de regresión. |
 | routes | `routes/api.php`: los grupos `agenda/*`, `patients/*` y `appointments/*` bajo solo `auth:sanctum` pasan a `['auth:sanctum', 'staff']`. Las rutas bajo `only.admin` no cambian (incluido `appointments/{id}/tracking`). | Medio: cobertura del dataset de rutas. |
 | routes | `routes/web.php`: `/expedientes-clinicos` y `/expedientes-clinicos/{patientId}` pasan del closure con comprobación de rol a `middleware('staff:administrador,asistente,doctor')`. Esto añade el doctor y exige cuenta activa. | Bajo. |
 | Patients | Casos de uso sin `assertCan` → añadir: `GetPatientsByStatusUseCase` y `GetPatientByIdUseCase` (`patients.view`); `GetPatientRecordByPatientIdUseCase` (`patients.record.view`); `UpdatePatientUseCase` (`patients.update`); `Save/Update/Delete{Address,ContactInfo,MedicalData}UseCase` (`patients.clinical-data.manage`). | Medio: `GetPatientsByStatusUseCase` también lo usa el selector de pacientes de la agenda (ver D5). |
 | Patients | 15 controladores (`Infrastructure/Http/Controllers/**`) → patrón de error (ver D2). Los catch de negocio (400, 404, 409) no cambian. | Bajo. |
 | Patients | Excepciones de dominio cuyo mensaje repite el dato (CA16): `Domain/Exceptions/PatientException.php` (`shouldBeUniqueEmail`), `Domain/Exceptions/ValueObjects/Patients/EmailException.php`, `…/Patients/PatientNameException.php` (2 métodos), `…/ContactInfo/ContactEmailException.php`, `…/ContactInfo/PhoneNumberException.php`, `…/Addresses/PostalCodeException.php` y `…/MedicalData/BloodTypeException.php`. El mensaje pasa a nombrar el campo y el formato esperado, sin el valor (p. ej. "The email is already in use by another patient."; "Invalid phone number format."). La firma de los métodos no cambia. | Bajo: ningún test afirma hoy esos textos. |
 | Appointments | Casos de uso: `CreateAppointmentUseCase` (`appointments.create`), `UpdateAppointmentUseCase` (`appointments.update`), `GetAppointmentByIdUseCase` (`appointments.view-detail`), `GetAppointentByPatientIdUseCase` (`appointments.patient-history.view`). **Nuevo** `AuthorizeAgendaSelectorsUseCase` (`agenda.selectors.view`) solo para el selector de pacientes. | Medio. |
-| Appointments | `GetTreatmentsController` deja de consultar `TreatmentModel` y usa `GetTreatmentsUseCase` sin filtros, que ya hace `assertCan('treatments.view')`, solo de administrador. Para conservar el orden actual (CA1), `EloquentTreatmentRepository::findAllByIdByName` ordena por `name`. Esto también ordena por nombre el catálogo de administración (`GET /treatments`), que hoy no tiene orden definido y ningún test fija. `GetPatientsForAppointmentSelectController` llama a `AuthorizeAgendaSelectorsUseCase` antes de leer. `GetDoctorsForAppointmentSelectController` ya usa `GetUsersByRoleAndStatusUseCase` (`users.view`, solo administrador) y solo necesita el patrón de error (hoy responde 500 al asistente). | Medio: revierte U1 BR-5 (declarado en la spec). |
+| Appointments | `GetTreatmentsController` deja de consultar `TreatmentModel` y usa `GetTreatmentsUseCase`, que ya hace `assertCan('treatments.view')`, solo de administrador. `GetPatientsForAppointmentSelectController` llama a `AuthorizeAgendaSelectorsUseCase` antes de leer. `GetDoctorsForAppointmentSelectController` ya usa `GetUsersByRoleAndStatusUseCase` (`users.view`, solo administrador) y solo necesita el patrón de error (hoy responde 500 al asistente). | Medio: revierte U1 BR-5 (declarado en la spec). |
 | Appointments | 11 controladores con el 500 filtrado, más `GetTodayAppointmentsController`, `GetTreatmentsController` y los dos selectores (hoy sin try/catch) → patrón de error. | Bajo. |
 | AppointmentTracking | 6 controladores → patrón de error. Sin cambios de permisos. | Bajo. |
 | ContentManagement | 16 controladores (`Modules/*/Infrastructure/HTTP/Controllers/**`) → patrón de error. Sin cambios de permisos. | Bajo. Módulo de la Unidad 5 de AI-DLC, en pausa: solo se toca el camino del 500 (decisión del usuario, 2026-09-24). |
@@ -116,26 +115,25 @@ de acceso, que fijan cada código por actor.
     - dataset de las 15 rutas de pacientes × 6 actores (admin, asistente, doctor, staff inactivo, paciente, sin sesión);
     - en los rechazos, afirma que la base no cambió;
     - `PUT /patients/{id}` con `new_password`: el hash cambia solo como admin;
-    - las rutas `api/v1/patients*` con middleware exactamente `staff`, más `POST` y `DELETE /patients`, coinciden con el dataset (`Route::getRoutes()` filtrado por prefijo y middleware).
+    - las rutas con middleware `staff` más `POST` y `DELETE /patients` coinciden con el dataset (`Route::getRoutes()` filtrado por middleware).
   - `Appointments/Integration/AppointmentsAccessControlTest.php` (nuevo):
     - las 10 rutas de `agenda/*` y `appointments/*` bajo `staff`;
     - `GET /appointments/{id}/tracking` como asistente y doctor → 403;
     - `agenda/today-appointments` y `agenda/doctors` como asistente y doctor → 403, no 500;
-    - comparación con `Route::getRoutes()` filtrado por prefijo `api/v1/agenda*` y `api/v1/appointments*` y middleware exactamente `staff`;
-    - el administrador recibe `agenda/treatments` ordenado por nombre.
+    - comparación con `Route::getRoutes()` filtrado por middleware `staff`.
   - `UnexpectedErrorTest.php` (nuevos) en Patients, Appointments (citas y catálogo), AppointmentTracking y ContentManagement:
     - un repositorio enlazado lanza `RuntimeException` → cuerpo exacto `{"error": "Internal server error"}`;
     - `ContentManagement` necesita una base nueva, `ContentManagementIntegrationTestCase`.
-  - Log sin datos sensibles (CA13), en el test de Patients, con `Log::spy()` y un repositorio enlazado en una ruta sin catch de negocio para la excepción lanzada:
+  - Log sin datos sensibles (CA13), en el test de Patients, con `Log::spy()`:
     - una `QueryException` con un teléfono y una alergia de prueba en los bindings;
-    - una `RuntimeException` cuyo mensaje contiene un email de prueba (simula una excepción de dominio con datos que llega al catch genérico: TM11);
-    - se registra `unexpected_error` con `exception` y `origin`, y ningún `Log::` contiene los valores de prueba.
-  - `Appointments/Integration/GlobalErrorFallbackTest.php` (nuevo), red global, sobre rutas bajo `api/v1` registradas solo dentro del test (sin try/catch), para que siga probando la red aunque los controladores capturen:
+    - una `PatientException::shouldBeUniqueEmail` con un email de prueba forzada al catch genérico;
+    - ningún `Log::error` contiene esos valores, y sí `exception` y `origin`.
+  - `Appointments/Integration/GlobalErrorFallbackTest.php` (nuevo), red global:
     - excepción no capturada → 500 genérico;
     - `AuthorizationException` no capturada → 403;
     - un 422 de FormRequest y un 429 conservan su forma;
     - 401 JSON sin `Accept`.
-  - `Patients/Integration/PatientBusinessMessagesTest.php` (nuevo, CA16): alta con email duplicado → 409, y alta con email del paciente inválido, y contacto, dirección, datos médicos y paciente con teléfono, email de contacto, nombre, código postal y tipo de sangre inválidos → 400. Ningún cuerpo contiene el valor enviado.
+  - `Patients/Integration/PatientBusinessMessagesTest.php` (nuevo, CA16): alta con email duplicado → 409, y contacto, dirección, datos médicos y paciente con teléfono, email, nombre, código postal y tipo de sangre inválidos → 400. Ningún cuerpo contiene el valor enviado.
   - `Patients/Integration/RecordsScreenTest.php` (nuevo, web):
     - doctor → 200, `data-records-can-edit="false"`, sin `data-record-open-*-form` ni `data-record-delete-button-template`;
     - asistente → con todos ellos;
@@ -164,7 +162,7 @@ Salidas: respuesta JSON o Blade, y `storage/logs/laravel.log`.
 | TM4 | Spoofing / Elevation: un exempleado desactivado sigue usando un token vigente | A07:2025 | `EnsureActiveStaff`, `CurrentActorAuthorizationService` | Ambos comprueban `status = active` | Datasets, actor inactivo → 403 |
 | TM5 | Spoofing: acceso sin sesión | A07:2025 | `auth:sanctum` | 401 JSON forzado en `api/*` | Datasets, sin sesión → 401; `GlobalErrorFallbackTest` sin `Accept` |
 | TM6 | Information disclosure: el 500 revela el mensaje técnico, la traza o el SQL | A10:2025 | 48 controladores; controladores sin try/catch; `APP_DEBUG=true` | `UnexpectedErrorResponse` más la red global en `api/*`, que no depende de `APP_DEBUG` | `UnexpectedErrorTest` de cada área y `GlobalErrorFallbackTest` |
-| TM7 | Information disclosure: el log del error guarda datos del SQL (bindings) | A09:2025 | `UnexpectedErrorResponse`; `Log::` de los controladores tocados, incluidos los `Log::info` con teléfono y nombre de `CreateAppointmentController` | El helper no registra `message`; se retira todo `Log::` con `getMessage()`, traza o datos del paciente en los controladores tocados | `Patients/UnexpectedErrorTest` con `QueryException` y `Log::spy` |
+| TM7 | Information disclosure: el log del error guarda datos del SQL (bindings) | A09:2025 | `UnexpectedErrorResponse`; `Log::error` previos de los catch genéricos | El helper no registra `message`; se eliminan los `Log::error` previos con `getMessage()` y `getTraceAsString()` en los catch genéricos | `Patients/UnexpectedErrorTest` con `QueryException` y `Log::spy` |
 | TM8 | Elevation por UI: confiar en que ocultar el menú impide la acción | A06:2025 | Menú lateral, panel de inicio y expedientes | Toda restricción se aplica en el servidor | Datasets directos a la API; `StaffNavigationTest` y `RecordsScreenTest` |
 | TM9 | Information disclosure: asistente o doctor obtienen el seguimiento clínico desde el detalle de una cita, que ahora pueden ver | A01:2025 | `GET /appointments/{id}/tracking` | Sigue bajo `only.admin` y `appointment-tracking.view` solo de administrador | `AppointmentsAccessControlTest`: tracking → 403 |
 | TM10 | Fallo abierto: un error de autorización se convierte en 500 (citas del día y selector de doctores) | A10:2025 | Controladores sin try/catch | `AuthorizationException` → 403 en el controlador y en la red global | `AppointmentsAccessControlTest` (CA10) |
@@ -236,8 +234,7 @@ Cobertura de amenazas:
 - **D2 · Errores inesperados y patrón de controlador.** Helper común más red global. "Aplicar el patrón de error" a un controlador significa:
   - `catch (AuthorizationException)` → 403 `{"error"}` antes del catch genérico;
   - el catch genérico queda **solo** con `return UnexpectedErrorResponse::from($e, self::class);`, retirando el `Log::error` previo;
-  - se retira todo `Log::` del controlador que registre datos del paciente o `getMessage()` (también en los catch de negocio y los `Log::info` de éxito);
-  - las respuestas de los catch de negocio no se tocan.
+  - los catch de negocio no se tocan.
 - **D3 · Qué se registra de un error.** Solo clase, archivo, línea y origen. Registrar `getMessage()` filtra los bindings de `QueryException` y los valores de las excepciones de dominio (P11). Es un punto único para añadir `request_id` más adelante.
 - **D4 · 401 en JSON en `api/*`.** Con `shouldRenderJsonWhen`, para que la API responda igual a cualquier cliente.
 - **D5 · Selectores de la agenda.** Cada uno se resuelve distinto:
@@ -250,9 +247,8 @@ Cobertura de amenazas:
 ## Impacto en arquitectura
 - `docs/architecture.md` → Backend, "Autenticación y autorización": middleware `staff`, mapa de permisos por rol y roles con acceso.
 - `docs/architecture.md` → Backend: manejo de errores centralizado (`UnexpectedErrorResponse` y `withExceptions`).
-- `docs/security.md`: riesgo 1 **parcialmente** mitigado (guard sin provider y comprobación de propiedad → spec 013, CA23 y CA24) y riesgo 3 mitigado. También las secciones "Autenticación y autorización" (permisos por rol, middleware `staff`, fin de los closures) y "Superficie de ataque" (las filas que hoy dicen "cualquier actor autenticado").
-- `docs/architecture.md`: fila Core de la tabla de módulos (`EnsureActiveStaff`, `UnexpectedErrorResponse`).
-- `docs/roadmap.md` → "Pendientes y deuda": mensajes y logs de Users y Auth con el email o `getMessage()`. Propuestas para que el usuario confirme: retirar la deuda "Desalineación interfaz/backend", ya resuelta, y ajustar el criterio "0 respuestas con `$e->getMessage()`" del objetivo 1 a P7 1.1.1.
+- `docs/security.md`: riesgo 1 **parcialmente** mitigado (quedan el guard sin provider y la comprobación de propiedad del portal) y riesgo 3 mitigado.
+- `docs/roadmap.md` → "Pendientes y deuda": mensajes de Users y Auth que repiten el email.
 - Specs 001, 005, 006, 007, 008, 009, 011 y 012: nota en su Historial en `/release` (lista en la spec, Notas para /plan).
 
 ## Riesgos y mitigaciones
@@ -260,7 +256,7 @@ Cobertura de amenazas:
 - **Romper al administrador.** CA1 con el mismo dataset y los tests existentes.
 - **La red global cambia respuestas del framework.** Solo actúa sobre excepciones que no son HTTP, de validación, de autenticación ni de throttle; hay tests de regresión.
 - **Tests existentes acoplados al actor genérico.** Se actualizan en tareas propias antes de implementar, y pasan antes y después. Los dos casos de `GetAppointmentsTest` que afirman el comportamiento corregido se reescriben.
-- **Conflicto con la spec 013.** Se implementa después de la 014 (decisión del usuario, 2026-09-24) y la extiende. Sus rutas de paciente irán fuera del grupo `staff` (la comparación de rutas filtra por middleware). Su CA23 cambiará de 403 a probablemente 401 el código de un paciente en rutas de staff, y actualizará los datasets de esta spec. Toca los mismos controladores de citas. Queda anotado en la 013.
+- **Conflicto con la spec 013.** Sus rutas de paciente (app Android) irán fuera del grupo `staff`. La comparación de rutas filtra por middleware, así que no las exige en el dataset. Queda anotado para el `/plan` de la 013.
 - **ContentManagement sin tests previos y con AI-DLC en pausa.** Solo cambia el catch genérico. `ContentManagementIntegrationTestCase` es mínimo y no cumple por sí solo el criterio del objetivo 2 del roadmap.
 - **Se pierde el mensaje de la excepción al depurar.** La clase, el archivo y la línea bastan en la mayoría de los casos, y `request_id` llegará con la spec de auditoría.
 - **Riesgos residuales:** repudio, trazas en la web y guard sin provider (ver Modelo de amenazas).
