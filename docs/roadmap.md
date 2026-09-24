@@ -9,7 +9,7 @@ updated: 2026-09-24
 ## Objetivos
 | # | Objetivo | Criterio de éxito | Spec | Estado |
 |---|---|---|---|---|
-| 1 | Cerrar el control de acceso y la fuga de errores | Ninguna ruta de `/api/v1` con datos de pacientes o citas acepta tokens de pacientes ni de staff sin rol; test de acceso denegado por actor en cada ruta; 0 respuestas con `$e->getMessage()` | [014](specs/014-control-de-acceso-y-errores/spec.md) (deriva de 005, 006, 007, 009) | draft |
+| 1 | Cerrar el control de acceso y la fuga de errores | Ninguna ruta de `/api/v1` con datos de pacientes o citas acepta tokens de pacientes ni de staff sin rol; test de acceso denegado por actor en cada ruta; 0 respuestas con `$e->getMessage()` | [014](specs/014-control-de-acceso-y-errores/spec.md) (deriva de 005, 006, 007, 009) | approved |
 | 2 | Terminar el endurecimiento AI-DLC de las Unidades 5–7 (ContentManagement, Email, whatsApp) | Unidades 5, 6 y 7 en `COMPLETE` en `aidlc-docs/aidlc-state.md`; `tests/Modules/ContentManagement` existe y la suite completa pasa | 010, 011, 012 | pendiente vía AI-DLC (en pausa, ver [AIDLC.md](../AIDLC.md)) |
 | 3 | QR por cita: app Android del paciente y lector fijo de entrada (ESP32) | Spec 013 `released` | 013 | approved |
 | 4 | Primer despliegue en el VPS | Imagen de producción, worker de colas, TLS, backups de PostgreSQL y rollback ensayado una vez; `/up` responde en el dominio y comprueba PostgreSQL y Redis; Grafana y Loki no expuestos públicamente; retención de Loki configurada; alertas mínimas de tasa de 5xx y logins fallidos (brechas 6–9 de [observability.md](observability.md)) | nueva | pendiente |

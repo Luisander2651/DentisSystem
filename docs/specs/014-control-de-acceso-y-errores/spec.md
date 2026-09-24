@@ -1,7 +1,7 @@
 ---
 id: 014
 slug: control-de-acceso-y-errores
-status: draft
+status: approved
 created: 2026-09-24
 extends: [005, 006, 007, 009]
 ---
@@ -29,21 +29,22 @@ de `docs/security.md`) y afecta a la clínica, a sus pacientes y al cumplimiento
 | Listar y ver pacientes | sí | sí | sí | no |
 | Ver el expediente consolidado de un paciente | sí | sí | sí | no |
 | Ver el historial de citas de un paciente | sí | sí | sí | no |
+| Ver el detalle de una cita | sí | sí | sí | no |
 | Crear, modificar y eliminar contacto, dirección y datos médicos | sí | sí | no | no |
 | Modificar los datos básicos de un paciente, incluida su contraseña | sí | no | no | no |
 | Crear y eliminar pacientes | sí | no | no | no |
-| Agenda: calendario, citas del día, ver una cita, crear, reprogramar, cambiar estado, eliminar y listas para los selectores | sí | no | no | no |
+| Agenda: calendario, citas del día, crear, reprogramar, cambiar estado, eliminar y listas para los selectores | sí | no | no | no |
 
 Un miembro del staff inactivo no tiene ningún permiso. Quien no tiene sesión no tiene ningún permiso.
 
 ## Criterios de aceptación
 - [ ] CA1 · Dado un administrador activo, cuando realiza cualquier operación de la tabla de permisos, entonces se le permite con el mismo resultado que hoy.
-- [ ] CA2 · Dado un asistente activo, cuando lista o ve pacientes, abre un expediente, consulta el historial de citas de un paciente o crea, modifica o elimina su contacto, dirección o datos médicos, entonces se le permite.
-- [ ] CA3 · Dado un doctor activo, cuando lista o ve pacientes, abre un expediente o consulta el historial de citas de un paciente, entonces se le permite.
+- [ ] CA2 · Dado un asistente activo, cuando lista o ve pacientes, abre un expediente, consulta el historial de citas de un paciente, ve el detalle de una de esas citas o crea, modifica o elimina su contacto, dirección o datos médicos, entonces se le permite.
+- [ ] CA3 · Dado un doctor activo, cuando lista o ve pacientes, abre un expediente, consulta el historial de citas de un paciente o ve el detalle de una de esas citas, entonces se le permite.
 - [ ] CA4 · Dado un doctor activo, cuando entra a la pantalla de expedientes, entonces la ve sin acciones para crear, modificar ni eliminar datos; su menú lateral incluye "expedientes" y su panel de inicio lleva a esa pantalla.
 - [ ] CA5 · (abuso) Como paciente con sesión iniciada, intento cualquier operación de la tabla de permisos sobre cualquier paciente, incluido yo mismo, o sobre cualquier cita → se rechaza como acceso denegado y no se lee ni cambia ningún dato.
-- [ ] CA6 · (abuso) Como asistente, intento modificar los datos básicos o la contraseña de un paciente, crear o eliminar un paciente, o cualquier operación de la agenda → se rechaza como acceso denegado.
-- [ ] CA7 · (abuso) Como doctor, intento crear, modificar o eliminar contacto, dirección, datos médicos o datos básicos de un paciente, o cualquier operación de la agenda → se rechaza como acceso denegado.
+- [ ] CA6 · (abuso) Como asistente, intento modificar los datos básicos o la contraseña de un paciente, crear o eliminar un paciente, o cualquier operación de la agenda (ver el detalle de una cita no es operación de la agenda) → se rechaza como acceso denegado.
+- [ ] CA7 · (abuso) Como doctor, intento crear, modificar o eliminar contacto, dirección, datos médicos o datos básicos de un paciente, o cualquier operación de la agenda (ver el detalle de una cita no es operación de la agenda) → se rechaza como acceso denegado.
 - [ ] CA8 · (abuso) Como miembro del staff inactivo con una sesión aún válida, intento cualquier operación de la tabla de permisos → se rechaza como acceso denegado.
 - [ ] CA9 · (abuso) Como visitante sin sesión, intento cualquier operación de la tabla de permisos → se rechaza como no autenticado.
 - [ ] CA10 · (abuso) Como asistente o doctor, pido las citas del día → se rechaza como acceso denegado, no como error interno (hoy responde error interno; spec 007, CA12).
@@ -51,7 +52,7 @@ Un miembro del staff inactivo no tiene ningún permiso. Quien no tiene sesión n
 - [ ] CA12 · (abuso) Como atacante, provoco un error inesperado en cualquier operación del sistema (pacientes, expediente, citas, seguimiento clínico, catálogo y contenido del sitio) → la respuesta solo dice que hubo un error interno, sin el mensaje técnico del fallo, trazas, consultas a la base de datos ni nombres internos, y el detalle queda registrado para el equipo.
 - [ ] CA13 · Dado un error inesperado registrado para el equipo, cuando se revisa el registro, entonces no contiene datos de salud ni datos de contacto del paciente (P11).
 - [ ] CA14 · Dado un error esperado de negocio (dato no encontrado, dato inválido, conflicto), cuando ocurre, entonces el mensaje de negocio que se muestra hoy se conserva.
-- [ ] CA15 · Dado cualquier actor con sesión, cuando ve su menú lateral o su panel de inicio, entonces solo aparecen accesos a pantallas que puede abrir: el asistente no ve "agenda", y el paciente no ve "agenda" ni "expedientes" (hoy aparecen y la pantalla los rechaza; P13).
+- [ ] CA15 · Dado cualquier actor con sesión, cuando ve su menú lateral o su panel de inicio, entonces solo aparecen accesos a pantallas que puede abrir y acciones que puede ejecutar: el asistente no ve "agenda" ni "Registrar nuevo paciente", y el paciente no ve "agenda" ni "expedientes" (hoy aparecen y el servidor los rechaza; P13).
 
 ## Fuera de alcance
 - Portal del paciente: que un paciente consulte o edite sus propios datos (hoy no tiene pantallas).
@@ -73,6 +74,13 @@ Un miembro del staff inactivo no tiene ningún permiso. Quien no tiene sesión n
   - Como visitante sin sesión, intento acceder a datos de pacientes → se rechaza (CA9).
   - Como atacante, provoco errores para obtener detalles internos del sistema → respuesta genérica (CA12).
 
+## Auditoría
+Esta spec no emite eventos de auditoría: el registro de auditoría aún no existe y se construye en
+una spec aparte (objetivo 5 del roadmap, [observability.md](../../observability.md)). Cuando exista,
+los accesos denegados (401/403) de CA5–CA9 quedarán registrados con actor, acción, recurso y fecha
+de forma centralizada, sin cambios en esta spec. Desviación de P14 que se justifica en el
+Constitution Check de `/plan`.
+
 ## Requisitos no funcionales
 - Cada operación de la tabla de permisos tiene una prueba automatizada de acceso denegado por cada tipo de actor no autorizado: paciente, staff sin permiso para esa operación, staff inactivo y visitante sin sesión (P5, criterio de éxito del objetivo 1 del roadmap).
 - Ninguna respuesta del sistema ante un error inesperado incluye el mensaje técnico del fallo. Se verifica con pruebas que fuerzan el error en al menos una operación de cada área (pacientes, expediente, citas, seguimiento clínico, catálogo y contenido del sitio) y con una revisión que no deje ningún caso (P7).
@@ -84,7 +92,8 @@ Un miembro del staff inactivo no tiene ningún permiso. Quien no tiene sesión n
 ## Supuestos
 - El asistente no modifica los datos básicos del paciente (nombre, email, estado): su pantalla de expedientes hoy solo edita contacto, dirección y datos médicos. Solo el administrador lo hace desde la pantalla de pacientes.
 - El asistente sí puede eliminar contacto, dirección y datos médicos, porque su pantalla lo ofrece hoy.
-- "Ver una cita" y las listas para los selectores de la agenda quedan solo para el administrador, porque solo la pantalla de agenda las usa y esa pantalla es solo del administrador (spec 007, U1 BR-5).
+- Las listas para los selectores de la agenda quedan solo para el administrador, porque solo la pantalla de agenda las usa y esa pantalla es solo del administrador (spec 007, U1 BR-5).
+- "Ver el detalle de una cita" es de todo el staff activo: la pantalla de expedientes lo usa desde el historial de citas (botón "Ver"). En ese detalle, quien no es administrador no ve el seguimiento clínico ni la opción de editar (decisión del usuario, 2026-09-24).
 - El doctor accede a la pantalla de expedientes en modo solo lectura (CA4); sin pantalla, el permiso de lectura no tendría uso.
 - Como ningún paciente tiene acceso a estas operaciones, no hace falta comprobar si un recurso pertenece al paciente. Esa comprobación llega con el portal del paciente.
 - Los mensajes de negocio (no encontrado, inválido, conflicto) no son detalles internos y se mantienen (CA14).
@@ -104,3 +113,5 @@ Un miembro del staff inactivo no tiene ningún permiso. Quien no tiene sesión n
 |---|---|---|
 | 2026-09-24 | Creación | /specify, objetivo 1 del roadmap |
 | 2026-09-24 | CA4 y CA15 cubren también el panel de inicio (dashboard) | Revisión del impacto en el frontend |
+| 2026-09-24 | Sección Auditoría (diferida a la spec del objetivo 5) y aprobación | Constitución 1.1.0 (P14); aprobada por el usuario |
+| 2026-09-24 | "Ver el detalle de una cita" pasa a todo el staff (CA2, CA3, CA6, CA7, tabla, supuestos); CA15 cubre también acciones | `/plan` detectó que expedientes usa ese detalle y que el asistente ve "Registrar nuevo paciente"; decisión del usuario |
