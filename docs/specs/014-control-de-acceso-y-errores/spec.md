@@ -51,8 +51,8 @@ Un miembro del staff inactivo no tiene ningún permiso. Quien no tiene sesión n
 - [ ] CA12 · (abuso) Como atacante, provoco un error inesperado en cualquier operación de la API (`/api/v1`: pacientes, expediente, citas, seguimiento clínico, catálogo y contenido del sitio) → la respuesta solo dice que hubo un error interno, sin el mensaje técnico del fallo, trazas, consultas a la base de datos ni nombres internos, y el detalle queda registrado para el equipo.
 - [ ] CA13 · Dado un error inesperado registrado para el equipo, cuando se revisa el registro, entonces no contiene datos de salud ni datos de contacto del paciente (P11).
 - [ ] CA14 · Dado un error esperado de negocio (dato no encontrado, dato inválido, conflicto), cuando ocurre, entonces se conserva el mensaje de negocio que se muestra hoy, salvo los datos personales o de salud que contenga, que se retiran del mensaje (CA16).
-- [ ] CA16 · (abuso) Como actor con permiso de escritura, envío un email ya usado por otro paciente, o un email, teléfono, nombre, código postal o tipo de sangre inválidos → el error de negocio (400 o 409) explica qué campo falla sin repetir el valor enviado ni revelar datos de otro paciente (P7, P11).
 - [ ] CA15 · Dado cualquier actor con sesión, cuando ve su menú lateral o su panel de inicio, entonces solo aparecen accesos a pantallas que puede abrir y acciones que puede ejecutar: el asistente no ve "agenda" ni "Registrar nuevo paciente", y el paciente no ve "agenda" ni "expedientes" (hoy aparecen y el servidor los rechaza; P13).
+- [ ] CA16 · (abuso) Como actor con permiso de escritura, envío un email ya usado por otro paciente, o un email, teléfono, nombre, código postal o tipo de sangre inválidos → el error de negocio (400 o 409) explica qué campo falla sin repetir el valor enviado ni revelar datos de otro paciente (P7, P11).
 
 ## Fuera de alcance
 - Portal del paciente: que un paciente consulte o edite sus propios datos (hoy no tiene pantallas).
@@ -74,22 +74,22 @@ dentro o fuera de alcance. Esta spec atiende RS1 **parcialmente**.
 
 | Corrección | Alcance | Criterios / motivo y destino |
 |---|---|---|
-| RS1.a Restringir a staff | dentro | CA5, CA6, CA7, CA8, CA9, CA15 |
+| RS1.a Restringir a staff | dentro | CA5, CA6, CA7, CA8, CA9 |
 | RS1.b Propiedad del recurso | fuera | Ningún paciente accede a estas rutas → spec 013, CA24 (decisión del usuario, 2026-09-24) |
 | RS1.c Provider del guard `sanctum` | fuera | Lo compensa el middleware de staff → spec 013, CA23 (decisión del usuario, 2026-09-24) |
 | RS1.d Tests de acceso denegado | dentro | CA5–CA9 y requisito no funcional de pruebas por actor |
 | RS2.a Casts `encrypted` | fuera | Cifrado en reposo → roadmap, Próxima etapa |
 | RS2.b Cifrado de volumen y backups | fuera | → roadmap, Próxima etapa |
 | RS3.a Respuestas 500 genéricas | dentro | CA12, CA13 |
-| RS5.a Protección CSRF | fuera | Otro riesgo → pendiente de objetivo en el roadmap |
-| RS8.a Revocar tokens al restablecer contraseña | fuera | Otro flujo (spec 003) → pendiente de objetivo en el roadmap |
-| RS10.a `APP_DEBUG=false` en `.env.example` | fuera | Configuración, no código → roadmap objetivo 5 |
-| RS10.b `SESSION_ENCRYPT=true` en `.env.example` | fuera | Configuración → roadmap, Pendientes y deuda |
+| RS5.a Protección CSRF | fuera | Otro riesgo → roadmap, Pendientes y deuda (decisión del usuario, 2026-09-24) |
+| RS8.a Revocar tokens al restablecer contraseña | fuera | Otro flujo (spec 003) → roadmap, Pendientes y deuda (decisión del usuario, 2026-09-24) |
+| RS10.a `APP_DEBUG=false` en `.env.example` | fuera | Configuración, no código → roadmap objetivo 4 (decisión del usuario, 2026-09-24) |
+| RS10.b `SESSION_ENCRYPT=true` en `.env.example` | fuera | Configuración → roadmap, Pendientes y deuda (decisión del usuario, 2026-09-24) |
 | RS11.a Eventos de auditoría | fuera | → spec de auditoría, roadmap objetivo 5 (sección "Auditoría") |
-| OB2.a Sin teléfono ni nombre en los logs de `CreateAppointmentController` | dentro | P11 en código tocado (plan, TM7); CA13 |
+| OB2.a Sin teléfono ni nombre en los logs de `CreateAppointmentController` | dentro | P11 en código tocado (plan, TM7); test con `Log::spy` en `CreateAppointmentTest` |
 | OB2.b Sin datos personales en el resto de logs | fuera | whatsApp, Email y eventos de cita → roadmap objetivo 5 |
 | OB10.a Respuestas 500 sin el mensaje de la excepción | dentro | CA12 |
-| OB10.b Sin trazas ni `getMessage()` en logs de Auth y whatsApp | fuera | → roadmap, Pendientes y deuda (ver "Fuera de alcance") |
+| OB10.b Sin trazas ni `getMessage()` en logs de Auth y whatsApp | fuera | → roadmap, Pendientes y deuda: Auth y Users (ver "Fuera de alcance") y whatsApp, en entradas propias (decisión del usuario, 2026-09-24) |
 
 ## Seguridad y privacidad
 - Datos sensibles involucrados: **datos de salud** (datos médicos, historial de citas) y **datos personales** (nombre, teléfono, contacto de emergencia, email, dirección), además de la contraseña del paciente. Clasificación restringida y confidencial según `docs/security.md`.
@@ -138,7 +138,7 @@ Constitution Check de `/plan`, junto con la falta de `request_id`.
 - 48 controladores con `'message' => $e->getMessage()` en el 500: Patients 15, Appointments 11, AppointmentTracking 6, ContentManagement 16. Auth y Users ya están corregidos y sirven de referencia (SECURITY-15).
 - Los tests existentes que hoy autentican como cualquier actor (`PatientCrudTest`, `AddressTest`, `ContactInfoTest`, `MedicalDataTest`, `PatientRecordTest`, `CreateAppointmentTest`, `UpdateAppointmentTest`, `GetAppointmentsTest`) deben pasar a actores con el rol correcto.
 - Sidebar: `resources/views/components/ui/sidebar.blade.php:50-51` (quitar `agenda` al asistente; añadir `expedientes` al doctor). Dashboard: `resources/views/pages/dashboard.blade.php` enlaza a `/agenda` para el asistente (l. 211) y a `/agenda` y `/expedientes-clinicos` en la rama `@else` que comparten doctor y paciente (l. 238, 243); separar doctor de paciente. Vista de expedientes en solo lectura para el doctor en `resources/js/pages/records/index.js`.
-- Actualizar al cerrar (`/release`, Historial de cada spec extendida): 005 CA3 y CA4 ("usuario autenticado" pasa a staff con permiso), CA11 y CA12 (resueltos); 006 CA1 y CA2 (staff), CA3 (entra el doctor, en solo lectura) y CA5 (resuelto para pacientes; el doctor sí lee expedientes); 007 CA1, CA3–CA6 y CA10 (solo administrador), CA9 (todo el staff), CA12 y CA13 (resueltos); 009 CA8; 008 CA3 (catálogo de la agenda solo para administrador) y 500 genérico; 011 y 012 (500 genérico); 001 (401 JSON en logout sin sesión). RS1.a y RS1.d → mitigadas (RS1 queda parcialmente mitigado hasta la 013) y RS3.a → mitigada en `docs/security.md`; OB2.a y OB10.a en `docs/observability.md`.
+- Actualizar al cerrar (`/release`, Historial de cada spec extendida): 005 CA3 y CA4 ("usuario autenticado" pasa a staff con permiso), CA11 y CA12 (resueltos); 006 CA1 y CA2 (staff), CA3 (entra el doctor, en solo lectura) y CA5 (resuelto para pacientes; el doctor sí lee expedientes); 007 CA1, CA3–CA6 y CA10 (solo administrador), CA9 (todo el staff), CA12 y CA13 (resueltos); 009 CA8; 008 CA3 (catálogo de la agenda solo para administrador), 500 genérico y, en `agenda/treatments`, `time` nulo devuelto como `0`, igual que ya hace `GET /treatments`; 011 y 012 (500 genérico); 001 (401 JSON en logout sin sesión). RS1.a y RS1.d → mitigadas (RS1 queda parcialmente mitigado hasta la 013) y RS3.a → mitigada en `docs/security.md`; OB2.a y OB10.a en `docs/observability.md`.
 - Mensajes de Patients con datos (CA16): `PatientException::shouldBeUniqueEmail`, `EmailException`, `ContactEmailException`, `PhoneNumberException`, `PatientNameException` (2), `PostalCodeException` y `BloodTypeException`.
 
 ## Historial
@@ -148,6 +148,7 @@ Constitution Check de `/plan`, junto con la falta de `request_id`.
 | 2026-09-24 | CA4 y CA15 cubren también el panel de inicio (dashboard) | Revisión del impacto en el frontend |
 | 2026-09-24 | Sección Auditoría (diferida a la spec del objetivo 5) y aprobación | Constitución 1.1.0 (P14); aprobada por el usuario |
 | 2026-09-24 | "Ver el detalle de una cita" pasa a todo el staff (CA2, CA3, CA6, CA7, tabla, supuestos); CA15 cubre también acciones | `/plan` detectó que expedientes usa ese detalle y que el asistente ve "Registrar nuevo paciente"; decisión del usuario |
+| 2026-09-24 | Cobertura de riesgos: destinos de RS5.a, RS8.a, RS10.a, RS10.b y OB10.b, OB2.a con su test, RS1.a sin CA15; CA15 antes que CA16; `time` nulo en `agenda/treatments` | `/analyze 014` ronda 4 (C4, C14, D2–D4, D6); decisión del usuario |
 | 2026-09-24 | Sección "Cobertura de riesgos" y citas por ID (RS/OB) | `/init --upgrade` a 1.6.0 (formato 1.5.6); decisión del usuario |
 | 2026-09-24 | CA12 acotado a la API; web y logs de Auth y Users fuera de alcance; 008 CA3 declarado; orden 014 → 013 | Segundo `/analyze 014` (B6, B11, B14, B15); decisión del usuario |
 | 2026-09-24 | Provider del guard y propiedad del recurso (riesgo 1) pasan a la spec 013 | Aclaración del alcance del riesgo 1; decisión del usuario |

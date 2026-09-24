@@ -1,50 +1,64 @@
 ---
-result: fail
+result: pass
+round: 5
+mode: delta
+constitution_version: 1.1.2
 date: 2026-09-24
-spec_sha: f1b32437493e
-plan_sha: cfa38cfe0333
-tasks_sha: 9413b4ab55b6
+spec_sha: 4983cab9c060
+plan_sha: 6c6ff66851f0
+tasks_sha: c9a933042c25
 ---
 
 # Análisis · 014 Control de acceso a pacientes y citas, y errores sin detalles internos
 
-Tercer análisis, sobre la spec editada, el plan v3 y las tareas v3. Los anteriores (A1–A29 y B1–B23)
-quedaron resueltos con las constituciones 1.1.1 y 1.1.2, ediciones de la spec y las versiones v2 y v3
-de plan y tareas.
+Ronda 5, **delta** sobre la ronda 4 ([analysis.r4.md](analysis.r4.md)). Revisa las correcciones
+aplicadas con `--fix` (C1, C4, C14, D1–D4 y D6), unas 43 líneas de spec, plan y tareas. No hay
+cambio estructural: ningún módulo, contrato ni criterio nuevo (CA15 y CA16 solo cambian de orden).
 
 ## Resumen
-**fail**, pendiente de la decisión del usuario sobre C1. No hay hallazgos CRÍTICOS. El único ALTO
-(C1) es un hueco real de P11: la red global define la respuesta, pero Laravel sigue **reportando**
-por su cuenta las excepciones no capturadas, con `getMessage()` (incluidos los bindings del SQL) y
-la traza. Se recomienda corregirlo, y un ALTO que se decide corregir deja el resultado en `fail`.
-Los demás son ajustes menores. Todos se verificaron contra los artefactos y el código.
+**pass.** Los 8 hallazgos corregidos quedan resueltos, incluido el único ALTO previo (C1). La
+corrección es coherente con Laravel 12: se detiene el reporte por defecto en `api/*` sin silenciar
+el log del helper. La corrección de D2 dejó un efecto nuevo (D7, ALTA): el test pedía más de lo que
+cubre la spec. Se acepta con una nota que acota el test, junto con D8 (BAJA). La comprobación
+crítica de cobertura de riesgos pasa.
 
-Conteo: 0 CRÍTICOS · 1 ALTO · 4 MEDIOS · 9 BAJOS.
+Abiertos: 0. Aceptados en esta ronda: 1 ALTO · 1 BAJO. Siguen vigentes los aceptados de la ronda 4.
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
-| Criterios con tarea de test e implementación | 16 / 16 (el test de CA14 no afirma el texto de los mensajes: C5) |
-| Amenazas con control y test | 12 / 12 declaradas; 10 / 12 con control en todos sus caminos (TM7 y TM11 sin la red global: C1) |
-| Principios de la constitución evaluados | 16 / 16 (P1–P14, Restricciones, Definición de terminado) |
+| Criterios con tarea de test e implementación | 16 / 16 |
+| Amenazas con control y test | 12 / 12 (TM7 y TM11 con la red global incluida) |
+| Correcciones de riesgo "dentro" con cambio y test | 5 / 5 (OB2.a con el alcance de D7) |
+| Correcciones de riesgo "fuera" con destino real | 11 / 11 |
+| Principios de la constitución evaluados | 16 / 16 (ronda 3; sin cambios de constitución) |
 
-## Hallazgos
-| ID | Categoría | Severidad | Ubicación | Hallazgo | Recomendación |
+## Seguimiento de rondas anteriores
+| ID | Severidad | Estado | Evidencia |
+|---|---|---|---|
+| C1 | ALTA | resuelto | Plan, fila bootstrap, punto (4), y D3; TM7 y TM11 con red global; T033 detiene el reporte por defecto en `api/*`; T015 con `Log::spy` y `QueryException` |
+| C4 | MEDIA | resuelto | "Contratos y datos" declara `time` nulo → `0` en `agenda/treatments`, y también la spec (nota a 008); T012 lo fija y T047 lo verifica. El código se comporta así (`TreatmentTime::fromInt((int) "")` = 0, dentro de rango) |
+| D1 | MEDIA | resuelto | Plan, T065 y T091 con estados por corrección; RS1 "parcialmente mitigado"; nota de RS9.a |
+| D2 | MEDIA | resuelto con efecto nuevo (→ D7) | Fila OB2.a → P11 y caso `Log::spy` en T022, verificado en T047 |
+| D3 | MEDIA | resuelto | RS10.a → objetivo 4; el objetivo 4 lista RS10.a y OB5.b |
+| D4 | MEDIA | resuelto | Entradas de RS5.a, RS8.a, RS10.b y OB10.b (whatsApp) en "Pendientes y deuda"; la spec y T071 las citan |
+| C14 | BAJA | resuelto | CA15 antes que CA16 |
+| D6 | BAJA | resuelto | Fila RS1.a sin CA15 |
+
+## Hallazgos nuevos
+| ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
 |---|---|---|---|---|---|
-| C1 | Seguridad (P11, CA13) | ALTA | plan (bootstrap, D3, TM7, TM11); T033, T015 | La red de `withExceptions` solo cambia el render. El reporte por defecto de Laravel registra `getMessage()` y la traza de toda excepción no capturada (`\Error`/`TypeError` fuera del `catch (\Exception)`, fallos en middleware, controladores sin try/catch). Además, si la red usa el helper, el error queda registrado dos veces. | T033: que no se reporten por defecto las excepciones que atiende la red en `api/*`, de modo que solo quede el log del helper. T015: caso con `Log::spy` y una `QueryException` con datos de prueba sin capturar. Plan: añadir la red a TM7 y TM11. |
-| C2 | Dependencias | MEDIA | T052 | "T012 completo" incluye el orden de `agenda/treatments`, que depende de T075. | Añadir T075 a `depende`. |
-| C3 | Inconsistencia | MEDIA | T064 vs patrón (paso 1) | El 403 de `AuthorizationException` devuelve `getMessage()` (`DeleteAppointmentTest.php:28` lo afirma), y T064 no lo admite. | Admitir el 403 de `AuthorizationException` en T064. |
-| C4 | Contrato (P4, CA1) | MEDIA | plan (`GetTreatmentsController`, Contratos); T047 | Al pasar por `GetTreatmentsUseCase`, `time` nulo (spec 008) deja de ser `null` en `agenda/treatments`: se mapea con el value object, igual que en el catálogo de administración. | Declarar el cambio en el contrato y en la nota a la 008, y añadir a T012 un tratamiento con `time` nulo que fije el resultado. |
-| C5 | Cobertura (CA14) | MEDIA | T020–T022; Trazabilidad CA14 | Los tests existentes solo comprueban códigos, no textos: un cambio involuntario del mensaje de negocio no se detectaría. | Añadir a T066 aserciones de texto de mensajes representativos (404 de paciente, 409 de relación 1:1). |
-| C6 | Cobertura (RNF P7) | BAJA | T013 | El caso del expediente solo comprueba el log, no el cuerpo genérico. | Añadir la aserción del cuerpo. |
-| C7 | Inconsistencia | BAJA | plan, fila TM11 vs Estrategia y T013 | El test de TM11 se describe de dos formas. | Unificar: `RuntimeException` con email de prueba. |
-| C8 | Inconsistencia | BAJA | T022; `CreateAppointmentTest.php:20`, `UpdateAppointmentTest.php:29` | Nombres de casos "any authenticated active staff… (not just admin)" que contradicen la spec. | Renombrarlos en T022. |
-| C9 | Cobertura (P2) | BAJA | T061 | El caso admin de T019 ya pasa hoy. | Criterio acotado al menú lateral de asistente, doctor y paciente. |
-| C10 | Ambigüedad | BAJA | T020, T021 | `actingAsNonAdminUser()` ya usa `'Asistente'` por defecto: el cambio de actor no cambia nada. | Hacer explícito `actingAsNonAdminUser('Asistente')`. |
-| C11 | Redacción | BAJA | plan, fila Frontend de expedientes | Son 4 archivos de vista, no 5. | Corregir. |
-| C12 | Documentación | BAJA | T065, T091 | `observability.md` (brecha 2) y `security.md` (riesgo 9) citan los `Log::info` que T047 elimina. | Actualizar la brecha 2 y el riesgo 9. |
-| C13 | Seguridad | BAJA | plan, Riesgos residuales | Faltan dos residuales: doctor y asistente ven a todos los pacientes, y los logs de Auth y Users siguen con `getMessage()`. | Añadirlos. |
-| C14 | Redacción | BAJA | spec, Criterios de aceptación | CA16 aparece antes que CA15. | Reordenar. |
+| D7 | Cobertura / inconsistencia | ALTA | T022, T047; fila OB2.a de la spec | El caso `Log::spy` de T022 afirma que **ningún** log de `POST /appointments` contiene el teléfono ni el nombre. Pero la misma petición los registra fuera del controlador: `RetriveDataForScheduledAppointmenEventUseCase.php:53-56`, `CreatedAppointmentListener.php:37-40`, `SendAppointmentConfirmationUseCase.php:19-21,33-35` y el job y `TwilioConection` (cola `sync` en tests, `phpunit.xml:39`). Son OB2.b, fuera de alcance, así que el test nunca pasaría. | Aceptado con nota (abajo). |
+| D8 | Cobertura de riesgos | BAJA | `docs/security.md` RS10; `docs/observability.md` OB5; T065, T091 | Los registros de riesgos no reflejan los destinos nuevos del roadmap: OB5.b sigue apuntando al objetivo 5, y RS10.a y RS10.b no tienen destino. | Aceptado con nota (abajo). |
+
+Descartado: un hallazgo sobre el objetivo 1 del roadmap, que no lista OB2.a ni OB10.a. Duplica D5,
+ya aceptado en la ronda 4 como nota de T071.
+
+## Decisiones pendientes del usuario
+- Ninguna.
 
 ## Aceptados
-- Ninguno todavía.
+Aceptados por el usuario el 2026-09-24; se resuelven en `/implement` como nota de la tarea indicada:
+- **D7:** el caso `Log::spy` de `CreateAppointmentTest` (T022) solo comprueba los logs cuyo mensaje empieza por `CreateAppointmentController`: ninguno contiene el teléfono ni el nombre del paciente de prueba. Los logs que la misma petición escribe desde `RetriveDataForScheduledAppointmenEventUseCase`, `CreatedAppointmentListener`, `SendAppointmentConfirmationUseCase`, `ConfirmationAppointmentMessage` y `TwilioConection` son OB2.b (fuera de alcance → roadmap objetivo 5) y el test no los afirma. El criterio de T047 ("el caso de `Log::spy` pasa") se lee con ese alcance. Nota de T022 y T047.
+- **D8:** T065 y T091 también ponen en `security.md` y `observability.md` los destinos nuevos: RS10.a y OB5.b → objetivo 4; RS10.b → roadmap, Pendientes y deuda.
+- Siguen vigentes los aceptados de la ronda 4 ([analysis.r4.md](analysis.r4.md), "Aceptados"): C2, C3, C5–C11, C13 y D5, como notas de T052, T064, T066, T013, T022, T061, T020, T021, T063, T065 y T071.
