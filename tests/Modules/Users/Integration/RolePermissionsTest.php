@@ -35,6 +35,23 @@ function rolePermissionMatrix(): array
         'agenda.selectors.view' => ['agenda.selectors.view', ['Administrador']],
         'treatments.view' => ['treatments.view', ['Administrador']],
         'users.view' => ['users.view', ['Administrador']],
+        'users.create' => ['users.create', ['Administrador']],
+        'users.update' => ['users.update', ['Administrador']],
+        'users.delete' => ['users.delete', ['Administrador']],
+        'users.manage' => ['users.manage', ['Administrador']],
+        'manage.certifications' => ['manage.certifications', ['Administrador']],
+        'manage.gallery' => ['manage.gallery', ['Administrador']],
+        'manage.promotions' => ['manage.promotions', ['Administrador']],
+        'manage.testimonials' => ['manage.testimonials', ['Administrador']],
+        'treatments.create' => ['treatments.create', ['Administrador']],
+        'treatments.update' => ['treatments.update', ['Administrador']],
+        'treatments.delete' => ['treatments.delete', ['Administrador']],
+        'appointment-tracking.create' => ['appointment-tracking.create', ['Administrador']],
+        'appointment-tracking.view' => ['appointment-tracking.view', ['Administrador']],
+        'appointment-tracking.update' => ['appointment-tracking.update', ['Administrador']],
+        'appointment-tracking.prescriptions.create' => ['appointment-tracking.prescriptions.create', ['Administrador']],
+        'appointment-tracking.prescriptions.update' => ['appointment-tracking.prescriptions.update', ['Administrador']],
+        'appointment-tracking.prescriptions.delete' => ['appointment-tracking.prescriptions.delete', ['Administrador']],
     ];
 }
 
@@ -45,7 +62,7 @@ beforeEach(function () {
 it('grants each permission exactly to the active staff roles of the table', function (string $permission, array $allowedRoles) {
     foreach (['Administrador', 'Asistente', 'Doctor'] as $role) {
         $this->forgetAuthState();
-        $this->actingAsNonAdminUser($role); // Si el metodo es llamado non admin, deberia realmente poder llamarse con admin???
+        $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
 
         $call = fn () => $this->service->assertCan($permission);
 
@@ -70,3 +87,16 @@ it('refuses every permission to an authenticated patient', function (string $per
     expect(fn () => $this->service->assertCan($permission))
         ->toThrow(AuthorizationException::class);
 })->with(array_map(fn (array $row): array => [$row[0]], rolePermissionMatrix()));
+
+it('covers every permission of the map, so the matrix cannot drift from it', function () {
+    $permissions = (fn (): array => $this->permissions())->call(new CurrentActorAuthorizationService);
+
+    expect(array_keys($permissions))->toEqualCanonicalizing(array_keys(rolePermissionMatrix()));
+});
+
+it('denies by default a permission that is not in the map', function (string $role) {
+    $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
+
+    expect(fn () => $this->service->assertCan('permission.that.does.not.exist'))
+        ->toThrow(AuthorizationException::class);
+})->with(['Administrador', 'Asistente', 'Doctor']);

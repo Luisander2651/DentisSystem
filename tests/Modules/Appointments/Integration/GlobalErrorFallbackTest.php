@@ -31,6 +31,11 @@ beforeEach(function () {
         ));
         Route::get('/forbidden', fn () => throw AuthorizationException::forbidden('fallback.test'));
         Route::post('/validation', fn (Request $request) => $request->validate(['name' => ['required']]));
+        Route::get('/reported', function () {
+            report(new RuntimeException('Fallo con el telefono '.GLOBAL_FALLBACK_TEST_PHONE));
+
+            return response()->json(['ok' => true]);
+        });
     });
 
     $this->logged = new Collection;
@@ -81,4 +86,18 @@ it('answers 401 in JSON on the api without a session, even without asking for JS
     $this->get('/api/v1/patients')
         ->assertUnauthorized()
         ->assertJson(['message' => 'Unauthenticated.']);
+});
+
+it('keeps a sanitized trace of an exception reported manually during an api request (spec 014, R1)', function () {
+    $this->getJson('/api/v1/__fallback-test/reported')->assertOk();
+
+    $everything = $this->logged
+        ->map(fn (MessageLogged $entry): string => $entry->message.' '.json_encode($entry->context))
+        ->implode('
+');
+
+    expect($this->logged)->toHaveCount(1)
+        ->and($this->logged->first()->message)->toBe('unexpected_error')
+        ->and($this->logged->first()->context)->toHaveKeys(['exception', 'origin'])
+        ->and($everything)->not->toContain(GLOBAL_FALLBACK_TEST_PHONE);
 });

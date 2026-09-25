@@ -15,7 +15,21 @@ use Throwable;
  */
 final class UnexpectedErrorResponse
 {
+    /**
+     * For a controller that caught the error: logs it once and answers the generic 500.
+     */
     public static function from(Throwable $exception, string $origin): JsonResponse
+    {
+        self::log($exception, $origin);
+
+        return self::response();
+    }
+
+    /**
+     * The sanitized log of an unexpected error. The API safety net in bootstrap/app.php calls it
+     * from report(), so it also covers errors that are reported but never rendered.
+     */
+    public static function log(Throwable $exception, string $origin): void
     {
         Log::error('unexpected_error', [
             'origin' => $origin,
@@ -23,7 +37,10 @@ final class UnexpectedErrorResponse
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
         ]);
+    }
 
+    public static function response(): JsonResponse
+    {
         return new JsonResponse(['error' => 'Internal server error'], 500);
     }
 }

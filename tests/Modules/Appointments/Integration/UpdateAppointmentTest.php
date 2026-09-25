@@ -26,16 +26,22 @@ it('reschedules an appointment successfully', function () {
     ]);
 });
 
-it('allows an administrator to reschedule an appointment of any doctor', function () {
+it('allows an administrator to reschedule an appointment of a doctor other than themselves', function () {
     $this->actingAsAdmin();
-    $appointment = $this->createAppointment(['date' => '2026-09-01', 'time' => '10:00']);
+    $doctor = $this->createUserWithRole('Doctor');
+    $appointment = $this->createAppointment(['user_id' => $doctor->id, 'date' => '2026-09-01', 'time' => '10:00']);
 
     $response = $this->putJson($this->appointmentUrl($appointment->id), [
         'date' => '2026-09-02',
         'time' => '11:00',
     ]);
 
-    $response->assertStatus(200);
+    $response->assertOk();
+    $this->assertDatabaseHas('appointments', [
+        'id' => $appointment->id,
+        'user_id' => $doctor->id,
+        'date' => '2026-09-02',
+    ]);
 });
 
 it('returns 409 when rescheduling into a slot occupied by another appointment (post-fix behavior)', function () {

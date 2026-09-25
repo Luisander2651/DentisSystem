@@ -22,12 +22,14 @@ it('creates an appointment successfully', function () {
     $this->assertDatabaseCount('appointments', 1);
 });
 
-it('allows an administrator to book an appointment for any doctor and patient', function () {
+it('allows an administrator to book an appointment for a doctor other than themselves', function () {
     $this->actingAsAdmin();
+    $doctor = $this->createUserWithRole('Doctor');
 
-    $response = $this->postJson($this->appointmentsUrl(), $this->validCreateAppointmentPayload());
+    $response = $this->postJson($this->appointmentsUrl(), $this->validCreateAppointmentPayload(['user_id' => $doctor->id]));
 
-    $response->assertStatus(201);
+    $response->assertCreated();
+    $this->assertDatabaseHas('appointments', ['user_id' => $doctor->id]);
 });
 
 it('does not log the patient phone or name from the appointments controller (spec 014, OB2.a)', function () {

@@ -10,6 +10,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -52,11 +53,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(fn (Request $request): bool => $request->is('api/*') || $request->expectsJson());
 
         // The default report writes the exception message and the full trace, which may carry
-        // patient data; for the API, UnexpectedErrorResponse is the only log of the error.
-        $exceptions->report(function (Throwable $e) use ($isUnexpected) {
+        // patient data. For the API, every unexpected error is logged here in its sanitized form
+        // instead - also one reported manually or after the response - and the render below only
+        // builds the answer, so each error is logged exactly once.
+        $exceptions->report(function (Throwable $e) use ($isUnexpected): ?bool {
             if ($isUnexpected($e) && app()->bound('request') && request()->is('api/*')) {
+                UnexpectedErrorResponse::log($e, request()->route()?->getActionName() ?? 'unknown');
+
                 return false;
             }
+
+            return null;
         });
 
         $exceptions->render(function (AuthorizationException $e, Request $request) {
@@ -65,9 +72,11 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->render(function (Throwable $e, Request $request) use ($isUnexpected) {
+        $exceptions->render(function (Throwable $e, Request $request) use ($isUnexpected): ?JsonResponse {
             if ($request->is('api/*') && $isUnexpected($e)) {
-                return UnexpectedErrorResponse::from($e, $request->route()?->getActionName() ?? 'unknown');
+                return UnexpectedErrorResponse::response();
             }
+
+            return null;
         });
     })->create();
