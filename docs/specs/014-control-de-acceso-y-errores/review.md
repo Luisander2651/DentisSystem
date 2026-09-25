@@ -1,82 +1,66 @@
 ---
 spec: 014-control-de-acceso-y-errores
-verdict: changes_requested
-round: 2
+verdict: approved
+round: 3
 date: 2026-09-25
-base: 45acc0c
-head: 328aed9
+base: 328aed9
+head: 364adec
 human_signoff: pending
 ---
 
 # Review · 014 Control de acceso a pacientes y citas, y errores sin detalles internos
 
-Ronda 2 (`--rerun`) sobre la ronda 1 ([review.r1.md](review.r1.md)). Revisa los hallazgos abiertos
-R1–R7, el diff `45acc0c..328aed9` y la verificación automática completa. No reabre los menores
-aceptados R8–R29.
+Ronda 3 (`--rerun`) sobre la ronda 2 ([review.r2.md](review.r2.md)). Revisa los hallazgos abiertos
+R30–R36, el diff `328aed9..364adec` y la verificación automática completa. No reabre los menores
+aceptados en rondas anteriores.
 
 ## Resumen
-**changes_requested.** R1–R7 quedaron corregidos y no hay bloqueantes. El usuario decide corregir antes
-de liberar el importante nuevo R30, un test que no comprueba lo que dice en 2 de sus 3 tablas, y los
-menores R31–R36. R30 afecta a la calidad del test, no a la seguridad: el servidor rechaza las escrituras
-de quien no es administrador ni asistente, y eso ya lo prueban los datasets de acceso y la verificación
-manual (aclaración del usuario, 2026-09-25).
+**approved.** R30–R36 quedaron corregidos y el diff no introduce hallazgos nuevos. Falta la
+confirmación humana (`human_signoff`) antes de `/release`.
 
-Conteo de la ronda: 0 bloqueantes · 1 importante · 6 menores.
+Conteo de la ronda: 0 bloqueantes · 0 importantes · 0 menores.
 
 ## Verificación automática
 | Comando | Resultado |
 |---|---|
-| `./vendor/bin/pest` (serie) | ✅ 800 passed, 0 fallos |
-| `vendor/bin/pint --test` (archivos PHP del rango) | ✅ |
+| `./vendor/bin/pest` (serie) | ✅ 800 passed (10158 aserciones), 0 fallos |
+| `vendor/bin/pint --dirty` | ✅ |
 | `npm run build` | ✅ |
-| `aidd.py validate` | ✅ 0 errores |
+| `aidd.py validate` | ✅ 0 errores (2 avisos previos: tamaño de la spec y "riesgo 1" en el Historial) |
 
-## Seguimiento de la ronda 1
+## Seguimiento de la ronda 2
 | R | Estado | Evidencia |
 |---|---|---|
-| R1 | corregido | `bootstrap/app.php:59-67` registra una vez, saneado, toda excepción inesperada de `api/*` y detiene el reporte por defecto; el render solo construye la respuesta; `from()` sigue registrando para los controladores. Test: `GlobalErrorFallbackTest` (un `report()` manual deja un único log sin el teléfono) |
-| R2 | corregido | Matriz con las 32 claves, comprobadas contra el mapa; permiso desconocido denegado para los 3 roles |
-| R3 | corregido | La cita pertenece a un Doctor distinto del administrador que actúa; `user_id` verificado en la base |
-| R4 | corregido | Saludo propio del doctor; `StaffNavigationTest` |
-| R5 | corregido | Textos según `$canEdit`; `RecordsScreenTest` |
-| R6 | corregido | Cabecera, celda y `colspan` según `$canEdit` (Blade y `index.js`). El caso positivo del test es débil: R30 |
-| R7 | corregido | axios 1.20.0 (publicada 2026-08-26); `npm audit`: 7 avisos, ninguno de axios; EX1 y RS16 con motivo, aprobador y vencimiento |
-| R11, R17 | corregidos | Comentario retirado; tipos de retorno en `bootstrap/app.php` |
-| R19 | corregido en parte | `index.js` ya usa `data-records-can-edit` |
+| R30 | corregido | `RecordsScreenTest.php:65`: la captura `((?:(?!</thead>).)*)` no cruza otro `</thead>`. Comprobado a mano: con la cabecera "Acciones" de `address-table` cambiada, el caso positivo falla para administrador y asistente |
+| R31 | corregido | Nota de T083 en `tasks.md`: 9 dependencias transitivas con versión; `npm view`: MIT, sin scripts de instalación, más de 7 días |
+| R32 | corregido | `GlobalErrorFallbackTest.php:96` usa `"\n"` |
+| R33 | corregido | `docs/security.md:118`: RS16 tras RS1 y RS2 (Alta), antes de RS3 |
+| R34 | corregido | `docs/security.md:89`: EX1 lo formula como condición y describe el estado real (`vite.config.js:18` escucha en `0.0.0.0`, `docker-compose.yml:20` publica `5173:5173`); deuda en el roadmap |
+| R35 | corregido | Historial de `spec.md` en orden cronológico; cita T077–T086 |
+| R36 | corregido | `dashboard.blade.php:40` con texto neutro; `StaffNavigationTest.php:56-57` lo afirma y niega "de tus pacientes" |
 
 ## Seguridad
 | Herramienta | Resultado |
 |---|---|
 | Secretos, SAST, contenedores | No ejecutados: no instalados (R27, aceptado en la ronda 1) |
-| SCA (`composer audit`) | ✅ sin avisos |
-| SCA (`npm audit`) | crít: 2 · alta: 5 (vite, rollup y otras herramientas de build), cubiertas por la excepción EX1 vigente |
+| SCA (`composer audit`, `npm audit`) | Sin cambios de dependencias en el rango; mismo resultado que la ronda 2, cubierto por EX1 |
 
 Sin cambios en rutas protegidas. Sin datos sensibles nuevos en logs ni en respuestas.
 
 ## Observabilidad
 - Eventos de auditoría: no aplica (diferidos; P14 aceptado).
-- Datos sensibles en logs del código tocado: ninguno; el log saneado no lleva el mensaje.
+- Datos sensibles en logs del código tocado: ninguno (el rango solo toca tests, un texto de vista y docs).
 - `request_id`: no (P14 aceptado).
 
 ## Hallazgos
-| ID | Severidad | Archivo:línea | Hallazgo | Sugerencia |
-|---|---|---|---|---|
-| R30 | importante | `tests/Modules/Patients/Integration/RecordsScreenTest.php:65` | La regex `<thead[^>]*>(.*?)</thead>\s*<tbody id="…"` empieza en el primer `<thead>` de la página y cruza tablas: el caso "keeps the actions column" pasaría aunque dirección o datos médicos perdieran su cabecera. El caso del doctor sí es válido. | Impedir que la captura cruce otro `</thead>` (p. ej. `((?:(?!</thead>).)*)`) |
-| R31 | menor | `package-lock.json`; nota de T083 | La actualización de axios cambió dependencias transitivas (nuevas: `https-proxy-agent`, `agent-base`, `debug`, `ms`; suben: `follow-redirects`, `form-data`, `hasown`, `es-object-atoms`, `proxy-from-env` 1→2), todas MIT y con más de 7 días, pero la verificación no quedó registrada. | Anotarlas en T083 (`agent-security.md` §2) |
-| R32 | menor | `tests/Modules/Appointments/Integration/GlobalErrorFallbackTest.php:96-97` | Salto de línea literal en `implode` en lugar de `"\n"`. | Usar `"\n"` |
-| R33 | menor | `docs/security.md:190` | RS16 (Alta) está entre riesgos Baja, pero la sección se ordena por severidad. | Moverla junto a los riesgos Alta |
-| R34 | menor | `docs/security.md:89` (EX1) | El motivo dice que los paquetes "no llegan al navegador", pero los avisos de vite afectan al servidor de desarrollo (`composer run dev`). | Añadir la condición: el servidor de desarrollo no se expone fuera de localhost |
-| R35 | menor | `spec.md`, Historial | La entrada "Implementadas…" precede a la de la ronda 1, y cita "T077–T084" (faltan T085, T086). | Ordenar y completar |
-| R36 | menor | `resources/views/pages/dashboard.blade.php:40` | "…de tus pacientes" sugiere que el doctor solo ve a los suyos, pero ve a todos (RS14). | Texto neutro, p. ej. "Consulta los expedientes clínicos de los pacientes." |
+Ninguno nuevo.
 
 ## Preparación para release
 - Rollback factible: sí (revert del merge; sin migraciones).
 - Migraciones: no hay.
-- Docs: `architecture.md` y `observability.md` al día; `security.md` con RS16 y EX1.
+- Docs: `architecture.md` y `observability.md` al día; `security.md` con RS16 y EX1 (con su condición).
 - SCA: sin críticas ni altas fuera de la excepción EX1 vigente.
-- Cobertura de riesgos: sin cambios respecto a la ronda 1; RS16.a aceptada (EX1).
+- Cobertura de riesgos: sin cambios respecto a la ronda 2; RS16.a aceptada (EX1).
 
 ## Tareas añadidas
-- T087 ← R30, R32
-- T088 ← R31, R33, R34, R35
-- T089 ← R36
+Ninguna.
