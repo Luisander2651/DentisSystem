@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Appointments\Infrastructure\Http\Controllers;
 
 use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Appointments\Aplication\DTOs\UpdateTreatmentDTO;
 use App\Modules\Appointments\Aplication\Exceptions\TreatmentAplicationExceptions;
 use App\Modules\Appointments\Aplication\UseCases\UpdateTreatmentUseCase;
@@ -42,12 +43,12 @@ final readonly class UpdateTreatmentController
             ], 200);
         } catch (TreatmentException $e) {
             return response()->json(['error' => $e->getMessage()], 409);
-        } catch (ValueObjectsException | TreatmentAplicationExceptions $e) {
+        } catch (ValueObjectsException|TreatmentAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (AuthorizationException $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }
