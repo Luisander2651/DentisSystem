@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers;
 
+use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\DTOs\DeleteCertificationDTO;
 use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\DeleteCertificationUseCase;
 use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Exceptions\CertificationException;
-use App\Core\Authorization\Exceptions\AuthorizationException;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 final readonly class DeleteCertificationController
 {
@@ -22,13 +23,14 @@ final readonly class DeleteCertificationController
         try {
             $dto = new DeleteCertificationDTO(id: $id);
             $this->useCase->execute($dto);
+
             return response()->json(['message' => 'Certification deleted successfully'], 200);
         } catch (CertificationException $e) {
             return response()->json(['error' => $e->getMessage()], 404);
         } catch (AuthorizationException $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }
