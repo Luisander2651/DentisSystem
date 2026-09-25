@@ -3,8 +3,12 @@
 @section('title', 'Expedientes clinicos - Dentissa')
 
 @section('content')
-@php $isAdmin = in_array($sidebarRole, ['admin', 'administrador'], true); @endphp
-<div class="space-y-6" data-records-page data-selected-patient-id="{{ (string) ($selectedPatientId ?? '') }}">
+@php
+    $isAdmin = in_array($sidebarRole, ['admin', 'administrador'], true);
+    // Spec 014, CA4: the doctor sees the records read-only; the server refuses his writes anyway.
+    $canEdit = in_array($sidebarRole, ['admin', 'administrador', 'asistente'], true);
+@endphp
+<div class="space-y-6" data-records-page data-records-can-edit="{{ $canEdit ? 'true' : 'false' }}" data-selected-patient-id="{{ (string) ($selectedPatientId ?? '') }}">
     {{-- Header Section --}}
     <x-ui.page-hero
         title="Expedientes clinicos"
@@ -78,9 +82,9 @@
         </div>
 
         <div class="grid gap-6">
-            <x-records.contact-info-table />
-            <x-records.address-table />
-            <x-records.medical-data-table />
+            <x-records.contact-info-table :can-edit="$canEdit" />
+            <x-records.address-table :can-edit="$canEdit" />
+            <x-records.medical-data-table :can-edit="$canEdit" />
             <x-records.appointments-history-table />
         </div>
     </section>
@@ -94,6 +98,13 @@
         cancel-text="Cancelar"
     />
     <x-calendar.view-appointment-modal :is-admin="$isAdmin" />
+
+    @if ($canEdit)
+        {{-- index.js clones this to render each "Eliminar" button; without it, none is rendered. --}}
+        <template data-record-delete-button-template>
+            <button type="button" class="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100">Eliminar</button>
+        </template>
+    @endif
 </div>
 
 @vite('resources/js/pages/records/index.js')

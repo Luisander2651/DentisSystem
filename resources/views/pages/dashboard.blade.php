@@ -20,6 +20,7 @@
         'administrador' => 'layouts.admin',
         'admin' => 'layouts.admin',
         'asistente' => 'layouts.admin',
+        'doctor' => 'layouts.admin',
         'patient' => 'layouts.patient',
         'paciente' => 'layouts.patient',
     ];
@@ -202,16 +203,24 @@
         <div class="rounded-3xl border border-[#F5C2D6] bg-[#FFF7FA] p-8 mt-8">
             <h2 class="text-sm font-semibold uppercase tracking-widest text-[#B5114A] mb-6">Acciones para hoy</h2>
             <div class="space-y-3">
-                <button type="button" data-create-patient-open class="w-full group flex items-center justify-between rounded-2xl bg-white p-4 text-sm font-semibold text-slate-900 shadow-sm transition-all hover:scale-[1.02]">
-                    Registrar Nuevo Paciente
+                <a href="/expedientes-clinicos" class="w-full group flex items-center justify-between rounded-2xl bg-white p-4 text-sm font-semibold text-slate-900 shadow-sm transition-all hover:scale-[1.02]">
+                    Ver Expedientes Clínicos
                     <span class="rounded-xl bg-pink-100 p-2 text-[#E91E63] shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7v14"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14m-7-7v14"/></svg>
                     </span>
-                </button>
-                <a href="/agenda" class="w-full group flex items-center justify-between rounded-2xl bg-white p-4 text-sm font-semibold text-slate-900 shadow-sm transition-all hover:scale-[1.02]">
-                    Ver Agenda
-                    <span class="rounded-xl bg-blue-50 p-2 text-blue-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14m-7-7v14"/></svg>
+                </a>
+            </div>
+        </div>
+
+    @elseif (strtolower($userRole) === 'doctor')
+        <!-- Doctor Dashboard: read-only access to the records (spec 014, CA4) -->
+        <div class="rounded-3xl border border-[#F5C2D6] bg-[#FFF7FA] p-8">
+            <h2 class="text-sm font-semibold uppercase tracking-widest text-[#B5114A] mb-6">Acciones para hoy</h2>
+            <div class="space-y-3">
+                <a href="/expedientes-clinicos" class="w-full group flex items-center justify-between rounded-2xl bg-white p-4 text-sm font-semibold text-slate-900 shadow-sm transition-all hover:scale-[1.02]">
+                    Ver Expedientes Clínicos
+                    <span class="rounded-xl bg-pink-100 p-2 text-[#E91E63] shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14m-7-7v14"/></svg>
                     </span>
                 </a>
             </div>
@@ -231,24 +240,12 @@
                 <p class="mt-1 text-lg font-semibold text-slate-900">Aún no agendada</p>
                 <p class="text-xs text-slate-500 mt-2">Te avisaremos cuando haya disponibilidad.</p>
             </div>
-
-            <div class="group rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md">
-                <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Tu Historial</p>
-                <p class="mt-1 text-lg font-semibold text-slate-900">Consultar Expediente</p>
-                <a href="/expedientes-clinicos" class="mt-3 inline-block text-sm font-semibold text-[#B5114A] hover:underline">Ver detalles →</a>
-            </div>
-        </div>
-
-        <div class="mt-6">
-            <a href="/agenda" class="flex w-full items-center justify-center rounded-2xl border border-pink-100 py-3 text-lg font-semibold text-[#E91E63] bg-white shadow-sm transition-all hover:bg-pink-50 active:scale-95">
-                Agendar nueva cita
-            </a>
         </div>
     @endif
 </div>
 
-<!-- Create Patient Modal (for Admin and Assistant) -->
-@if (strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin' || strtolower($userRole) === 'asistente')
+<!-- Create Patient Modal (for Admin only; spec 014, CA15) -->
+@if (strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin')
     <x-ui.create-patient-modal
         modal-id="patients-create-modal"
     />
@@ -262,7 +259,7 @@
 @endif
 
 @vite('resources/js/pages/dashboard.js')
-@if (strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin' || strtolower($userRole) === 'asistente')
+@if (strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin')
     @vite('resources/js/pages/patients/create-patient.js')
 @endif
 @if (strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin')

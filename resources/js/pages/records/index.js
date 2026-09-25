@@ -66,6 +66,21 @@
         errorBox.classList.add('hidden');
     }
 
+    // Spec 014, CA4: Blade only renders this template for staff who may edit records (the
+    // doctor sees them read-only), so without it no "Eliminar" button is rendered.
+    function deleteButtonHtml(attribute) {
+        var template = document.querySelector('[data-record-delete-button-template]');
+        if (!template || !template.content.firstElementChild) {
+            return '';
+        }
+
+        var button = template.content.firstElementChild.cloneNode(true);
+        button.setAttribute(attribute, '');
+
+        return button.outerHTML;
+    }
+
+
     function escapeHtml(value) {
         return String(value)
             .replaceAll('&', '&amp;')
@@ -382,7 +397,7 @@
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(contactInfo.contact_email)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(contactInfo.emergency_contact)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">',
-            '  <button type="button" data-record-delete-contact class="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100">Eliminar</button>',
+            deleteButtonHtml('data-record-delete-contact'),
             '</td>',
             '</tr>'
         ].join('');
@@ -407,7 +422,7 @@
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(address.state)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(address.postal_code)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">',
-            '  <button type="button" data-record-delete-address class="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100">Eliminar</button>',
+            deleteButtonHtml('data-record-delete-address'),
             '</td>',
             '</tr>'
         ].join('');
@@ -432,7 +447,7 @@
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(arrayToDisplay(medicalData.medications)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(arrayToDisplay(medicalData.last_dentist_visit)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">',
-            '  <button type="button" data-record-delete-medical class="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100">Eliminar</button>',
+            deleteButtonHtml('data-record-delete-medical'),
             '</td>',
             '</tr>'
         ].join('');

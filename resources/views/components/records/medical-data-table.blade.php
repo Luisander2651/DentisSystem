@@ -1,13 +1,17 @@
+@props(['canEdit' => false])
+
 <section class="w-full overflow-x-auto rounded-lg border border-slate-200 bg-white">
     <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
         <h3 class="text-sm font-semibold text-slate-800">Datos medicos</h3>
-        <button
-            type="button"
-            data-record-open-medical-form
-            class="rounded-md bg-[#E91E63] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#d81b60] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-            Agregar datos medicos
-        </button>
+        @if ($canEdit)
+            <button
+                type="button"
+                data-record-open-medical-form
+                class="rounded-md bg-[#E91E63] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#d81b60] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                Agregar datos medicos
+            </button>
+        @endif
     </div>
 
     <form id="record-medical-form" class="hidden space-y-3 border-b border-slate-200 bg-slate-50 p-4">
