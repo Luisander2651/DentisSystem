@@ -5,7 +5,7 @@ round: 3
 date: 2026-09-25
 base: 328aed9
 head: 364adec
-human_signoff: pending
+human_signoff: Luisander2651 (2026-09-25)
 ---
 
 # Review · 014 Control de acceso a pacientes y citas, y errores sin detalles internos
@@ -15,8 +15,8 @@ R30–R36, el diff `328aed9..364adec` y la verificación automática completa. N
 aceptados en rondas anteriores.
 
 ## Resumen
-**approved.** R30–R36 quedaron corregidos y el diff no introduce hallazgos nuevos. Falta la
-confirmación humana (`human_signoff`) antes de `/release`.
+**approved.** R30–R36 quedaron corregidos y el diff no introduce hallazgos nuevos. Confirmación
+humana: Luisander2651, 2026-09-25.
 
 Conteo de la ronda: 0 bloqueantes · 0 importantes · 0 menores.
 

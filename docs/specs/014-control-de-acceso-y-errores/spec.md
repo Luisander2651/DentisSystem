@@ -159,3 +159,4 @@ Constitution Check de `/plan`, junto con la falta de `request_id`.
 | 2026-09-25 | `/review` ronda 2: changes_requested (R30–R36); vuelve a `approved` hasta cerrar T087–T089 | `/review 014 --rerun` |
 | 2026-09-25 | Implementadas las correcciones de `/review` ronda 2 (T087–T089) | `/implement 014` |
 | 2026-09-25 | `/review` ronda 3: approved, sin hallazgos nuevos; pendiente la confirmación humana | `/review 014 --rerun` |
+| 2026-09-25 | Review firmada por el usuario (Luisander2651) | Confirmación humana de la definición de terminado |
