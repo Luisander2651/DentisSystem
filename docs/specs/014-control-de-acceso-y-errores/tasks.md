@@ -13,6 +13,8 @@ conservan los números de las tareas que siguen; las nuevas empiezan en T066.
 
 > Línea base (2026-09-24, `/implement`): `./vendor/bin/pest --parallel` → 495 passed (9493 aserciones), sin fallos. Política de commits: uno por fase (decisión del usuario).
 
+> /analyze omitido antes de T087–T089 (decisión del usuario, 2026-09-25): correcciones pequeñas ya definidas por `/review` ronda 2; las verifica `/review --rerun`.
+
 Formato:
 `- [ ] T### [P] <verbo + qué> — <archivos> — hecho cuando: <criterio> — cubre: CA# — depende: T###`
 - T001–T089: trabajo. T090–T099: reservadas.
@@ -182,6 +184,14 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
   - nota: vencimiento de EX1 decidido por el usuario (2026-09-25): al empezar el objetivo 4 y como tarde el 2026-12-31.
   - nota: añadida en `/analyze` ronda 6 (E3), separada de T083 por el límite de 3 archivos.
 
+### Correcciones de /review (ronda 2)
+- [ ] T087 Acotar la captura de `recordsTableHeader` para que no cruce otro `</thead>` (el caso "keeps the actions column" debe fallar si una sola tabla pierde su cabecera) y usar `"\n"` en el `implode` de `GlobalErrorFallbackTest` — `tests/Modules/Patients/Integration/RecordsScreenTest.php`, `tests/Modules/Appointments/Integration/GlobalErrorFallbackTest.php` — hecho cuando: los dos archivos pasan y, quitando a mano la cabecera "Acciones" de una sola tabla, el caso positivo falla (comprobación anotada) — cubre: CA4
+  - nota: añadida por /review: R30, R32
+- [ ] T088 Documentación: registrar en T083 las dependencias transitivas que cambió la actualización de axios, con su verificación; mover RS16 junto a los riesgos Alta y añadir al motivo de EX1 que el servidor de desarrollo no se expone fuera de localhost; ordenar el Historial de la spec y citar T077–T086 — `docs/security.md`, `docs/specs/014-control-de-acceso-y-errores/spec.md`, `docs/specs/014-control-de-acceso-y-errores/tasks.md` — hecho cuando: `aidd.py validate` sin errores y los cuatro cambios presentes
+  - nota: añadida por /review: R31, R33, R34, R35
+- [ ] T089 Saludo del doctor con texto neutro ("Consulta los expedientes clínicos de los pacientes."), sin sugerir que solo ve a los suyos (RS14) — `resources/views/pages/dashboard.blade.php`, `tests/Modules/Users/Integration/StaffNavigationTest.php` — hecho cuando: `StaffNavigationTest` afirma el texto nuevo y pasa — cubre: CA4
+  - nota: añadida por /review: R36
+
 ## Integración y documentación
 - [x] T065 Actualizar `docs/security.md`, con estado por corrección: RS1.a y RS1.d → mitigada; RS1.b (spec 013, CA24) y RS1.c (spec 013, CA23) siguen pendientes, así que RS1 queda parcialmente mitigado hasta la 013; RS3.a → mitigada; nota de RS9.a (la 014 retiró los logs de `CreateAppointmentController`); secciones "Autenticación y autorización" (permisos por rol, middleware `staff`, fin de los closures) y "Superficie de ataque" (filas "cualquier actor autenticado"); controles verificados con sus tests. — `docs/security.md` — hecho cuando: cada corrección de RS1 y RS3 tiene su estado, RS1 figura como parcialmente mitigado, RS1.b y RS1.c enlazan la 013 y ninguna sección afirma que las rutas de pacientes y citas aceptan cualquier actor — depende: T064
 - [x] T071 Añadir a "Pendientes y deuda" los mensajes y logs de Users y Auth que repiten el email o registran `getMessage()` y trazas (`UserException`, `EmailException` y `UserNameException` de Users; `AuthException`; catch genéricos de Auth). Proponer al usuario, y aplicar solo con su confirmación, retirar la deuda "Desalineación interfaz/backend" y ajustar el criterio "0 respuestas con `$e->getMessage()`" del objetivo 1 a P7 1.1.1 (las entradas de RS5.a, RS8.a, RS10.b y de las trazas de whatsApp de OB10.b ya se añadieron el 2026-09-24) — `docs/roadmap.md` — hecho cuando: la entrada de deuda existe y cita CA16 y la sección "Fuera de alcance" de la 014, y las dos propuestas quedan aplicadas o rechazadas por el usuario — depende: T064
@@ -192,7 +202,7 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
   - nota: `architecture.md` → fila Core, "Autenticación y autorización" y "Manejo de errores".
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas. En `observability.md`: OB2.a y OB10.a → mitigada; el evento `unexpected_error` (campos, sin `message` ni `request_id`) y los puntos únicos de 401/403 donde se enganchará la auditoría
   - nota: `deployment.md` no cambia (sin variables ni pasos nuevos).
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
