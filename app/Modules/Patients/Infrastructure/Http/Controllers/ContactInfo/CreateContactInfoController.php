@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Infrastructure\Http\Controllers\ContactInfo;
 
+use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Patients\Aplication\DTOs\ContactInfo\CreateContactInfoDTO;
 use App\Modules\Patients\Aplication\Exceptions\ContactInfo\ContactInfoAplicationExceptions;
 use App\Modules\Patients\Aplication\UseCases\ContactInfo\SaveContactInfoUseCase;
@@ -43,8 +45,10 @@ final class CreateContactInfoController
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }

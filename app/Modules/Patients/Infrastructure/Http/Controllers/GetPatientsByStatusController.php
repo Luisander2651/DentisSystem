@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Infrastructure\Http\Controllers;
 
+use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Patients\Aplication\DTOs\GetPatientsByStatusDTO;
 use App\Modules\Patients\Aplication\Exceptions\PatientAplicationExceptions;
 use App\Modules\Patients\Aplication\UseCases\GetPatientsByStatusUseCase;
@@ -34,8 +36,10 @@ final class GetPatientsByStatusController
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (PatientAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 409);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Aplication\UseCases\MedicalData;
 
+use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Modules\Patients\Aplication\DTOs\MedicalData\CreateMedicalDataDTO;
 use App\Modules\Patients\Aplication\Exceptions\MedicalData\MedicalDataAplicationExceptions;
 use App\Modules\Patients\Domain\Entities\MedicalData;
@@ -20,6 +21,7 @@ use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 final readonly class SaveMedicalDataUseCase
 {
     public function __construct(
+        private AuthorizationServiceInterface $authorization,
         private MedicalDataRepositoryInterface $medicalDataRepository,
         private MedicalDataService $medicalDataService,
         private PatientService $patientService,
@@ -27,6 +29,8 @@ final readonly class SaveMedicalDataUseCase
 
     public function execute(CreateMedicalDataDTO $dto): void
     {
+        $this->authorization->assertCan('patients.clinical-data.manage');
+
         if ($dto->patientId === '') {
             throw MedicalDataAplicationExceptions::IdNotProvided();
         }

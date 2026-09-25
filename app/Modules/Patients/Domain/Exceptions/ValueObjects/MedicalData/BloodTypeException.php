@@ -10,7 +10,6 @@ final class BloodTypeException extends ValueObjectsException
 {
     public static function invalidType(string $value): self
     {
-        return new self("Invalid blood type: {$value}.");
+        return new self('Invalid blood type.');
     }
 }
-

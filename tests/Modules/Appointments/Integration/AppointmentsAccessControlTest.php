@@ -66,7 +66,7 @@ function appointmentsAccessActors(): array
 function appointmentsDataSnapshot(): array
 {
     return collect(['appointments', 'treatments'])
-        ->mapWithKeys(fn (string $table): array => [$table => DB::table($table)->orderBy('created_at')->get()->toArray()])
+        ->mapWithKeys(fn (string $table): array => [$table => DB::table($table)->orderBy('id')->get()->toArray()])
         ->all();
 }
 

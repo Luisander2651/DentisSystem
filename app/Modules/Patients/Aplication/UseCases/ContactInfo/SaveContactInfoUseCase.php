@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Aplication\UseCases\ContactInfo;
 
+use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Modules\Patients\Aplication\DTOs\ContactInfo\CreateContactInfoDTO;
 use App\Modules\Patients\Aplication\Exceptions\ContactInfo\ContactInfoAplicationExceptions;
 use App\Modules\Patients\Domain\Entities\ContactInfo;
@@ -19,6 +20,7 @@ use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 final readonly class SaveContactInfoUseCase
 {
     public function __construct(
+        private AuthorizationServiceInterface $authorization,
         private ContactInfoRepositoryInterface $contactInfoRepository,
         private ContactInfoService $contactInfoService,
         private PatientService $patientService,
@@ -26,6 +28,8 @@ final readonly class SaveContactInfoUseCase
 
     public function execute(CreateContactInfoDTO $dto): void
     {
+        $this->authorization->assertCan('patients.clinical-data.manage');
+
         if ($dto->patientId === '') {
             throw ContactInfoAplicationExceptions::IdNotProvided();
         }

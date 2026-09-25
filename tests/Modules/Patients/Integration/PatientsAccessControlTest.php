@@ -73,7 +73,7 @@ function patientsAccessActors(): array
 function patientsDataSnapshot(): array
 {
     return collect(['patients', 'addresses', 'contact_info', 'medical_data'])
-        ->mapWithKeys(fn (string $table): array => [$table => DB::table($table)->orderBy('created_at')->get()->toArray()])
+        ->mapWithKeys(fn (string $table): array => [$table => DB::table($table)->orderBy('id')->get()->toArray()])
         ->all();
 }
 
