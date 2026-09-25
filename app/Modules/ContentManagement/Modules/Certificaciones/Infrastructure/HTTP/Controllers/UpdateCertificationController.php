@@ -45,7 +45,7 @@ final readonly class UpdateCertificationController
         } catch (AuthorizationException $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         } catch (StorageException $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         } catch (\Exception $e) {
             return UnexpectedErrorResponse::from($e, self::class);
         }

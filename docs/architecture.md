@@ -72,7 +72,7 @@ Auth guarda tokens de reset en Redis. Todos persisten en PostgreSQL.
 ## Módulos
 | Módulo | Ruta | Responsabilidad | Depende de |
 |---|---|---|---|
-| Core | `app/Core` | `CurrentActorAuthorizationService::assertCan`, middlewares `OnlyAdmin` e `InjectSanctumTokenFromCookie`, `UuidIdentifier`, `TrimsPasswordFields` | Users (modelo y roles) |
+| Core | `app/Core` | `CurrentActorAuthorizationService::assertCan` (mapa `permiso → roles`), middlewares `OnlyAdmin`, `EnsureActiveStaff` (alias `staff`) e `InjectSanctumTokenFromCookie`, `UnexpectedErrorResponse`, `UuidIdentifier`, `TrimsPasswordFields` | Users (modelo y roles) |
 | Auth | `app/Modules/Auth` | Login unificado staff/paciente, registro público de pacientes, logout, reset de contraseña | Users, Patients, Core |
 | Users | `app/Modules/Users` | CRUD del personal (Administrador, Asistente, Doctor) y roles | Core |
 | Patients | `app/Modules/Patients` | Pacientes, contacto, dirección, datos médicos y expediente consolidado | Core |
@@ -116,7 +116,8 @@ Crear una cita:
 
 ## Backend
 - Contratos de API: no hay OpenAPI. El contrato implícito son los `JsonResource` de cada módulo; forma de respuesta `{"message"}` en escrituras, `{"error"}` en errores y `{"data": [...]}` en lecturas.
-- Autenticación y autorización: tokens personales de Sanctum en cookie `auth_token` (httpOnly); middleware `only.admin` y `assertCan` para permisos (solo el administrador tiene permisos en la lista actual). Detalle y riesgos en [security.md](security.md).
+- Autenticación y autorización: tokens personales de Sanctum en cookie `auth_token` (httpOnly). Dos capas (spec 014): middleware por tipo de actor (`only.admin`, o `staff` para cualquier staff activo y `staff:<roles>` en la web) y `assertCan` en cada caso de uso, con un mapa `permiso → roles` en `CurrentActorAuthorizationService` como única fuente de verdad (todo el staff lee pacientes y expedientes; administrador y asistente editan datos clínicos; el resto es solo del administrador). Detalle y riesgos en [security.md](security.md).
+- Manejo de errores (spec 014): los controladores traducen las excepciones de negocio (400, 403, 404, 409, 422) y envían cualquier otra a `UnexpectedErrorResponse` (500 `{"error": "Internal server error"}`, log `unexpected_error` sin el mensaje). `withExceptions` en `bootstrap/app.php` hace de red para `api/*`: 401 siempre en JSON, `AuthorizationException` de Core → 403, lo no capturado → `UnexpectedErrorResponse`, y sin el reporte por defecto de Laravel para esas excepciones.
 - Observabilidad: logs de Laravel en `storage/logs/laravel.log` (`stack` → `single`); Alloy → Loki → Grafana (`docker-compose.yml`) recoge solo el stdout/stderr de los contenedores, así que hoy **no** recibe los logs de la aplicación; health check `/up`; sin métricas, correlación ni auditoría. Detalle en [observability.md](observability.md).
 - Seguridad: rate limiting `throttle:api` (10/min por IP sin autenticar, 100/min por usuario); ver [security.md](security.md).
 

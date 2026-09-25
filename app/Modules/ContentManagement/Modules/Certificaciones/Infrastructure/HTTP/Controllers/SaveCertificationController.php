@@ -43,7 +43,7 @@ final readonly class SaveCertificationController
         } catch (CertificationException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (StorageException $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         } catch (\Exception $e) {
             return UnexpectedErrorResponse::from($e, self::class);
         }

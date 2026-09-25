@@ -48,6 +48,15 @@ usuario (indicado en cada caso).
   contraseñas, tokens, secretos, cuerpos completos de petición o de respuestas de terceros.
   Enmascarado: TODO(init): no existe mecanismo; hoy se incumple (ver Brechas).
 
+- Errores inesperados de la API (spec 014): un solo log `unexpected_error` (nivel `error`) con `origin`
+  (controlador o acción de la ruta), `exception`, `file` y `line`; **sin** el mensaje de la excepción
+  ni `request_id` (desviación de P14 aceptada hasta la spec del objetivo 5). Lo escribe
+  `app/Core/Http/UnexpectedErrorResponse.php`; el reporte por defecto de Laravel está detenido para
+  esas excepciones en `api/*`, así que no se duplica ni escribe la traza.
+- Puntos únicos de 401 y 403 (donde se enganchará la auditoría de accesos denegados, RS11/OB1):
+  `app/Core/Middlewares/EnsureActiveStaff.php`, `OnlyAdmin` y el render de `AuthorizationException`
+  en `bootstrap/app.php`.
+
 ## Correlación
 - Identificador por petición: cabecera `X-Request-Id` (propuesta); se acepta del cliente si es
   válido o se genera; se devuelve en la respuesta y se añade al contexto de todos los logs de la
@@ -101,7 +110,7 @@ Correcciones:
 (teléfono, nombre, email, variables de la plantilla de WhatsApp): `RetriveDataForScheduledAppointmenEventUseCase.php:55`, `CreateAppointmentController.php:51-52`, `CreatedAppointmentListener.php:38-39,61`, `SendAppointmentConfirmationUseCase.php:20-21,34-35,45`, `ConfirmationAppointmentMessage.php:21,31`, `TwilioConection.php:31,43,69,74,90`, `SendPasswordResetListener.php:44-45,50`, `BrevoApi.php:43` (RS9 de [security.md](security.md)). → [roadmap objetivo 5](roadmap.md)
 
 Correcciones:
-- OB2.a Retirar teléfono y nombre de los `Log::` de `CreateAppointmentController` (derivada) — estado: en curso (spec 014)
+- OB2.a Retirar teléfono y nombre de los `Log::` de `CreateAppointmentController` (derivada) — estado: mitigada (spec 014; versión en `/release`)
 - OB2.b Retirar datos personales del resto de logs citados (whatsApp, Email, `RetriveDataForScheduledAppointmenEventUseCase`) (derivada) — estado: pendiente (roadmap objetivo 5)
 
 ### OB3 · Media — Sin correlación por petición
@@ -121,7 +130,7 @@ en `.env.example`. → [roadmap objetivo 5](roadmap.md)
 
 Correcciones:
 - OB5.a `LOG_LEVEL=info` por defecto (derivada) — estado: pendiente (roadmap objetivo 5)
-- OB5.b `APP_DEBUG=false` por defecto (derivada) — estado: pendiente (roadmap objetivo 5)
+- OB5.b `APP_DEBUG=false` por defecto (derivada) — estado: pendiente (roadmap objetivo 4)
 
 ### OB6 · Media — Grafana (3000) y Loki (3100) publicados en el host
 , aunque [deployment.md](deployment.md) prevé acceso solo por túnel SSH. → [roadmap objetivo 4](roadmap.md)
@@ -152,7 +161,7 @@ Correcciones:
 pueden incluir argumentos con datos; y las 500 devuelven el mensaje de la excepción. → [roadmap objetivo 1](roadmap.md)
 
 Correcciones:
-- OB10.a Respuestas 500 sin el mensaje de la excepción (derivada) — estado: en curso (spec 014)
+- OB10.a Respuestas 500 sin el mensaje de la excepción (derivada) — estado: mitigada (spec 014; versión en `/release`)
 - OB10.b Retirar `getTraceAsString()` y `getMessage()` de los logs de Auth y whatsApp (derivada) — estado: pendiente (roadmap, Pendientes y deuda)
 
 ### OB11 · Baja — Posible doble registro de listeners

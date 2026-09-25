@@ -1,7 +1,7 @@
 ---
 id: 014
 slug: control-de-acceso-y-errores
-status: approved
+status: implemented
 created: 2026-09-24
 extends: [001, 005, 006, 007, 008, 009, 011, 012]
 ---
@@ -37,22 +37,22 @@ fallo. Esto impide cargar datos reales de pacientes (restricción de la constitu
 Un miembro del staff inactivo no tiene ningún permiso. Quien no tiene sesión no tiene ningún permiso.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dado un administrador activo, cuando realiza cualquier operación de la tabla de permisos, entonces se le permite con el mismo resultado que hoy.
-- [ ] CA2 · Dado un asistente activo, cuando lista o ve pacientes, abre un expediente, consulta el historial de citas de un paciente, ve el detalle de una de esas citas o crea, modifica o elimina su contacto, dirección o datos médicos, entonces se le permite.
-- [ ] CA3 · Dado un doctor activo, cuando lista o ve pacientes, abre un expediente, consulta el historial de citas de un paciente o ve el detalle de una de esas citas, entonces se le permite.
-- [ ] CA4 · Dado un doctor activo, cuando entra a la pantalla de expedientes, entonces la ve sin acciones para crear, modificar ni eliminar datos; su menú lateral incluye "expedientes" y su panel de inicio lleva a esa pantalla.
-- [ ] CA5 · (abuso) Como paciente con sesión iniciada, intento cualquier operación de la tabla de permisos sobre cualquier paciente, incluido yo mismo, o sobre cualquier cita → se rechaza como acceso denegado y no se lee ni cambia ningún dato.
-- [ ] CA6 · (abuso) Como asistente, intento modificar los datos básicos o la contraseña de un paciente, crear o eliminar un paciente, o cualquier operación de la agenda (ver el detalle de una cita no es operación de la agenda) → se rechaza como acceso denegado.
-- [ ] CA7 · (abuso) Como doctor, intento crear, modificar o eliminar contacto, dirección, datos médicos o datos básicos de un paciente, o cualquier operación de la agenda (ver el detalle de una cita no es operación de la agenda) → se rechaza como acceso denegado.
-- [ ] CA8 · (abuso) Como miembro del staff inactivo con una sesión aún válida, intento cualquier operación de la tabla de permisos → se rechaza como acceso denegado.
-- [ ] CA9 · (abuso) Como visitante sin sesión, intento cualquier operación de la tabla de permisos → se rechaza como no autenticado.
-- [ ] CA10 · (abuso) Como asistente o doctor, pido las citas del día → se rechaza como acceso denegado, no como error interno (hoy responde error interno; spec 007, CA12).
-- [ ] CA11 · Dado un administrador, cuando modifica los datos básicos de un paciente e incluye una contraseña nueva, entonces la contraseña se actualiza; asistente y doctor no pueden hacerlo (CA6, CA7).
-- [ ] CA12 · (abuso) Como atacante, provoco un error inesperado en cualquier operación de la API (`/api/v1`: pacientes, expediente, citas, seguimiento clínico, catálogo y contenido del sitio) → la respuesta solo dice que hubo un error interno, sin el mensaje técnico del fallo, trazas, consultas a la base de datos ni nombres internos, y el detalle queda registrado para el equipo.
-- [ ] CA13 · Dado un error inesperado registrado para el equipo, cuando se revisa el registro, entonces no contiene datos de salud ni datos de contacto del paciente (P11).
-- [ ] CA14 · Dado un error esperado de negocio (dato no encontrado, dato inválido, conflicto), cuando ocurre, entonces se conserva el mensaje de negocio que se muestra hoy, salvo los datos personales o de salud que contenga, que se retiran del mensaje (CA16).
-- [ ] CA15 · Dado cualquier actor con sesión, cuando ve su menú lateral o su panel de inicio, entonces solo aparecen accesos a pantallas que puede abrir y acciones que puede ejecutar: el asistente no ve "agenda" ni "Registrar nuevo paciente", y el paciente no ve "agenda" ni "expedientes" (hoy aparecen y el servidor los rechaza; P13).
-- [ ] CA16 · (abuso) Como actor con permiso de escritura, envío un email ya usado por otro paciente, o un email, teléfono, nombre, código postal o tipo de sangre inválidos → el error de negocio (400 o 409) explica qué campo falla sin repetir el valor enviado ni revelar datos de otro paciente (P7, P11).
+- [x] CA1 · Dado un administrador activo, cuando realiza cualquier operación de la tabla de permisos, entonces se le permite con el mismo resultado que hoy.
+- [x] CA2 · Dado un asistente activo, cuando lista o ve pacientes, abre un expediente, consulta el historial de citas de un paciente, ve el detalle de una de esas citas o crea, modifica o elimina su contacto, dirección o datos médicos, entonces se le permite.
+- [x] CA3 · Dado un doctor activo, cuando lista o ve pacientes, abre un expediente, consulta el historial de citas de un paciente o ve el detalle de una de esas citas, entonces se le permite.
+- [x] CA4 · Dado un doctor activo, cuando entra a la pantalla de expedientes, entonces la ve sin acciones para crear, modificar ni eliminar datos; su menú lateral incluye "expedientes" y su panel de inicio lleva a esa pantalla.
+- [x] CA5 · (abuso) Como paciente con sesión iniciada, intento cualquier operación de la tabla de permisos sobre cualquier paciente, incluido yo mismo, o sobre cualquier cita → se rechaza como acceso denegado y no se lee ni cambia ningún dato.
+- [x] CA6 · (abuso) Como asistente, intento modificar los datos básicos o la contraseña de un paciente, crear o eliminar un paciente, o cualquier operación de la agenda (ver el detalle de una cita no es operación de la agenda) → se rechaza como acceso denegado.
+- [x] CA7 · (abuso) Como doctor, intento crear, modificar o eliminar contacto, dirección, datos médicos o datos básicos de un paciente, o cualquier operación de la agenda (ver el detalle de una cita no es operación de la agenda) → se rechaza como acceso denegado.
+- [x] CA8 · (abuso) Como miembro del staff inactivo con una sesión aún válida, intento cualquier operación de la tabla de permisos → se rechaza como acceso denegado.
+- [x] CA9 · (abuso) Como visitante sin sesión, intento cualquier operación de la tabla de permisos → se rechaza como no autenticado.
+- [x] CA10 · (abuso) Como asistente o doctor, pido las citas del día → se rechaza como acceso denegado, no como error interno (hoy responde error interno; spec 007, CA12).
+- [x] CA11 · Dado un administrador, cuando modifica los datos básicos de un paciente e incluye una contraseña nueva, entonces la contraseña se actualiza; asistente y doctor no pueden hacerlo (CA6, CA7).
+- [x] CA12 · (abuso) Como atacante, provoco un error inesperado en cualquier operación de la API (`/api/v1`: pacientes, expediente, citas, seguimiento clínico, catálogo y contenido del sitio) → la respuesta solo dice que hubo un error interno, sin el mensaje técnico del fallo, trazas, consultas a la base de datos ni nombres internos, y el detalle queda registrado para el equipo.
+- [x] CA13 · Dado un error inesperado registrado para el equipo, cuando se revisa el registro, entonces no contiene datos de salud ni datos de contacto del paciente (P11).
+- [x] CA14 · Dado un error esperado de negocio (dato no encontrado, dato inválido, conflicto), cuando ocurre, entonces se conserva el mensaje de negocio que se muestra hoy, salvo los datos personales o de salud que contenga, que se retiran del mensaje (CA16).
+- [x] CA15 · Dado cualquier actor con sesión, cuando ve su menú lateral o su panel de inicio, entonces solo aparecen accesos a pantallas que puede abrir y acciones que puede ejecutar: el asistente no ve "agenda" ni "Registrar nuevo paciente", y el paciente no ve "agenda" ni "expedientes" (hoy aparecen y el servidor los rechaza; P13).
+- [x] CA16 · (abuso) Como actor con permiso de escritura, envío un email ya usado por otro paciente, o un email, teléfono, nombre, código postal o tipo de sangre inválidos → el error de negocio (400 o 409) explica qué campo falla sin repetir el valor enviado ni revelar datos de otro paciente (P7, P11).
 
 ## Fuera de alcance
 - Portal del paciente: que un paciente consulte o edite sus propios datos (hoy no tiene pantallas).
@@ -148,6 +148,7 @@ Constitution Check de `/plan`, junto con la falta de `request_id`.
 | 2026-09-24 | CA4 y CA15 cubren también el panel de inicio (dashboard) | Revisión del impacto en el frontend |
 | 2026-09-24 | Sección Auditoría (diferida a la spec del objetivo 5) y aprobación | Constitución 1.1.0 (P14); aprobada por el usuario |
 | 2026-09-24 | "Ver el detalle de una cita" pasa a todo el staff (CA2, CA3, CA6, CA7, tabla, supuestos); CA15 cubre también acciones | `/plan` detectó que expedientes usa ese detalle y que el asistente ve "Registrar nuevo paciente"; decisión del usuario |
+| 2026-09-24 | Implementada: 16 criterios cubiertos por tests en verde; T076 añadida durante `/implement` (selector de doctores) | `/implement 014` |
 | 2026-09-24 | Cobertura de riesgos: destinos de RS5.a, RS8.a, RS10.a, RS10.b y OB10.b, OB2.a con su test, RS1.a sin CA15; CA15 antes que CA16; `time` nulo en `agenda/treatments` | `/analyze 014` ronda 4 (C4, C14, D2–D4, D6); decisión del usuario |
 | 2026-09-24 | Sección "Cobertura de riesgos" y citas por ID (RS/OB) | `/init --upgrade` a 1.6.0 (formato 1.5.6); decisión del usuario |
 | 2026-09-24 | CA12 acotado a la API; web y logs de Auth y Users fuera de alcance; 008 CA3 declarado; orden 014 → 013 | Segundo `/analyze 014` (B6, B11, B14, B15); decisión del usuario |

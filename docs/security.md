@@ -42,8 +42,8 @@ Esta tabla es una guía técnica, no asesoría legal: conviene validarla con un 
 
 ## Autenticación y autorización
 - Mecanismo de autenticación: tokens personales de Sanctum emitidos en `POST /api/v1/auth/login`, entregados solo en la cookie `auth_token` (httpOnly, `SameSite=lax`, excluida del cifrado de cookies) e inyectados como `Authorization: Bearer` por `InjectSanctumTokenFromCookie`. Un token activo por actor; caducidad 1440 min. Dos tipos de actor con tabla propia: staff (`users`) y pacientes (`patients`). Sin MFA.
-- Modelo de autorización: roles de staff `Administrador`, `Asistente`, `Doctor` (ids fijos 1/2/3) y actor `patient`. `CurrentActorAuthorizationService::assertCan` concede todos sus permisos solo al administrador activo.
-- Dónde se aplica: middleware `auth:sanctum` + `only.admin` (`app/Core/Middlewares/OnlyAdmin.php`), `assertCan` en los casos de uso, y comprobaciones inline de rol en closures de `routes/web.php`. No hay Policies ni Gates.
+- Modelo de autorización: roles de staff `Administrador`, `Asistente`, `Doctor` (ids fijos 1/2/3) y actor `patient`. `CurrentActorAuthorizationService::assertCan` aplica un mapa `permiso → roles` (spec 014): todo el staff activo lee pacientes, expedientes, historial y detalle de citas; administrador y asistente gestionan contacto, dirección y datos médicos; el resto (datos básicos y contraseña del paciente, altas y bajas, agenda, catálogo, contenido, usuarios y seguimiento clínico) es solo del administrador. Denegado por defecto; un staff inactivo no tiene permisos.
+- Dónde se aplica: middleware `auth:sanctum` + `only.admin` (`app/Core/Middlewares/OnlyAdmin.php`) o `staff` (`app/Core/Middlewares/EnsureActiveStaff.php`: solo staff activo, opcionalmente por rol), y `assertCan` en los casos de uso. Las vistas de expedientes usan `staff:administrador,asistente,doctor`. No hay Policies ni Gates. Errores inesperados de la API: `UnexpectedErrorResponse` y la red de `withExceptions` en `bootstrap/app.php` (500 genérico, sin el mensaje en la respuesta ni en el log).
 
 ## Superficie de ataque
 | Punto de entrada | Tipo | Autenticado | Notas |
@@ -52,9 +52,9 @@ Esta tabla es una guía técnica, no asesoría legal: conviene validarla con un 
 | `POST /api/v1/auth/{login,register,send-reset-password-email,reset-password}` | HTTP público | no | 10 req/min por IP |
 | `POST /api/v1/auth/logout` | HTTP | sí | |
 | `/api/v1/{users,treatments,certifications,gallery-images,promotions,testimonials}`, `POST/DELETE /patients`, completar cita y seguimiento | HTTP | sí, solo admin | `only.admin` + `assertCan` |
-| `/api/v1/agenda/*`, `GET/PUT /patients/*`, subrecursos de paciente, expediente, `/appointments/*` | HTTP | sí, **cualquier actor** | **incluye pacientes** (ver Riesgos) |
+| `/api/v1/agenda/*`, `GET/PUT /patients/*`, subrecursos de paciente, expediente, `/appointments/*` | HTTP | sí, staff activo | `staff` + `assertCan` por rol (spec 014); pacientes → 403 |
 | Web `/`, `/contacto`, `/galeria`, `/acerca-de-nosotros`, `/login`, `/register`, `/forgot-password`, `/reset-password` | HTTP público | no | vistas GET |
-| Web `/dashboard`, `/agenda`, `/pacientes`, `/usuarios`, `/tratamientos`, `/contenido`, `/expedientes-clinicos` | HTTP | sí | rol por middleware o por closure |
+| Web `/dashboard`, `/agenda`, `/pacientes`, `/usuarios`, `/tratamientos`, `/contenido`, `/expedientes-clinicos` | HTTP | sí | rol por middleware (`only.admin` o `staff:…`) |
 | `/up` | HTTP público | no | health check |
 | Listeners en cola (WhatsApp, Email) | cola `database` | — | solo salida hacia Twilio y Brevo; sin webhooks entrantes |
 
@@ -101,10 +101,12 @@ correcciones están mitigadas o aceptadas.
 Las rutas de pacientes, subrecursos, expediente y citas solo exigen `auth:sanctum`, y el guard `sanctum` no fija provider en `config/auth.php`, así que acepta tokens de pacientes. Un paciente autorregistrado puede leer y modificar datos de salud de otros pacientes y crear o modificar citas ajenas; cualquier staff puede cambiar la contraseña de un paciente. (Roadmap objetivo 1; specs 005, 006, 007.)
 
 Correcciones:
-- RS1.a Restringir las rutas de pacientes, subrecursos, expediente y citas a staff — estado: en curso (spec 014)
+- RS1.a Restringir las rutas de pacientes, subrecursos, expediente y citas a staff — estado: mitigada (spec 014; versión en `/release`)
 - RS1.b Comprobar la propiedad del recurso — estado: pendiente (spec 013, CA24)
 - RS1.c Fijar el provider del guard `sanctum` — estado: pendiente (spec 013, CA23)
-- RS1.d Añadir tests de acceso denegado — estado: en curso (spec 014)
+- RS1.d Añadir tests de acceso denegado — estado: mitigada (spec 014; versión en `/release`): `PatientsAccessControlTest`, `AppointmentsAccessControlTest`, `RolePermissionsTest`
+
+RS1 queda **parcialmente mitigado** hasta que la spec 013 cierre RS1.b y RS1.c.
 
 ### RS2 · Alta — Datos de salud sin cifrar en reposo
 
@@ -116,7 +118,9 @@ Correcciones:
 48 controladores devuelven `$e->getMessage()` en respuestas 500 (Patients, Appointments, AppointmentTracking, ContentManagement).
 
 Correcciones:
-- RS3.a Respuestas 500 genéricas, sin `$e->getMessage()` (derivada, P7) — estado: en curso (spec 014)
+- RS3.a Respuestas 500 genéricas, sin `$e->getMessage()` (derivada, P7) — estado: mitigada (spec 014; versión en `/release`): `UnexpectedErrorTest` (Patients, Appointments, AppointmentTracking, ContentManagement), `GlobalErrorFallbackTest`
+
+RS3 mitigado (spec 014).
 
 ### RS4 · Media — Contenido oculto expuesto en la API pública
 (spec 011).
@@ -154,15 +158,15 @@ Correcciones:
 el flujo de WhatsApp registra el teléfono y las variables de la plantilla; `.env.example` trae `LOG_LEVEL=debug`.
 
 Correcciones:
-- RS9.a Retirar teléfono, nombre y variables de plantilla de los logs (derivada; detalle en OB2) — estado: pendiente (roadmap objetivo 5; la spec 014 retira los de `CreateAppointmentController`)
+- RS9.a Retirar teléfono, nombre y variables de plantilla de los logs (derivada; detalle en OB2) — estado: pendiente (roadmap objetivo 5; la spec 014 ya retiró los de `CreateAppointmentController`, OB2.a)
 - RS9.b `LOG_LEVEL=info` por defecto en `.env.example` (derivada) — estado: pendiente (roadmap objetivo 5)
 
 ### RS10 · Baja — Configuración por defecto insegura en `.env.example`
 `APP_DEBUG=true`, `SESSION_ENCRYPT=false`.
 
 Correcciones:
-- RS10.a `APP_DEBUG=false` en `.env.example` (derivada) — estado: pendiente
-- RS10.b `SESSION_ENCRYPT=true` en `.env.example` (derivada) — estado: pendiente
+- RS10.a `APP_DEBUG=false` en `.env.example` (derivada) — estado: pendiente (roadmap objetivo 4)
+- RS10.b `SESSION_ENCRYPT=true` en `.env.example` (derivada) — estado: pendiente (roadmap, Pendientes y deuda)
 
 ### RS11 · Baja — Sin eventos de auditoría
 logins fallidos, accesos denegados y lecturas de expedientes no se registran.
@@ -181,6 +185,18 @@ Correcciones:
 
 Correcciones:
 - RS13.a Fijar las acciones de GitHub a un SHA (derivada) — estado: pendiente
+
+### RS14 · Baja — El staff clínico ve a todos los pacientes
+Asistente y doctor leen el expediente de cualquier paciente, no solo de los que atienden (spec 014, "Fuera de alcance").
+
+Correcciones:
+- RS14.a Limitar la lectura del doctor a sus pacientes (derivada) — estado: pendiente (sin objetivo; decidir con el portal del paciente)
+
+### RS15 · Baja — Logs de Auth y Users con el mensaje de la excepción
+Los catch genéricos de Auth y Users registran `getMessage()` y la traza, y sus mensajes de negocio repiten el email (spec 014, "Fuera de alcance"; OB10.b).
+
+Correcciones:
+- RS15.a Pasar esos controladores a `UnexpectedErrorResponse` y quitar el email de sus mensajes (derivada) — estado: pendiente (roadmap, Pendientes y deuda)
 
 Controles verificados: sin `DB::raw`/`whereRaw` con entrada del usuario; sin `{!! !!}` en Blade;
 versiones de Composer fijadas (SECURITY-10); respuesta neutra en el reset (sin enumeración); rate
