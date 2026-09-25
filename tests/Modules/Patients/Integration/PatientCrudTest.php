@@ -21,7 +21,7 @@ it('allows an admin to create a patient', function () {
 });
 
 it('rejects a non-admin staff member creating a patient with 403 (only.admin middleware)', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
 
     $response = $this->postJson($this->patientsUrl(), $this->validCreatePatientPayload());
 
@@ -65,8 +65,8 @@ it('rejects an invalid email format with 400', function () {
 
 // --- Actualizar ---
 
-it('allows any authenticated staff (not just admin) to partially update a patient', function () {
-    $this->actingAsNonAdminUser();
+it('allows an administrator to partially update a patient', function () {
+    $this->actingAsAdmin();
     $patient = $this->createPatient(['first_name' => 'John']);
 
     $response = $this->putJson($this->patientUrl($patient->id), ['first_name' => 'Jane']);
@@ -112,7 +112,7 @@ it('returns 400 for a malformed patient id in the URL (post-fix BR-8)', function
 // --- Listar / Obtener ---
 
 it('lists patients filtered by status', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
     $this->createPatient(['status' => 'active']);
     $this->createPatient(['status' => 'inactive']);
 
@@ -123,7 +123,7 @@ it('lists patients filtered by status', function () {
 });
 
 it('gets a patient by id', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
 
     $response = $this->getJson($this->patientUrl($patient->id));
@@ -133,7 +133,7 @@ it('gets a patient by id', function () {
 });
 
 it('returns 404 when getting a non-existent patient (post-fix BR-6)', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
 
     $response = $this->getJson($this->patientUrl((string) Str::uuid()));
 
@@ -141,7 +141,7 @@ it('returns 404 when getting a non-existent patient (post-fix BR-6)', function (
 });
 
 it('returns 400 for a malformed patient id when getting by id (post-fix BR-8)', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
 
     $response = $this->getJson($this->patientUrl('not-a-uuid'));
 
@@ -163,7 +163,7 @@ it('allows an admin to delete a patient', function () {
 });
 
 it('rejects a non-admin staff member deleting a patient with 403 (only.admin middleware)', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
 
     $response = $this->deleteJson($this->patientUrl($patient->id));

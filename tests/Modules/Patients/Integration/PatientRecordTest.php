@@ -8,7 +8,7 @@ use Tests\Modules\Patients\Integration\PatientsIntegrationTestCase;
 uses(PatientsIntegrationTestCase::class);
 
 it('aggregates patient plus the 3 sub-resources when all exist', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
     $this->createAddress(['patient_id' => $patient->id]);
     $this->createContactInfo(['patient_id' => $patient->id]);
@@ -24,7 +24,7 @@ it('aggregates patient plus the 3 sub-resources when all exist', function () {
 });
 
 it('returns null sub-resources when they were never created', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
 
     $response = $this->getJson($this->patientRecordUrl($patient->id));
@@ -36,8 +36,8 @@ it('returns null sub-resources when they were never created', function () {
         ->assertJsonPath('data.medical_data', null);
 });
 
-it('confirms any authenticated staff (not just admin) can read the full record, including medical data (BR-5/SECURITY-08)', function () {
-    $this->actingAsNonAdminUser();
+it('confirms an assistant can read the full record, including medical data (BR-5/SECURITY-08)', function () {
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
     $this->createMedicalData(['patient_id' => $patient->id, 'allergies' => ['Penicilina']]);
 
@@ -48,7 +48,7 @@ it('confirms any authenticated staff (not just admin) can read the full record, 
 });
 
 it('returns 404 for a non-existent patient (post-fix BR-6)', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
 
     $response = $this->getJson($this->patientRecordUrl((string) Str::uuid()));
 
@@ -56,7 +56,7 @@ it('returns 404 for a non-existent patient (post-fix BR-6)', function () {
 });
 
 it('returns 400 for a malformed patient id (post-fix BR-8)', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
 
     $response = $this->getJson($this->patientRecordUrl('not-a-uuid'));
 

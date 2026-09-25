@@ -19,7 +19,7 @@ it('allows an admin to delete an appointment', function () {
 });
 
 it('rejects a non-admin staff member with 403', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
     $appointment = $this->createAppointment();
 
     $response = $this->deleteJson($this->appointmentUrl($appointment->id));
@@ -47,7 +47,7 @@ it('rejects an authenticated patient with 403', function () {
     $response = $this->deleteJson($this->appointmentUrl($appointment->id));
 
     $response->assertStatus(403)
-        ->assertJson(['error' => 'Authentication is required.']);
+        ->assertJson(['error' => 'Only staff can access this resource.']);
 });
 
 it('rejects unauthenticated request with 401', function () {

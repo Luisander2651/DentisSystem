@@ -23,6 +23,7 @@ Para pasar de **prototipo** a **MVP** con una clínica real:
 - Specs 001–012 revisadas y pasadas de `inferred` a `approved` (cumplido el 2026-09-23).
 
 ## Pendientes y deuda
+- Tests: crear una cita para un paciente con teléfono dispara el listener de WhatsApp en la misma petición (cola `sync` en `phpunit.xml`) y llama a la **API real de Twilio** si el contenedor tiene credenciales. `tests/Support/FakesTwilio.php` existe pero ningún test lo usaba; todo test que cree citas con teléfono debe llamar a `fakeTwilio()` (detectado en `/implement 014`, 2026-09-24).
 - Seguridad sin objetivo asignado (decisión del usuario, 2026-09-24; destinos de la spec 014, "Cobertura de riesgos"):
   - RS5.a: protección CSRF (`SameSite=strict` o cabecera o token anti-CSRF).
   - RS8.a: revocar los tokens de sesión al restablecer la contraseña (spec 003).

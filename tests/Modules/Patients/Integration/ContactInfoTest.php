@@ -7,8 +7,8 @@ use Tests\Modules\Patients\Integration\PatientsIntegrationTestCase;
 
 uses(PatientsIntegrationTestCase::class);
 
-it('allows any authenticated staff (not just admin) to create contact info', function () {
-    $this->actingAsNonAdminUser();
+it('allows an assistant to create contact info', function () {
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
 
     $response = $this->postJson($this->contactInfoUrl($patient->id), $this->validCreateContactInfoPayload());
@@ -56,7 +56,7 @@ it('rejects an invalid value object with 400', function () {
 });
 
 it('updates existing contact info partially', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
     $this->createContactInfo(['patient_id' => $patient->id, 'phone_number' => '+1 555 0100']);
 

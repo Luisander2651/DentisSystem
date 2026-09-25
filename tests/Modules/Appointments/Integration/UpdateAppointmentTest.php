@@ -26,8 +26,8 @@ it('reschedules an appointment successfully', function () {
     ]);
 });
 
-it('any authenticated active staff can reschedule (not just admin)', function () {
-    $this->actingAsNonAdminUser();
+it('allows an administrator to reschedule an appointment of any doctor', function () {
+    $this->actingAsAdmin();
     $appointment = $this->createAppointment(['date' => '2026-09-01', 'time' => '10:00']);
 
     $response = $this->putJson($this->appointmentUrl($appointment->id), [
