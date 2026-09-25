@@ -1,7 +1,7 @@
 ---
 id: 014
 slug: control-de-acceso-y-errores
-status: approved
+status: implemented
 created: 2026-09-24
 extends: [001, 005, 006, 007, 008, 009, 011, 012]
 ---
@@ -148,12 +148,13 @@ Constitution Check de `/plan`, junto con la falta de `request_id`.
 | 2026-09-24 | CA4 y CA15 cubren también el panel de inicio (dashboard) | Revisión del impacto en el frontend |
 | 2026-09-24 | Sección Auditoría (diferida a la spec del objetivo 5) y aprobación | Constitución 1.1.0 (P14); aprobada por el usuario |
 | 2026-09-24 | "Ver el detalle de una cita" pasa a todo el staff (CA2, CA3, CA6, CA7, tabla, supuestos); CA15 cubre también acciones | `/plan` detectó que expedientes usa ese detalle y que el asistente ve "Registrar nuevo paciente"; decisión del usuario |
-| 2026-09-25 | `/review` ronda 2: changes_requested (R30–R36); vuelve a `approved` hasta cerrar T087–T089 | `/review 014 --rerun` |
-| 2026-09-25 | Implementadas las correcciones de `/review` (T077–T086) | `/implement 014` |
-| 2026-09-25 | `/review` ronda 1: changes_requested (R1–R7); vuelve a `approved` hasta cerrar T077–T084 | `/review 014` |
-| 2026-09-24 | Implementada: 16 criterios cubiertos por tests en verde; T076 añadida durante `/implement` (selector de doctores) | `/implement 014` |
-| 2026-09-24 | Cobertura de riesgos: destinos de RS5.a, RS8.a, RS10.a, RS10.b y OB10.b, OB2.a con su test, RS1.a sin CA15; CA15 antes que CA16; `time` nulo en `agenda/treatments` | `/analyze 014` ronda 4 (C4, C14, D2–D4, D6); decisión del usuario |
-| 2026-09-24 | Sección "Cobertura de riesgos" y citas por ID (RS/OB) | `/init --upgrade` a 1.6.0 (formato 1.5.6); decisión del usuario |
-| 2026-09-24 | CA12 acotado a la API; web y logs de Auth y Users fuera de alcance; 008 CA3 declarado; orden 014 → 013 | Segundo `/analyze 014` (B6, B11, B14, B15); decisión del usuario |
-| 2026-09-24 | Provider del guard y propiedad del recurso (riesgo 1) pasan a la spec 013 | Aclaración del alcance del riesgo 1; decisión del usuario |
 | 2026-09-24 | CA14 sin datos personales y CA16 nuevo; `extends` añade 001, 008, 011 y 012; reversión de U1 BR-5 declarada; criterios de specs extendidas completos | `/analyze 014` (A13, A17–A19, A28) y constitución 1.1.1; decisión del usuario |
+| 2026-09-24 | Provider del guard y propiedad del recurso (riesgo 1) pasan a la spec 013 | Aclaración del alcance del riesgo 1; decisión del usuario |
+| 2026-09-24 | CA12 acotado a la API; web y logs de Auth y Users fuera de alcance; 008 CA3 declarado; orden 014 → 013 | Segundo `/analyze 014` (B6, B11, B14, B15); decisión del usuario |
+| 2026-09-24 | Sección "Cobertura de riesgos" y citas por ID (RS/OB) | `/init --upgrade` a 1.6.0 (formato 1.5.6); decisión del usuario |
+| 2026-09-24 | Cobertura de riesgos: destinos de RS5.a, RS8.a, RS10.a, RS10.b y OB10.b, OB2.a con su test, RS1.a sin CA15; CA15 antes que CA16; `time` nulo en `agenda/treatments` | `/analyze 014` ronda 4 (C4, C14, D2–D4, D6); decisión del usuario |
+| 2026-09-24 | Implementada: 16 criterios cubiertos por tests en verde; T076 añadida durante `/implement` (selector de doctores) | `/implement 014` |
+| 2026-09-25 | `/review` ronda 1: changes_requested (R1–R7); vuelve a `approved` hasta cerrar T077–T086 (T085 y T086 añadidas en `/analyze` ronda 6) | `/review 014` |
+| 2026-09-25 | Implementadas las correcciones de `/review` (T077–T086) | `/implement 014` |
+| 2026-09-25 | `/review` ronda 2: changes_requested (R30–R36); vuelve a `approved` hasta cerrar T087–T089 | `/review 014 --rerun` |
+| 2026-09-25 | Implementadas las correcciones de `/review` ronda 2 (T087–T089) | `/implement 014` |

@@ -49,10 +49,11 @@ it('offers the patient neither the agenda nor the records', function () {
         ->assertDontSee('href="/expedientes-clinicos"', false);
 });
 
-it('greets the doctor with their own message, not the patient one (spec 014, R4)', function () {
+it('greets the doctor with a neutral message, not the patient one (spec 014, R4 and R36)', function () {
     $this->actingAsNonAdminUser('Doctor');
 
     $this->get('/dashboard')->assertOk()
-        ->assertSee('Consulta los expedientes clínicos de tus pacientes.')
+        ->assertSee('Consulta los expedientes clínicos de los pacientes.')
+        ->assertDontSee('de tus pacientes')
         ->assertDontSee('Tu salud dental');
 });

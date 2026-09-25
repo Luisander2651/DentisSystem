@@ -93,8 +93,7 @@ it('keeps a sanitized trace of an exception reported manually during an api requ
 
     $everything = $this->logged
         ->map(fn (MessageLogged $entry): string => $entry->message.' '.json_encode($entry->context))
-        ->implode('
-');
+        ->implode("\n");
 
     expect($this->logged)->toHaveCount(1)
         ->and($this->logged->first()->message)->toBe('unexpected_error')

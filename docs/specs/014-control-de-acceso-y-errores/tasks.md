@@ -180,16 +180,20 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
 - [x] T083 Actualizar axios a una versión sin avisos (va en el bundle del navegador; paquete existente, sin ADR) — `package.json`, `package-lock.json` — hecho cuando: `npm audit` no reporta axios y `npm run build` y la suite pasan
   - nota: axios 1.20.0 (publicada hace 29 días, ≥ `min_package_age_days`; MIT; sin scripts de instalación). `npm audit`: de 10 a 7 avisos, ninguno de axios. Build correcto y suite en serie 800/800.
   - nota: añadida por /review: R7 (decisión del usuario). Ampliada en `/analyze` ronda 6 (E2).
+  - nota (T088, R31): el lockfile cambió dependencias transitivas de axios. Nuevas: `https-proxy-agent` 5.0.1, `agent-base` 6.0.2, `debug` 4.4.3, `ms` 2.1.3. Actualizadas: `follow-redirects` 1.16.0, `form-data` 4.0.6, `hasown` 2.0.4, `es-object-atoms` 1.1.2, `proxy-from-env` 2.1.0 (desde 1.1.0). Verificadas con `npm view` (2026-09-25): todas MIT, sin scripts de instalación, publicadas hace más de 7 días (la más reciente, `form-data` 4.0.6, el 2026-06-12).
 - [x] T086 Registrar la excepción de las vulnerabilidades restantes de las dependencias de build (vite, rollup, postcss, concurrently…): riesgo nuevo `RS16 · A03:2025` con estado "aceptada (EX1)", y `EX1` en "Excepciones aceptadas" con motivo, aprobador (dueño del repositorio) y fecha de vencimiento concreta confirmada por el usuario; entrada en el roadmap que enlace EX1 — `docs/security.md`, `docs/roadmap.md` — hecho cuando: EX1 y RS16 existen con aprobador y vencimiento y el roadmap los enlaza — depende: T083
   - nota: vencimiento de EX1 decidido por el usuario (2026-09-25): al empezar el objetivo 4 y como tarde el 2026-12-31.
   - nota: añadida en `/analyze` ronda 6 (E3), separada de T083 por el límite de 3 archivos.
 
 ### Correcciones de /review (ronda 2)
-- [ ] T087 Acotar la captura de `recordsTableHeader` para que no cruce otro `</thead>` (el caso "keeps the actions column" debe fallar si una sola tabla pierde su cabecera) y usar `"\n"` en el `implode` de `GlobalErrorFallbackTest` — `tests/Modules/Patients/Integration/RecordsScreenTest.php`, `tests/Modules/Appointments/Integration/GlobalErrorFallbackTest.php` — hecho cuando: los dos archivos pasan y, quitando a mano la cabecera "Acciones" de una sola tabla, el caso positivo falla (comprobación anotada) — cubre: CA4
+- [x] T087 Acotar la captura de `recordsTableHeader` para que no cruce otro `</thead>` (el caso "keeps the actions column" debe fallar si una sola tabla pierde su cabecera) y usar `"\n"` en el `implode` de `GlobalErrorFallbackTest` — `tests/Modules/Patients/Integration/RecordsScreenTest.php`, `tests/Modules/Appointments/Integration/GlobalErrorFallbackTest.php` — hecho cuando: los dos archivos pasan y, quitando a mano la cabecera "Acciones" de una sola tabla, el caso positivo falla (comprobación anotada) — cubre: CA4
+  - nota: la captura ya no cruza otro `</thead>`. Comprobación: con la cabecera "Acciones" de `address-table` cambiada a mano, el caso "keeps the actions column" falla para administrador y asistente (2 fallos); restaurada, pasa.
   - nota: añadida por /review: R30, R32
-- [ ] T088 Documentación: registrar en T083 las dependencias transitivas que cambió la actualización de axios, con su verificación; mover RS16 junto a los riesgos Alta y añadir al motivo de EX1 que el servidor de desarrollo no se expone fuera de localhost; ordenar el Historial de la spec y citar T077–T086 — `docs/security.md`, `docs/specs/014-control-de-acceso-y-errores/spec.md`, `docs/specs/014-control-de-acceso-y-errores/tasks.md` — hecho cuando: `aidd.py validate` sin errores y los cuatro cambios presentes
+- [x] T088 Documentación: registrar en T083 las dependencias transitivas que cambió la actualización de axios, con su verificación; mover RS16 junto a los riesgos Alta y añadir al motivo de EX1 que el servidor de desarrollo no se expone fuera de localhost; ordenar el Historial de la spec y citar T077–T086 — `docs/security.md`, `docs/specs/014-control-de-acceso-y-errores/spec.md`, `docs/specs/014-control-de-acceso-y-errores/tasks.md` — hecho cuando: `aidd.py validate` sin errores y los cuatro cambios presentes
+  - nota: el motivo de EX1 se escribió como condición, no como hecho: `vite.config.js` escucha en `0.0.0.0` y `docker-compose.yml` publica `5173:5173` en todas las interfaces; deuda anotada en el roadmap.
   - nota: añadida por /review: R31, R33, R34, R35
-- [ ] T089 Saludo del doctor con texto neutro ("Consulta los expedientes clínicos de los pacientes."), sin sugerir que solo ve a los suyos (RS14) — `resources/views/pages/dashboard.blade.php`, `tests/Modules/Users/Integration/StaffNavigationTest.php` — hecho cuando: `StaffNavigationTest` afirma el texto nuevo y pasa — cubre: CA4
+- [x] T089 Saludo del doctor con texto neutro ("Consulta los expedientes clínicos de los pacientes."), sin sugerir que solo ve a los suyos (RS14) — `resources/views/pages/dashboard.blade.php`, `tests/Modules/Users/Integration/StaffNavigationTest.php` — hecho cuando: `StaffNavigationTest` afirma el texto nuevo y pasa — cubre: CA4
+  - nota: el test afirma también que ya no aparece "de tus pacientes"; falló antes del cambio y pasa después.
   - nota: añadida por /review: R36
 
 ## Integración y documentación
@@ -202,7 +206,7 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
   - nota: `architecture.md` → fila Core, "Autenticación y autorización" y "Manejo de errores".
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas. En `observability.md`: OB2.a y OB10.a → mitigada; el evento `unexpected_error` (campos, sin `message` ni `request_id`) y los puntos únicos de 401/403 donde se enganchará la auditoría
   - nota: `deployment.md` no cambia (sin variables ni pasos nuevos).
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

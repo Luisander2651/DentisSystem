@@ -37,7 +37,7 @@
     <!-- Welcome Section -->
     <x-ui.page-hero
         :title="'¡Hola, '.($user ? ($user->first_name ?? 'Usuario') : 'Usuario').'!'"
-        :description="strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin' ? 'Bienvenido al centro de control de Dentissa.' : (strtolower($userRole) === 'asistente' ? 'Listos para gestionar las sonrisas de hoy.' : (strtolower($userRole) === 'doctor' ? 'Consulta los expedientes clínicos de tus pacientes.' : 'Tu salud dental, siempre a un clic de distancia.'))"
+        :description="strtolower($userRole) === 'administrador' || strtolower($userRole) === 'admin' ? 'Bienvenido al centro de control de Dentissa.' : (strtolower($userRole) === 'asistente' ? 'Listos para gestionar las sonrisas de hoy.' : (strtolower($userRole) === 'doctor' ? 'Consulta los expedientes clínicos de los pacientes.' : 'Tu salud dental, siempre a un clic de distancia.'))"
     >
         <x-slot:icon>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

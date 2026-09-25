@@ -62,7 +62,7 @@ it('sends a visitor without a session to the login page', function () {
  */
 function recordsTableHeader(string $html, string $bodyId): string
 {
-    preg_match('#<thead[^>]*>(.*?)</thead>\s*<tbody id="'.$bodyId.'"#s', $html, $match);
+    preg_match('#<thead[^>]*>((?:(?!</thead>).)*)</thead>\s*<tbody id="'.$bodyId.'"#s', $html, $match);
 
     return $match[1] ?? '';
 }
