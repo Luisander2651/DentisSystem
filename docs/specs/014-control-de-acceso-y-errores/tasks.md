@@ -152,6 +152,30 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
 - [x] T064 Comprobar con `grep -rn "getMessage()\|getTraceAsString()\|customerPhone\|customerName"` sobre los controladores de Patients, Appointments, AppointmentTracking y ContentManagement que solo quedan `getMessage()` en respuestas de catch de negocio (400, 404, 409, 422) y ninguno en `Log::`; ejecutar `vendor/bin/pint --dirty --format agent` y `./vendor/bin/pest --parallel` completo en Docker — sin archivos nuevos — hecho cuando: el grep cumple lo anterior, Pint no deja cambios y la suite completa pasa — cubre: CA12, CA13, CA14 — depende: T036, T037, T038, T039, T040, T041, T042, T043, T044, T045, T046, T047, T048, T049, T050, T051, T052, T053, T054, T055, T056, T057, T058, T059, T060, T061, T062, T063, T067, T068, T069, T070, T075
   - nota: 5 controladores de ContentManagement respondían `StorageException` con un 500 que incluía el mensaje; pasan también por `UnexpectedErrorResponse` (P7). Algunos de esos casos son errores del cliente (imagen no válida) que merecerían un 400: deuda de la spec 012. Fallos inestables observados en `--parallel`: timeout de conexión a PostgreSQL con 12 procesos (entorno), no de lógica.
 
+### Correcciones de /review (ronda 1)
+- [ ] T085 Escribir los casos que fijan R4–R6 y fallan hoy: en `StaffNavigationTest`, el panel del doctor no muestra "Tu salud dental" y sí su saludo propio; en `RecordsScreenTest`, el doctor no ve "editar" ni "gestionar" en la cabecera y la tarjeta, ni la cabecera "Acciones" de las tres tablas, y el asistente y el administrador sí la ven — `tests/Modules/Users/Integration/StaffNavigationTest.php`, `tests/Modules/Patients/Integration/RecordsScreenTest.php` — hecho cuando: los casos nuevos fallan por la razón esperada — cubre: CA4
+  - nota: añadida en `/analyze` ronda 6 (E1, P2).
+  - nota: aceptados en `/analyze` ronda 7 (F1, F2): la cabecera "Acciones" se comprueba solo en las tablas de contacto, dirección y datos médicos (el historial de citas conserva la suya); fallan hoy los casos del doctor, los del asistente y el administrador pasan desde el principio.
+- [ ] T077 Registrar desde el callback de `report()` la versión saneada de toda excepción inesperada en `api/*` (origen, clase, archivo y línea, como `UnexpectedErrorResponse`) y detener el reporte por defecto; el render de la red solo construye la respuesta, sin volver a registrar. Así un `report()`/`rescue()` manual o un error posterior a la respuesta en `api/*` también deja un único log sin datos. Añadir a `GlobalErrorFallbackTest` un caso con `report(new RuntimeException('… '.GLOBAL_FALLBACK_TEST_PHONE))` dentro de una ruta `api/*` — `bootstrap/app.php`, `app/Core/Http/UnexpectedErrorResponse.php`, `tests/Modules/Appointments/Integration/GlobalErrorFallbackTest.php` — hecho cuando: el caso nuevo registra exactamente un `unexpected_error` sin el teléfono, y "logs an uncaught failed query once" sigue en verde — cubre: CA12, CA13
+  - nota: añadida por /review: R1. Solución fijada en `/analyze` ronda 6 (E4).
+  - nota: aceptado en `/analyze` ronda 7 (F3): `UnexpectedErrorResponse::from()` sigue registrando para los errores capturados por los controladores; el render de la red usa un constructor que no registra. Criterio ampliado: `UnexpectedErrorTest` sigue en verde y el caso nuevo deja un único log en total.
+- [ ] T078 Completar la matriz de permisos con los 32 del mapa (o comparar sus claves con el mapa), añadir el caso de permiso desconocido → denegado para los tres roles, usar `actingAsAdmin()` para el Administrador y quitar el comentario de la línea 48 (decisión del usuario) — `tests/Modules/Users/Integration/RolePermissionsTest.php` — hecho cuando: la matriz cubre todos los permisos del mapa y el caso nuevo pasa — cubre: CA1, CA6, CA7, CA8
+  - nota: añadida por /review: R2, R11
+- [ ] T079 Reescribir los casos "…for any doctor…": la cita se asigna a un usuario Doctor distinto del administrador que actúa y se verifica la fila en la base — `tests/Modules/Appointments/Integration/CreateAppointmentTest.php`, `tests/Modules/Appointments/Integration/UpdateAppointmentTest.php` — hecho cuando: ambos casos afirman el `user_id` del doctor en BD y pasan — cubre: CA1
+  - nota: añadida por /review: R3
+- [ ] T080 Saludo propio para el doctor en el panel de inicio (no el del paciente) — `resources/views/pages/dashboard.blade.php` — hecho cuando: el caso de saludo de T085 pasa y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T085
+  - nota: añadida por /review: R4
+- [ ] T081 Textos de la cabecera y de la tarjeta informativa de expedientes según `$canEdit` ("consultar" para el doctor) — `resources/views/pages/records/index.blade.php` — hecho cuando: el caso de textos de T085 pasa y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T085
+  - nota: añadida por /review: R5
+- [ ] T082 Cabecera "Acciones" y `colspan` de la fila vacía según `$canEdit` en las tres tablas — `resources/views/components/records/contact-info-table.blade.php`, `resources/views/components/records/address-table.blade.php`, `resources/views/components/records/medical-data-table.blade.php` — hecho cuando: el caso de cabecera de T085 pasa y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T085
+  - nota: añadida por /review: R6
+- [ ] T084 Sin celda de acciones ni `colspan` de más cuando no existe la plantilla de "Eliminar" (leyendo `data-records-can-edit`); `npm run build` y comprobación manual como doctor — `resources/js/pages/records/index.js` — hecho cuando: el build pasa y la comprobación manual y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T082
+  - nota: añadida por /review: R6
+- [ ] T083 Actualizar axios a una versión sin avisos (va en el bundle del navegador; paquete existente, sin ADR) — `package.json`, `package-lock.json` — hecho cuando: `npm audit` no reporta axios y `npm run build` y la suite pasan
+  - nota: añadida por /review: R7 (decisión del usuario). Ampliada en `/analyze` ronda 6 (E2).
+- [ ] T086 Registrar la excepción de las vulnerabilidades restantes de las dependencias de build (vite, rollup, postcss, concurrently…): riesgo nuevo `RS16 · A03:2025` con estado "aceptada (EX1)", y `EX1` en "Excepciones aceptadas" con motivo, aprobador (dueño del repositorio) y fecha de vencimiento concreta confirmada por el usuario; entrada en el roadmap que enlace EX1 — `docs/security.md`, `docs/roadmap.md` — hecho cuando: EX1 y RS16 existen con aprobador y vencimiento y el roadmap los enlaza — depende: T083
+  - nota: añadida en `/analyze` ronda 6 (E3), separada de T083 por el límite de 3 archivos.
+
 ## Integración y documentación
 - [x] T065 Actualizar `docs/security.md`, con estado por corrección: RS1.a y RS1.d → mitigada; RS1.b (spec 013, CA24) y RS1.c (spec 013, CA23) siguen pendientes, así que RS1 queda parcialmente mitigado hasta la 013; RS3.a → mitigada; nota de RS9.a (la 014 retiró los logs de `CreateAppointmentController`); secciones "Autenticación y autorización" (permisos por rol, middleware `staff`, fin de los closures) y "Superficie de ataque" (filas "cualquier actor autenticado"); controles verificados con sus tests. — `docs/security.md` — hecho cuando: cada corrección de RS1 y RS3 tiene su estado, RS1 figura como parcialmente mitigado, RS1.b y RS1.c enlazan la 013 y ninguna sección afirma que las rutas de pacientes y citas aceptan cualquier actor — depende: T064
 - [x] T071 Añadir a "Pendientes y deuda" los mensajes y logs de Users y Auth que repiten el email o registran `getMessage()` y trazas (`UserException`, `EmailException` y `UserNameException` de Users; `AuthException`; catch genéricos de Auth). Proponer al usuario, y aplicar solo con su confirmación, retirar la deuda "Desalineación interfaz/backend" y ajustar el criterio "0 respuestas con `$e->getMessage()`" del objetivo 1 a P7 1.1.1 (las entradas de RS5.a, RS8.a, RS10.b y de las trazas de whatsApp de OB10.b ya se añadieron el 2026-09-24) — `docs/roadmap.md` — hecho cuando: la entrada de deuda existe y cita CA16 y la sección "Fuera de alcance" de la 014, y las dos propuestas quedan aplicadas o rechazadas por el usuario — depende: T064
@@ -162,7 +186,7 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
   - nota: `architecture.md` → fila Core, "Autenticación y autorización" y "Manejo de errores".
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas. En `observability.md`: OB2.a y OB10.a → mitigada; el evento `unexpected_error` (campos, sin `message` ni `request_id`) y los puntos únicos de 401/403 donde se enganchará la auditoría
   - nota: `deployment.md` no cambia (sin variables ni pasos nuevos).
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -173,10 +197,10 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
-| CA1 | T010, T011, T012 | T030, T034, T075, T076 |
+| CA1 | T010, T011, T012, T078, T079 | T030, T034, T075, T076 |
 | CA2 | T010, T011, T012 | T030, T041, T043, T044, T045, T050, T051 |
 | CA3 | T010, T011, T012 | T030, T041, T050, T051 |
-| CA4 | T018, T019 | T035, T061, T062, T063, T070 |
+| CA4 | T018, T019, T085 | T035, T061, T062, T063, T070, T080, T081, T082, T084 |
 | CA5 | T011, T012, T074 | T031, T034 |
 | CA6 | T010, T011, T012, T022 | T030, T042, T047, T050, T051, T052 |
 | CA7 | T010, T011, T012 | T030, T042, T043, T044, T045, T047, T050, T051, T052 |
@@ -184,8 +208,8 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
 | CA9 | T011, T012, T015 | T033 |
 | CA10 | T012, T015, T022 | T033, T052 |
 | CA11 | T010, T011 | T030, T036, T042 |
-| CA12 | T013, T014, T015, T016, T017 | T032, T033, T036, T037, T038, T039, T040, T046, T047, T048, T049, T052, T053, T054, T055, T056, T057, T058, T059, T060, T064 |
-| CA13 | T013, T015, T022 | T032, T033, T036, T037, T038, T039, T040, T046, T047, T048, T049, T053, T054 |
+| CA12 | T013, T014, T015, T016, T017, T077 | T032, T033, T077, T036, T037, T038, T039, T040, T046, T047, T048, T049, T052, T053, T054, T055, T056, T057, T058, T059, T060, T064 |
+| CA13 | T013, T015, T022, T077 | T032, T033, T077, T036, T037, T038, T039, T040, T046, T047, T048, T049, T053, T054 |
 | CA14 | T020, T021, T022, T066 | T036, T037, T038, T039, T040, T046, T047, T048, T049, T053, T054, T067, T068, T069, T064 |
 | CA15 | T019 | T061, T062 |
 | CA16 | T066 | T067, T068, T069 |
@@ -198,22 +222,22 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
 | TM4 | T030, T031 | T010, T011, T012 |
 | TM5 | T033 | T011, T012, T015 |
 | TM6 | T032, T033, T036, T037, T038, T039, T040, T046, T047, T048, T049, T052, T053, T054, T055, T056, T057, T058, T059, T060 | T013, T014, T015, T016, T017 |
-| TM7 | T032, T033, T036, T037, T038, T039, T040, T046, T047, T048, T049, T053, T054 | T013, T015, T022 |
+| TM7 | T032, T033, T077, T036, T037, T038, T039, T040, T046, T047, T048, T049, T053, T054 | T013, T015, T022 |
 | TM8 | T061, T062, T063, T070 | T011, T012, T018, T019 |
 | TM9 | T034 | T012 |
 | TM10 | T033, T052 | T012, T015 |
-| TM11 | T032, T033, T067 | T013, T015 |
+| TM11 | T032, T033, T067, T077 | T013, T015, T077 |
 | TM12 | T067, T068, T069 | T066 |
 
 | Cambio del plan (módulo) | Tarea(s) |
 |---|---|
 | Core (`EnsureActiveStaff`, `CurrentActorAuthorizationService`, `UnexpectedErrorResponse`) | T030, T031, T032 |
-| bootstrap (`bootstrap/app.php`) | T031, T033 |
+| bootstrap (`bootstrap/app.php`) | T031, T033, T077 |
 | routes (`routes/api.php`, `routes/web.php`) | T034, T035 |
 | Patients (15 controladores, casos de uso y excepciones de dominio) | T036, T037, T038, T039, T040, T041, T042, T043, T044, T045, T067, T068, T069 |
 | Appointments (controladores, selectores, casos de uso y repositorio de tratamientos) | T046, T047, T048, T049, T050, T051, T052, T075, T076 |
 | AppointmentTracking (6 controladores) | T053, T054 |
 | ContentManagement (16 controladores) | T055, T056, T057, T058, T059, T060 |
-| Frontend (sidebar, dashboard, expedientes y componentes) | T061, T062, T063, T070 |
-| Tests existentes (cambio de actor, casos reescritos y textos del 403) | T020, T021, T022, T074 |
-| Documentación (security, roadmap, CHANGELOG) | T065, T071, T072, T073 |
+| Frontend (sidebar, dashboard, expedientes y componentes) | T061, T062, T063, T070, T080, T081, T082, T084 |
+| Tests existentes (cambio de actor, casos reescritos y textos del 403) | T020, T021, T022, T074, T078, T079, T085 |
+| Documentación y dependencias (security, roadmap, CHANGELOG, axios) | T065, T071, T072, T073, T083, T086 |

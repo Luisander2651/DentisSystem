@@ -1,7 +1,7 @@
 ---
 id: 014
 slug: control-de-acceso-y-errores
-status: implemented
+status: approved
 created: 2026-09-24
 extends: [001, 005, 006, 007, 008, 009, 011, 012]
 ---
@@ -148,6 +148,7 @@ Constitution Check de `/plan`, junto con la falta de `request_id`.
 | 2026-09-24 | CA4 y CA15 cubren también el panel de inicio (dashboard) | Revisión del impacto en el frontend |
 | 2026-09-24 | Sección Auditoría (diferida a la spec del objetivo 5) y aprobación | Constitución 1.1.0 (P14); aprobada por el usuario |
 | 2026-09-24 | "Ver el detalle de una cita" pasa a todo el staff (CA2, CA3, CA6, CA7, tabla, supuestos); CA15 cubre también acciones | `/plan` detectó que expedientes usa ese detalle y que el asistente ve "Registrar nuevo paciente"; decisión del usuario |
+| 2026-09-25 | `/review` ronda 1: changes_requested (R1–R7); vuelve a `approved` hasta cerrar T077–T084 | `/review 014` |
 | 2026-09-24 | Implementada: 16 criterios cubiertos por tests en verde; T076 añadida durante `/implement` (selector de doctores) | `/implement 014` |
 | 2026-09-24 | Cobertura de riesgos: destinos de RS5.a, RS8.a, RS10.a, RS10.b y OB10.b, OB2.a con su test, RS1.a sin CA15; CA15 antes que CA16; `time` nulo en `agenda/treatments` | `/analyze 014` ronda 4 (C4, C14, D2–D4, D6); decisión del usuario |
 | 2026-09-24 | Sección "Cobertura de riesgos" y citas por ID (RS/OB) | `/init --upgrade` a 1.6.0 (formato 1.5.6); decisión del usuario |
