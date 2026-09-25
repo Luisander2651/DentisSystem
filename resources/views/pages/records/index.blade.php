@@ -12,7 +12,7 @@
     {{-- Header Section --}}
     <x-ui.page-hero
         title="Expedientes clinicos"
-        description="Selecciona un paciente para gestionar su historia clinica y datos de contacto."
+        :description="$canEdit ? 'Selecciona un paciente para gestionar su historia clinica y datos de contacto.' : 'Selecciona un paciente para consultar su historia clinica y datos de contacto.'"
     />
 
     {{-- Counters Section --}}
@@ -39,7 +39,7 @@
             </div>
             <div>
                 <p class="text-sm font-semibold text-[#B5114A]">Consulta de expedientes</p>
-                <p class="mt-1 text-sm leading-6 text-slate-600">Al seleccionar un paciente, podras ver y editar su informacion de contacto, direccion y antecedentes medicos.</p>
+                <p class="mt-1 text-sm leading-6 text-slate-600">Al seleccionar un paciente, podras {{ $canEdit ? 'ver y editar' : 'consultar' }} su informacion de contacto, direccion y antecedentes medicos.</p>
             </div>
         </div>
     </article>

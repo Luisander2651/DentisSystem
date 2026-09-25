@@ -46,12 +46,14 @@
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Telefono</th>
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Correo</th>
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Contacto de emergencia</th>
-                <th class="whitespace-nowrap px-4 py-3 font-semibold">Acciones</th>
+                @if ($canEdit)
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Acciones</th>
+                @endif
             </tr>
         </thead>
         <tbody id="record-contact-info-body" class="bg-white">
             <tr class="border-t border-slate-200">
-                <td colspan="4" class="px-4 py-6 text-center text-sm text-slate-500">Sin informacion de contacto.</td>
+                <td colspan="{{ $canEdit ? 4 : 3 }}" class="px-4 py-6 text-center text-sm text-slate-500">Sin informacion de contacto.</td>
             </tr>
         </tbody>
     </table>

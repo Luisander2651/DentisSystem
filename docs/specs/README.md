@@ -28,7 +28,7 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 | 011 | [Sitio público](011-sitio-publico/spec.md) | ContentManagement | approved | alta | no | — (U5 en curso) |
 | 012 | [Gestión del contenido público](012-gestion-de-contenido/spec.md) | ContentManagement | approved | media | no | — (U5 en curso) |
 | 013 | [Código QR por cita](013-codigos-qr-por-cita/spec.md) | Appointments | approved | — | — | — |
-| 014 | [Control de acceso y errores sin detalles internos](014-control-de-acceso-y-errores/spec.md) | Patients, Appointments, AppointmentTracking, ContentManagement | approved | — | — | — |
+| 014 | [Control de acceso y errores sin detalles internos](014-control-de-acceso-y-errores/spec.md) | Patients, Appointments, AppointmentTracking, ContentManagement | implemented | — | — | — |
 
 ## Pendientes sin spec
 - **Dashboard por rol** (`/dashboard`, accesos rápidos): pantalla de navegación, sin reglas de negocio propias.

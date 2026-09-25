@@ -86,6 +86,7 @@ Reglas base en `shared/agent-security.md` del plugin. Específicas de este proye
 ## Excepciones aceptadas
 | ID | Hallazgo | Severidad | Motivo | Aprobado por | Vence |
 |---|---|---|---|---|---|
+| EX1 | RS16.a: vulnerabilidades de npm en herramientas de build y desarrollo (vite, rollup, postcss, nanoid, picomatch, concurrently, shell-quote): 2 críticas, 5 altas | crítica / alta | Prototipo sin producción; los paquetes no llegan al navegador (solo se usan al compilar o en `composer run dev`); axios, que sí llega, se actualizó a 1.20.0 (spec 014, T083) | Dueño del repositorio (decisión del usuario, 2026-09-25) | Al empezar el objetivo 4 del roadmap (primer despliegue al VPS) y como tarde el 2026-12-31 |
 
 ## Riesgos conocidos
 Ordenados por severidad. Ninguno bloquea mientras el prototipo no tenga datos reales; **todos los
@@ -185,6 +186,12 @@ Correcciones:
 
 Correcciones:
 - RS13.a Fijar las acciones de GitHub a un SHA (derivada) — estado: pendiente
+
+### RS16 · Alta — Dependencias de npm con vulnerabilidades conocidas (A03:2025)
+`npm audit` (2026-09-25) reporta 2 críticas y 5 altas en herramientas de build y desarrollo (vite, rollup, postcss, nanoid, picomatch, concurrently, shell-quote). axios, que se incluye en el bundle del navegador, ya se actualizó a 1.20.0 (spec 014, T083).
+
+Correcciones:
+- RS16.a Actualizar las herramientas de build a versiones sin avisos — estado: aceptada (excepción EX1)
 
 ### RS14 · Baja — El staff clínico ve a todos los pacientes
 Asistente y doctor leen el expediente de cualquier paciente, no solo de los que atienden (spec 014, "Fuera de alcance").

@@ -80,6 +80,23 @@
         return button.outerHTML;
     }
 
+    // Spec 014, R6: staff who cannot edit (the doctor) get no actions column at all.
+    var canEditRecords = page !== null && page.getAttribute('data-records-can-edit') === 'true';
+
+    function actionsCellHtml(attribute) {
+        if (!canEditRecords) {
+            return '';
+        }
+
+        return '<td class="px-4 py-3 align-top text-slate-700">' + deleteButtonHtml(attribute) + '</td>';
+    }
+
+    function emptyRowHtml(columnsWithActions, message) {
+        var columns = canEditRecords ? columnsWithActions : columnsWithActions - 1;
+
+        return '<tr class="border-t border-slate-200"><td colspan="' + columns + '" class="px-4 py-6 text-center text-sm text-slate-500">' + message + '</td></tr>';
+    }
+
 
     function escapeHtml(value) {
         return String(value)
@@ -387,7 +404,7 @@
         syncEntityActions();
 
         if (!contactInfo) {
-            tbody.innerHTML = '<tr class="border-t border-slate-200"><td colspan="4" class="px-4 py-6 text-center text-sm text-slate-500">Sin informacion de contacto.</td></tr>';
+            tbody.innerHTML = emptyRowHtml(4, 'Sin informacion de contacto.');
             return;
         }
 
@@ -396,9 +413,7 @@
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(contactInfo.phone_number)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(contactInfo.contact_email)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(contactInfo.emergency_contact)) + '</td>',
-            '<td class="px-4 py-3 align-top text-slate-700">',
-            deleteButtonHtml('data-record-delete-contact'),
-            '</td>',
+            actionsCellHtml('data-record-delete-contact'),
             '</tr>'
         ].join('');
     }
@@ -411,7 +426,7 @@
         syncEntityActions();
 
         if (!address) {
-            tbody.innerHTML = '<tr class="border-t border-slate-200"><td colspan="5" class="px-4 py-6 text-center text-sm text-slate-500">Sin informacion de direccion.</td></tr>';
+            tbody.innerHTML = emptyRowHtml(5, 'Sin informacion de direccion.');
             return;
         }
 
@@ -421,9 +436,7 @@
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(address.city)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(address.state)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(address.postal_code)) + '</td>',
-            '<td class="px-4 py-3 align-top text-slate-700">',
-            deleteButtonHtml('data-record-delete-address'),
-            '</td>',
+            actionsCellHtml('data-record-delete-address'),
             '</tr>'
         ].join('');
     }
@@ -436,7 +449,7 @@
         syncEntityActions();
 
         if (!medicalData) {
-            tbody.innerHTML = '<tr class="border-t border-slate-200"><td colspan="5" class="px-4 py-6 text-center text-sm text-slate-500">Sin informacion medica.</td></tr>';
+            tbody.innerHTML = emptyRowHtml(5, 'Sin informacion medica.');
             return;
         }
 
@@ -446,9 +459,7 @@
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(arrayToDisplay(medicalData.allergies)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(arrayToDisplay(medicalData.medications)) + '</td>',
             '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(arrayToDisplay(medicalData.last_dentist_visit)) + '</td>',
-            '<td class="px-4 py-3 align-top text-slate-700">',
-            deleteButtonHtml('data-record-delete-medical'),
-            '</td>',
+            actionsCellHtml('data-record-delete-medical'),
             '</tr>'
         ].join('');
     }

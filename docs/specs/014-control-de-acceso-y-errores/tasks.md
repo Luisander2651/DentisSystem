@@ -163,17 +163,23 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
   - nota: añadida por /review: R2, R11
 - [x] T079 Reescribir los casos "…for any doctor…": la cita se asigna a un usuario Doctor distinto del administrador que actúa y se verifica la fila en la base — `tests/Modules/Appointments/Integration/CreateAppointmentTest.php`, `tests/Modules/Appointments/Integration/UpdateAppointmentTest.php` — hecho cuando: ambos casos afirman el `user_id` del doctor en BD y pasan — cubre: CA1
   - nota: añadida por /review: R3
-- [ ] T080 Saludo propio para el doctor en el panel de inicio (no el del paciente) — `resources/views/pages/dashboard.blade.php` — hecho cuando: el caso de saludo de T085 pasa y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T085
+- [x] T080 Saludo propio para el doctor en el panel de inicio (no el del paciente) — `resources/views/pages/dashboard.blade.php` — hecho cuando: el caso de saludo de T085 pasa y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T085
+  - nota: revisión con la skill `design` (estática): solo cambia el texto del saludo; sin efecto en foco ni estructura.
   - nota: añadida por /review: R4
-- [ ] T081 Textos de la cabecera y de la tarjeta informativa de expedientes según `$canEdit` ("consultar" para el doctor) — `resources/views/pages/records/index.blade.php` — hecho cuando: el caso de textos de T085 pasa y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T085
+- [x] T081 Textos de la cabecera y de la tarjeta informativa de expedientes según `$canEdit` ("consultar" para el doctor) — `resources/views/pages/records/index.blade.php` — hecho cuando: el caso de textos de T085 pasa y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T085
+  - nota: revisión con la skill `design` (estática): los textos ya no prometen al doctor acciones que no tiene.
   - nota: añadida por /review: R5
-- [ ] T082 Cabecera "Acciones" y `colspan` de la fila vacía según `$canEdit` en las tres tablas — `resources/views/components/records/contact-info-table.blade.php`, `resources/views/components/records/address-table.blade.php`, `resources/views/components/records/medical-data-table.blade.php` — hecho cuando: el caso de cabecera de T085 pasa y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T085
+- [x] T082 Cabecera "Acciones" y `colspan` de la fila vacía según `$canEdit` en las tres tablas — `resources/views/components/records/contact-info-table.blade.php`, `resources/views/components/records/address-table.blade.php`, `resources/views/components/records/medical-data-table.blade.php` — hecho cuando: el caso de cabecera de T085 pasa y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T085
+  - nota: revisión con la skill `design` (estática): sin la cabecera "Acciones" el lector de pantalla deja de anunciar una columna vacía; `colspan` ajustado.
   - nota: añadida por /review: R6
-- [ ] T084 Sin celda de acciones ni `colspan` de más cuando no existe la plantilla de "Eliminar" (leyendo `data-records-can-edit`); `npm run build` y comprobación manual como doctor — `resources/js/pages/records/index.js` — hecho cuando: el build pasa y la comprobación manual y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T082
+- [x] T084 Sin celda de acciones ni `colspan` de más cuando no existe la plantilla de "Eliminar" (leyendo `data-records-can-edit`); `npm run build` y comprobación manual como doctor — `resources/js/pages/records/index.js` — hecho cuando: el build pasa y la comprobación manual y la revisión con la skill `design` queda anotada — cubre: CA4 — depende: T082
+  - nota: comprobación manual como doctor y asistente hecha por el usuario (2026-09-25); revisión con la skill `design` (estática) sin hallazgos. `canEditRecords` es falso si no existe la página.
   - nota: añadida por /review: R6
-- [ ] T083 Actualizar axios a una versión sin avisos (va en el bundle del navegador; paquete existente, sin ADR) — `package.json`, `package-lock.json` — hecho cuando: `npm audit` no reporta axios y `npm run build` y la suite pasan
+- [x] T083 Actualizar axios a una versión sin avisos (va en el bundle del navegador; paquete existente, sin ADR) — `package.json`, `package-lock.json` — hecho cuando: `npm audit` no reporta axios y `npm run build` y la suite pasan
+  - nota: axios 1.20.0 (publicada hace 29 días, ≥ `min_package_age_days`; MIT; sin scripts de instalación). `npm audit`: de 10 a 7 avisos, ninguno de axios. Build correcto y suite en serie 800/800.
   - nota: añadida por /review: R7 (decisión del usuario). Ampliada en `/analyze` ronda 6 (E2).
-- [ ] T086 Registrar la excepción de las vulnerabilidades restantes de las dependencias de build (vite, rollup, postcss, concurrently…): riesgo nuevo `RS16 · A03:2025` con estado "aceptada (EX1)", y `EX1` en "Excepciones aceptadas" con motivo, aprobador (dueño del repositorio) y fecha de vencimiento concreta confirmada por el usuario; entrada en el roadmap que enlace EX1 — `docs/security.md`, `docs/roadmap.md` — hecho cuando: EX1 y RS16 existen con aprobador y vencimiento y el roadmap los enlaza — depende: T083
+- [x] T086 Registrar la excepción de las vulnerabilidades restantes de las dependencias de build (vite, rollup, postcss, concurrently…): riesgo nuevo `RS16 · A03:2025` con estado "aceptada (EX1)", y `EX1` en "Excepciones aceptadas" con motivo, aprobador (dueño del repositorio) y fecha de vencimiento concreta confirmada por el usuario; entrada en el roadmap que enlace EX1 — `docs/security.md`, `docs/roadmap.md` — hecho cuando: EX1 y RS16 existen con aprobador y vencimiento y el roadmap los enlaza — depende: T083
+  - nota: vencimiento de EX1 decidido por el usuario (2026-09-25): al empezar el objetivo 4 y como tarde el 2026-12-31.
   - nota: añadida en `/analyze` ronda 6 (E3), separada de T083 por el límite de 3 archivos.
 
 ## Integración y documentación
@@ -186,7 +192,7 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
   - nota: `architecture.md` → fila Core, "Autenticación y autorización" y "Manejo de errores".
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas. En `observability.md`: OB2.a y OB10.a → mitigada; el evento `unexpected_error` (campos, sin `message` ni `request_id`) y los puntos únicos de 401/403 donde se enganchará la auditoría
   - nota: `deployment.md` no cambia (sin variables ni pasos nuevos).
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

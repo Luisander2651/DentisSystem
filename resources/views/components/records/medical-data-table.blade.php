@@ -50,12 +50,14 @@
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Alergias</th>
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Medicamentos</th>
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Ultima visita al dentista</th>
-                <th class="whitespace-nowrap px-4 py-3 font-semibold">Acciones</th>
+                @if ($canEdit)
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Acciones</th>
+                @endif
             </tr>
         </thead>
         <tbody id="record-medical-data-body" class="bg-white">
             <tr class="border-t border-slate-200">
-                <td colspan="5" class="px-4 py-6 text-center text-sm text-slate-500">Sin informacion medica.</td>
+                <td colspan="{{ $canEdit ? 5 : 4 }}" class="px-4 py-6 text-center text-sm text-slate-500">Sin informacion medica.</td>
             </tr>
         </tbody>
     </table>
