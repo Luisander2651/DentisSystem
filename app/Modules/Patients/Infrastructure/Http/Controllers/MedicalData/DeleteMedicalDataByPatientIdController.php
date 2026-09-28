@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData;
 
+use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Patients\Aplication\DTOs\MedicalData\DeleteMedicalDataDTO;
 use App\Modules\Patients\Aplication\Exceptions\MedicalData\MedicalDataAplicationExceptions;
 use App\Modules\Patients\Aplication\UseCases\MedicalData\DeleteMedicalDataByPatientIdUseCase;
@@ -35,8 +37,10 @@ final class DeleteMedicalDataByPatientIdController
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }

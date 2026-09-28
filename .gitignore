@@ -34,3 +34,5 @@ PROPUESTA_ESQUEMA_PRUEBAS_PEST.txt
 /.aidlc-rule-details
 
 prod-files.md
+# AI-DD: copias locales para /analyze delta
+/.ai/cache/

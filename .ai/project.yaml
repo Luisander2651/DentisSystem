@@ -1,0 +1,71 @@
+# Generado por /init. Lo leen todas las skills del flujo.
+name: Dentissa
+type: fullstack                # frontend | backend | fullstack | monorepo | library
+stage: prototype               # prototype | mvp | production | maintenance
+origin: brownfield             # greenfield | brownfield
+initialized_at: 2026-09-22
+stack:
+  languages: [php, javascript]
+  frontend: "Blade + JS vanilla por página (fetch), Tailwind CSS 4, Vite 7"
+  backend: "Laravel 12 (PHP 8.4), Sanctum 4, monolito modular hexagonal en app/Modules"
+  database: "PostgreSQL 16 (Eloquent); Redis 7 (tokens de reset)"
+  package_manager: "composer + npm"
+packages: []
+constitution_version: 1.1.2
+workflow:
+  enforcement: warn            # off | warn (pide aprobación) | block — lo aplica el hook del plugin
+  # Flujo AI-DLC previo en pausa: reglas en AIDLC.md, estado en aidlc-docs/aidlc-state.md
+  # (Unidad 5 ContentManagement a medias; Unidades 6 Email y 7 whatsApp pendientes).
+  legacy_workflow: aidlc-paused
+skills_version: 1.6.0   # versión del paquete de skills con que se inicializó
+deploy:
+  strategy: manual             # none | manual | ci-on-merge | ci-on-tag
+  platform: "VPS con Docker Compose (planificado, aún no existe)"
+  environments: [local, prod]  # prod planificado
+  prod_approval: human         # innegociable
+  rollback: "TODO(init): propuesto — tag por release + pg_dump antes de migrar + redeploy del tag anterior; sin probar"
+security:
+  owasp_top10_edition: 2025
+  asvs_level: 2
+  sensitive_data: [personal, health, credentials]
+  compliance: [LFPDPPP]        # México; datos de salud = datos personales sensibles
+  tools:                       # comandos; vacío si no hay herramienta configurada
+    secrets: "gitleaks detect --no-banner"
+    sast: "semgrep scan --config p/php --error"
+    sca: "composer audit && npm audit --audit-level=high"
+    containers: "trivy config --severity HIGH,CRITICAL docker/ docker-compose.yml"
+    dast: null                 # solo contra staging; no hay staging
+  agent:
+    min_package_age_days: 7
+    protected_paths:
+      - AIDLC.md
+      - .aidlc-rule-details/
+      - aidlc-docs/
+      - docker-compose.yml
+      - docker/
+      - phpunit.xml
+observability:
+  log_level_prod: info         # roadmap objetivo 5
+  correlation_header: X-Request-Id   # propuesto; el objetivo 5 pide un identificador por petición en logs y respuesta
+  audit:
+    required: true             # LFPDPPP: datos de salud = datos personales sensibles
+    events: [login, login_failed, access_denied, sensitive_read, sensitive_write, role_change]
+    retention: "5 años (como el expediente clínico); base legal por confirmar"
+skills:
+  enabled: [design]
+paths:
+  constitution: docs/constitution.md
+  architecture: docs/architecture.md
+  roadmap: docs/roadmap.md
+  deployment: docs/deployment.md
+  security: docs/security.md
+  observability: docs/observability.md
+  changelog: CHANGELOG.md
+  specs: docs/specs
+  adr: docs/adr
+  templates: docs/templates
+verification:                  # lo llena la Fase 4 (2026-09-22)
+  - { command: "python .ai/bin/aidd.py validate", result: pass, note: "13 specs, 0 errores; re-sincronizado a 1.4.1 el 2026-09-24 (ya no requiere PYTHONIOENCODING)" }
+  - { command: "vendor/bin/pint --dirty --test", result: pass, note: "ejecutado en el host (PHP 8.5); /init no tocó archivos PHP" }
+  - { command: "npm run build", result: pass, note: "ejecutado en el host (Node 22)" }
+  - { command: "./vendor/bin/pest --parallel", result: not_run, note: "Docker Desktop apagado; los tests necesitan PostgreSQL en el host db. Último resultado documentado: 495/495 (AI-DLC U4, 2026-09-13)" }

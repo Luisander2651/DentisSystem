@@ -1,0 +1,114 @@
+# Generado por /init (ai-dd). Valida el flujo y la seguridad en cada PR.
+# INACTIVO: guardado aquí a propósito (GitHub solo ejecuta .github/workflows/).
+# Para activarlo (con el modo baseline ya no hace falta que el código previo pase los escáneres):
+#   git mv .ai/ci/ai-dd.yml .github/workflows/ai-dd.yml
+# Los tests de Pest corren en tests.yml; este workflow no los duplica.
+# Modo baseline: los pasos de seguridad solo fallan por problemas NUEVOS del PR, para que la deuda
+# previa (registrada en docs/security.md) no bloquee todos los PRs. Un job semanal revisa el repo
+# completo y reporta sin bloquear.
+# Fija cada acción a un SHA de commit completo y cada imagen a una versión (cadena de suministro).
+name: ai-dd
+
+on:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"   # revisión completa semanal
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flujo:
+    name: Artefactos del flujo
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4   # TODO: fijar a SHA
+      - uses: actions/setup-python@v5   # TODO: fijar a SHA
+        with:
+          python-version: "3.12"
+      - name: Validar specs, planes y tareas
+        run: python .ai/bin/aidd.py validate
+
+  calidad:
+    name: Formato (Pint)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4   # TODO: fijar a SHA
+      - uses: shivammathur/setup-php@v2   # TODO: fijar a SHA
+        with:
+          php-version: '8.4'
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress --no-scripts
+      # Solo archivos cambiados en el PR: el código previo no cumple Pint (deuda en docs/roadmap.md).
+      - name: Pint sobre los archivos PHP del PR
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          FILES=$(git diff --name-only --diff-filter=AM "origin/${{ github.base_ref }}"...HEAD -- '*.php' || true)
+          if [ -n "$FILES" ]; then vendor/bin/pint --test $FILES; else echo "Sin archivos PHP cambiados"; fi
+
+  seguridad-pr:
+    name: Seguridad (solo cambios del PR)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4   # TODO: fijar a SHA
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2   # TODO: fijar a SHA
+        with:
+          php-version: '8.4'
+          coverage: none
+      - uses: actions/setup-node@v4   # TODO: fijar a SHA
+        with:
+          node-version: '20'
+      - name: Secretos en los commits del PR (gitleaks)
+        run: docker run --rm -v "$PWD:/repo" -w /repo zricethezav/gitleaks:latest git --log-opts="origin/${{ github.base_ref }}..HEAD" --no-banner /repo   # TODO: fijar versión de imagen
+      - name: SAST, solo hallazgos nuevos (semgrep)
+        run: |
+          BASE=$(git merge-base "origin/${{ github.base_ref }}" HEAD)
+          docker run --rm -v "$PWD:/src" -w /src semgrep/semgrep semgrep scan --config p/php --baseline-commit "$BASE" --error   # TODO: fijar versión de imagen
+      - name: Dependencias, solo si el PR cambia lockfiles (SCA)
+        run: |
+          if git diff --name-only "origin/${{ github.base_ref }}"...HEAD | grep -qE '(composer\.lock|package-lock\.json)$'; then
+            composer audit --locked
+            npm audit --audit-level=high
+          else
+            echo "El PR no cambia dependencias"
+          fi
+      - name: Contenedores / IaC, solo si el PR los cambia (trivy)
+        run: |
+          if git diff --name-only "origin/${{ github.base_ref }}"...HEAD | grep -qE '^(docker/|docker-compose\.yml$)'; then
+            docker run --rm -v "$PWD:/src" -w /src aquasec/trivy:latest config --severity HIGH,CRITICAL --exit-code 1 docker/ docker-compose.yml   # TODO: fijar versión de imagen
+          else
+            echo "El PR no cambia docker/ ni docker-compose.yml"
+          fi
+
+  seguridad-completa:
+    name: Seguridad (repo completo, informativo)
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    continue-on-error: true   # reporta la deuda sin bloquear; cada hallazgo alto va a docs/security.md
+    steps:
+      - uses: actions/checkout@v4   # TODO: fijar a SHA
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2   # TODO: fijar a SHA
+        with:
+          php-version: '8.4'
+          coverage: none
+      - uses: actions/setup-node@v4   # TODO: fijar a SHA
+        with:
+          node-version: '20'
+      - name: Secretos (gitleaks)
+        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest detect --source=/repo --no-banner   # TODO: fijar versión de imagen
+      - name: SAST (semgrep)
+        run: docker run --rm -v "$PWD:/src" -w /src semgrep/semgrep semgrep scan --config p/php --error   # TODO: fijar versión de imagen
+      - name: Dependencias (SCA)
+        run: |
+          composer audit --locked
+          npm audit --audit-level=high
+      - name: Contenedores / IaC (trivy)
+        run: docker run --rm -v "$PWD:/src" -w /src aquasec/trivy:latest config --severity HIGH,CRITICAL --exit-code 1 docker/ docker-compose.yml   # TODO: fijar versión de imagen

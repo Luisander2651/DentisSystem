@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Aplication\UseCases\ContactInfo;
 
+use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Modules\Patients\Aplication\DTOs\ContactInfo\UpdateContactInfoDTO;
 use App\Modules\Patients\Aplication\Exceptions\ContactInfo\ContactInfoAplicationExceptions;
 use App\Modules\Patients\Domain\Repositories\ContactInfoRepositoryInterface;
@@ -16,17 +17,20 @@ use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 final readonly class UpdateContactInfoUseCase
 {
     public function __construct(
+        private AuthorizationServiceInterface $authorization,
         private ContactInfoRepositoryInterface $contactInfoRepository,
         private ContactInfoService $contactInfoService,
     ) {}
 
     public function execute(string $patientId, UpdateContactInfoDTO $dto): void
     {
+        $this->authorization->assertCan('patients.clinical-data.manage');
+
         if ($patientId === '') {
             throw ContactInfoAplicationExceptions::IdNotProvided();
         }
 
-        if (!$dto->hasValue()) {
+        if (! $dto->hasValue()) {
             throw ContactInfoAplicationExceptions::NoInfoProvided();
         }
 

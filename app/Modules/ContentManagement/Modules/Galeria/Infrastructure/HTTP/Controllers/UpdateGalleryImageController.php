@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers;
 
 use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\ContentManagement\Domain\Exceptions\StorageException;
 use App\Modules\ContentManagement\Modules\Galeria\Aplication\DTOs\UpdateGalleryImageDTO;
 use App\Modules\ContentManagement\Modules\Galeria\Aplication\Exceptions\GalleryImageInputException;
@@ -39,14 +40,14 @@ final readonly class UpdateGalleryImageController
             $this->useCase->execute($dto);
 
             return response()->json(['message' => 'Gallery image updated successfully'], 200);
-        } catch (GalleryImageException | GalleryImageInputException $e) {
+        } catch (GalleryImageException|GalleryImageInputException $e) {
             return response()->json(['error' => $e->getMessage()], 404);
         } catch (AuthorizationException $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         } catch (StorageException $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }

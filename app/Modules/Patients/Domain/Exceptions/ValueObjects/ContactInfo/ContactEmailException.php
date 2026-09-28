@@ -10,7 +10,6 @@ final class ContactEmailException extends ValueObjectsException
 {
     public static function invalidFormat(string $value): self
     {
-        return new self("Invalid contact email format: {$value}.");
+        return new self('Invalid contact email format.');
     }
 }
-

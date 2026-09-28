@@ -1,13 +1,17 @@
+@props(['canEdit' => false])
+
 <section class="w-full overflow-x-auto rounded-lg border border-slate-200 bg-white">
     <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
         <h3 class="text-sm font-semibold text-slate-800">Direccion</h3>
-        <button
-            type="button"
-            data-record-open-address-form
-            class="rounded-md bg-[#E91E63] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#d81b60] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-            Agregar direccion
-        </button>
+        @if ($canEdit)
+            <button
+                type="button"
+                data-record-open-address-form
+                class="rounded-md bg-[#E91E63] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#d81b60] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                Agregar direccion
+            </button>
+        @endif
     </div>
 
     <form id="record-address-form" class="hidden space-y-3 border-b border-slate-200 bg-slate-50 p-4">
@@ -50,12 +54,14 @@
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Ciudad</th>
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Estado</th>
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Codigo postal</th>
-                <th class="whitespace-nowrap px-4 py-3 font-semibold">Acciones</th>
+                @if ($canEdit)
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Acciones</th>
+                @endif
             </tr>
         </thead>
         <tbody id="record-address-body" class="bg-white">
             <tr class="border-t border-slate-200">
-                <td colspan="5" class="px-4 py-6 text-center text-sm text-slate-500">Sin informacion de direccion.</td>
+                <td colspan="{{ $canEdit ? 5 : 4 }}" class="px-4 py-6 text-center text-sm text-slate-500">Sin informacion de direccion.</td>
             </tr>
         </tbody>
     </table>

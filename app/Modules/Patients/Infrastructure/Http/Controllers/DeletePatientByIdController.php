@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Patients\Infrastructure\Http\Controllers;
 
 use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Patients\Aplication\Exceptions\PatientAplicationExceptions;
 use App\Modules\Patients\Aplication\UseCases\DeletePatientByIdUseCase;
 use App\Modules\Patients\Domain\Exceptions\PatientException;
@@ -39,7 +40,7 @@ final class DeletePatientByIdController
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }

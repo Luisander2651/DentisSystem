@@ -40,10 +40,10 @@ final class EloquentTreatmentRepository implements TreatmentsRepositoryInterface
         }
 
         if ($treatmentName) {
-            $query->where('name', 'like', '%' . $treatmentName->value . '%');
+            $query->where('name', 'like', '%'.$treatmentName->value.'%');
         }
 
-        $results = $query->get();
+        $results = $query->orderBy('name')->get();
 
         return $results->map(fn ($model) => $this->mapToDomain($model))->toArray();
     }

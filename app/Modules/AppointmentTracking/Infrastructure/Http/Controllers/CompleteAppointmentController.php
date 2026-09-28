@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\AppointmentTracking\Infrastructure\Http\Controllers;
 
 use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
 use App\Modules\AppointmentTracking\Application\DTOs\CompleteAppointmentDTO;
 use App\Modules\AppointmentTracking\Application\Exceptions\AppointmentTrackingApplicationException;
@@ -52,7 +53,7 @@ final readonly class CompleteAppointmentController
         } catch (InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }

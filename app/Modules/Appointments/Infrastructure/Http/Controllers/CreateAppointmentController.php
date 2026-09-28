@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Infrastructure\Http\Controllers;
 
-use App\Modules\Appointments\Domain\Events\ScheduledAppointment;
+use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Appointments\Aplication\DTOs\CreateAppointmentDTO;
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptions;
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentScheduleConflictException;
@@ -13,10 +14,8 @@ use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
 use App\Modules\Appointments\Domain\Exceptions\ValueObjectsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use InvalidArgumentException;
 use Illuminate\Support\Facades\Log;
-
-
+use InvalidArgumentException;
 
 final readonly class CreateAppointmentController
 {
@@ -48,8 +47,6 @@ final readonly class CreateAppointmentController
 
             Log::info('CreateAppointmentController: Evento creado, disparando...', [
                 'appointmentId' => $scheduledAppointmentEvent->appointmentEntity->Id()->value,
-                'customerPhone' => $scheduledAppointmentEvent->customerPhone,
-                'customerName' => $scheduledAppointmentEvent->customerName,
             ]);
 
             event($scheduledAppointmentEvent);
@@ -60,23 +57,19 @@ final readonly class CreateAppointmentController
                 'message' => 'Appointment created successfully',
             ], 201);
         } catch (AppointmentException $e) {
-            Log::error('CreateAppointmentController: AppointmentException', ['error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (InvalidArgumentException $e) {
-            Log::error('CreateAppointmentController: InvalidArgumentException', ['error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (ValueObjectsException $e) {
-            Log::error('CreateAppointmentController: ValueObjectsException', ['error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (AppointmentScheduleConflictException $e) {
-            Log::error('CreateAppointmentController: AppointmentScheduleConflictException', ['error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (AppointmentAplicationExceptions $e) {
-            Log::error('CreateAppointmentController: AppointmentAplicationExceptions', ['error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 409);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
         } catch (\Exception $e) {
-            Log::error('CreateAppointmentController: Exception genérica', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }
