@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Aplication\UseCases;
 
+use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Modules\Appointments\Aplication\DTOs\UpdateAppointmentDTO;
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptions;
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
@@ -18,12 +19,15 @@ use App\Modules\Appointments\Domain\ValueObjects\AppointmentTime;
 final readonly class UpdateAppointmentUseCase
 {
     public function __construct(
+        private AuthorizationServiceInterface $authorization,
         private AppointmentsService $appointmentsService,
         private ScheduleAvailabilityChecker $scheduleAvailabilityChecker,
     ) {}
 
     public function execute(UpdateAppointmentDTO $updateAppointmentDTO): void
     {
+        $this->authorization->assertCan('appointments.update');
+
         if (! $updateAppointmentDTO->status && ! $updateAppointmentDTO->whatsappReminder) {
             $this->validateReschedule($updateAppointmentDTO);
         }

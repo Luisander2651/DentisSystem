@@ -42,29 +42,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return view('pages.dashboard');
     })->name('dashboard');
 
-    Route::get('/expedientes-clinicos', function () {
-        $user = request()->user();
-        $roleName = strtolower((string) optional($user?->role)->name);
+    Route::middleware('staff:administrador,asistente,doctor')->group(function () {
+        Route::get('/expedientes-clinicos', function () {
+            return view('pages.records.index');
+        })->name('records.index');
 
-        if (! in_array($roleName, ['administrador', 'asistente'], true)) {
-            abort(403, 'No autorizado.');
-        }
-
-        return view('pages.records.index');
-    })->name('records.index');
-
-    Route::get('/expedientes-clinicos/{patientId}', function (string $patientId) {
-        $user = request()->user();
-        $roleName = strtolower((string) optional($user?->role)->name);
-
-        if (! in_array($roleName, ['administrador', 'asistente'], true)) {
-            abort(403, 'No autorizado.');
-        }
-
-        return view('pages.records.index', [
-            'selectedPatientId' => $patientId,
-        ]);
-    })->name('records.show');
+        Route::get('/expedientes-clinicos/{patientId}', function (string $patientId) {
+            return view('pages.records.index', [
+                'selectedPatientId' => $patientId,
+            ]);
+        })->name('records.show');
+    });
 });
 
 Route::middleware(['auth:sanctum', 'only.admin'])->group(function () {

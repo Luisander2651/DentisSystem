@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers;
 
-use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\DTOs\UpdateCertificationDTO;
-use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\UpdateCertificationUseCase;
-use App\Modules\ContentManagement\Domain\Exceptions\StorageException;
-use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Exceptions\CertificationException;
-use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\Exceptions\CertificationInputException;
 use App\Core\Authorization\Exceptions\AuthorizationException;
-use Illuminate\Http\Request;
+use App\Core\Http\UnexpectedErrorResponse;
+use App\Modules\ContentManagement\Domain\Exceptions\StorageException;
+use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\DTOs\UpdateCertificationDTO;
+use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\Exceptions\CertificationInputException;
+use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\UpdateCertificationUseCase;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Exceptions\CertificationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
 final readonly class UpdateCertificationController
@@ -39,14 +40,14 @@ final readonly class UpdateCertificationController
             $this->useCase->execute($dto);
 
             return response()->json(['message' => 'Certification updated successfully'], 200);
-        } catch (CertificationException | CertificationInputException $e) {
+        } catch (CertificationException|CertificationInputException $e) {
             return response()->json(['error' => $e->getMessage()], 404);
         } catch (AuthorizationException $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         } catch (StorageException $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }

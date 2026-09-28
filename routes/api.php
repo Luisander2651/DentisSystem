@@ -154,7 +154,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             });
         });
 
-        Route::middleware('auth:sanctum')->group(function (): void {
+        Route::middleware(['auth:sanctum', 'staff'])->group(function (): void {
             Route::prefix('agenda')->group(function (): void {
                 Route::get('/patients', GetPatientsForAppointmentSelectController::class);
                 Route::get('/doctors', GetDoctorsForAppointmentSelectController::class);

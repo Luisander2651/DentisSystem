@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Infrastructure\Http\Controllers;
 
+use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Appointments\Aplication\DTOs\GetAppointmentByIdDTO;
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptions;
 use App\Modules\Appointments\Aplication\UseCases\GetAppointmentByIdUseCase;
@@ -28,7 +30,7 @@ final class GetAppointmentByIdController
                 )
             );
 
-            if (!$appointment) {
+            if (! $appointment) {
                 return response()->json([
                     'error' => 'Appointment not found.',
                 ], 404);
@@ -43,8 +45,10 @@ final class GetAppointmentByIdController
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (AppointmentAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 409);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }

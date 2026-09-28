@@ -12,7 +12,7 @@ final class PatientException extends Exception
 {
     public static function shouldBeUniqueEmail(PatientEmail $email): self
     {
-        return new self("The email {$email->value} is already in use by another patient.");
+        return new self('The email is already in use by another patient.');
     }
 
     public static function notFound(mixed $identifier): self

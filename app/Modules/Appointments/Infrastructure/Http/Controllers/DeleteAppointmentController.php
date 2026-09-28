@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Appointments\Infrastructure\Http\Controllers;
 
 use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Appointments\Aplication\DTOs\DeleteAppointmentDTO;
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptions;
 use App\Modules\Appointments\Aplication\UseCases\DeleteAppointmentUseCase;
@@ -40,7 +41,7 @@ final class DeleteAppointmentController
         } catch (AppointmentAplicationExceptions $e) {
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }

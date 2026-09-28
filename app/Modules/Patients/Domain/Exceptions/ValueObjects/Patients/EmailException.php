@@ -11,7 +11,6 @@ final class EmailException extends ValueObjectsException
 {
     public static function invalidFormat(PatientEmail $email): self
     {
-        return new self("The email format is invalid: {$email->value}");
+        return new self('The email format is invalid.');
     }
 }
-

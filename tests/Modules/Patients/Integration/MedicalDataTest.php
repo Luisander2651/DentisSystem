@@ -7,8 +7,8 @@ use Tests\Modules\Patients\Integration\PatientsIntegrationTestCase;
 
 uses(PatientsIntegrationTestCase::class);
 
-it('allows any authenticated staff (not just admin) to create medical data', function () {
-    $this->actingAsNonAdminUser();
+it('allows an assistant to create medical data', function () {
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
 
     $response = $this->postJson($this->medicalDataUrl($patient->id), $this->validCreateMedicalDataPayload());
@@ -78,7 +78,7 @@ it('rejects medications with a non-string element with 400', function () {
 });
 
 it('updates existing medical data partially', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
     $this->createMedicalData(['patient_id' => $patient->id, 'blood_type' => 'O+']);
 

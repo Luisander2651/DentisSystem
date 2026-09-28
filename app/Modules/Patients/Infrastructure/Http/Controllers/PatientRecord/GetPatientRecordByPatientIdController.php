@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Infrastructure\Http\Controllers\PatientRecord;
 
+use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Patients\Aplication\DTOs\PatientRecord\GetPatientRecordByPatientIdDTO;
 use App\Modules\Patients\Aplication\Exceptions\PatientRecord\PatientRecordAplicationExceptions;
 use App\Modules\Patients\Aplication\UseCases\PatientRecord\GetPatientRecordByPatientIdUseCase;
@@ -36,8 +38,10 @@ final class GetPatientRecordByPatientIdController
             return response()->json(['error' => $e->getMessage()], $e->getCode() === 404 ? 404 : 409);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error', 'message' => $e->getMessage()], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }

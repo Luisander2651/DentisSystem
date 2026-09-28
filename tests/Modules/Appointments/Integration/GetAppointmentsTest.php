@@ -12,7 +12,7 @@ uses(AppointmentsIntegrationTestCase::class);
 // -----------------------------------------------------------------
 
 it('any authenticated staff can get an appointment by id', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
     $appointment = $this->createAppointment();
 
     $response = $this->getJson($this->appointmentUrl($appointment->id));
@@ -22,7 +22,7 @@ it('any authenticated staff can get an appointment by id', function () {
 });
 
 it('returns 404 when the appointment does not exist', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
 
     $response = $this->getJson($this->appointmentUrl((string) Str::uuid()));
 
@@ -30,7 +30,7 @@ it('returns 404 when the appointment does not exist', function () {
 });
 
 it('any authenticated staff can list appointments by patient id', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
     $this->createAppointment(['patient_id' => $patient->id]);
     $this->createAppointment(['patient_id' => $patient->id]);
@@ -55,7 +55,7 @@ it('admin can list appointments by status and date', function () {
 });
 
 it('non-admin staff gets 403 when listing appointments', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
 
     $response = $this->getJson($this->appointmentsUrl());
 
@@ -74,26 +74,25 @@ it('admin can get today appointments', function () {
     $response->assertStatus(200);
 });
 
-it('non-admin staff gets 500 (not 403) on today appointments due to missing try/catch (documented behavior, BR-5b)', function () {
-    $this->actingAsNonAdminUser();
+it('refuses today appointments to non-admin staff with 403, not 500 (spec 014, CA10)', function () {
+    $this->actingAsNonAdminUser('Asistente');
 
     $response = $this->getJson($this->agendaTodayAppointmentsUrl());
 
-    $response->assertStatus(500);
+    $response->assertForbidden();
 });
 
 // -----------------------------------------------------------------
-// Catalogo agenda/treatments - abierto a cualquier staff (corregido, ver BR-5)
+// Catalogo agenda/treatments - solo administrador (spec 014: la agenda es solo del administrador)
 // -----------------------------------------------------------------
 
-it('any authenticated staff can view the treatments catalog for booking', function () {
-    $this->actingAsNonAdminUser();
+it('refuses the agenda treatments catalog to non-admin staff with 403 (spec 014)', function () {
+    $this->actingAsNonAdminUser('Asistente');
     $this->createTreatment(['name' => 'Limpieza dental']);
 
     $response = $this->getJson($this->agendaTreatmentsUrl());
 
-    $response->assertStatus(200);
-    $response->assertJsonCount(1, 'data');
+    $response->assertForbidden();
 });
 
 it('rejects unauthenticated request on the treatments catalog', function () {

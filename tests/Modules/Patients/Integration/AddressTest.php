@@ -7,8 +7,8 @@ use Tests\Modules\Patients\Integration\PatientsIntegrationTestCase;
 
 uses(PatientsIntegrationTestCase::class);
 
-it('allows any authenticated staff (not just admin) to create an address', function () {
-    $this->actingAsNonAdminUser();
+it('allows an assistant to create an address', function () {
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
 
     $response = $this->postJson($this->addressUrl($patient->id), $this->validCreateAddressPayload());
@@ -56,7 +56,7 @@ it('rejects an invalid value object with 400', function () {
 });
 
 it('updates an existing address partially', function () {
-    $this->actingAsNonAdminUser();
+    $this->actingAsNonAdminUser('Asistente');
     $patient = $this->createPatient();
     $this->createAddress(['patient_id' => $patient->id, 'city' => 'Springfield']);
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Aplication\UseCases\PatientRecord;
 
+use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Modules\Patients\Aplication\DTOs\PatientRecord\GetPatientRecordByPatientIdDTO;
 use App\Modules\Patients\Aplication\Exceptions\PatientRecord\PatientRecordAplicationExceptions;
 use App\Modules\Patients\Domain\Entities\PatientRecord;
@@ -13,11 +14,14 @@ use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 final readonly class GetPatientRecordByPatientIdUseCase
 {
     public function __construct(
+        private AuthorizationServiceInterface $authorization,
         private PatientRecordService $patientRecordService,
     ) {}
 
     public function execute(GetPatientRecordByPatientIdDTO $dto): PatientRecord
     {
+        $this->authorization->assertCan('patients.record.view');
+
         if ($dto->patientId === '') {
             throw PatientRecordAplicationExceptions::IdNotProvided();
         }

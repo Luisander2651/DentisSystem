@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\ContactInfoModel;
+use Illuminate\Log\Events\MessageLogged;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use Tests\Modules\Appointments\Integration\AppointmentsIntegrationTestCase;
+use Tests\Support\FakesTwilio;
 
-uses(AppointmentsIntegrationTestCase::class);
+uses(AppointmentsIntegrationTestCase::class, FakesTwilio::class);
 
 it('creates an appointment successfully', function () {
     $this->actingAsAdmin();
@@ -17,12 +22,43 @@ it('creates an appointment successfully', function () {
     $this->assertDatabaseCount('appointments', 1);
 });
 
-it('allows any authenticated active staff to create an appointment (not just admin)', function () {
-    $this->actingAsNonAdminUser();
+it('allows an administrator to book an appointment for a doctor other than themselves', function () {
+    $this->actingAsAdmin();
+    $doctor = $this->createUserWithRole('Doctor');
 
-    $response = $this->postJson($this->appointmentsUrl(), $this->validCreateAppointmentPayload());
+    $response = $this->postJson($this->appointmentsUrl(), $this->validCreateAppointmentPayload(['user_id' => $doctor->id]));
 
-    $response->assertStatus(201);
+    $response->assertCreated();
+    $this->assertDatabaseHas('appointments', ['user_id' => $doctor->id]);
+});
+
+it('does not log the patient phone or name from the appointments controller (spec 014, OB2.a)', function () {
+    // Only the controller's own logs are asserted: the use case and the whatsApp listener that
+    // run in the same request still log them (OB2.b, roadmap objective 5; analysis D7).
+    $logged = new Collection;
+    Event::listen(MessageLogged::class, fn (MessageLogged $entry) => $logged->push($entry));
+    // The patient has a phone, so the whatsApp listener runs in this request (sync queue):
+    // never let it reach the real Twilio API.
+    $this->fakeTwilio();
+    $this->actingAsAdmin();
+    $patient = $this->createPatient(['first_name' => 'Zacarias', 'last_name' => 'Pruebatel']);
+    ContactInfoModel::create([
+        'patient_id' => $patient->id,
+        'phone_number' => '+52 555 010 4321',
+        'email' => 'contacto@example.com',
+        'emergency_contact' => 'Jane Doe',
+    ]);
+
+    $this->postJson($this->appointmentsUrl(), $this->validCreateAppointmentPayload(['patient_id' => $patient->id]))
+        ->assertCreated();
+
+    $controllerLogs = $logged
+        ->filter(fn (MessageLogged $entry): bool => str_starts_with($entry->message, 'CreateAppointmentController'))
+        ->map(fn (MessageLogged $entry): string => $entry->message.' '.json_encode($entry->context))
+        ->implode("\n");
+
+    expect($controllerLogs)->not->toContain('+52 555 010 4321')
+        ->and($controllerLogs)->not->toContain('Zacarias');
 });
 
 it('rejects unauthenticated request', function () {
