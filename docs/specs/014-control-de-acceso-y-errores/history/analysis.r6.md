@@ -12,7 +12,7 @@ tasks_sha: 765e2612e6f8
 # Análisis · 014 Control de acceso a pacientes y citas, y errores sin detalles internos
 
 Ronda 6, **delta** sobre la ronda 5 ([analysis.r5.md](analysis.r5.md)), tras `/implement` y la primera
-ronda de `/review` ([review.md](review.md), changes_requested). Se revisan solo T076 (añadida durante
+ronda de `/review` ([review.md](../review.md), changes_requested). Se revisan solo T076 (añadida durante
 `/implement`), las tareas de corrección T077–T084, T092 desmarcada y los cambios de la spec. Las marcas
 `[x]` y las notas de implementación no se revisan. No hay cambio estructural.
 

@@ -11,7 +11,7 @@ tasks_sha: 772fe0c0b01a
 
 # Análisis · 014 Control de acceso a pacientes y citas, y errores sin detalles internos
 
-Ronda 7, **delta** sobre la ronda 6 ([analysis.r6.md](analysis.r6.md)). Solo cambió `tasks.md`: se añaden
+Ronda 7, **delta** sobre la ronda 6 ([analysis.r6.md](history/analysis.r6.md)). Solo cambió `tasks.md`: se añaden
 T085 y T086, se reescriben T077 y T080–T084 y se amplían las tablas de cobertura. No hay cambio
 estructural.
 
