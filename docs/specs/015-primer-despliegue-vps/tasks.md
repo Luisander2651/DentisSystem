@@ -1,7 +1,7 @@
 ---
 spec: 015-primer-despliegue-vps
 plan: plan.md
-status: draft
+status: approved
 ---
 
 # Tareas · 015 Despliegue de producción en el VPS
