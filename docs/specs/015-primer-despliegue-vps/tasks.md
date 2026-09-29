@@ -2,6 +2,7 @@
 spec: 015-primer-despliegue-vps
 plan: plan.md
 status: approved
+impl_base: 131ea14
 ---
 
 # Tareas · 015 Despliegue de producción en el VPS
@@ -11,6 +12,13 @@ estaba hecha. Se conservan los números. Tareas nuevas por versión:
 - v2: T005–T007, T040 y T056.
 - v3: T004, T008, T039, T041, T043, T044 y T057 (T007 pasa a cubrir el flujo completo).
 - v4: T047 (controlador de Auth) y T058 (ensayo local del primer paso).
+
+> Línea base (2026-09-29, `/implement`, T001). Política de commits: uno por fase (decisión del usuario, 2026-09-29).
+> - `./vendor/bin/pest` en serie: 800 tests, 799 pasan. El único fallo es intermitente (`RecordsScreenTest`, timeout de conexión a PostgreSQL); pasa al repetirlo.
+> - `--parallel` (12 procesos): 25 fallos por carreras de migración (`relation "roles" does not exist`) y timeouts, ya registrados en el roadmap. La verificación de esta spec usa la suite en serie.
+> - `npm audit --audit-level=high`: 7 vulnerabilidades (2 críticas, 5 altas), como se esperaba (EX1).
+> - `composer audit`: 1 aviso **bajo** publicado el 2026-09-29 (`laravel/framework` < 12.69.0, XSS en la página de depuración, CVE-2026-102279). No bloquea (P12 solo bloquea críticas y altas) y en producción no aplica con `APP_DEBUG=false`. Se decide en `/review` si se actualiza el framework.
+> - Entorno local: el `docker-compose.yml` de `main` (el de `4b3aecf`) no arranca nginx en local porque busca certificados de Let's Encrypt. Lo corrige T033; hasta entonces los tests corren con `app`, `db` y `redis`. El contenedor `dev` trae Node 24 (paquete de Alpine); las etapas `assets` y CI usan Node 22 según el plan.
 
 Formato:
 `- [ ] T### [P] <verbo + qué> — <archivos> — hecho cuando: <criterio> — cubre: CA# — depende: T###`
@@ -56,10 +64,11 @@ Revisión del desglose contra el [plan](plan.md), sin repetir su análisis.
 | Definición de terminado | ✅ | T045 (Pint, `pest --parallel`, build, audits, gitleaks), T060 (`CHANGELOG.md`), T061 (`aidd.py validate`) y T090–T092. |
 
 ## Preparación
-- [ ] T001 Registrar la línea base en este archivo: `./vendor/bin/pest --parallel` en Docker, `npm audit --audit-level=high` (se esperan 2 críticas y 5 altas) y `composer audit` — `docs/specs/015-primer-despliegue-vps/tasks.md` — hecho cuando: los tres resultados están anotados bajo el título — cubre: CA14
-- [ ] T002 Crear la base `CoreIntegrationTestCase`, sin tocar `tests/Pest.php` (cada test declara `uses()`) — `TCore/CoreIntegrationTestCase.php` — hecho cuando: `./vendor/bin/pest tests/Modules/Core` se ejecuta sin errores de carga y `tests/Pest.php` no cambió
-- [ ] T003 Actualizar las herramientas de build con `npm audit fix` (sin `--force`) — `package.json`, `package-lock.json` — hecho cuando: `npm audit --audit-level=high` sale sin hallazgos, `npm run build` funciona y no se añadió ningún paquete ni cambió una versión mayor (si ocurre, detenerse y preguntar) — cubre: CA14 — depende: T001
-- [ ] T004 [P] Crear `lib.sh`: rutas `DENTISSA_DIR`, `MANUAL_DIR`, `BACKUP_DIR` y `DEPLOY_LOG` parametrizables (por defecto `/home/deploy/dentissa`, `/home/deploy/DentisSystem`, `/home/deploy/backups` y `/home/deploy/deploys.log`) y función de registro de una línea (fecha UTC, usuario del SSH, acción, versión, resultado), solo anexado — `Prod/lib.sh` — hecho cuando: `bash -n` y `shellcheck` limpios, y con `DEPLOY_LOG` temporal la función anexa una línea con ese formato — cubre: CA15
+- [x] T001 Registrar la línea base en este archivo: `./vendor/bin/pest --parallel` en Docker, `npm audit --audit-level=high` (se esperan 2 críticas y 5 altas) y `composer audit` — `docs/specs/015-primer-despliegue-vps/tasks.md` — hecho cuando: los tres resultados están anotados bajo el título — cubre: CA14
+- [x] T002 Crear la base `CoreIntegrationTestCase`, sin tocar `tests/Pest.php` (cada test declara `uses()`) — `TCore/CoreIntegrationTestCase.php` — hecho cuando: `./vendor/bin/pest tests/Modules/Core` se ejecuta sin errores de carga y `tests/Pest.php` no cambió
+- [x] T003 Actualizar las herramientas de build con `npm audit fix` (sin `--force`) — `package.json`, `package-lock.json` — hecho cuando: `npm audit --audit-level=high` sale sin hallazgos, `npm run build` funciona y no se añadió ningún paquete ni cambió una versión mayor (si ocurre, detenerse y preguntar) — cubre: CA14 — depende: T001
+  - nota: `npm audit` pasa a 0 vulnerabilidades y `npm run build` funciona. `package.json` no cambia. El lock sube `vite` 7.2.7→7.3.6, `rollup` 4.53→4.63, `postcss`, `nanoid`, `picomatch`, `concurrently` y `shell-quote` dentro de su rango, y `esbuild` 0.25→0.28 (transitivo de `vite`). Añade 4 binarios opcionales por plataforma de paquetes que ya estaban (`@rollup/rollup-*`, `@napi-rs/lzma-linux-x64-gnu`). No son dependencias nuevas del proyecto; aceptado por el usuario (2026-09-29).
+- [x] T004 [P] Crear `lib.sh`: rutas `DENTISSA_DIR`, `MANUAL_DIR`, `BACKUP_DIR` y `DEPLOY_LOG` parametrizables (por defecto `/home/deploy/dentissa`, `/home/deploy/DentisSystem`, `/home/deploy/backups` y `/home/deploy/deploys.log`) y función de registro de una línea (fecha UTC, usuario del SSH, acción, versión, resultado), solo anexado — `Prod/lib.sh` — hecho cuando: `bash -n` y `shellcheck` limpios, y con `DEPLOY_LOG` temporal la función anexa una línea con ese formato — cubre: CA15
 
 ## Tests (antes de implementar)
 - [ ] T005 Escribir `TrustedProxiesTest`: con `REMOTE_ADDR` de un rango de Cloudflare y `X-Forwarded-For: 203.0.113.7`, `request()->ip()` es `203.0.113.7`; dos visitantes distintos detrás de la misma IP de Cloudflare no comparten el límite `api`; con `REMOTE_ADDR` ajeno a Cloudflare y un `X-Forwarded-For` falso, `ip()` es `REMOTE_ADDR` y el límite cuenta por ella — `TCore/Integration/TrustedProxiesTest.php` — hecho cuando: fallan los casos de Cloudflare — cubre: CA16, CA17 — depende: T002
