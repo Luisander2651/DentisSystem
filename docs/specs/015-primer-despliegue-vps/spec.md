@@ -6,18 +6,27 @@ created: 2026-09-29
 extends: []
 ---
 
-# 015 · Primer despliegue en el VPS
+# 015 · Despliegue de producción en el VPS
 
 ## Problema
-Dentissa ya corre en un droplet con el dominio `dentissapp.com`, pero con la configuración de
-desarrollo: el mismo entorno sirve para local y para producción (y ahora ya no arranca en local),
-el panel de logs queda expuesto a Internet, los errores pueden mostrar detalles internos, no hay
-backups ni un rollback probado y las herramientas de build arrastran vulnerabilidades críticas y
-altas cuya excepción (EX1) vence al empezar este despliegue. Afecta al dueño del repositorio, que
+Dentissa **ya está desplegada a mano y en servicio** en un droplet con el dominio
+`dentissapp.com`: https detrás del proxy de Cloudflare, certificado de Let's Encrypt en el origen,
+cortafuegos con solo SSH, 80 y 443, y la composición de desarrollo adaptada a mano (commit
+`4b3aecf`, runbook del usuario). Esta spec no crea un despliegue desde cero: convierte ese
+despliegue manual en uno **repetible, verificable y reversible**. Hoy el mismo entorno sirve para
+local y para producción (y ya no arranca en local), el código y las dependencias se instalan a mano
+en el servidor, el panel de logs puede quedar expuesto por la IP directa (Docker publica puertos
+por encima del cortafuegos), no hay cabeceras de seguridad, la aplicación ve la IP de Cloudflare en
+lugar de la del visitante, los envíos de WhatsApp y del correo de restablecimiento registran el
+teléfono, el nombre y el email del paciente, el enlace de ese correo apunta a `localhost`, no hay
+backups ni un rollback probado, y las herramientas de build arrastran vulnerabilidades críticas
+y altas cuya excepción (EX1) vence con este despliegue. Afecta al dueño del repositorio, que
 opera el servidor, y a cualquier persona que visite el sitio. Sin resolverlo no se puede liberar
 ninguna versión a producción (P12). Esta spec cubre la primera parte del objetivo 4 del roadmap:
-las alertas y la retención de logs van en la spec 016, así que del objetivo atiende OB7 y OB8
-**parcialmente** (sus correcciones quedan fuera, en la 016) y el resto de riesgos citados por completo.
+las alertas y la retención de logs (OB7, OB8) quedan fuera, en la spec 016. Retira los datos
+personales de todos los logs que cita OB2 (RS9), pero de las trazas solo las de whatsApp, así que
+atiende OB10 **parcialmente** (de Auth solo el controlador del restablecimiento; el resto queda en Pendientes); el resto de riesgos citados, por
+completo.
 
 ## Historias de usuario
 - Como dueño del repositorio, quiero entornos local y de producción separados para desarrollar en mi equipo sin romper el servidor y viceversa.
@@ -25,6 +34,9 @@ las alertas y la retención de logs van en la spec 016, así que del objetivo at
 - Como staff de la clínica, quiero que las confirmaciones por WhatsApp y los correos de restablecer contraseña se envíen en producción para que el sistema funcione igual que en local.
 - Como visitante o usuario del sistema, quiero que el sitio use siempre conexión cifrada y no revele detalles internos para que mis datos viajen protegidos.
 - Como dueño del repositorio, quiero que solo el sitio web sea accesible desde Internet y que la base de datos, la caché y el panel de logs no lo sean, para reducir la superficie de ataque.
+- Como dueño del repositorio, quiero que la aplicación identifique la IP real de cada visitante aunque el tráfico llegue por Cloudflare, para que los límites de peticiones y los logs funcionen por persona.
+- Como paciente, quiero que el envío de mis recordatorios y de mis correos no deje mi teléfono, mi nombre ni mi email en los logs del sistema, para que mis datos personales no se expongan.
+- Como usuario que olvidó su contraseña, quiero que el enlace del correo me lleve al sitio real para poder restablecerla en producción.
 
 ## Criterios de aceptación
 - [ ] CA1 · Dado un equipo de desarrollo con el repositorio en la rama principal, cuando se levanta el entorno local con el procedimiento de `AGENTS.md`, entonces la aplicación responde en `http://localhost:8000` sin certificados ni dominio y el frontend se recarga en caliente al editar una vista.
@@ -35,20 +47,26 @@ las alertas y la retención de logs van en la spec 016, así que del objetivo at
 - [ ] CA6 · (abuso) Como sitio de otro origen, intento llamar a la API de Dentissa desde el navegador de un usuario con sesión iniciada → el navegador bloquea la respuesta; las llamadas desde el propio dominio siguen funcionando.
 - [ ] CA7 · (abuso) Como visitante, provoco un error inesperado en producción → recibo una página o respuesta genérica sin trazas, rutas de archivos, consultas ni valores de configuración.
 - [ ] CA8 · Dada la plantilla de configuración versionada del proyecto, cuando alguien la copia para crear un entorno nuevo, entonces por defecto tiene el modo de depuración apagado, el nivel de log `info`, las sesiones cifradas y la base de datos y la caché del stack real (PostgreSQL y el cliente de Redis instalado).
-- [ ] CA9 · (abuso) Como atacante en Internet, escaneo los puertos del servidor → solo responden el sitio web (80 y 443) y el acceso administrativo por SSH; la base de datos, la caché, el almacén de logs, el panel de logs y el servidor de desarrollo del frontend no responden. El panel de logs es accesible para el dueño solo a través de un túnel SSH.
+- [ ] CA9 · (abuso) Como atacante en Internet, escaneo los puertos de la IP directa del droplet (sin pasar por el proxy) → solo responden el sitio web (80 y 443) y el acceso administrativo por SSH; la base de datos, la caché, el almacén de logs, el panel de logs y el servidor de desarrollo del frontend no responden. El panel de logs es accesible para el dueño solo a través de un túnel SSH.
 - [ ] CA10 · Dado el repositorio, cuando se revisan los archivos versionados de los entornos, entonces no contienen ninguna contraseña ni credencial: todas se toman de la configuración no versionada del servidor.
 - [ ] CA11 · Dado producción en marcha, cuando se consulta la comprobación de salud, entonces responde correcto solo si la aplicación, la base de datos y la caché responden; si la base de datos o la caché no responden, indica fallo en menos de 5 segundos.
 - [ ] CA12 · Dado producción en marcha, cuando pasa un día, entonces existe un backup nuevo de la base de datos en el droplet, se conservan los de los últimos 7 días y se borran los más antiguos; además, cada despliegue genera un backup antes de aplicar cambios en la base de datos. (abuso) Como visitante, intento descargar un backup desde el sitio web → no es accesible.
 - [ ] CA13 · Dado un despliegue de ensayo de una versión sobre la anterior, cuando se ejecuta el rollback documentado (volver a la versión anterior y restaurar su backup), entonces la aplicación vuelve a responder correcto con los datos del backup, y `docs/deployment.md` registra los pasos ejecutados y el tiempo medido, sin `TODO` en las secciones de despliegue y rollback.
 - [ ] CA14 · Dado el tag a liberar, cuando se ejecuta la auditoría de dependencias del proyecto, entonces no reporta vulnerabilidades críticas ni altas y la excepción EX1 queda cerrada.
 - [ ] CA15 · Dado un despliegue, un rollback o una restauración de backup en producción, cuando termina, entonces queda registrado en el servidor quién lo ejecutó, qué versión, cuándo y con qué resultado.
+- [ ] CA16 · Dado el tráfico que llega a través del proxy de Cloudflare, cuando un visitante hace peticiones, entonces el límite de peticiones por IP y los logs usan la IP real del visitante; dos visitantes distintos detrás del mismo nodo del proxy no comparten el límite.
+- [ ] CA17 · (abuso) Como cliente que se conecta sin pasar por el proxy, envío una cabecera que dice venir de otra IP → la aplicación no la acepta y sigue usando la IP de la conexión para el límite y los logs.
+- [ ] CA18 · Dado el envío de una confirmación de cita por WhatsApp o de un correo de restablecimiento de contraseña, de principio a fin (desde la creación de la cita o la solicitud, incluido el controlador que la recibe, hasta el proveedor, y también cuando el envío falla procesado en segundo plano), cuando se revisan los logs, entonces no contienen el teléfono, el nombre, el email del destinatario, las variables de la plantilla ni el mensaje de la excepción del proveedor; los logs de la aplicación no incluyen trazas, y la traza que registra el sistema al fallar un trabajo en segundo plano solo indica archivos y líneas, sin argumentos ni datos personales.
+- [ ] CA19 · Dado producción con su dominio configurado, cuando alguien pide restablecer su contraseña, entonces el enlace del correo apunta a `https://dentissapp.com/…` (el dominio configurado del sitio) y no a `localhost`.
 
 ## Fuera de alcance
 - Alertas de tasa de errores 5xx y de logins fallidos, y retención del almacén de logs (OB7, OB8): spec 016.
 - Cargar datos reales de pacientes: requiere cerrar antes la comprobación de propiedad del recurso, el cifrado en reposo de los datos de salud y las obligaciones de la LFPDPPP (restricciones de la constitución).
 - Copia de los backups fuera del droplet y cifrado de volumen y backups (roadmap, Próxima etapa).
 - Entorno de staging y despliegue automático desde CI.
-- Renovación automática del certificado más allá de la que ya hace el servidor (se verifica que exista, no se rediseña).
+- Cambiar de proveedor de certificados o de proxy: se mantienen Let's Encrypt en el origen y Cloudflare en modo Full (strict). Solo se ajusta la renovación del certificado de origen para que funcione con el sitio en marcha (ver Supuestos).
+- Limitar el acceso web del origen a los rangos de Cloudflare (el cortafuegos ya limita a 22, 80 y 443).
+- Retirar las trazas y mensajes de excepción del resto de logs de Auth (OB10.b, salvo el controlador del restablecimiento): Pendientes y deuda.
 - Registro de auditoría de accesos de la aplicación (objetivo 5).
 - Activar el workflow `.ai/ci/ai-dd.yml`.
 
@@ -66,10 +84,13 @@ las alertas y la retención de logs van en la spec 016, así que del objetivo at
   - Como visitante, intento descargar un backup o la configuración del servidor → no es accesible (CA12).
   - Como atacante en la red, intento interceptar el tráfico forzando `http://` → se redirige y el navegador recuerda usar solo `https://` (CA4).
   - Como sitio malicioso, intento embeber Dentissa en un marco para engañar al usuario → el navegador lo impide (CA5).
+  - Como cliente sin pasar por el proxy, falsifico la cabecera de IP para esquivar el límite de peticiones → se ignora (CA17).
+  - Como persona con acceso a los logs, busco teléfonos, nombres o emails de pacientes en los envíos de WhatsApp y de correo → no aparecen (CA18).
 
 ## Cobertura de riesgos
 Cada corrección de cada riesgo citado (IDs de `docs/deployment.md`, `docs/observability.md` y
-`docs/security.md`). OB7 y OB8 quedan **fuera** (spec 016); el resto, dentro.
+`docs/security.md`). OB7 y OB8 quedan **fuera** (spec 016); OB10 se atiende **parcialmente** (solo
+whatsApp); el resto, dentro.
 
 | Corrección | Alcance | Criterios / motivo y destino |
 |---|---|---|
@@ -94,6 +115,13 @@ Cada corrección de cada riesgo citado (IDs de `docs/deployment.md`, `docs/obser
 | RS10.a `APP_DEBUG=false` en la plantilla | dentro | CA7, CA8 |
 | RS10.b `SESSION_ENCRYPT=true` en la plantilla | dentro | CA8 |
 | RS16.a Herramientas de build sin vulnerabilidades conocidas | dentro | CA14 (cierra EX1) |
+| OB4.a `LOG_CHANNEL=stderr` en `.env.example` | dentro | CA8 |
+| RS9.a Retirar teléfono, nombre y variables de plantilla de los logs | dentro | CA18 (todos los archivos citados en OB2) |
+| RS9.b `LOG_LEVEL=info` por defecto en `.env.example` | dentro | CA8 |
+| OB2.a Retirar teléfono y nombre de `CreateAppointmentController` | fuera | ya mitigada por la spec 014 → spec 014 |
+| OB2.b Retirar datos personales del resto de logs citados | dentro | CA18 (whatsApp, Email y `RetriveDataForScheduledAppointmenEventUseCase`) |
+| OB10.a Respuestas 500 sin el mensaje de la excepción | fuera | ya mitigada por la spec 014 → spec 014 |
+| OB10.b Retirar trazas y mensajes de los logs de Auth y whatsApp | dentro, parcial | CA18: whatsApp completo y el controlador del restablecimiento de Auth; el resto de Auth → Pendientes y deuda |
 
 ## Auditoría
 Esta spec no toca el registro de auditoría de la aplicación (objetivo 5). Sí exige que las
@@ -110,13 +138,17 @@ operaciones sobre producción dejen rastro:
 Ninguna.
 
 ## Supuestos
-- La spec se divide en 015 (despliegue) y 016 (alertas y retención de logs) (decisión del usuario, 2026-09-29). Aun así la 015 tiene 15 criterios; se mantiene junta porque todos son requisitos del primer despliegue (decisión del usuario, 2026-09-29).
+- La spec se divide en 015 (despliegue) y 016 (alertas y retención de logs) (decisión del usuario, 2026-09-29). Aun así la 015 tiene 19 criterios; se mantiene junta porque todos son requisitos del primer despliegue (decisión del usuario, 2026-09-29).
 - Solo datos ficticios en esta versión (decisión del usuario, 2026-09-29).
 - La app ya corre en `dentissapp.com` sin usuarios, así que el despliegue no necesita ventana de mantenimiento (confirmado por el usuario, 2026-09-29).
 - Backups solo en el droplet, 7 días (decisión del usuario, 2026-09-29).
 - RS6.b, RS10.b, RD4.a y RD5.b entran en esta spec (decisión del usuario, 2026-09-29).
 - Los cambios ya hechos en el droplet (commit `4b3aecf`: TLS con Let's Encrypt, worker de cola, puertos de base de datos, caché y Loki cerrados, credenciales desde la configuración) son el punto de partida; se verifican contra estos criterios, no se rehacen.
-- El único acceso administrativo al servidor es SSH, gestionado fuera de esta spec (firewall del proveedor).
+- El único acceso administrativo al servidor es SSH con el usuario `deploy`; `ufw` permite solo 22, 80 y 443 (confirmado por el usuario, 2026-09-29). Como Docker publica puertos por encima de `ufw`, CA9 se comprueba contra la IP directa.
+- El sitio pasa por el proxy de Cloudflare en modo SSL Full (strict) (confirmado por el usuario, 2026-09-29).
+- El certificado de origen se obtuvo con `certbot --standalone` (confirmado por el usuario, 2026-09-29). Como la renovación así falla con el sitio en marcha, la spec incluye dejarla funcionando sin parar el servicio (decisión del usuario, 2026-09-29).
+- La IP real del visitante (CA16, CA17) entra en esta spec (decisión del usuario, 2026-09-29).
+- Los datos personales salen de todos los logs que cita OB2, lo que cierra OB2.b y RS9.a (CA18), y el enlace del correo de restablecimiento usa el dominio del sitio (CA19) (decisión del usuario, 2026-09-29, `/analyze` ronda 2: A33, A40, A41).
 
 ## Notas para /plan
 - Separar `docker-compose.yml` (local, como antes de `4b3aecf`: puertos 8000 y 5173, sin TLS) de un `docker-compose.prod.yml` de override con lo de `4b3aecf`. Ambos son rutas protegidas.
@@ -135,3 +167,10 @@ Ninguna.
 |---|---|---|
 | 2026-09-29 | Creación | Objetivo 4 del roadmap, primera parte |
 | 2026-09-29 | Aprobada | Aprobación del usuario |
+| 2026-09-29 | Editada: parte del despliegue manual existente (Cloudflare, ufw, certbot), título, CA9 contra la IP directa, CA16–CA18 nuevos, OB2, OB4, OB10 y RS9 en Cobertura, certbot recogido en Supuestos | `/analyze` ronda 1: A1, A16, A18, A25, A28 y A29, y revisión en vivo de `dentissapp.com` |
+| 2026-09-29 | Reaprobada tras la edición | Aprobación del usuario |
+| 2026-09-29 | Editada: CA18 ampliado a todos los logs de OB2 (WhatsApp y correo), CA19 nuevo (enlace de restablecimiento), OB2.b y RS9.a completos | `/analyze` ronda 2: A33, A40, A41 y A47 |
+| 2026-09-29 | Reaprobada tras la edición de la ronda 2 | Aprobación del usuario |
+| 2026-09-29 | Editada: CA18 incluye el controlador que recibe la solicitud de restablecimiento y los fallos procesados en segundo plano | `/analyze` ronda 3: A53 y A54 |
+| 2026-09-29 | Reaprobada tras la edición de la ronda 3 | Aprobación del usuario |
+| 2026-09-29 | Aclarada la redacción de CA18: trazas del sistema en segundo plano solo sin argumentos ni datos personales (decisión del usuario, 2026-09-29) | `/analyze` ronda 4: A61 |

@@ -21,7 +21,9 @@ rollback dependía de recompilar dependencias y assets de la versión anterior.
 - `docker-compose.yml` queda solo para local; `docker-compose.prod.yml` es un archivo completo e
   independiente, seleccionado en el droplet con `COMPOSE_FILE` en el `.env`.
 - La configuración no versionada (`.env`) llega a los contenedores por `env_file` y variables de
-  Compose; nunca se copia a una imagen.
+  Compose; nunca se copia a una imagen. Un `.dockerignore` excluye `.env`, `.git`, `public/hot` y
+  los artefactos locales del contexto de build, y el despliegue lo comprueba en cada imagen.
+- Imágenes base con versión fija y en soporte (sin `:latest`).
 
 ## Alternativas consideradas
 - Checkout montado con build en cada despliegue: más simple, pero el rollback recompila y el
