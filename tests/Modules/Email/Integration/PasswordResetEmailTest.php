@@ -35,7 +35,7 @@ beforeEach(function () {
         fn (ReflectionParameter $parameter): string => $parameter->getName(),
         (new ReflectionClass(BrevoApi::class))->getConstructor()?->getParameters() ?? [],
     );
-    expect($parameters)->toContain('client', 'BrevoApi does not accept a Brevo client yet');
+    expect(in_array('client', $parameters, true))->toBeTrue('BrevoApi does not accept a Brevo client yet');
 
     config(['app.url' => 'https://dentissapp.com']);
     $this->withoutRateLimiting();

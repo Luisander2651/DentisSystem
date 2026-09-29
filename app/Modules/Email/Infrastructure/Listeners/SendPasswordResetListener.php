@@ -6,12 +6,9 @@ namespace App\Modules\Email\Infrastructure\Listeners;
 
 use App\Modules\Auth\Domain\Events\SendEmailForChangePasswordEvent;
 use App\Modules\Email\Aplication\UseCases\SendResetPasswordEmailUseCase;
-use App\Modules\Appointments\Domain\Events\ScheduledAppointment;
-use App\Modules\whatsApp\Aplication\DTOs\SendConfirmationAppointmentMessageDTO;
-use App\Modules\whatsApp\Aplication\UseCases\SendAppointmentConfirmationUseCase;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 
 final class SendPasswordResetListener implements ShouldQueue
 {
@@ -40,17 +37,14 @@ final class SendPasswordResetListener implements ShouldQueue
                 name: $event->customerName,
                 token: $event->token
             );
-            Log::info('SendPasswordResetListener: Evento SendEmailForChangePasswordEvent recibido', [
-                'customerEmail' => $event->customerEmail,
-                'customerName' => $event->customerName,
-            ]);
+            // Spec 015 (CA18): no e-mail address, name or trace in the logs.
+            Log::info('SendPasswordResetListener: Evento SendEmailForChangePasswordEvent procesado');
         } catch (\Exception $e) {
             Log::error('SendPasswordResetListener: Error al procesar el evento', [
-                'error' => $e->getMessage(),
-                'customerEmail' => $event->customerEmail,
-                'trace' => $e->getTraceAsString(),
+                'errorCode' => $e->getCode(),
+                'exception' => $e::class,
             ]);
-             throw $e;
+            throw $e;
         }
     }
 }

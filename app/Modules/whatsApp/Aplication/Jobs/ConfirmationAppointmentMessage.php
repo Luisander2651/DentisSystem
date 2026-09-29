@@ -7,6 +7,9 @@ namespace App\Modules\whatsApp\Aplication\Jobs;
 use App\Modules\whatsApp\Infrastructure\ExternalApi\TwilioConection;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Spec 015 (CA18): logs name the template, never the destination number.
+ */
 class ConfirmationAppointmentMessage
 {
     private string $templateName = 'appointment_scheduled';
@@ -18,7 +21,6 @@ class ConfirmationAppointmentMessage
     public function handle(string $to, array $templateVariables = []): void
     {
         Log::info('ConfirmationAppointmentMessage: Preparando envío', [
-            'to' => $to,
             'template' => $this->templateName,
         ]);
 
@@ -27,9 +29,9 @@ class ConfirmationAppointmentMessage
             Log::info('ConfirmationAppointmentMessage: Envío completado');
         } catch (\Exception $e) {
             Log::error('ConfirmationAppointmentMessage: Error en sendTemplate', [
-                'error' => $e->getMessage(),
-                'to' => $to,
-                'trace' => $e->getTraceAsString(),
+                'template' => $this->templateName,
+                'errorCode' => $e->getCode(),
+                'exception' => $e::class,
             ]);
             throw $e;
         }

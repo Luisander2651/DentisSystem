@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Aplication\UseCases;
 
-use App\Modules\Appointments\Aplication\UseCases\CreateAppointmentUseCase;
 use App\Modules\Appointments\Aplication\DTOs\CreateAppointmentDTO;
 use App\Modules\Appointments\Domain\Events\ScheduledAppointment;
-use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
 use App\Modules\Patients\Domain\Repositories\ContactInfoRepositoryInterface;
+use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
 use Illuminate\Support\Facades\Log;
 
 final readonly class RetriveDataForScheduledAppointmenEventUseCase
@@ -42,7 +41,7 @@ final readonly class RetriveDataForScheduledAppointmenEventUseCase
                 'patientId' => $patient->Id()->value,
             ]);
         }
-        
+
         // Obtener información de contacto del paciente
         $contactInfo = $this->contactInfoRepository->findByPatientId($appointment->PatientId());
         if ($contactInfo === null) {
@@ -50,9 +49,10 @@ final readonly class RetriveDataForScheduledAppointmenEventUseCase
                 'patientId' => $appointment->PatientId()->value,
             ]);
         } else {
+            // Spec 015 (CA18): whether a phone exists matters for WhatsApp, the number itself does not.
             Log::info('RetriveDataForScheduledAppointmenEventUseCase: ContactInfo encontrado', [
                 'patientId' => $appointment->PatientId()->value,
-                'phone' => $contactInfo->PhoneNumber()?->value ?? 'null',
+                'hasPhone' => $contactInfo->PhoneNumber() !== null,
             ]);
         }
 

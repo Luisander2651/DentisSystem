@@ -12,8 +12,8 @@ uses(CoreIntegrationTestCase::class);
  */
 
 beforeEach(function () {
-    config(['app.url' => 'https://dentissapp.com']);
     $this->withoutRateLimiting();
+    $this->siteOrigin = rtrim((string) config('app.url'), '/');
 });
 
 function preflight($test, string $origin)
@@ -25,23 +25,24 @@ function preflight($test, string $origin)
 }
 
 it('does not allow another origin to read the API (abuse)', function () {
-    $response = preflight($this, 'https://evil.example');
+    // A browser only exposes the response if Access-Control-Allow-Origin is '*' or the
+    // requesting origin itself; any other value (or none) blocks it.
+    $allowedFor = fn ($response): ?string => $response->headers->get('Access-Control-Allow-Origin');
 
-    expect($response->headers->has('Access-Control-Allow-Origin'))->toBeFalse();
-
-    $response = $this->getJson('/api/v1/public/certifications', ['Origin' => 'https://evil.example']);
-
-    expect($response->headers->has('Access-Control-Allow-Origin'))->toBeFalse();
+    foreach ([preflight($this, 'https://evil.example'), $this->getJson('/api/v1/public/certifications', ['Origin' => 'https://evil.example'])] as $response) {
+        expect($allowedFor($response))->not->toBe('*')
+            ->and($allowedFor($response))->not->toBe('https://evil.example');
+    }
 });
 
 it('allows the site own origin', function () {
-    $response = preflight($this, 'https://dentissapp.com');
+    $response = preflight($this, $this->siteOrigin);
 
-    expect($response->headers->get('Access-Control-Allow-Origin'))->toBe('https://dentissapp.com');
+    expect($response->headers->get('Access-Control-Allow-Origin'))->toBe($this->siteOrigin);
 });
 
 it('never allows credentials cross-origin', function () {
-    foreach (['https://dentissapp.com', 'https://evil.example'] as $origin) {
+    foreach ([$this->siteOrigin, 'https://evil.example'] as $origin) {
         expect(preflight($this, $origin)->headers->get('Access-Control-Allow-Credentials'))->not->toBe('true');
     }
 });

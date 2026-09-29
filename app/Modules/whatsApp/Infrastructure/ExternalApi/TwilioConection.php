@@ -4,93 +4,82 @@ declare(strict_types=1);
 
 namespace App\Modules\whatsApp\Infrastructure\ExternalApi;
 
-use Twilio\Rest\Client;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
+use Twilio\Rest\Client;
 
 class TwilioConection
 {
     private Client $client;
 
-    public function __construct()
+    /**
+     * Credentials come from config/services.php (spec 015, RD4.a), so they survive the
+     * configuration cache in production. A client can be passed in to test without network.
+     */
+    public function __construct(?Client $client = null)
     {
-        $sid = env('TWILIO_SID');
-        $authToken = env('TWILIO_AUTH_TOKEN');
-        $this->client = new Client($sid, $authToken);
+        $this->client = $client ?? new Client(
+            config('services.twilio.sid'),
+            config('services.twilio.token'),
+        );
     }
 
     /**
      * Envía una plantilla de WhatsApp.
-     * 
-     * @param string $to Número destino (ej: whatsapp:+521...)
-     * @param string $templateName Nombre de la plantilla aprobada en Twilio (usado para logs)
-     * @param array $templateVariables Variables para reemplazar en la plantilla como array indexado, ej: ['Juan Pérez', '2026-04-30', '14:30']
+     *
+     * Spec 015 (CA18): the logs never carry the destination number, the template variables
+     * (they include the patient's name) nor Twilio's error text, which repeats the number.
+     * A failure is rethrown as an exception holding only Twilio's error code.
+     *
+     * @param  string  $to  Número destino (ej: whatsapp:+521...)
+     * @param  string  $templateName  Nombre de la plantilla aprobada en Twilio (usado para logs)
+     * @param  array<int, string>  $templateVariables  Variables de la plantilla, en orden
      */
     public function sendTemplate(string $to, string $templateName, array $templateVariables = []): void
     {
         Log::info('TwilioConection::sendTemplate iniciado', [
-            'to' => $to,
             'templateName' => $templateName,
-            'variablesCount' => count($templateVariables),
+            'variableCount' => count($templateVariables),
         ]);
 
+        $phoneNumber = (string) config('services.twilio.from'); // '+1415...' o 'whatsapp:+1415...'
+        $from = str_starts_with($phoneNumber, 'whatsapp:') ? $phoneNumber : 'whatsapp:'.$phoneNumber;
+        $contentSid = config('services.twilio.appointment_template_sid');
+
+        if (! $contentSid) {
+            throw new RuntimeException('TWILIO_APPOINTMENT_TEMPLATE_SID is not configured');
+        }
+
+        $messageOptions = [
+            'from' => $from,
+            'contentSid' => $contentSid,
+        ];
+
+        // Si la plantilla tiene variables, se pasan como array de valores (no como JSON)
+        if (! empty($templateVariables)) {
+            $formattedVariables = [];
+            foreach (array_values($templateVariables) as $index => $value) {
+                $formattedVariables[(string) ($index + 1)] = (string) $value;
+            }
+
+            $messageOptions['contentVariables'] = json_encode($formattedVariables);
+        }
+
         try {
-            $phonNumber = env('TWILIO_PHONE_NUMBER'); // Puede ser '+1415...' o 'whatsapp:+1415...'
-            // Asegurar que tenga el prefijo whatsapp:
-            $from = strpos($phonNumber, 'whatsapp:') === 0 ? $phonNumber : 'whatsapp:' . $phonNumber;
-            $contentSid = env('TWILIO_APPOINTMENT_TEMPLATE_SID'); // SID de la plantilla aprobada
-            
-            Log::info('TwilioConection: Configuración', [
-                'from' => $from,
-                'contentSid' => $contentSid ? 'set' : 'NOT SET',
-                'sid' => env('TWILIO_SID') ? 'set' : 'NOT SET',
-                'authToken' => env('TWILIO_AUTH_TOKEN') ? 'set' : 'NOT SET',
-            ]);
-
-            if (!$contentSid) {
-                throw new \Exception('TWILIO_APPOINTMENT_TEMPLATE_SID no está configurado en .env');
-            }
-
-            $messageOptions = [
-                'from' => $from,
-                'contentSid' => $contentSid,
-            ];
-
-            // Si la plantilla tiene variables, se pasan como array de valores (no como JSON)
-            if (!empty($templateVariables)) {
-                $formattedVariables = [];
-                foreach ($templateVariables as $index => $value) {
-                    $key = (string)($index + 1);
-                    $formattedVariables[$key] = (string)$value;
-                }
-
-                $messageOptions['contentVariables'] = json_encode($formattedVariables);
-    
-                Log::info('TwilioConection: Variables JSON preparada', [
-                    'json' => $messageOptions['contentVariables']
-                ]);
-            }
-
-            Log::info('TwilioConection: Enviando mensaje a Twilio API', [
-                'to' => $to,
-                'contentSid' => $contentSid,
-                'hasVariables' => !empty($templateVariables),
-                'variableCount' => count($templateVariables),
-            ]);
-
             $response = $this->client->messages->create($to, $messageOptions);
-
-            Log::info('TwilioConection: Respuesta exitosa de Twilio', [
-                'messageId' => $response->sid,
-                'status' => $response->status,
-            ]);
         } catch (\Exception $e) {
             Log::error('TwilioConection::sendTemplate - ERROR', [
-                'error' => $e->getMessage(),
+                'templateName' => $templateName,
                 'errorCode' => $e->getCode(),
-                'to' => $to,
-                'trace' => $e->getTraceAsString(),
+                'exception' => $e::class,
             ]);
-            throw $e;
+
+            throw new RuntimeException('Twilio rejected the WhatsApp message (code '.$e->getCode().')', (int) $e->getCode());
         }
+
+        Log::info('TwilioConection: Respuesta exitosa de Twilio', [
+            'messageId' => $response->sid,
+            'status' => $response->status,
+        ]);
     }
 }
