@@ -53,6 +53,7 @@ del repo aprueba y se despliega a mano en el VPS.
 Local:
 ```bash
 docker compose up -d --build
+docker compose exec -u root app chown -R www-data:www-data /var/www/html/vendor /var/www/html/node_modules
 docker compose exec app composer install     # la primera vez tras la spec 015: vendor/ y node_modules/
 docker compose exec app npm install          #   viven en volúmenes con nombre, que empiezan vacíos
 docker compose exec app php artisan migrate
