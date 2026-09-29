@@ -53,25 +53,44 @@ del repo aprueba y se despliega a mano en el VPS.
 Local:
 ```bash
 docker compose up -d --build
-docker compose exec -u root app chown -R www-data:www-data /var/www/html
-docker compose exec app composer install
-docker compose exec app npm install
+docker compose exec app composer install     # la primera vez tras la spec 015: vendor/ y node_modules/
+docker compose exec app npm install          #   viven en volúmenes con nombre, que empiezan vacíos
 docker compose exec app php artisan migrate
-docker compose exec app npm run dev          # http://localhost:8000
+docker compose exec app npm run dev          # http://localhost:8000 (vite en 127.0.0.1:5173)
+```
+El `.env` local debe definir `DB_USERNAME`, `DB_PASSWORD` y `DB_DATABASE` iguales a los del volumen `db-data` local.
+
+Producción (spec 015; lo ejecuta una persona, nunca el agente sin aprobación explícita):
+
+**Modelo.** Producción vive en un **clon aparte**, `/home/deploy/dentissa`, con su propio `.env`
+(permisos 600) y `docker-compose.prod.yml` (proyecto `dentissa`, contenedores `dentissa-*`). Usa como
+volúmenes externos los datos de la pila manual anterior (`/home/deploy/DentisSystem`, proyecto
+`dentissystem`, contenedores `laravel-*`): `DATA_VOLUME_PREFIX=dentissystem` en el `.env` del clon.
+Las dos pilas nunca corren a la vez; los scripts detienen una antes de arrancar la otra. La pila
+manual no se modifica: solo se detiene (`docker compose stop`) y se vuelve a arrancar.
+
+Scripts de `docker/prod/` (desde el clon): `deploy.sh`, `rollback.sh`, `backup.sh`, `restore.sh`,
+`verify.sh` y `compose.sh`. Todo comando de Compose sobre producción pasa por `compose.sh`, que fija
+`APP_VERSION` a la versión en servicio (`.deploy/current`). Cada operación queda en
+`/home/deploy/deploys.log` (fecha UTC, usuario, acción, versión, resultado).
+
+Primer paso, desde la pila manual (con aprobación explícita):
+1. Comprobar, sin configurar: `ufw` con 22, 80 y 443; Cloudflare en SSL Full (strict) y si "Always Use HTTPS" está activo; RAM libre para el build (swap de 2 GB si hace falta).
+2. `git clone` del repositorio en `/home/deploy/dentissa` y `git checkout <tag>`. Copiar ahí el `.env` de la pila manual (`chmod 600`) y ajustar `COMPOSE_FILE=docker-compose.prod.yml`, `DATA_VOLUME_PREFIX` y las variables de "Variables de entorno" (prod). `/home/deploy/DentisSystem` no se toca.
+3. Certbot a webroot: `mkdir -p /var/www/certbot`; `certbot reconfigure` (o editar `/etc/letsencrypt/renewal/dentissapp.com.conf`) con `authenticator = webroot`, `webroot_path = /var/www/certbot` y `deploy_hook = DENTISSA_DIR=/home/deploy/dentissa /home/deploy/dentissa/docker/prod/compose.sh exec -T nginx nginx -s reload`.
+4. `docker/prod/deploy.sh --first <tag>`: backup de la pila manual, `stop` de la pila manual, copia de su `storage/app/public` al volumen `storage-public` (solo si está vacío), build de `dentissa-app:<tag>` y `dentissa-web:<tag>`, `up`, `migrate --force` y `verify.sh --local`.
+5. `certbot renew --dry-run` y cron diario del usuario `deploy`: `0 3 * * * /home/deploy/dentissa/docker/prod/backup.sh daily`.
+6. Desde fuera del droplet: `docker/prod/verify.sh --remote dentissapp.com --origin <IP del droplet>`.
+
+Despliegues siguientes:
+```bash
+cd /home/deploy/dentissa
+git fetch --tags && git checkout vX.Y.Z
+docker/prod/deploy.sh vX.Y.Z      # backup, build, up, migrate, verify; registra el resultado
 ```
 
-Producción (propuesto, sin probar; lo ejecuta una persona, nunca el agente sin aprobación):
-```bash
-# En el VPS, con aprobación explícita
-cd /srv/dentissa
-git fetch --tags && git checkout vX.Y.Z
-docker compose exec db pg_dump -U "$DB_USERNAME" -Fc "$DB_DATABASE" > backups/pre-vX.Y.Z.dump
-docker compose up -d --build
-docker compose exec app php artisan migrate --force
-docker compose exec app php artisan config:cache && docker compose exec app php artisan route:cache
-docker compose restart worker
-curl -fsS https://TODO-dominio/up
-```
+Interruptor de emergencia de la CSP: `CSP_REPORT_ONLY=true` en el `.env` del clon y
+`docker/prod/compose.sh up -d app` (recrea el contenedor con la versión en servicio). Se revierte igual.
 
 ## Migraciones de base de datos
 - Cuándo se aplican: después de levantar la nueva imagen y antes de dar la release por buena; siempre precedidas de un `pg_dump`.
@@ -80,12 +99,19 @@ curl -fsS https://TODO-dominio/up
 - Comando: `php artisan migrate --force`.
 
 ## Rollback
-**Estado: propuesto y sin probar — es el mayor riesgo de este documento.**
-1. Volver al tag anterior: `git checkout vX.Y.(Z-1)` y `docker compose up -d --build`.
+Estado: documentado (spec 015); se ensaya en local (T058) y en el droplet (T051, T054) antes del release.
+
+**Volver a la pila manual** (solo mientras exista, es decir, hasta retirarla tras el release):
+1. `docker/prod/rollback.sh --to-manual`: detiene la pila de producción (`compose.sh stop`) y hace `docker compose start` en `/home/deploy/DentisSystem`. Arranca con su código, su `.env`, su nginx con TLS y sus dependencias intactas.
+2. Comprobar: `curl -I https://dentissapp.com/up` y `/login` responden 200 (el certificado y nginx son los de la pila manual).
+3. Datos: la pila manual lee los mismos volúmenes de datos. Las imágenes de datos de producción tienen las mismas versiones que las suyas (Postgres 16, Redis 7, Loki 3.0.0, Grafana 11.0.0), así que lee lo que escribió producción. Los archivos subidos a `storage/app/public` desde producción **no** están en la pila manual (el volumen de producción no se sincroniza de vuelta).
+4. Para volver a producción: `docker/prod/deploy.sh --first <tag>` (el volumen `storage-public` ya tiene datos y no se sobrescribe).
+
+**Volver a la versión anterior** (imágenes aún en el droplet; se conservan las dos últimas):
+1. `docker/prod/rollback.sh` (a `.deploy/previous`) o `docker/prod/rollback.sh <tag>`: `up -d` con esas imágenes y `verify.sh --local`.
 2. Si la release incluía migraciones compatibles hacia atrás (P9), no se toca la base.
-3. Si no lo eran: `php artisan migrate:rollback --step=<n>`; si el `down()` falla o hubo pérdida de datos, restaurar `pg_restore -c -d "$DB_DATABASE" backups/pre-vX.Y.Z.dump` (se pierden las escrituras posteriores al dump).
-4. `php artisan config:cache`, reiniciar `worker` y comprobar `/up`.
-- Tiempo estimado: TODO(init): medir en el primer ensayo.
+3. Si no lo eran: `docker/prod/rollback.sh <tag> --restore /home/deploy/backups/pre-<tag-actual>-*.dump`. Pide confirmación escribiendo `rollback`, detiene `nginx`, `app` y `queue`, restaura con `pg_restore --clean` y arranca la versión anterior. Se pierden las escrituras posteriores al dump.
+- Tiempo medido: TODO(init): se mide en el ensayo del droplet (T054); objetivo < 15 min con restauración.
 - En código: cada merge a `main` es `--no-ff` y se puede revertir con `git revert -m 1 <merge>` (práctica ya usada en las Unidades 3 y 4).
 
 ## Variables de entorno

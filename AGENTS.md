@@ -39,6 +39,7 @@ Usa `/clarify` para cerrar ambigüedades de una spec antes de aprobarla. Estado 
 No implementes sin spec aprobada. No hagas commit sin que pasen los tests y Pint.
 Nunca despliegues a producción sin aprobación explícita; sigue [docs/deployment.md](docs/deployment.md).
 Nunca escribas secretos en el código, los logs ni los docs. No leas `.env`.
+El `.env` local debe definir `DB_USERNAME`, `DB_PASSWORD` y `DB_DATABASE` iguales a los del volumen `db-data` local: `docker-compose.yml` los exige (spec 015). Tras cambiar a los volúmenes con nombre de `vendor/` y `node_modules/`, ejecuta una vez `composer install` y `npm install` dentro de `app`.
 
 **Flujo AI-DLC en pausa.** Las Unidades 5–7 (ContentManagement, Email, whatsApp) quedaron a medias
 en el flujo AI-DLC. Sus reglas están en [AIDLC.md](AIDLC.md) y su estado en

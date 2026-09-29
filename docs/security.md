@@ -37,7 +37,7 @@ Esta tabla es una guía técnica, no asesoría legal: conviene validarla con un 
 | Tokens de sesión | restringida | `personal_access_tokens`, cookie `auth_token` | hash en BD; cookie httpOnly sin cifrar, `secure` solo con HTTPS |
 | Tokens de reset | restringida | Redis, TTL 900 s | un solo uso, se borra al consumirse |
 | Datos del staff (nombre, email, rol) | interna | `users`, `roles` | acceso solo administrador |
-| Credenciales de Twilio, Brevo, R2, PostgreSQL | restringida | `.env` (ignorado por git) | fuera del repo; Twilio y Brevo leídas con `env()` en código |
+| Credenciales de Twilio, Brevo, R2, PostgreSQL | restringida | `.env` (ignorado por git) | fuera del repo; Twilio y Brevo leídas con `config()` desde la spec 015 (sin `env()` fuera de `config/`, `NoEnvOutsideConfigTest`) |
 | Contenido público e imágenes | pública | tablas de contenido, Cloudflare R2 | el estado "oculto" no se respeta en la API pública |
 
 ## Autenticación y autorización
@@ -61,7 +61,7 @@ Esta tabla es una guía técnica, no asesoría legal: conviene validarla con un 
 ## Manejo de secretos
 - Dónde se guardan: `.env` por entorno (ignorado por git; `git log --all -- .env` vacío). En el VPS: `.env` con permisos 600.
 - Twilio y Brevo se leen con `env()` en código (deben pasar a `config/services.php`, P8).
-- `docker-compose.yml` y `.github/workflows/tests.yml` contienen credenciales de PostgreSQL de desarrollo/CI en claro; no reutilizarlas en producción.
+- `docker-compose.yml` y `docker-compose.prod.yml` toman todas las credenciales del `.env` (spec 015, CA10; `ComposeFilesTest`). `phpunit.xml` y `.github/workflows/tests.yml` conservan `admin`/`example`: son credenciales ficticias de la base de datos efímera de tests, fuera de CA10 (decisión D10 del plan 015); no reutilizarlas en ningún entorno.
 - Rotación: TODO(init): sin procedimiento definido (decisión del usuario, 2026-09-22). Mínimo propuesto hasta definirlo: rotar las claves de Twilio, Brevo y R2 al pasar a producción y ante cualquier sospecha de exposición.
 
 ## Herramientas
@@ -86,7 +86,7 @@ Reglas base en `shared/agent-security.md` del plugin. Específicas de este proye
 ## Excepciones aceptadas
 | ID | Hallazgo | Severidad | Motivo | Aprobado por | Vence |
 |---|---|---|---|---|---|
-| EX1 | RS16.a: vulnerabilidades de npm en herramientas de build y desarrollo (vite, rollup, postcss, nanoid, picomatch, concurrently, shell-quote): 2 críticas, 5 altas | crítica / alta | Prototipo sin producción; los paquetes no llegan al navegador (solo se usan al compilar o en `composer run dev`); axios, que sí llega, se actualizó a 1.20.0 (spec 014, T083). Condición: el servidor de desarrollo de vite (puerto 5173) no se expone fuera de la máquina de desarrollo; hoy `vite.config.js` escucha en `0.0.0.0` y `docker-compose.yml` publica `5173:5173` en todas las interfaces, así que solo se usa en redes de confianza | Dueño del repositorio (decisión del usuario, 2026-09-25) | Al empezar el objetivo 4 del roadmap (primer despliegue al VPS) y como tarde el 2026-12-31 |
+| EX1 | RS16.a: vulnerabilidades de npm en herramientas de build y desarrollo (vite, rollup, postcss, nanoid, picomatch, concurrently, shell-quote): 2 críticas, 5 altas | crítica / alta | Prototipo sin producción; los paquetes no llegan al navegador (solo se usan al compilar o en `composer run dev`); axios, que sí llega, se actualizó a 1.20.0 (spec 014, T083). Condición: el servidor de desarrollo de vite (puerto 5173) no se expone fuera de la máquina de desarrollo; hoy `vite.config.js` escucha en `0.0.0.0` y `docker-compose.yml` publica `5173:5173` en todas las interfaces, así que solo se usa en redes de confianza | Dueño del repositorio (decisión del usuario, 2026-09-25) | Al empezar el objetivo 4 del roadmap (primer despliegue al VPS) y como tarde el 2026-12-31 | **Cerrada (spec 015, 2026-09-29)**: `npm audit fix` deja 0 vulnerabilidades (T003); RS16.a mitigada |
 
 ## Riesgos conocidos
 Ordenados por severidad. Ninguno bloquea mientras el prototipo no tenga datos reales; **todos los
@@ -119,7 +119,7 @@ Correcciones:
 `npm audit` (2026-09-25) reporta 2 críticas y 5 altas en herramientas de build y desarrollo (vite, rollup, postcss, nanoid, picomatch, concurrently, shell-quote). axios, que se incluye en el bundle del navegador, ya se actualizó a 1.20.0 (spec 014, T083).
 
 Correcciones:
-- RS16.a Actualizar las herramientas de build a versiones sin avisos — estado: aceptada (excepción EX1)
+- RS16.a Actualizar las herramientas de build a versiones sin avisos — estado: mitigada (spec 015; versión en `/release`): `npm audit fix` sin cambios mayores; EX1 cerrada
 
 ### RS3 · Media — Fuga de detalles internos
 48 controladores devuelven `$e->getMessage()` en respuestas 500 (Patients, Appointments, AppointmentTracking, ContentManagement).
@@ -146,7 +146,7 @@ Correcciones:
 
 Correcciones:
 - RS6.a Cabeceras de seguridad CSP, HSTS, X-Frame-Options y X-Content-Type-Options (derivada) — estado: pendiente
-- RS6.b Publicar `config/cors.php` restrictivo (derivada) — estado: pendiente
+- RS6.b Publicar `config/cors.php` restrictivo (derivada) — estado: mitigada (spec 015; versión en `/release`): solo `APP_URL`, sin credenciales; `CorsTest`
 
 ### RS7 · Media — Subida de imágenes sin límite de tamaño ni re-codificación
 (spec 012).
@@ -165,15 +165,15 @@ Correcciones:
 el flujo de WhatsApp registra el teléfono y las variables de la plantilla; `.env.example` trae `LOG_LEVEL=debug`.
 
 Correcciones:
-- RS9.a Retirar teléfono, nombre y variables de plantilla de los logs (derivada; detalle en OB2) — estado: pendiente (roadmap objetivo 5; la spec 014 ya retiró los de `CreateAppointmentController`, OB2.a)
-- RS9.b `LOG_LEVEL=info` por defecto en `.env.example` (derivada) — estado: pendiente (roadmap objetivo 5)
+- RS9.a Retirar teléfono, nombre y variables de plantilla de los logs (derivada; detalle en OB2) — estado: mitigada (spec 015; versión en `/release`): los 7 archivos de OB2 más el controlador del restablecimiento; `WhatsAppFlowLogsTest`, `PasswordResetEmailTest`. La spec 014 ya había retirado los de `CreateAppointmentController` (OB2.a)
+- RS9.b `LOG_LEVEL=info` por defecto en `.env.example` (derivada) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`
 
 ### RS10 · Baja — Configuración por defecto insegura en `.env.example`
 `APP_DEBUG=true`, `SESSION_ENCRYPT=false`.
 
 Correcciones:
-- RS10.a `APP_DEBUG=false` en `.env.example` (derivada) — estado: pendiente (roadmap objetivo 4)
-- RS10.b `SESSION_ENCRYPT=true` en `.env.example` (derivada) — estado: pendiente (roadmap, Pendientes y deuda)
+- RS10.a `APP_DEBUG=false` en `.env.example` (derivada) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`, `WebUnexpectedErrorTest`
+- RS10.b `SESSION_ENCRYPT=true` en `.env.example` (derivada) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`
 
 ### RS11 · Baja — Sin eventos de auditoría
 logins fallidos, accesos denegados y lecturas de expedientes no se registran.
