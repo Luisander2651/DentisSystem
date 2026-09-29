@@ -14,7 +14,7 @@
         </div>
     </main>
 
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         (function () {
             var status = document.getElementById('logout-status');
 

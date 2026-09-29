@@ -66,6 +66,7 @@ it('switches to report-only when the emergency flag is on', function () {
 
 it('lets the vite dev server and its websocket through while running hot (CA1)', function () {
     // Never public/hot: other parallel processes and the local setup read that file (A45).
+    $publicHotBefore = is_file(public_path('hot')) ? file_get_contents(public_path('hot')) : null;
     $hotFile = storage_path('framework/testing/hot-'.Str::uuid());
     @mkdir(dirname($hotFile), 0775, true);
     file_put_contents($hotFile, 'http://localhost:5173');
@@ -79,5 +80,5 @@ it('lets the vite dev server and its websocket through while running hot (CA1)',
 
     expect($csp)->toContain('http://localhost:5173')
         ->and($csp)->toContain('ws://localhost:5173')
-        ->and(is_file(public_path('hot')))->toBeFalse();
+        ->and(is_file(public_path('hot')) ? file_get_contents(public_path('hot')) : null)->toBe($publicHotBefore);
 });

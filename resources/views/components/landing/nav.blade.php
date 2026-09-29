@@ -78,7 +78,7 @@
     </div>
 </header>
 
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
     document.addEventListener('DOMContentLoaded', function () {
         var menuBtn = document.getElementById('mobile-menu-btn');
         var mobileMenu = document.getElementById('mobile-menu');

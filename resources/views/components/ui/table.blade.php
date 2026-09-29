@@ -162,7 +162,7 @@
 </div>
 
 @once
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         (function () {
             if (window.renderUiTable) {
                 return;
