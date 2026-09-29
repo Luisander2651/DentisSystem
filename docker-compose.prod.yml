@@ -1,0 +1,210 @@
+# Production (spec 015, ADR 0004). Lives in its own clone (/home/deploy/dentissa), selected
+# with COMPOSE_FILE=docker-compose.prod.yml in that clone's .env. Always run it through
+# docker/prod/compose.sh, deploy.sh or rollback.sh, which set APP_VERSION.
+#
+# - Own project and container names, apart from the manual stack (laravel-*), which is only
+#   stopped, never removed, so it can come back (rollback.sh --to-manual).
+# - The data volumes are the manual stack's ones (external, DATA_VOLUME_PREFIX = its Compose
+#   project). Both stacks never run at the same time. Data services keep the manual stack's
+#   versions, so either stack can read what the other wrote.
+# - Only 80 and 443 are published; Grafana only on the droplet's loopback (SSH tunnel).
+#   Docker publishes ports above ufw, so nothing else may appear under `ports`.
+name: dentissa
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  app:
+    image: dentissa-app:${APP_VERSION:?APP_VERSION is set by docker/prod/compose.sh}
+    container_name: dentissa-app
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - storage:/var/www/html/storage
+      - storage-public:/var/www/html/storage/app/public
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dentissa
+    logging: *default-logging
+
+  queue:
+    image: dentissa-app:${APP_VERSION:?APP_VERSION is set by docker/prod/compose.sh}
+    container_name: dentissa-queue
+    restart: unless-stopped
+    env_file: .env
+    command: ["php", "artisan", "queue:work", "--tries=3", "--max-time=3600"]
+    volumes:
+      - storage:/var/www/html/storage
+      - storage-public:/var/www/html/storage/app/public
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dentissa
+    logging: *default-logging
+
+  nginx:
+    image: dentissa-web:${APP_VERSION:?APP_VERSION is set by docker/prod/compose.sh}
+    container_name: dentissa-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+      - storage-public:/var/www/html/public/storage:ro
+    depends_on:
+      - app
+    networks:
+      - dentissa
+    logging: *default-logging
+
+  db:
+    image: postgres:16
+    container_name: dentissa-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:?define DB_USERNAME in .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?define DB_PASSWORD in .env}
+      POSTGRES_DB: ${DB_DATABASE:?define DB_DATABASE in .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dentissa
+    logging: *default-logging
+
+  redis:
+    image: redis:7-alpine
+    container_name: dentissa-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:?define REDIS_PASSWORD in .env}
+    environment:
+      # Lets the healthcheck authenticate without putting the password on a command line.
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?define REDIS_PASSWORD in .env}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dentissa
+    logging: *default-logging
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: dentissa-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki-data:/loki
+    networks:
+      - dentissa
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: dentissa-grafana
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000" # only through an SSH tunnel
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:?define GRAFANA_PASSWORD in .env}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - loki
+    networks:
+      - dentissa
+
+  alloy:
+    image: grafana/alloy:v1.1.0
+    container_name: dentissa-alloy
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    entrypoint:
+      - /bin/sh
+      - -euc
+      - |
+        cat << 'EOF' > /etc/alloy/config.alloy
+        loki.write "local" {
+          endpoint {
+            url = "http://loki:3100/loki/api/v1/push"
+          }
+        }
+
+        discovery.docker "containers" {
+          host             = "unix:///var/run/docker.sock"
+          refresh_interval = "5s"
+        }
+
+        discovery.relabel "containers" {
+          targets = discovery.docker.containers.targets
+
+          rule {
+            source_labels = ["__meta_docker_container_name"]
+            regex         = "/(.*)"
+            target_label  = "container"
+          }
+          rule {
+            source_labels = ["__meta_docker_container_log_stream"]
+            target_label  = "stream"
+          }
+          rule {
+            target_label = "job"
+            replacement  = "docker"
+          }
+        }
+
+        loki.source.docker "logs" {
+          host             = "unix:///var/run/docker.sock"
+          targets          = discovery.relabel.containers.output
+          forward_to       = [loki.write.local.receiver]
+          refresh_interval = "5s"
+        }
+        EOF
+        exec /bin/alloy run --server.http.listen-addr=0.0.0.0:12345 /etc/alloy/config.alloy
+    depends_on:
+      - loki
+    networks:
+      - dentissa
+
+networks:
+  dentissa:
+    driver: bridge
+
+volumes:
+  # The manual stack's data (its Compose project + volume name), shared on purpose.
+  db-data:
+    external: true
+    name: ${DATA_VOLUME_PREFIX:?define DATA_VOLUME_PREFIX in .env}_db-data
+  redis-data:
+    external: true
+    name: ${DATA_VOLUME_PREFIX:?define DATA_VOLUME_PREFIX in .env}_redis-data
+  loki-data:
+    external: true
+    name: ${DATA_VOLUME_PREFIX:?define DATA_VOLUME_PREFIX in .env}_loki-data
+  grafana-data:
+    external: true
+    name: ${DATA_VOLUME_PREFIX:?define DATA_VOLUME_PREFIX in .env}_grafana-data
+  # Production only.
+  storage:
+  storage-public:

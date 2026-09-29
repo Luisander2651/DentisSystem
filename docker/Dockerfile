@@ -1,17 +1,16 @@
-# docker/Dockerfile
-FROM php:8.4-fpm-alpine
+# docker/Dockerfile — spec 015, ADR 0004
+#
+#   dev     local development: code mounted as a volume, Node and Composer inside
+#   prod    production app and queue: code, vendor (no dev) and compiled assets baked in
+#   web     production nginx: public/ with the compiled assets and docker/nginx/prod.conf
+#
+# Base images are pinned to at least major.minor and must be in support (never :latest).
 
-# 1. Instalar dependencias DE EJECUCIÓN (Runtime)
-# Estas librerías se deben quedar en la imagen final para que PHP funcione.
-RUN apk update && apk add --no-cache \
-    # Herramientas básicas
-    git \
-    curl \
-    zip \
-    unzip \
-    nodejs \
-    npm \
-    # Librerías requeridas por las extensiones de PHP (versiones runtime)
+# --- base: PHP and the extensions every image needs --------------------------------------
+FROM php:8.4-fpm-alpine AS base
+
+# Runtime libraries of the PHP extensions (they stay in the image)
+RUN apk add --no-cache \
     libpng \
     libjpeg-turbo \
     freetype \
@@ -19,8 +18,7 @@ RUN apk update && apk add --no-cache \
     libpq \
     oniguruma
 
-# 2. Instalar dependencias de COMPILACIÓN (Build deps)
-# Usamos --virtual .build-deps para agruparlas y borrarlas fácilmente después
+# Build dependencies, grouped so they can be removed after compiling the extensions
 RUN apk add --no-cache --virtual .build-deps \
     postgresql-dev \
     libxml2-dev \
@@ -29,28 +27,74 @@ RUN apk add --no-cache --virtual .build-deps \
     freetype-dev \
     libexif-dev \
     oniguruma-dev \
-    libzip-dev
-
-# 3. Configurar extensiones (GD)
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-
-# 4. Instalar extensiones de PHP
-RUN docker-php-ext-install -j$(nproc) pdo_pgsql mbstring exif pcntl bcmath gd zip opcache
-
-# 5. Limpieza INTELIGENTE
-# Esto borra solo el grupo virtual .build-deps, pero MANTIENE las librerías del paso 1
-RUN apk del .build-deps \
+    libzip-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" pdo_pgsql mbstring exif pcntl bcmath gd zip opcache \
+    && apk del .build-deps \
     && rm -rf /var/cache/apk/*
 
-# 6. Obtener Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# 7. Establecer directorio de trabajo
 WORKDIR /var/www/html
 
-# 8. Configurar permisos
-RUN mkdir -p /var/www/html/.composer && \
-    chown -R www-data:www-data /var/www/html/.composer
+# --- dev: the local development image ----------------------------------------------------
+FROM base AS dev
 
-# 9. Ejecución Final
+RUN apk add --no-cache git curl zip unzip nodejs npm
+
+COPY --from=composer:2.9 /usr/bin/composer /usr/bin/composer
+
+RUN mkdir -p /var/www/html/.composer \
+    && chown -R www-data:www-data /var/www/html/.composer
+
 USER www-data
+
+# --- vendor: production dependencies, without dev packages --------------------------------
+FROM composer:2.9 AS vendor
+
+WORKDIR /app
+COPY . .
+# The extensions live in the runtime image, not in this one.
+RUN composer install --no-dev --optimize-autoloader --no-scripts --prefer-dist \
+    --no-interaction --no-progress --ignore-platform-reqs
+
+# --- assets: the compiled frontend ---------------------------------------------------------
+FROM node:22.20-alpine3.22 AS assets
+
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY vite.config.js ./
+COPY resources ./resources
+# Tailwind also scans the pagination views shipped with the framework.
+COPY --from=vendor /app/vendor/laravel/framework/src/Illuminate/Pagination/resources/views \
+    ./vendor/laravel/framework/src/Illuminate/Pagination/resources/views
+RUN npm run build
+
+# --- prod: app and queue ------------------------------------------------------------------
+FROM base AS prod
+
+COPY docker/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+COPY docker/prod/php.ini /usr/local/etc/php/conf.d/zz-production.ini
+
+# Code and vendor stay owned by root (read-only for the app); only the runtime folders
+# belong to www-data, so fresh volumes mounted there inherit that owner.
+COPY --from=vendor /app /var/www/html
+COPY --from=assets /app/public/build /var/www/html/public/build
+COPY docker/prod/entrypoint.sh /usr/local/bin/dentissa-entrypoint
+
+RUN chmod 755 /usr/local/bin/dentissa-entrypoint \
+    && mkdir -p storage/app/public storage/app/private storage/framework/cache/data \
+        storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+USER www-data
+
+ENTRYPOINT ["dentissa-entrypoint"]
+CMD ["php-fpm"]
+
+# --- web: production nginx ----------------------------------------------------------------
+FROM nginx:1.30-alpine AS web
+
+COPY --from=vendor /app/public /var/www/html/public
+COPY --from=assets /app/public/build /var/www/html/public/build
+COPY docker/nginx/prod.conf /etc/nginx/conf.d/default.conf

@@ -80,6 +80,17 @@ it('runs production as its own project, apart from the manual stack (D18)', func
     }
 });
 
+it('keeps the data services on the same versions as the manual stack (A62)', function () {
+    // Production shares the data volumes with the manual stack and the rollback goes both
+    // ways, so a newer PostgreSQL, Redis, Loki or Grafana could leave data the other cannot read.
+    $local = composeFile('docker-compose.yml')['services'];
+    $production = composeFile('docker-compose.prod.yml')['services'];
+
+    foreach (['db', 'redis', 'loki', 'grafana'] as $service) {
+        expect($production[$service]['image'] ?? null)->toBe($local[$service]['image'] ?? null, "{$service} image");
+    }
+});
+
 it('serves the local stack on 8000 with vite on the loopback and without TLS (CA1)', function () {
     $ports = publishedPorts(composeFile('docker-compose.yml'));
 
