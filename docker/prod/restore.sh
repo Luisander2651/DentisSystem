@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Restores a PostgreSQL dump of Dentissa over the current database (spec 015, CA13).
+#
+#   restore.sh <dump>                  into the production stack
+#   restore.sh --into-manual <dump>    into the manual stack in MANUAL_DIR
+#   restore.sh --yes <dump>            without the interactive confirmation (rollback.sh)
+#
+# Everything written after the dump is lost. It is only ever run by hand or by rollback.sh.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=docker/prod/lib.sh
+source "$SCRIPT_DIR/lib.sh"
+
+INTO_MANUAL=false
+CONFIRMED=false
+DUMP=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --into-manual) INTO_MANUAL=true ;;
+        --yes) CONFIRMED=true ;;
+        -*) fail "unknown option: $1" ;;
+        *) DUMP="$1" ;;
+    esac
+    shift
+done
+[ -n "$DUMP" ] || fail "usage: restore.sh [--into-manual] [--yes] <dump>"
+[ -f "$DUMP" ] || fail "dump not found: $DUMP"
+[ "$(head -c 5 "$DUMP")" = "PGDMP" ] || fail "not a PostgreSQL custom-format dump: $DUMP"
+
+DUMP_NAME="$(basename "$DUMP")"
+
+if [ "$CONFIRMED" != true ]; then
+    printf 'This replaces the current database with %s. Everything written after it is lost.\n' "$DUMP_NAME"
+    read -r -p "Type 'restore' to continue: " answer
+    [ "$answer" = "restore" ] || fail "cancelled"
+fi
+
+on_error() {
+    log_operation restore "$DUMP_NAME" failed
+}
+trap on_error ERR
+
+# shellcheck disable=SC2016 # expanded inside the container, on purpose
+RESTORE_COMMAND='pg_restore --clean --if-exists --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+if [ "$INTO_MANUAL" = true ]; then
+    (cd "$MANUAL_DIR" && docker compose exec -T db sh -c "$RESTORE_COMMAND") < "$DUMP"
+else
+    "$SCRIPT_DIR/compose.sh" exec -T db sh -c "$RESTORE_COMMAND" < "$DUMP"
+fi
+
+trap - ERR
+log_operation restore "$DUMP_NAME" ok
+printf 'restored %s\n' "$DUMP_NAME"

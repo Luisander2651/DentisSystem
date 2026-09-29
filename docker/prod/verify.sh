@@ -40,7 +40,8 @@ compose() {
 # --- local checks -----------------------------------------------------------------------
 
 health_answers() {
-    curl -fsS -o /dev/null --max-time 10 --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/up"
+    # Local loopback check: certificate validity is --remote's job.
+    curl -kfsS -o /dev/null --max-time 10 --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/up"
 }
 
 debug_is_off() {
