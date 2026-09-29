@@ -18,6 +18,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 ### Added
 - Inicialización del flujo AI-DD: constitución, arquitectura, despliegue, seguridad, roadmap, ADRs y specs inferidas en `docs/`; validador en `.ai/bin/aidd.py`; workflow de CI `.ai/ci/ai-dd.yml`, guardado sin activar.
 
+### Changed — flujo AI-DD actualizado a 1.8.1
+- Validador 1.8.1 (`aidd.py review-pack`, `history`/`rotate`, lectura de Markdown en cp1252 y vocabulario en inglés).
+- Plantilla de review con la sección "Aceptados sin tarea"; `language: es` en `.ai/project.yaml`.
+- Rondas anteriores de `/analyze` y `/review` de la spec 014 movidas a `docs/specs/014-control-de-acceso-y-errores/history/`, con índice en `history/README.md`.
+
 ### Changed — flujo AI-DD actualizado a 1.6.0
 - Validador 1.6.0 (`/analyze` delta con `aidd.py snapshot` y `changes`, cobertura de riesgos por corrección, aviso de specs grandes) y plantilla de spec con "Cobertura de riesgos"; `.ai/cache/` en `.gitignore`.
 - Riesgos y brechas con IDs y estado por corrección: `RS1`–`RS13` en `security.md`, `OB1`–`OB11` en `observability.md` y `RD1`–`RD8` en `deployment.md` (contenido sin cambios; correcciones implícitas marcadas "derivada").
