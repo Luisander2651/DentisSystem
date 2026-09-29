@@ -10,7 +10,7 @@ human_signoff: Luisander2651 (2026-09-25)
 
 # Review · 014 Control de acceso a pacientes y citas, y errores sin detalles internos
 
-Ronda 3 (`--rerun`) sobre la ronda 2 ([review.r2.md](review.r2.md)). Revisa los hallazgos abiertos
+Ronda 3 (`--rerun`) sobre la ronda 2 ([review.r2.md](history/review.r2.md)). Revisa los hallazgos abiertos
 R30–R36, el diff `328aed9..364adec` y la verificación automática completa. No reabre los menores
 aceptados en rondas anteriores.
 
