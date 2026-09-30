@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-09-23
+updated: 2026-09-29
 ---
 
 # Despliegue de Dentissa
@@ -78,7 +78,91 @@ Scripts de `docker/prod/` (desde el clon): `deploy.sh`, `rollback.sh`, `backup.s
 Primer paso, desde la pila manual (con aprobación explícita):
 1. Comprobar, sin configurar: `ufw` con 22, 80 y 443; Cloudflare en SSL Full (strict) y si "Always Use HTTPS" está activo; RAM libre para el build (swap de 2 GB si hace falta).
 2. `git clone` del repositorio en `/home/deploy/dentissa` y `git checkout <tag>`. Copiar ahí el `.env` de la pila manual (`chmod 600`) y ajustar `COMPOSE_FILE=docker-compose.prod.yml`, `DATA_VOLUME_PREFIX` y las variables de "Variables de entorno" (prod). `/home/deploy/DentisSystem` no se toca.
-3. Certbot a webroot: `mkdir -p /var/www/certbot`; `certbot reconfigure` (o editar `/etc/letsencrypt/renewal/dentissapp.com.conf`) con `authenticator = webroot`, `webroot_path = /var/www/certbot` y `deploy_hook = DENTISSA_DIR=/home/deploy/dentissa /home/deploy/dentissa/docker/prod/compose.sh exec -T nginx nginx -s reload`.
+3. Certbot a webroot: `mkdir -p /var/www/certbot` y, en `/etc/letsencrypt/renewal/dentissapp.com.conf`, `authenticator = webroot`, `webroot_path = /var/www/certbot` y `deploy_hook = DENTISSA_DIR=/home/deploy/dentissa /home/deploy/dentissa/docker/prod/compose.sh exec -T nginx nginx -s reload`.
+
+Los pasos 1 a 3, comando a comando (como `deploy`, por SSH). Ninguno imprime secretos; lo que
+salga se anota sin valores.
+
+```bash
+# 1a. Punto de partida: la pila manual no debe cambiar en todo el proceso.
+git -C /home/deploy/DentisSystem status --porcelain      # anotar la salida (idealmente vacía)
+git -C /home/deploy/DentisSystem log --oneline -1
+docker compose ls                                         # proyecto de la pila manual (se espera dentissystem)
+docker volume ls --format '{{.Name}}' | grep -- '_db-data$'   # su prefijo, p. ej. dentissystem_db-data
+
+# 1b. Firewall: solo 22, 80 y 443 (Docker publica por encima de ufw; verify.sh --remote lo
+#     comprueba desde fuera).
+sudo ufw status verbose
+
+# 1c. Cloudflare. SSL/TLS → Overview debe decir "Full (strict)" (panel de Cloudflare). Para
+#     "Always Use HTTPS", desde el droplet o desde tu equipo:
+curl -sI http://dentissapp.com/ | grep -iE '^(HTTP|location|server)'
+#     301 con "server: cloudflare" → lo hace Cloudflare (activo); si la respuesta viene de
+#     nginx, lo hace el origen. Anotar cuál.
+
+# 1d. Memoria y disco para el build (unos 1,5 GB libres; disco por debajo del 80 %).
+free -h
+df -h /
+docker compose version
+
+# 1e. Solo si "available" en free -h es menor de 1,5 GB y no hay swap: swap de 2 GB.
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile
+sudo mkswap /swapfile && sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# 2a. Clon de producción, con el mismo remoto que la pila manual.
+git clone "$(git -C /home/deploy/DentisSystem remote get-url origin)" /home/deploy/dentissa
+cd /home/deploy/dentissa
+git checkout <rama o tag>          # en el ensayo (T051), la rama de la spec con el tag local ensayo-1
+
+# 2b. .env: copia del de la pila manual, solo legible por deploy.
+cp /home/deploy/DentisSystem/.env .env
+chmod 600 .env
+nano .env
+#     Añadir o cambiar (sin tocar las credenciales, que son las del volumen de datos):
+#       COMPOSE_FILE=docker-compose.prod.yml
+#       DATA_VOLUME_PREFIX=<prefijo de 1a>
+#       APP_ENV=production            APP_DEBUG=false
+#       APP_URL=https://dentissapp.com
+#       LOG_CHANNEL=stderr            LOG_LEVEL=info
+#       SESSION_DRIVER=redis          SESSION_ENCRYPT=true      SESSION_SECURE_COOKIE=true
+#       CACHE_STORE=redis             QUEUE_CONNECTION=redis    REDIS_CLIENT=predis
+#       CSP_REPORT_ONLY=false
+#     Deben existir (con valor) DB_USERNAME, DB_PASSWORD, DB_DATABASE, REDIS_PASSWORD y
+#     GRAFANA_PASSWORD: docker-compose.prod.yml se niega a arrancar sin ellas.
+
+# 2c. Comprobar sin mostrar secretos: nombres presentes y variables no secretas.
+grep -oE '^(DB_USERNAME|DB_PASSWORD|DB_DATABASE|REDIS_PASSWORD|GRAFANA_PASSWORD|APP_KEY)=.' .env | cut -d= -f1
+grep -E '^(COMPOSE_FILE|DATA_VOLUME_PREFIX|APP_ENV|APP_DEBUG|APP_URL|LOG_CHANNEL|LOG_LEVEL|SESSION_DRIVER|SESSION_ENCRYPT|SESSION_SECURE_COOKIE|CACHE_STORE|QUEUE_CONNECTION|REDIS_CLIENT|CSP_REPORT_ONLY)=' .env
+stat -c '%a %U' .env                                      # 600 deploy
+docker/prod/compose.sh config --quiet && echo "compose ok"
+
+# 3a. Certbot a webroot (hoy renueva con el método del despliegue manual).
+sudo certbot certificates                                 # anotar la fecha de vencimiento
+sudo cat /etc/letsencrypt/renewal/dentissapp.com.conf     # anotar authenticator (no hay secretos en este archivo)
+sudo cp /etc/letsencrypt/renewal/dentissapp.com.conf /etc/letsencrypt/renewal/dentissapp.com.conf.pre-015
+sudo mkdir -p /var/www/certbot
+sudo nano /etc/letsencrypt/renewal/dentissapp.com.conf
+#     En [renewalparams]:
+#       authenticator = webroot
+#       webroot_path = /var/www/certbot,
+#       deploy_hook = DENTISSA_DIR=/home/deploy/dentissa /home/deploy/dentissa/docker/prod/compose.sh exec -T nginx nginx -s reload
+#     (quitar las líneas del método anterior, p. ej. "standalone" o "nginx", y
+#     pre_hook/post_hook si paraban la pila). Al final del archivo:
+#       [[webroot_map]]
+#       dentissapp.com = /var/www/certbot
+#       www.dentissapp.com = /var/www/certbot
+
+# 3b. Final: la pila manual sigue igual que en 1a.
+git -C /home/deploy/DentisSystem status --porcelain
+```
+
+El `certbot renew --dry-run` no se ejecuta aquí: el nginx de la pila manual no sirve
+`/var/www/certbot`, así que la prueba con webroot solo tiene sentido con producción en marcha
+(paso 5, T053). Mientras tanto no debe tocar una renovación: certbot solo renueva a 30 días del
+vencimiento (comprobado con `certbot certificates` en 3a). Si hubiera que deshacerlo, se vuelve a
+copiar el `.pre-015`.
+
 4. `docker/prod/deploy.sh --first <tag>`: backup de la pila manual, `stop` de la pila manual, copia de su `storage/app/public` al volumen `storage-public` (solo si está vacío), build de `dentissa-app:<tag>` y `dentissa-web:<tag>`, `up`, `migrate --force` y `verify.sh --local`.
 5. `certbot renew --dry-run` y cron diario del usuario `deploy`: `0 3 * * * /home/deploy/dentissa/docker/prod/backup.sh daily`.
 6. Desde fuera del droplet: `docker/prod/verify.sh --remote dentissapp.com --origin <IP del droplet>`.
