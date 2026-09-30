@@ -142,3 +142,11 @@ it('keeps secrets and local artefacts out of the image build context (CA2, TM13)
         expect($patterns)->toContain($pattern);
     }
 });
+
+it('keeps the deploy state of the production clone out of git (T058)', function () {
+    // deploy.sh refuses a clone with uncommitted changes, so .deploy/current and
+    // .deploy/previous must not show up in `git status` after the first deploy.
+    $patterns = array_map('trim', file(base_path('.gitignore'), FILE_IGNORE_NEW_LINES));
+
+    expect($patterns)->toContain('/.deploy');
+});

@@ -36,3 +36,6 @@ PROPUESTA_ESQUEMA_PRUEBAS_PEST.txt
 prod-files.md
 # AI-DD: copias locales para /analyze delta
 /.ai/cache/
+
+# Spec 015: deploy state of the production clone (deploy.sh, rollback.sh)
+/.deploy
