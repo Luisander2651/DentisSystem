@@ -30,6 +30,14 @@ beforeEach(function () {
     expect($constructor?->getNumberOfParameters() ?? 0)
         ->toBeGreaterThan(0, 'TwilioConection does not accept a Twilio client yet');
 
+    // Fictitious settings: the flow must not depend on the Twilio values of a local .env.
+    config([
+        'services.twilio.sid' => 'ACtest',
+        'services.twilio.token' => 'test-token',
+        'services.twilio.from' => '+14155550100',
+        'services.twilio.appointment_template_sid' => 'HXtest',
+    ]);
+
     $this->logFile = storage_path('logs/whatsapp-flow-'.Str::uuid().'.log');
     config(['logging.channels.flow_capture' => ['driver' => 'single', 'path' => $this->logFile, 'level' => 'debug']]);
     Log::setDefaultDriver('flow_capture');
