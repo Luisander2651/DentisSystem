@@ -45,11 +45,15 @@ health_answers() {
 }
 
 debug_is_off() {
-    compose exec -T app php artisan about --only=environment --json | grep -q '"debug_mode":false'
+    local about
+    about="$(compose exec -T app php artisan about --only=environment --json)"
+    [[ "$about" == *'"debug_mode":false'* ]]
 }
 
 queue_is_running() {
-    compose ps --status running --services | grep -qx queue
+    local services
+    services="$(compose ps --status running --services)"
+    grep -qx queue <<< "$services"
 }
 
 runs_without_root() {
@@ -74,15 +78,15 @@ manual_database_is_stopped() {
 }
 
 recent_backup_exists() {
-    find "$BACKUP_DIR" -maxdepth 1 -name '*.dump' -mmin -1500 | grep -q .
+    [ -n "$(find "$BACKUP_DIR" -maxdepth 1 -name '*.dump' -mmin -1500)" ]
 }
 
 backups_are_private() {
-    [ "$(stat -c %a "$BACKUP_DIR")" = "700" ] && ! find "$BACKUP_DIR" -maxdepth 1 -name '*.dump' ! -perm 600 | grep -q .
+    [ "$(stat -c %a "$BACKUP_DIR")" = "700" ] && [ -z "$(find "$BACKUP_DIR" -maxdepth 1 -name '*.dump' ! -perm 600)" ]
 }
 
 old_daily_backups_are_rotated() {
-    ! find "$BACKUP_DIR" -maxdepth 1 -name 'daily-*.dump' -mtime +7 | grep -q .
+    [ -z "$(find "$BACKUP_DIR" -maxdepth 1 -name 'daily-*.dump' -mtime +7)" ]
 }
 
 last_operation_is_recorded() {
@@ -125,16 +129,18 @@ redirects_to_https() {
 }
 
 has_header() {
-    headers_of "https://$DOMAIN/login" | grep -qiE "^$1"
+    grep -qiE "^$1" <<< "$(headers_of "https://$DOMAIN/login")"
 }
 
 lacks_header() {
-    ! headers_of "https://$DOMAIN/login" | grep -qiE "^$1"
+    ! grep -qiE "^$1" <<< "$(headers_of "https://$DOMAIN/login")"
 }
 
 rejects_foreign_origin() {
-    ! headers_of -X OPTIONS -H 'Origin: https://evil.example' -H 'Access-Control-Request-Method: GET' \
-        "https://$DOMAIN$RATE_LIMITED_PATH" | grep -qi '^access-control-allow-origin'
+    local headers
+    headers="$(headers_of -X OPTIONS -H 'Origin: https://evil.example' -H 'Access-Control-Request-Method: GET' \
+        "https://$DOMAIN$RATE_LIMITED_PATH")"
+    ! grep -qi '^access-control-allow-origin' <<< "$headers"
 }
 
 status_is() {
@@ -143,8 +149,9 @@ status_is() {
 }
 
 manifest_asset_is_served() {
-    local asset
-    asset="$(curl -fsS --max-time 10 "https://$DOMAIN/build/manifest.json" | grep -oE '"file": *"[^"]+"' | head -n 1 | sed -E 's/.*"([^"]+)"$/\1/')"
+    local manifest asset
+    manifest="$(curl -fsS --max-time 10 "https://$DOMAIN/build/manifest.json")"
+    asset="$(grep -oE '"file": *"[^"]+"' <<< "$manifest" | sed -nE '1s/.*"([^"]+)"$/\1/p')"
     [ -n "$asset" ] && status_is 200 "/build/$asset"
 }
 
