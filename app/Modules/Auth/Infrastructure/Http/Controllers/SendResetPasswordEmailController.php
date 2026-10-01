@@ -26,9 +26,10 @@ final class SendResetPasswordEmailController
 
             return new JsonResponse(['message' => 'Email de restablecimiento de contraseña enviado.']);
         } catch (\Exception $e) {
+            // Spec 015 (CA18): the message and the trace may carry the e-mail address.
             Log::error('SendResetPasswordEmailController: Error al enviar email de restablecimiento', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                'errorCode' => $e->getCode(),
+                'exception' => $e::class,
             ]);
 
             return new JsonResponse(['error' => 'Error al enviar el email de restablecimiento de contraseña.'], 500);

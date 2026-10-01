@@ -7,18 +7,26 @@ use Brevo\Exceptions\BrevoApiException;
 use Brevo\TransactionalEmails\Requests\SendTransacEmailRequest;
 use Brevo\TransactionalEmails\Types\SendTransacEmailRequestSender;
 use Brevo\TransactionalEmails\Types\SendTransacEmailRequestToItem;
-use \Brevo\TransactionalEmails\Types\SendTransacEmailResponse;
+use Brevo\TransactionalEmails\Types\SendTransacEmailResponse;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
+/**
+ * Spec 015: the API key comes from config('services.brevo.api_key') through
+ * AppServiceProvider (RD4.a); a Brevo client can be passed in to test without network.
+ * Logs and rethrown exceptions carry only the status code and the template id, never the
+ * recipient, Brevo's body or its message, which repeat the e-mail address (CA18).
+ */
 final readonly class BrevoApi
 {
     private Brevo $client;
 
     public function __construct(
         public int $TemplateId,
-    )
-    {
-        $this->client = new Brevo(apiKey: env('BREVO_EMAIL_SENDER_API_KEY'));
+        public string $apiKey = '',
+        ?Brevo $client = null,
+    ) {
+        $this->client = $client ?? new Brevo(apiKey: $apiKey);
     }
 
     public function sendEmail(string $email, string $name, array $params = []): SendTransacEmailResponse
@@ -40,17 +48,20 @@ final readonly class BrevoApi
         } catch (BrevoApiException $e) {
             Log::error('Brevo API rejected the transactional email request', [
                 'statusCode' => $e->getCode(),
-                'body' => $e->getBody(),
                 'templateId' => $this->TemplateId,
             ]);
-            throw new \RuntimeException('Error al enviar el correo electrónico: ' . $e->getMessage(), 0, $e);
+
+            throw new RuntimeException('Brevo rejected the email (status '.$e->getCode().')', (int) $e->getCode());
         } catch (\Exception $e) {
-            // Manejo de errores, puedes loguear el error o lanzar una excepción personalizada
-            Log::error('Error al enviar el correo electrónico: ' . $e->getMessage());
-            throw new \RuntimeException('Error al enviar el correo electrónico: ' . $e->getMessage(), 0, $e);
+            Log::error('Brevo email request failed', [
+                'exception' => $e::class,
+                'templateId' => $this->TemplateId,
+            ]);
+
+            throw new RuntimeException('Brevo email request failed');
         }
     }
-    
+
     private function createSendTransacEmailRequest(
         ?string $subject,
         int $templateId,

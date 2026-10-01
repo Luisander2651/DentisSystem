@@ -110,7 +110,7 @@
 	</div>
 </div>
 
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
 	(function () {
 		const form = document.getElementById('register-form');
 		const errorBox = document.getElementById('register-error');

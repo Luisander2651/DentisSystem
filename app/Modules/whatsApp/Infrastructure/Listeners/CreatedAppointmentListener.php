@@ -7,13 +7,15 @@ namespace App\Modules\whatsApp\Infrastructure\Listeners;
 use App\Modules\Appointments\Domain\Events\ScheduledAppointment;
 use App\Modules\whatsApp\Aplication\DTOs\SendConfirmationAppointmentMessageDTO;
 use App\Modules\whatsApp\Aplication\UseCases\SendAppointmentConfirmationUseCase;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * Spec 015 (CA18): logs identify the appointment, never the patient's phone or name.
+ */
 class CreatedAppointmentListener implements ShouldQueue
 {
-
     use InteractsWithQueue;
 
     /**
@@ -29,20 +31,19 @@ class CreatedAppointmentListener implements ShouldQueue
 
     public function __construct(
         private SendAppointmentConfirmationUseCase $useCase
-    )
-    {}
+    ) {}
 
     public function handle(ScheduledAppointment $event): void
     {
+        $appointmentId = $event->appointmentEntity->Id()->value;
+
         Log::info('CreatedAppointmentListener: Evento ScheduledAppointment recibido', [
-            'customerPhone' => $event->customerPhone,
-            'customerName' => $event->customerName,
-            'appointmentId' => $event->appointmentEntity->Id()->value,
+            'appointmentId' => $appointmentId,
         ]);
 
         if (trim($event->customerPhone) === '') {
             Log::warning('CreatedAppointmentListener: Se omite el envío de WhatsApp porque no existe teléfono de contacto', [
-                'appointmentId' => $event->appointmentEntity->Id()->value,
+                'appointmentId' => $appointmentId,
                 'patientId' => $event->appointmentEntity->PatientId()->value,
             ]);
 
@@ -57,17 +58,16 @@ class CreatedAppointmentListener implements ShouldQueue
                 time: $event->time
             );
 
-            Log::info('CreatedAppointmentListener: DTO creado, ejecutando UseCase', [
-                'customerPhone' => $dto->customerPhone,
-            ]);
-
             $this->useCase->execute($dto);
 
-            Log::info('CreatedAppointmentListener: UseCase ejecutado exitosamente');
+            Log::info('CreatedAppointmentListener: UseCase ejecutado exitosamente', [
+                'appointmentId' => $appointmentId,
+            ]);
         } catch (\Exception $e) {
             Log::error('CreatedAppointmentListener: Error al enviar mensaje', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                'appointmentId' => $appointmentId,
+                'errorCode' => $e->getCode(),
+                'exception' => $e::class,
             ]);
             throw $e;
         }

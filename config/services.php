@@ -36,7 +36,15 @@ return [
     ],
 
     'brevo' => [
+        'api_key' => env('BREVO_EMAIL_SENDER_API_KEY'),
         'reset_password_template_id' => (int) env('BREVO_RESET_PASSWORD_TEMPLATE_ID'),
+    ],
+
+    'twilio' => [
+        'sid' => env('TWILIO_SID'),
+        'token' => env('TWILIO_AUTH_TOKEN'),
+        'from' => env('TWILIO_PHONE_NUMBER'),
+        'appointment_template_sid' => env('TWILIO_APPOINTMENT_TEMPLATE_SID'),
     ],
 
 ];

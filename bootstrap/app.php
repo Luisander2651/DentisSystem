@@ -5,12 +5,15 @@ use App\Core\Http\UnexpectedErrorResponse;
 use App\Core\Middlewares\EnsureActiveStaff;
 use App\Core\Middlewares\InjectSanctumTokenFromCookie;
 use App\Core\Middlewares\OnlyAdmin;
+use App\Core\Middlewares\SecurityHeaders;
+use App\Core\Middlewares\TrustCloudflareProxies;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -31,6 +34,10 @@ return Application::configure(basePath: dirname(__DIR__))
         discover: $eventPaths
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Spec 015: real client IP behind Cloudflare, and security headers on every response.
+        $middleware->replace(TrustProxies::class, TrustCloudflareProxies::class);
+        $middleware->append(SecurityHeaders::class);
+
         $middleware->statefulApi();
         $middleware->encryptCookies(except: ['auth_token']);
         $middleware->web(prepend: [InjectSanctumTokenFromCookie::class]);

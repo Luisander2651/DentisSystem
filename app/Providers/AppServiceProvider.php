@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Core\Authorization\CurrentActorAuthorizationService;
+use App\Core\Health\CheckDependenciesOnHealth;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\EloquentAppointmentRepository;
 use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentCompletionRepositoryInterface;
@@ -43,9 +44,11 @@ use App\Modules\Patients\Infrastructure\Persistence\Eloquent\PatientRecordReposi
 use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -173,7 +176,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->when(SendResetPasswordEmailUseCase::class)
             ->needs(BrevoApi::class)
             ->give(function ($app) {
-                return new BrevoApi(TemplateId: config('services.brevo.reset_password_template_id'));
+                return new BrevoApi(
+                    TemplateId: config('services.brevo.reset_password_template_id'),
+                    apiKey: (string) config('services.brevo.api_key'),
+                );
             });
     }
 
@@ -183,6 +189,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Carbon::setLocale(config('app.locale'));
+
+        // Spec 015: /up also checks PostgreSQL and Redis.
+        Event::listen(DiagnosingHealth::class, CheckDependenciesOnHealth::class);
 
         // 1. Obtenemos todas las rutas de migraciones de los módulos
         $paths = array_merge(

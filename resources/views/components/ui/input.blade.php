@@ -80,7 +80,7 @@
 </div>
 
 @once
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         (function () {
             function isValidByVariant(value, variant) {
                 if (value === '') {

@@ -11,15 +11,16 @@ use App\Modules\Email\Infrastructure\ExternalApi\BrevoApi;
 // Se encargara de enviar el email al cliente con el magic codelink
 final readonly class SendResetPasswordEmailUseCase
 {
+    private const RESET_PASSWORD_PATH = '/reset-password?token=';
 
-    private const URL_RESET_PASSWORD = 'http://localhost:8000/reset-password?token=';
     public function __construct(
         private BrevoApi $brevoApi,
     ) {}
 
     public function execute(string $email, string $name, string $token): void
     {
-        $resetUrl = self::URL_RESET_PASSWORD . $token;
+        // Spec 015 (CA19): the link points to the configured site, not to localhost.
+        $resetUrl = rtrim((string) config('app.url'), '/').self::RESET_PASSWORD_PATH.$token;
         $this->brevoApi->sendEmail(
             email: $email,
             name: $name,

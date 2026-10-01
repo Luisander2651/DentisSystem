@@ -1,0 +1,46 @@
+# Spec 015 (CA2, TM13): the production images are built from the tag, never with the
+# server's secrets, the git history or local artefacts. Dependencies and assets are
+# installed and compiled inside the image.
+
+# Secrets and configuration of each environment
+.env
+.env.*
+!.env.example
+
+# Version control and tooling
+.git
+.github
+.ai
+.claude
+aidlc-docs
+.aidlc-rule-details
+
+# Dependencies and build output (rebuilt inside the image)
+node_modules
+vendor
+public/hot
+public/build
+public/storage
+
+# Runtime data: only the folder structure travels
+storage/app/*
+!storage/app/.gitignore
+!storage/app/public
+storage/app/public/*
+!storage/app/public/.gitignore
+!storage/app/private
+storage/app/private/*
+!storage/app/private/.gitignore
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/testing/*
+storage/framework/views/*
+storage/logs/*
+!storage/logs/.gitignore
+bootstrap/cache/*.php
+
+# Not needed at runtime
+tests
+docs
+Claude outputs
+docker-compose*.yml

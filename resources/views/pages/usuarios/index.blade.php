@@ -85,7 +85,7 @@
     />
 </div>
 
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
     (function () {
         const errorBox = document.getElementById('users-error');
         const loadingBox = document.getElementById('users-loading');
