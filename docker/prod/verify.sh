@@ -137,10 +137,12 @@ lacks_header() {
 }
 
 rejects_foreign_origin() {
+    # A browser only exposes the response when the header is '*' or the requesting origin;
+    # Laravel answers with the site's own origin, which still blocks the foreign one.
     local headers
     headers="$(headers_of -X OPTIONS -H 'Origin: https://evil.example' -H 'Access-Control-Request-Method: GET' \
         "https://$DOMAIN$RATE_LIMITED_PATH")"
-    ! grep -qi '^access-control-allow-origin' <<< "$headers"
+    ! grep -qiE '^access-control-allow-origin: *(\*|https://evil\.example) *$' <<< "${headers//$'\r'/}"
 }
 
 status_is() {
