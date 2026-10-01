@@ -113,7 +113,8 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 # 2a. Clon de producción, con el mismo remoto que la pila manual.
 git clone "$(git -C /home/deploy/DentisSystem remote get-url origin)" /home/deploy/dentissa
 cd /home/deploy/dentissa
-git checkout <rama o tag>          # en el ensayo (T051), la rama de la spec con el tag local ensayo-1
+git checkout vX.Y.Z                # la versión a desplegar (no el commit de la pila manual)
+#     En el ensayo (T051): git checkout main && git tag ensayo-1 && git checkout ensayo-1
 
 # 2b. .env: copia del de la pila manual, solo legible por deploy.
 cp /home/deploy/DentisSystem/.env .env
@@ -121,7 +122,7 @@ chmod 600 .env
 nano .env
 #     Añadir o cambiar (sin tocar las credenciales, que son las del volumen de datos):
 #       COMPOSE_FILE=docker-compose.prod.yml
-#       DATA_VOLUME_PREFIX=<prefijo de 1a>
+#       DATA_VOLUME_PREFIX=dentissystem   (el prefijo de 1a; sustituye la línea, no la añadas dos veces)
 #       APP_ENV=production            APP_DEBUG=false
 #       APP_URL=https://dentissapp.com
 #       LOG_CHANNEL=stderr            LOG_LEVEL=info
