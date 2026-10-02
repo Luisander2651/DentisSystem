@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-09-24
+updated: 2026-10-02
 ---
 
 # Seguridad de Dentissa
@@ -145,7 +145,7 @@ Correcciones:
 (CSP, HSTS, X-Frame-Options, X-Content-Type-Options) ni `config/cors.php` publicado.
 
 Correcciones:
-- RS6.a Cabeceras de seguridad CSP, HSTS, X-Frame-Options y X-Content-Type-Options (derivada) — estado: pendiente
+- RS6.a Cabeceras de seguridad CSP, HSTS, X-Frame-Options y X-Content-Type-Options (derivada) — estado: mitigada (spec 015; versión en `/release`): `SecurityHeaders` (CSP con nonce, `frame-ancestors 'none'`, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`) y HSTS en nginx; `SecurityHeadersTest`. Verificado en el dominio real con `verify.sh --remote dentissapp.com` (T051, 2026-10-01): HSTS, CSP, `X-Frame-Options: DENY`, `nosniff` y `Referrer-Policy` presentes, sin `X-Powered-By` ni versión de nginx; consola sin violaciones de CSP en las cinco pantallas (T052)
 - RS6.b Publicar `config/cors.php` restrictivo (derivada) — estado: mitigada (spec 015; versión en `/release`): solo `APP_URL`, sin credenciales; `CorsTest`
 
 ### RS7 · Media — Subida de imágenes sin límite de tamaño ni re-codificación

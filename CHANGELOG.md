@@ -5,18 +5,34 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+### Added
+- Inicialización del flujo AI-DD: constitución, arquitectura, despliegue, seguridad, roadmap, ADRs y specs inferidas en `docs/`; validador en `.ai/bin/aidd.py`; workflow de CI `.ai/ci/ai-dd.yml`, guardado sin activar.
+- Despliegue reproducible en el VPS (spec 015): imágenes de producción versionadas, una composición de producción aparte de la de desarrollo y scripts para desplegar, volver atrás, hacer y restaurar backups y verificar el servidor, con un registro de cada operación.
+- Copia de seguridad diaria automática de la base de datos (spec 015), además de una antes de cada despliegue.
+- Proceso de colas en producción (spec 015): los correos de restablecimiento de contraseña y los WhatsApp de confirmación vuelven a enviarse.
+- La comprobación de salud `/up` responde con error en 1–2 segundos si la base de datos o la caché no responden (spec 015).
+
+### Changed
+- El certificado HTTPS se renueva sin detener el sitio, y Cloudflare valida el certificado del servidor (modo Full strict) (spec 015).
+- Desarrollo local: la base de datos, la caché, Grafana y el servidor de vite solo escuchan en la propia máquina; `vendor/` y `node_modules/` viven en volúmenes de Docker (spec 015).
+- Twilio y Brevo se configuran desde `config/services.php`, y el enlace del correo de restablecimiento usa la dirección pública del sitio (spec 015).
+
+### Fixed
+- El selector de doctores del formulario de cita respondía 500 a todos (rol `admin` inexistente).
+- Volver a una versión anterior con restauración de la base deja la base exactamente como en el backup, y un backup dañado ya no la modifica (spec 015).
+
 ### Security
+- Cabeceras de seguridad en todo el sitio (spec 015): política de contenido (CSP) con nonce, HSTS, protección contra ser embebido en otros sitios y contra la interpretación de tipos; sin versión de PHP ni de nginx en las respuestas.
+- Solo el propio sitio puede leer la API desde un navegador (CORS restringido), y el límite de peticiones usa la IP real del visitante detrás de Cloudflare: una IP falsificada no lo esquiva (spec 015).
+- Los logs de WhatsApp y del restablecimiento de contraseña ya no incluyen teléfono, nombre, email ni token, y las trazas no llevan argumentos (spec 015).
+- Configuración segura por defecto en `.env.example` (sin modo debug, sesión cifrada, logs a `stderr` con nivel `info`) y credenciales de Docker fuera de los archivos de Compose (spec 015).
+- Grafana, la base de datos y la caché ya no son accesibles desde Internet en la IP del servidor (spec 015).
+- Dependencias de build sin vulnerabilidades conocidas (`npm audit fix`) y `laravel/framework` 12.69.3 (spec 015).
 - Control de acceso por rol en pacientes, expedientes, agenda y citas (spec 014): solo staff activo; el doctor consulta en solo lectura, el asistente gestiona datos clínicos y el resto es del administrador. Los pacientes ya no acceden a estas rutas.
 - Errores inesperados sin detalles internos: respuesta 500 genérica y log sin el mensaje de la excepción; 401 siempre en JSON en la API.
 - Los mensajes de error de pacientes no repiten email, nombre, teléfono, código postal ni tipo de sangre, y la creación de citas deja de registrar el teléfono y el nombre del paciente.
 - Todo error inesperado de la API deja un único log saneado, también si se reporta sin generar respuesta.
 - axios actualizado a 1.20.0 (avisos altos de seguridad); las vulnerabilidades restantes de las herramientas de build quedan como excepción EX1 con vencimiento.
-
-### Fixed
-- El selector de doctores del formulario de cita respondía 500 a todos (rol `admin` inexistente).
-
-### Added
-- Inicialización del flujo AI-DD: constitución, arquitectura, despliegue, seguridad, roadmap, ADRs y specs inferidas en `docs/`; validador en `.ai/bin/aidd.py`; workflow de CI `.ai/ci/ai-dd.yml`, guardado sin activar.
 
 ### Changed — flujo AI-DD actualizado a 1.8.1
 - Validador 1.8.1 (`aidd.py review-pack`, `history`/`rotate`, lectura de Markdown en cp1252 y vocabulario en inglés).
