@@ -35,3 +35,17 @@ it('gives php-fpm time to start before failing the /up check (T054)', function (
     expect($body[1] ?? '')->toMatch('/for _ in \$\(seq 1 \d+\)/')
         ->and($body[1] ?? '')->toContain('sleep');
 });
+
+it('restores a dump exactly, atomically and without wiping the database on a bad dump (T054)', function () {
+    // pg_restore --clean only drops what the dump contains, so tables created after the
+    // backup (a newer version's migrations) survived the T054 rollback and would break the
+    // next migrate. The schema is reset and the dump applied in one transaction, and only
+    // after pg_restore has read the whole dump.
+    $restore = (string) file_get_contents(base_path('docker/prod/restore.sh'));
+
+    expect($restore)->not->toContain('--clean')
+        ->and($restore)->toContain('DROP SCHEMA public CASCADE')
+        ->and($restore)->toContain('--single-transaction')
+        ->and($restore)->toContain('ON_ERROR_STOP=1')
+        ->and($restore)->toMatch('/pg_restore --no-owner -f "\$sql"/');
+});

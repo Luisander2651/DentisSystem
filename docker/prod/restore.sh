@@ -42,8 +42,17 @@ on_error() {
 }
 trap on_error ERR
 
+# The dump is turned into SQL first, so a truncated or broken dump stops here without
+# touching the database. Then the schema is reset and the SQL applied in one transaction:
+# objects created after the dump (a newer version's tables) disappear too, and any error
+# leaves the database as it was. pg_restore's clean option would only drop what the dump holds.
 # shellcheck disable=SC2016 # expanded inside the container, on purpose
-RESTORE_COMMAND='pg_restore --clean --if-exists --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+RESTORE_COMMAND='set -e
+sql="$(mktemp)"
+trap "rm -f \"\$sql\"" EXIT
+pg_restore --no-owner -f "$sql"
+{ printf "DROP SCHEMA public CASCADE;\nCREATE SCHEMA public;\n"; cat "$sql"; } |
+    psql -X -q -v ON_ERROR_STOP=1 --single-transaction -U "$POSTGRES_USER" -d "$POSTGRES_DB" > /dev/null'
 if [ "$INTO_MANUAL" = true ]; then
     (cd "$MANUAL_DIR" && docker compose exec -T db sh -c "$RESTORE_COMMAND") < "$DUMP"
 else
