@@ -23,6 +23,8 @@ Para pasar de **prototipo** a **MVP** con una clínica real:
 - Specs 001–012 revisadas y pasadas de `inferred` a `approved` (cumplido el 2026-09-23).
 
 ## Pendientes y deuda
+- Galería pública: `GetGalleryImagesController`, `GetCertificationsController`, `GetPromotionsController` y `GetTestimonialsController` devuelven un objeto en vez de una lista cuando hay un solo registro; la landing (`resources/js/pages/landing/galeria.js`) falla con "No se pudo establecer conexión con el servidor." (las promociones ya devuelven un objeto en producción). Fix con su propia spec: listados siempre como lista (detectado en T052 de la spec 015, 2026-10-02).
+- R2: las imágenes se sirven desde la URL pública del bucket (`pub-….r2.dev`) y se muestran en gestión de contenido. Spec propuesta por el usuario: bucket privado servido a través de la app o con URLs firmadas (afecta a la CSP `img-src`) (2026-10-02).
 - RS16 / EX1: actualizar las herramientas de build con vulnerabilidades de npm (vite, rollup, postcss, nanoid, picomatch, concurrently, shell-quote) antes del primer despliegue (objetivo 4) y como tarde el 2026-12-31, cuando vence la excepción EX1 de [security.md](security.md).
 - Docker (condición de EX1, spec 014 R34): `vite.config.js` escucha en `0.0.0.0` y `docker-compose.yml` publica `5173:5173` en todas las interfaces del equipo, lo que expone el servidor de desarrollo de vite (con avisos de npm) a la red local. Publicarlo solo en `127.0.0.1:5173:5173`.
 - Tests: `./vendor/bin/pest --parallel` (12 procesos) falla de forma intermitente por timeouts de conexión a PostgreSQL (`SQLSTATE[08006] … timeout expired`); en serie la suite pasa entera. Ajustar `max_connections` del contenedor `db` o limitar `--processes` (detectado en `/implement 014`, 2026-09-24).
