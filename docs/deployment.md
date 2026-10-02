@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-09-29
+updated: 2026-10-02
 ---
 
 # Despliegue de Dentissa
@@ -8,28 +8,30 @@ updated: 2026-09-29
 > Regla innegociable: ningún deploy a producción sin aprobación humana explícita del dueño del
 > repositorio.
 
-**Estado actual:** solo existe el entorno local con Docker Compose. Producción en un VPS con la
-misma composición Docker está **planificada**; todo lo relativo a producción en este documento es
-una propuesta aprobada el 2026-09-23 como plan de despliegue: los `TODO(init)` siguen abiertos y el rollback se valida en el primer ensayo.
+**Estado actual:** producción en marcha en un droplet de DigitalOcean (`dentissapp.com`, detrás de
+Cloudflare) desde el 2026-10-01 con el procedimiento de la spec 015, ensayado en local (T058) y en
+el droplet (T050–T054). La primera versión etiquetada (`v0.1.0`) sale con `/release`; hasta
+entonces sirve el tag de ensayo `ensayo-1`. La pila manual anterior sigue en el droplet, detenida,
+como vuelta atrás del primer paso.
 
 ## Entornos
 | Entorno | URL | Rama / disparador | Aprobación | Datos |
 |---|---|---|---|---|
 | local | http://localhost:8000 | cualquier rama; `docker compose up -d --build` | ninguna | ficticios |
 | staging | — | no existe | — | — |
-| prod (planificado) | TODO(init): dominio del VPS | tag `vX.Y.Z` desplegado a mano | **humana (dueño del repo)** | reales (solo tras cerrar el objetivo 1 del roadmap) |
+| prod | https://dentissapp.com | tag `vX.Y.Z` de `main`, desplegado a mano con `docker/prod/deploy.sh` | **humana (dueño del repo)** | reales (solo tras cerrar el objetivo 1 del roadmap) |
 
 Sin staging, P12 exige que cada release pase la suite completa en CI y una verificación manual en
 local con la imagen de la release antes de ir a producción.
 
 ## Plataforma e infraestructura
-- **Local:** `docker-compose.yml` con `app` (php:8.4-fpm-alpine + Node, `docker/Dockerfile`), `nginx` (8000:80, 443), `db` (postgres:16), `redis` (7-alpine), y observabilidad `loki` + `grafana` (3000) + `alloy` (recoge logs de todos los contenedores).
-- **Prod (propuesto):** un VPS con Docker Compose y la misma composición, más:
-  - TODO(init): imagen de producción. El `Dockerfile` actual es de desarrollo (monta el código como volumen, no copia código ni compila assets). Hace falta una etapa de build con `composer install --no-dev --optimize-autoloader` y `npm run build`.
-  - TODO(init): servicio `worker` con `php artisan queue:work` (los listeners de WhatsApp y Email son `ShouldQueue` y hoy nadie los procesa).
-  - TODO(init): terminación TLS (nginx expone 443 sin configuración TLS) y cabeceras de seguridad.
-  - TODO(init): credenciales de PostgreSQL tomadas de variables de entorno, no escritas en `docker-compose.yml`; no publicar 5432, 6379, 3100 ni 3000 a Internet.
-  - Almacenamiento de imágenes en Cloudflare R2 (externo).
+- **Local:** `docker-compose.yml` con `app` (etapa `dev` de `docker/Dockerfile`: php:8.4-fpm-alpine con Node y Composer, código montado), `queue`, `nginx` (8000:80, sin TLS), `vite` en `127.0.0.1:5173`, `db` (postgres:16) y `redis` (7-alpine) solo en `127.0.0.1`, y observabilidad `loki` + `grafana` (`127.0.0.1:3000`) + `alloy`. `vendor/` y `node_modules/` viven en volúmenes con nombre.
+- **Prod:** droplet de DigitalOcean (1 vCPU, 2 GB de RAM y 2 GB de swap), usuario `deploy`, `ufw` con solo 22, 80 y 443.
+  - **Cloudflare** delante: proxy activo, SSL/TLS en **Full (strict)** y "Always Use HTTPS". Laravel (`config/security.php`, `trusted_proxies`) y nginx (`docker/nginx/prod.conf`, `set_real_ip_from` con `CF-Connecting-IP`) confían solo en los rangos publicados por Cloudflare para obtener la IP real (CA16, CA17). Los rangos se revisan cada seis meses y en cada release contra https://www.cloudflare.com/ips/; la copia actual es del 2026-09-29.
+  - **Imágenes inmutables** (ADR 0004): `dentissa-app:<tag>` (etapa `prod`: código, `vendor` sin dependencias de desarrollo, assets compilados, `php.ini` con `expose_php=Off` y `zend.exception_ignore_args=On`, sin root) y `dentissa-web:<tag>` (nginx con TLS, cabeceras y `public/`). Se construyen en el droplet desde el clon; se conservan las dos últimas versiones.
+  - **`docker-compose.prod.yml`** (proyecto `dentissa`): `app`, `queue` (`queue:work`), `nginx` (único servicio con 80 y 443), `db`, `redis` con contraseña, `loki`, `grafana` (`127.0.0.1:3000`, solo por túnel SSH) y `alloy`. Los volúmenes de datos son los de la pila manual (`DATA_VOLUME_PREFIX`); `dentissa_storage-public` (archivos subidos) es externo y lo crea `deploy.sh`.
+  - **TLS:** Let's Encrypt para `dentissapp.com` y `www`, renovado por `certbot` en el host con `webroot` (`/var/www/certbot`) y un `deploy_hook` que recarga nginx a través de `compose.sh`.
+  - **Servicios externos:** Cloudflare R2 (imágenes del contenido), Brevo (correo de restablecimiento; la IP pública del droplet debe estar en Brevo → Security → Authorized IPs) y Twilio (WhatsApp).
 - No hay IaC.
 
 ## Pipeline
@@ -45,7 +47,7 @@ flowchart LR
 Texto alternativo: un PR pasa CI, se integra en `main`, se etiqueta, se verifica en local, el dueño
 del repo aprueba y se despliega a mano en el VPS.
 
-- `.github/workflows/tests.yml` (push y PR, todas las ramas): PHP 8.4, Node 20, PostgreSQL 16 y Redis 7 como servicios; `composer install`, `npm ci`, `npm run build`, `migrate --env=testing`, `./vendor/bin/pest --parallel`.
+- `.github/workflows/tests.yml` (push y PR, todas las ramas): PHP 8.4, Node 22, PostgreSQL 16 y Redis 7 como servicios; `composer install`, `npm ci`, `npm run build`, `migrate --env=testing`, `./vendor/bin/pest --parallel`.
 - `.ai/ci/ai-dd.yml` (**inactivo**): valida specs con `.ai/bin/aidd.py`, Pint en modo test y las herramientas de seguridad de [security.md](security.md). Se activa moviéndolo a `.github/workflows/` cuando el código pase esas herramientas; hasta entonces se ejecutan en local durante `/implement`, `/review` y `/release`.
 - No hay job de despliegue: el despliegue es manual.
 
@@ -168,15 +170,66 @@ copiar el `.pre-015`.
 5. `certbot renew --dry-run` y cron diario del usuario `deploy`: `0 3 * * * /home/deploy/dentissa/docker/prod/backup.sh daily`.
 6. Desde fuera del droplet: `docker/prod/verify.sh --remote dentissapp.com --origin <IP del droplet>`.
 
-Despliegues siguientes:
+Tiempos medidos en el droplet (T051): el primer build desde cero tarda unos 6–7 min (el sitio
+sigue servido mientras tanto); un `deploy.sh --first` con la base de la imagen en caché, 2 min 6 s
+en total con un corte de unos 31 s.
+
+### Crear una versión
+Lo hace `/release` con aprobación del dueño del repo. En el equipo, con `main` actualizado y la
+suite en verde en CI:
+```bash
+git checkout main && git pull
+git tag -a vX.Y.Z -m "vX.Y.Z"
+git push origin vX.Y.Z
+```
+Se despliega siempre un tag, nunca `main`: `deploy.sh` exige que el `HEAD` del clon sea el commit
+del tag, y así `deploys.log`, `.deploy/current` y `rollback.sh` saben qué código está en servicio.
+Un merge que solo cambia `docker/prod/`, `docker-compose.prod.yml` o documentación no necesita
+versión nueva: basta `git pull` en el clon (y `docker/prod/compose.sh up -d` si cambió Compose).
+
+### Despliegues siguientes
 ```bash
 cd /home/deploy/dentissa
 git fetch --tags && git checkout vX.Y.Z
-docker/prod/deploy.sh vX.Y.Z      # backup, build, up, migrate, verify; registra el resultado
+time docker/prod/deploy.sh vX.Y.Z      # backup pre-vX.Y.Z, build, up, migrate y verify --local; registra el resultado
 ```
+Desde fuera del droplet (el equipo del dueño del repo):
+```bash
+docker/prod/verify.sh --remote dentissapp.com --origin <IP del droplet>
+```
+Tiempo medido (T054): 1 min 28 s en total con las imágenes base en caché; el corte se limita a la
+recreación de `app`, `queue` y `nginx`. Si `deploy.sh` termina con error, la versión nueva puede
+quedar sirviendo: se corrige o se vuelve con `rollback.sh` (ver "Rollback").
 
-Interruptor de emergencia de la CSP: `CSP_REPORT_ONLY=true` en el `.env` del clon y
-`docker/prod/compose.sh up -d app` (recrea el contenedor con la versión en servicio). Se revierte igual.
+### Operación diaria
+Siempre desde `/home/deploy/dentissa`. `compose.sh` fija la versión en servicio; nunca `docker
+compose` a secas sobre producción.
+```bash
+docker/prod/compose.sh ps                                   # estado de los servicios
+docker/prod/compose.sh logs -f --since 10m app queue nginx  # logs (sin datos personales, CA18)
+docker/prod/verify.sh --local                               # 13 comprobaciones; también tras cualquier cambio
+tail -20 /home/deploy/deploys.log                           # deploys, rollbacks, restores y backups
+docker/prod/compose.sh exec -T app php artisan queue:failed # trabajos fallidos
+ssh -L 3000:127.0.0.1:3000 deploy@<IP del droplet>          # desde el equipo: Grafana en http://localhost:3000
+```
+- **Backups:** cron diario del usuario `deploy` a las 03:00 (`crontab -l`), con la salida en `/home/deploy/backup-cron.log`; dumps en `/home/deploy/backups` (carpeta 700, archivos 600), y los diarios se rotan a los 7 días. A mano: `docker/prod/backup.sh <etiqueta>`.
+- **Restaurar sin cambiar de versión** (pierde lo escrito después del dump): `docker/prod/compose.sh stop nginx app queue`, `docker/prod/restore.sh /home/deploy/backups/<dump>` (pide escribir `restore`) y `docker/prod/compose.sh up -d`. La restauración es exacta y atómica: vacía el esquema y aplica el dump en una sola transacción; con un dump roto no toca la base.
+- **Certificado:** `sudo certbot certificates` (vencimiento) y `sudo certbot renew --dry-run` tras cualquier cambio en Cloudflare o nginx. La renovación automática empieza a 30 días del vencimiento.
+- **Correo:** si cambia la IP pública del droplet, Brevo rechaza los envíos hasta autorizarla (Brevo avisa con un correo "authorize the new IP" a la cuenta).
+- **Disco:** `verify.sh --local` falla por encima del 80 %; `deploy.sh` ya retira las imágenes anteriores a las dos últimas versiones.
+
+### Interruptor de emergencia de la CSP
+Si la CSP bloquea algo en producción: `CSP_REPORT_ONLY=true` en el `.env` del clon y
+`docker/prod/compose.sh up -d app` (recrea `app` con la versión en servicio, unos segundos de
+corte). La cabecera pasa a `Content-Security-Policy-Report-Only`. Se revierte igual con `false`
+(probado en T052).
+
+### Retirar la pila manual
+Cuando `v0.1.0` lleve al menos dos semanas estable, y con aprobación del dueño del repo:
+`docker/prod/backup.sh pre-retiro-manual`; después `cd /home/deploy/DentisSystem && docker compose
+down` (**sin `-v`**: los volúmenes de datos son los de producción), y archivar o borrar la
+carpeta. Desde ese momento `rollback.sh --to-manual` deja de servir, y "Volver a la pila manual" se
+quita de este documento.
 
 ## Migraciones de base de datos
 - Cuándo se aplican: después de levantar la nueva imagen y antes de dar la release por buena; siempre precedidas de un `pg_dump`.
@@ -185,20 +238,21 @@ Interruptor de emergencia de la CSP: `CSP_REPORT_ONLY=true` en el `.env` del clo
 - Comando: `php artisan migrate --force`.
 
 ## Rollback
-Estado: documentado (spec 015); se ensaya en local (T058) y en el droplet (T051, T054) antes del release.
+Estado: ensayado en local (T058) y en el droplet (T051, T054). Cada rollback queda en
+`/home/deploy/deploys.log` y termina con `verify.sh --local`.
 
-**Volver a la pila manual** (solo mientras exista, es decir, hasta retirarla tras el release):
-1. `docker/prod/rollback.sh --to-manual`: detiene la pila de producción (`compose.sh stop`) y hace `docker compose start` en `/home/deploy/DentisSystem`. Arranca con su código, su `.env`, su nginx con TLS y sus dependencias intactas.
-2. Comprobar: `curl -I https://dentissapp.com/up` y `/login` responden 200 (el certificado y nginx son los de la pila manual).
-3. Datos: la pila manual lee los mismos volúmenes de datos. Las imágenes de datos de producción tienen las mismas versiones que las suyas (Postgres 16, Redis 7, Loki 3.0.0, Grafana 11.0.0), así que lee lo que escribió producción. Los archivos subidos a `storage/app/public` desde producción **no** están en la pila manual (el volumen de producción no se sincroniza de vuelta).
-4. Para volver a producción: `docker/prod/deploy.sh --first <tag>` (el volumen `storage-public` ya tiene datos y no se sobrescribe).
+**Volver a la pila manual** (solo mientras exista; ver "Retirar la pila manual"):
+1. `docker/prod/rollback.sh --to-manual`: detiene la pila de producción (`compose.sh stop`) y hace `docker compose start` en `/home/deploy/DentisSystem`. Arranca con su código, su `.env`, su nginx con TLS y sus dependencias intactas. Tiempo: 10 s en el ensayo local (T058); en el droplet se ejecutó sin incidencias (T051).
+2. Comprobar: `curl -I https://dentissapp.com/up` y `/login` responden 200 (el certificado y nginx son los de la pila manual: sin CSP y con `X-Powered-By`).
+3. Datos: la pila manual lee los mismos volúmenes de datos. Las imágenes de datos de producción tienen las mismas versiones que las suyas (Postgres 16, Redis 7, Loki 3.0.0, Grafana 11.0.0), así que lee lo que escribió producción. Los archivos subidos a `storage/app/public` desde producción **no** están en la pila manual (el volumen de producción no se sincroniza de vuelta). Su `queue` no arranca (no ve `vendor/`): con la pila manual no se envían WhatsApp ni correos.
+4. Para volver a producción: `docker/prod/deploy.sh --first <tag>` (el volumen `storage-public` ya tiene datos y no se sobrescribe). Tiempo medido: 2 min 6 s, con un corte de unos 31 s.
 
 **Volver a la versión anterior** (imágenes aún en el droplet; se conservan las dos últimas):
-1. `docker/prod/rollback.sh` (a `.deploy/previous`) o `docker/prod/rollback.sh <tag>`: `up -d` con esas imágenes y `verify.sh --local`.
+1. `docker/prod/rollback.sh` (a `.deploy/previous`) o `docker/prod/rollback.sh <tag>`: `up -d` con esas imágenes y `verify.sh --local`. Tiempo medido: 12–14 s, corte incluido.
 2. Si la release incluía migraciones compatibles hacia atrás (P9), no se toca la base.
-3. Si no lo eran: `docker/prod/rollback.sh <tag> --restore /home/deploy/backups/pre-<tag-actual>-*.dump`. Pide confirmación escribiendo `rollback`, detiene `nginx`, `app` y `queue`, restaura con `pg_restore --clean` y arranca la versión anterior. Se pierden las escrituras posteriores al dump.
-- Tiempo medido: TODO(init): se mide en el ensayo del droplet (T054); objetivo < 15 min con restauración.
-- En código: cada merge a `main` es `--no-ff` y se puede revertir con `git revert -m 1 <merge>` (práctica ya usada en las Unidades 3 y 4).
+3. Si no lo eran: `docker/prod/rollback.sh <tag> --restore /home/deploy/backups/pre-<tag-actual>-*.dump`. Pide confirmación escribiendo `rollback`, detiene `nginx`, `app` y `queue`, restaura el dump de forma exacta y atómica (también desaparecen las tablas que la versión nueva hubiera creado) y arranca la versión anterior. Se pierden las escrituras posteriores al dump. Tiempo medido: 18,8 s en total, corte incluido (objetivo < 15 min).
+- `compose.sh up -d` después de un rollback mantiene la versión de `.deploy/current`; el `.env` no puede cambiarla.
+- En código: cada merge a `main` es `--no-ff` y se puede revertir con `git revert -m 1 <merge>`; después se etiqueta y se despliega una versión nueva.
 
 ## Variables de entorno
 | Nombre | local | prod | Dónde se configura |
@@ -217,9 +271,10 @@ Estado: documentado (spec 015); se ensaya en local (T058) y en el droplet (T051,
 (Solo nombres. Nunca valores. En el VPS, `.env` con permisos 600 y fuera de cualquier volumen servido por nginx.)
 
 ## Verificación post-deploy
-- Health check: `GET /up` (Laravel, `bootstrap/app.php`).
-- Smoke tests: login de un administrador, carga de `/agenda`, creación de una cita de prueba y comprobación de que el worker procesa el evento.
-- Logs: Alloy → Loki → Grafana (puerto 3000, solo por túnel SSH) recoge el stdout/stderr de los contenedores; los logs de Laravel llegan porque en local se usa `LOG_CHANNEL=stderr` (confirmado por el usuario); `.env.example` todavía declara `stack` → `single`, así que el `.env` del VPS debe usar `stderr`. Métricas y alertas: TODO(init): no existen. Ver [observability.md](observability.md).
+- Automática: `deploy.sh` y `rollback.sh` terminan con `verify.sh --local` (13 comprobaciones, entre ellas `/up`, `APP_DEBUG`, el worker, la imagen sin artefactos y los backups). Desde fuera, `verify.sh --remote` (22: cabeceras, CORS, rutas prohibidas, puertos cerrados en la IP del droplet e IP falsificada).
+- Health check: `GET /up` responde 200 solo si PostgreSQL y Redis responden; si no, 500 en 1–2 s (medido en T052).
+- Smoke tests: login de un administrador, carga de `/agenda`, `/pacientes` y el expediente, y un restablecimiento de contraseña que el worker procesa (el correo llega con el enlace a `https://dentissapp.com`).
+- Logs: Alloy → Loki → Grafana (puerto 3000, solo por túnel SSH) recoge el stdout y stderr de los contenedores; Laravel escribe en `stderr` (`LOG_CHANNEL=stderr`, nivel `info`) y sin datos personales (CA18). Métricas y alertas: aún no existen; las cubre la spec de monitoreo pendiente (roadmap, objetivo 4). Ver [observability.md](observability.md).
 
 ## Riesgos conocidos
 Formato 1.5.6 (numeración añadida por `/init --upgrade` a 1.6.0, 2026-09-24; contenido sin
