@@ -150,3 +150,21 @@ it('keeps the deploy state of the production clone out of git (T058)', function 
 
     expect($patterns)->toContain('/.deploy');
 });
+
+it('lets /up fail fast when a dependency container is stopped (CA11)', function () {
+    // A stopped service has no name in Docker's network, and musl's resolver waits 5 s
+    // by default before giving up, which alone exceeds CA11 (T052).
+    $options = composeFile('docker-compose.prod.yml')['services']['app']['dns_opt'] ?? [];
+
+    expect($options)->toContain('timeout:1')
+        ->and($options)->toContain('attempts:2');
+});
+
+it('keeps the uploaded files volume out of compose down -v (T052)', function () {
+    // deploy.sh creates it before the first start to copy the manual stack's files, so
+    // Compose must treat it as existing instead of warning that it did not create it.
+    $volume = composeFile('docker-compose.prod.yml')['volumes']['storage-public'] ?? [];
+
+    expect($volume['external'] ?? false)->toBeTrue()
+        ->and($volume['name'] ?? null)->toBe('dentissa_storage-public');
+});

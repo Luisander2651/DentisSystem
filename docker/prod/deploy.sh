@@ -52,13 +52,15 @@ for image in "dentissa-app:$TAG" "dentissa-web:$TAG"; do
         'for path in /var/www/html/.env /var/www/html/.git /var/www/html/public/hot; do [ ! -e "$path" ] || { echo "found $path" >&2; exit 1; }; done'
 done
 
+# External in docker-compose.prod.yml, so `down -v` never deletes the uploaded files.
+docker volume create dentissa_storage-public > /dev/null
+
 if [ "$FIRST" = true ]; then
     echo "==> Backing up and stopping the manual stack in $MANUAL_DIR"
     "$SCRIPT_DIR/backup.sh" --from-manual "pre-$TAG"
     (cd "$MANUAL_DIR" && docker compose stop)
 
     echo "==> Copying the manual stack's public storage (only into an empty volume)"
-    docker volume create dentissa_storage-public > /dev/null
     docker run --rm --user root --entrypoint sh \
         -v dentissa_storage-public:/dst \
         -v "$MANUAL_DIR/storage/app/public:/src:ro" \
