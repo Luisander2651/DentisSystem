@@ -23,6 +23,10 @@ services:
     container_name: dentissa-app
     restart: unless-stopped
     env_file: .env
+    # A stopped db or redis has no DNS name; musl waits 5 s by default, too long for /up (CA11).
+    dns_opt:
+      - timeout:1
+      - attempts:2
     volumes:
       - storage:/var/www/html/storage
       - storage-public:/var/www/html/storage/app/public
@@ -207,4 +211,8 @@ volumes:
     name: ${DATA_VOLUME_PREFIX:?define DATA_VOLUME_PREFIX in .env}_grafana-data
   # Production only.
   storage:
+  # Created by deploy.sh --first before the first start (it copies the manual stack's files);
+  # external, so `down -v` never deletes the uploaded files.
   storage-public:
+    external: true
+    name: dentissa_storage-public
