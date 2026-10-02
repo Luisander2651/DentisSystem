@@ -40,8 +40,13 @@ compose() {
 # --- local checks -----------------------------------------------------------------------
 
 health_answers() {
-    # Local loopback check: certificate validity is --remote's job.
-    curl -kfsS -o /dev/null --max-time 10 --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/up"
+    # Local loopback check: certificate validity is --remote's job. Retried for up to 30 s:
+    # right after a start, php-fpm may still be waiting for `artisan optimize` (nginx 502).
+    for _ in $(seq 1 15); do
+        curl -kfsS -o /dev/null --max-time 10 --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/up" && return 0
+        sleep 2
+    done
+    return 1
 }
 
 debug_is_off() {
