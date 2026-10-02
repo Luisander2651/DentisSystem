@@ -25,3 +25,13 @@ it('never pipes into a reader that stops early in the production scripts', funct
             ->toBe(0, "{$script}:".($number + 1).' pipes into a reader that stops early: '.trim($line));
     }
 })->with(['backup.sh', 'compose.sh', 'deploy.sh', 'lib.sh', 'restore.sh', 'rollback.sh', 'verify.sh']);
+
+it('gives php-fpm time to start before failing the /up check (T054)', function () {
+    // rollback.sh waits for `artisan --version`, which answers while the entrypoint still
+    // runs `artisan optimize` and before php-fpm listens, so nginx answers 502 for a moment.
+    $verify = (string) file_get_contents(base_path('docker/prod/verify.sh'));
+    preg_match('/^health_answers\(\) \{\n(.*?)\n\}/ms', $verify, $body);
+
+    expect($body[1] ?? '')->toMatch('/for _ in \$\(seq 1 \d+\)/')
+        ->and($body[1] ?? '')->toContain('sleep');
+});
