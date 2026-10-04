@@ -21,7 +21,7 @@ personales, contacto, dirección, datos médicos e historial de citas.
 - [x] CA2 · Dado un usuario autenticado, cuando hace `GET /api/v1/appointments/patient/{patientId}`, entonces recibe el historial de citas del paciente.
 - [ ] CA3 · Dado un actor con rol administrador o asistente, cuando abre `/expedientes-clinicos` o `/expedientes-clinicos/{patientId}`, entonces ve la pantalla; con cualquier otro rol la ruta web lo rechaza.
 - [ ] CA4 · Dado un expediente abierto, cuando se editan contacto, dirección o datos médicos desde la pantalla, entonces se usan los endpoints de la spec 005.
-- [ ] CA5 · (abuso) Como paciente o doctor autenticado, intento `GET /api/v1/patients/{otroId}/record` → **HOY NO SE CUMPLE**: la API solo exige `auth:sanctum`; la restricción por rol está únicamente en la ruta web.
+- [x] CA5 · (abuso) Como paciente o doctor autenticado, intento `GET /api/v1/patients/{otroId}/record` → resuelto por 014 (v0.1.0): resuelto para pacientes; el doctor sí lee expedientes (solo lectura) (antes: la API solo exige `auth:sanctum`; la restricción por rol está únicamente en la ruta web).
 
 ## Fuera de alcance
 - Descarga o impresión del expediente.
@@ -58,3 +58,4 @@ personales, contacto, dirección, datos médicos e historial de citas.
 |---|---|---|
 | 2026-09-22 | Creación inferida del código | /init |
 | 2026-09-22 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
+| 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA1 y CA2 para staff; CA3 incluye al doctor, en solo lectura; CA5 resuelto | /release |

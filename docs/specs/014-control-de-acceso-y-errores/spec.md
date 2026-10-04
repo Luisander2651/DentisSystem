@@ -1,7 +1,8 @@
 ---
 id: 014
 slug: control-de-acceso-y-errores
-status: implemented
+status: released
+released: v0.1.0 (2026-10-04)
 created: 2026-09-24
 extends: [001, 005, 006, 007, 008, 009, 011, 012]
 ---

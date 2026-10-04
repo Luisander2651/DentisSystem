@@ -8,11 +8,11 @@ updated: 2026-10-04
 > Regla innegociable: ningún deploy a producción sin aprobación humana explícita del dueño del
 > repositorio.
 
-**Estado actual:** producción en marcha en un droplet de DigitalOcean (`dentissapp.com`, detrás de
-Cloudflare) desde el 2026-10-01 con el procedimiento de la spec 015, ensayado en local (T058) y en
-el droplet (T050–T054). La primera versión etiquetada (`v0.1.0`) sale con `/release`; hasta
-entonces sirve el tag de ensayo `ensayo-1`. La pila manual anterior sigue en el droplet, detenida,
-como vuelta atrás del primer paso.
+**Estado actual:** producción en un droplet de DigitalOcean (`dentissapp.com`, detrás de
+Cloudflare). Versión en servicio: **v0.1.0**, desplegada el 2026-10-04 con `docker/prod/deploy.sh`
+(specs 014 y 015). El procedimiento se ensayó en local (T058) y en el droplet (T050–T054, T076,
+T088). La pila manual anterior sigue en el droplet, detenida, como vuelta atrás del primer paso
+hasta que se retire ("Retirar la pila manual").
 
 ## Entornos
 | Entorno | URL | Rama / disparador | Aprobación | Datos |
@@ -311,35 +311,35 @@ cambios; la prioridad de cada riesgo está por asignar: el documento no la indic
 ### RD1 · Prioridad por asignar — Sin rollback probado ni backups automáticos de PostgreSQL.
 
 Correcciones:
-- RD1.a Ensayar el rollback una vez (derivada) — estado: mitigada (spec 015; versión en `/release`): `rollback.sh` (vuelta a la pila manual y a la versión anterior, con restauración exacta y atómica) ensayado en local (T058) y en el droplet (T051, T054)
-- RD1.b Backups automáticos de PostgreSQL (derivada) — estado: mitigada (spec 015; versión en `/release`): `backup.sh daily` por cron a las 03:00, rotación de 7 días, carpeta 700 y archivos 600 (T053), y un backup antes de cada deploy
+- RD1.a Ensayar el rollback una vez (derivada) — estado: mitigada (v0.1.0; spec 015): `rollback.sh` (vuelta a la pila manual y a la versión anterior, con restauración exacta y atómica) ensayado en local (T058) y en el droplet (T051, T054)
+- RD1.b Backups automáticos de PostgreSQL (derivada) — estado: mitigada (v0.1.0; spec 015): `backup.sh daily` por cron a las 03:00, rotación de 7 días, carpeta 700 y archivos 600 (T053), y un backup antes de cada deploy
 
 ### RD2 · Prioridad por asignar — `Dockerfile` solo de desarrollo; no hay imagen de producción.
 
 Correcciones:
-- RD2.a Imagen de producción (derivada) — estado: mitigada (spec 015; versión en `/release`): etapas `prod` y `web` de `docker/Dockerfile` (ADR 0004); `ComposeFilesTest`, `verify.sh` (imagen sin Node, Composer, paquetes de desarrollo, `.env`, `.git` ni `public/hot`)
+- RD2.a Imagen de producción (derivada) — estado: mitigada (v0.1.0; spec 015): etapas `prod` y `web` de `docker/Dockerfile` (ADR 0004); `ComposeFilesTest`, `verify.sh` (imagen sin Node, Composer, paquetes de desarrollo, `.env`, `.git` ni `public/hot`)
 
 ### RD3 · Prioridad por asignar — Sin worker de colas en `docker-compose.yml`: WhatsApp y el correo de reset no se enviarían.
 
 Correcciones:
-- RD3.a Worker de colas en `docker-compose.yml` (derivada) — estado: mitigada (spec 015; versión en `/release`): servicio `queue` en los dos Compose; probado en el droplet (correo de restablecimiento y reinicio automático, T052)
+- RD3.a Worker de colas en `docker-compose.yml` (derivada) — estado: mitigada (v0.1.0; spec 015): servicio `queue` en los dos Compose; probado en el droplet (correo de restablecimiento y reinicio automático, T052)
 
 ### RD4 · Prioridad por asignar — `env()` fuera de `config/` en Twilio y Brevo: `config:cache` los deja en null.
 
 Correcciones:
-- RD4.a Leer Twilio y Brevo con `config('services.*')` en lugar de `env()` (derivada, P8) — estado: mitigada (spec 015; versión en `/release`): `NoEnvOutsideConfigTest`, `ProvidersReadConfigTest`
+- RD4.a Leer Twilio y Brevo con `config('services.*')` en lugar de `env()` (derivada, P8) — estado: mitigada (v0.1.0; spec 015): `NoEnvOutsideConfigTest`, `ProvidersReadConfigTest`
 
 ### RD5 · Prioridad por asignar — `.env.example` trae `APP_DEBUG=true`, `SESSION_ENCRYPT=false`, `DB_CONNECTION=sqlite` y `REDIS_CLIENT=phpredis` (el Dockerfile no instala phpredis).
 
 Correcciones:
-- RD5.a `APP_DEBUG=false` y `SESSION_ENCRYPT=true` en `.env.example` (derivada; = RS10) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`
-- RD5.b `DB_CONNECTION=pgsql` y `REDIS_CLIENT=predis` en `.env.example` (derivada) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`
+- RD5.a `APP_DEBUG=false` y `SESSION_ENCRYPT=true` en `.env.example` (derivada; = RS10) — estado: mitigada (v0.1.0; spec 015): `EnvExampleDefaultsTest`
+- RD5.b `DB_CONNECTION=pgsql` y `REDIS_CLIENT=predis` en `.env.example` (derivada) — estado: mitigada (v0.1.0; spec 015): `EnvExampleDefaultsTest`
 
 ### RD6 · Prioridad por asignar — `docker-compose.yml` publica PostgreSQL y Redis en el host y escribe credenciales en el archivo.
 
 Correcciones:
-- RD6.a No publicar PostgreSQL ni Redis en el host (derivada) — estado: mitigada (spec 015; versión en `/release`): en producción solo 80, 443 y Grafana en `127.0.0.1`; en local, `db` y `redis` solo en `127.0.0.1`; `ComposeFilesTest` y `verify.sh --remote` (puertos cerrados en la IP del droplet, T051)
-- RD6.b Credenciales de `docker-compose.yml` desde `.env` (derivada) — estado: mitigada (spec 015; versión en `/release`): `ComposeFilesTest`
+- RD6.a No publicar PostgreSQL ni Redis en el host (derivada) — estado: mitigada (v0.1.0; spec 015): en producción solo 80, 443 y Grafana en `127.0.0.1`; en local, `db` y `redis` solo en `127.0.0.1`; `ComposeFilesTest` y `verify.sh --remote` (puertos cerrados en la IP del droplet, T051)
+- RD6.b Credenciales de `docker-compose.yml` desde `.env` (derivada) — estado: mitigada (v0.1.0; spec 015): `ComposeFilesTest`
 
 ### RD7 · Prioridad por asignar — `phpunit.xml` apunta a `DB_HOST=db`: `composer run test` fuera de Docker falla sin override.
 

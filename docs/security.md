@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-10-02
+updated: 2026-10-04
 ---
 
 # Seguridad de Dentissa
@@ -102,10 +102,10 @@ correcciones están mitigadas o aceptadas.
 Las rutas de pacientes, subrecursos, expediente y citas solo exigen `auth:sanctum`, y el guard `sanctum` no fija provider en `config/auth.php`, así que acepta tokens de pacientes. Un paciente autorregistrado puede leer y modificar datos de salud de otros pacientes y crear o modificar citas ajenas; cualquier staff puede cambiar la contraseña de un paciente. (Roadmap objetivo 1; specs 005, 006, 007.)
 
 Correcciones:
-- RS1.a Restringir las rutas de pacientes, subrecursos, expediente y citas a staff — estado: mitigada (spec 014; versión en `/release`)
+- RS1.a Restringir las rutas de pacientes, subrecursos, expediente y citas a staff — estado: mitigada (v0.1.0; spec 014)
 - RS1.b Comprobar la propiedad del recurso — estado: pendiente (spec 013, CA24)
 - RS1.c Fijar el provider del guard `sanctum` — estado: pendiente (spec 013, CA23)
-- RS1.d Añadir tests de acceso denegado — estado: mitigada (spec 014; versión en `/release`): `PatientsAccessControlTest`, `AppointmentsAccessControlTest`, `RolePermissionsTest`
+- RS1.d Añadir tests de acceso denegado — estado: mitigada (v0.1.0; spec 014): `PatientsAccessControlTest`, `AppointmentsAccessControlTest`, `RolePermissionsTest`
 
 RS1 queda **parcialmente mitigado** hasta que la spec 013 cierre RS1.b y RS1.c.
 
@@ -119,13 +119,13 @@ Correcciones:
 `npm audit` (2026-09-25) reporta 2 críticas y 5 altas en herramientas de build y desarrollo (vite, rollup, postcss, nanoid, picomatch, concurrently, shell-quote). axios, que se incluye en el bundle del navegador, ya se actualizó a 1.20.0 (spec 014, T083).
 
 Correcciones:
-- RS16.a Actualizar las herramientas de build a versiones sin avisos — estado: mitigada (spec 015; versión en `/release`): `npm audit fix` sin cambios mayores; EX1 cerrada
+- RS16.a Actualizar las herramientas de build a versiones sin avisos — estado: mitigada (v0.1.0; spec 015): `npm audit fix` sin cambios mayores; EX1 cerrada
 
 ### RS3 · Media — Fuga de detalles internos
 48 controladores devuelven `$e->getMessage()` en respuestas 500 (Patients, Appointments, AppointmentTracking, ContentManagement).
 
 Correcciones:
-- RS3.a Respuestas 500 genéricas, sin `$e->getMessage()` (derivada, P7) — estado: mitigada (spec 014; versión en `/release`): `UnexpectedErrorTest` (Patients, Appointments, AppointmentTracking, ContentManagement), `GlobalErrorFallbackTest`
+- RS3.a Respuestas 500 genéricas, sin `$e->getMessage()` (derivada, P7) — estado: mitigada (v0.1.0; spec 014): `UnexpectedErrorTest` (Patients, Appointments, AppointmentTracking, ContentManagement), `GlobalErrorFallbackTest`
 
 RS3 mitigado (spec 014).
 
@@ -145,8 +145,8 @@ Correcciones:
 (CSP, HSTS, X-Frame-Options, X-Content-Type-Options) ni `config/cors.php` publicado.
 
 Correcciones:
-- RS6.a Cabeceras de seguridad CSP, HSTS, X-Frame-Options y X-Content-Type-Options (derivada) — estado: mitigada (spec 015; versión en `/release`): `SecurityHeaders` (CSP con nonce, `frame-ancestors 'none'`, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`) y HSTS en nginx; `SecurityHeadersTest`. Verificado en el dominio real con `verify.sh --remote dentissapp.com` (T051, 2026-10-01): HSTS, CSP, `X-Frame-Options: DENY`, `nosniff` y `Referrer-Policy` presentes, sin `X-Powered-By` ni versión de nginx; consola sin violaciones de CSP en las cinco pantallas (T052)
-- RS6.b Publicar `config/cors.php` restrictivo (derivada) — estado: mitigada (spec 015; versión en `/release`): solo `APP_URL`, sin credenciales; `CorsTest`
+- RS6.a Cabeceras de seguridad CSP, HSTS, X-Frame-Options y X-Content-Type-Options (derivada) — estado: mitigada (v0.1.0; spec 015): `SecurityHeaders` (CSP con nonce, `frame-ancestors 'none'`, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`) y HSTS en nginx; `SecurityHeadersTest`. Verificado en el dominio real con `verify.sh --remote dentissapp.com` (T051, 2026-10-01): HSTS, CSP, `X-Frame-Options: DENY`, `nosniff` y `Referrer-Policy` presentes, sin `X-Powered-By` ni versión de nginx; consola sin violaciones de CSP en las cinco pantallas (T052)
+- RS6.b Publicar `config/cors.php` restrictivo (derivada) — estado: mitigada (v0.1.0; spec 015): solo `APP_URL`, sin credenciales; `CorsTest`
 
 ### RS7 · Media — Subida de imágenes sin límite de tamaño ni re-codificación
 (spec 012).
@@ -165,15 +165,15 @@ Correcciones:
 el flujo de WhatsApp registra el teléfono y las variables de la plantilla; `.env.example` trae `LOG_LEVEL=debug`.
 
 Correcciones:
-- RS9.a Retirar teléfono, nombre y variables de plantilla de los logs (derivada; detalle en OB2) — estado: mitigada (spec 015; versión en `/release`): los 7 archivos de OB2 más el controlador del restablecimiento; `WhatsAppFlowLogsTest`, `PasswordResetEmailTest`. La spec 014 ya había retirado los de `CreateAppointmentController` (OB2.a)
-- RS9.b `LOG_LEVEL=info` por defecto en `.env.example` (derivada) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`
+- RS9.a Retirar teléfono, nombre y variables de plantilla de los logs (derivada; detalle en OB2) — estado: mitigada (v0.1.0; spec 015): los 7 archivos de OB2 más el controlador del restablecimiento; `WhatsAppFlowLogsTest`, `PasswordResetEmailTest`. La spec 014 ya había retirado los de `CreateAppointmentController` (OB2.a)
+- RS9.b `LOG_LEVEL=info` por defecto en `.env.example` (derivada) — estado: mitigada (v0.1.0; spec 015): `EnvExampleDefaultsTest`
 
 ### RS10 · Baja — Configuración por defecto insegura en `.env.example`
 `APP_DEBUG=true`, `SESSION_ENCRYPT=false`.
 
 Correcciones:
-- RS10.a `APP_DEBUG=false` en `.env.example` (derivada) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`, `WebUnexpectedErrorTest`
-- RS10.b `SESSION_ENCRYPT=true` en `.env.example` (derivada) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`
+- RS10.a `APP_DEBUG=false` en `.env.example` (derivada) — estado: mitigada (v0.1.0; spec 015): `EnvExampleDefaultsTest`, `WebUnexpectedErrorTest`
+- RS10.b `SESSION_ENCRYPT=true` en `.env.example` (derivada) — estado: mitigada (v0.1.0; spec 015): `EnvExampleDefaultsTest`
 
 ### RS11 · Baja — Sin eventos de auditoría
 logins fallidos, accesos denegados y lecturas de expedientes no se registran.

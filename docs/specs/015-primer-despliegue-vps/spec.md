@@ -1,7 +1,8 @@
 ---
 id: 015
 slug: primer-despliegue-vps
-status: implemented
+status: released
+released: v0.1.0 (2026-10-04)
 created: 2026-09-29
 extends: []
 ---

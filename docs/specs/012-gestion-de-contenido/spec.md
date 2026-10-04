@@ -24,7 +24,7 @@ testimonios del sitio público sin tocar código.
 - [ ] CA5 · Dada una imagen subida, cuando se guarda, entonces `StorageProvider` exige extensión en lista blanca (jpg, jpeg, png, gif, webp, avif) y MIME `image/*`, la renombra con UUID y la guarda en R2 (disco `s3`).
 - [ ] CA6 · (abuso) Como staff no administrador o paciente, intento gestionar contenido → 403 (`only.admin` + `assertCan('manage.*')`).
 - [ ] CA7 · (abuso) Como administrador malintencionado o con cuenta comprometida, subo un archivo de más de **5 MB**, con un lado mayor de **2000 px**, o que no es una imagen decodificable → se rechaza con un mensaje que indica el límite → **HOY NO SE CUMPLE**: no hay límite de tamaño ni de dimensiones (solo 64 MB de PHP) y la imagen no se re-codifica (U5 hallazgo 4).
-- [ ] CA8 · (abuso) Como atacante, provoco un error interno → **HOY NO SE CUMPLE**: 16 de 17 controladores devuelven `$e->getMessage()` (U5 hallazgo 3).
+- [x] CA8 · (abuso) Como atacante, provoco un error interno → resuelto por 014 (v0.1.0): 500 genérico (antes: 16 de 17 controladores devuelven `$e->getMessage()` (U5 hallazgo 3)).
 - [ ] CA9 · Dada una promoción visible cuya fecha de fin ya pasó (o cuya fecha de inicio aún no llega), cuando se consulta el sitio público, entonces no se muestra; en el panel sigue visible para el administrador → **HOY NO SE CUMPLE**: la landing muestra toda promoción `visible` sin mirar sus fechas.
 - [ ] CA10 · Dado un administrador en la pestaña de testimonios de `/contenido`, cuando quiere añadir uno, entonces tiene un formulario de creación → **HOY NO SE CUMPLE**: solo hay edición y borrado en la interfaz.
 - [ ] CA11 · Dado un fallo al subir la imagen nueva al reemplazar la de un elemento, cuando ocurre, entonces el elemento conserva su imagen anterior; dado un fallo al borrar un elemento, entonces ni el registro ni la imagen quedan huérfanos → **HOY NO SE CUMPLE**: la imagen anterior se borra antes de subir la nueva y la imagen se borra antes que el registro (U5 hallazgos 9 y 10).
@@ -73,6 +73,7 @@ testimonios del sitio público sin tocar código.
 | 2026-09-22 | Creación inferida del código | /init |
 | 2026-09-23 | Aclaraciones: imágenes de 5 MB y 2000 px (CA7), promociones fuera de vigencia ocultas (CA9), crear testimonios desde el panel (CA10); pendientes de spec nueva | /clarify |
 | 2026-09-23 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
+| 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA8 resuelto | /release |
 
 ## Aclaraciones
 ### Sesión 2026-09-23

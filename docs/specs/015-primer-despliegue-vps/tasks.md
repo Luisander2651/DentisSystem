@@ -302,8 +302,10 @@ R40–R43 y R45; R44 y R46 van al roadmap).
   - nota: no aplica: no existe staging y la constitución no lo exige (P12). En su lugar: CI en verde en `main` (`599433a`) y ensayos en el droplet con este mismo código (T088, tag `ensayo-4`): `verify.sh --local` 14/14 y `--remote` 30/30.
 - [x] T096 Aprobación humana para producción
   - aprobado por Luisander2651 el 2026-10-04 10:13 para v0.1.0 ("desplegar v0.1.0 a producción")
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-- [ ] T098 Marcar spec como `released`
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: 2026-10-04, ejecutado por el usuario en el droplet tras la aprobación de T096. Tag `v0.1.0` en `a03b2fe` (merge del PR #16). `deploy.sh v0.1.0`: **2 min 5 s**, `verify.sh --local --in-operation` sin fallos, `current=v0.1.0`, `previous=ensayo-4`, `verified=v0.1.0`; `deploys.log`: backup `pre-v0.1.0` y `deploy v0.1.0 result=ok` (16:25:53 UTC). 0 líneas de error en los logs de `app` y `queue` de los 5 minutos siguientes y `queue:failed` vacío. `verify.sh --remote` desde fuera: **30/30**. Ventana de 15 minutos (16:27–16:41 UTC), una muestra por minuto de `/up`, `/login` y la portada: **15/15 con 200**, `/up` entre 0,27 y 0,37 s. Sin métricas ni alertas automáticas todavía (spec de monitoreo pendiente); el `request_id` de `/release` no aplica, porque la correlación por petición es del objetivo 5.
+- [x] T098 Marcar spec como `released`
+  - nota: 2026-10-04. `spec.md` → `status: released`, `released: v0.1.0 (2026-10-04)`.
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

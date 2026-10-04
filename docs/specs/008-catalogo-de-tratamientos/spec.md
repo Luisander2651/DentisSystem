@@ -56,3 +56,4 @@ choques de horario.
 |---|---|---|
 | 2026-09-22 | Creación inferida del código | /init |
 | 2026-09-22 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
+| 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA3, el catálogo de la agenda es solo para el administrador; 500 genérico; `agenda/treatments` devuelve `time` nulo como `0` | /release |
