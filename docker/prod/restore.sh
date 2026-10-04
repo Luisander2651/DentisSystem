@@ -5,7 +5,8 @@
 #   restore.sh --into-manual <dump>    into the manual stack in MANUAL_DIR
 #   restore.sh --yes <dump>            without the interactive confirmation (rollback.sh)
 #
-# Everything written after the dump is lost. It is only ever run by hand or by rollback.sh.
+# Everything written after the dump is lost, but a pre-restore dump of the current database
+# is taken first. It is only ever run by hand or by rollback.sh.
 
 set -euo pipefail
 
@@ -30,6 +31,8 @@ done
 [ "$(head -c 5 "$DUMP")" = "PGDMP" ] || fail "not a PostgreSQL custom-format dump: $DUMP"
 
 DUMP_NAME="$(basename "$DUMP")"
+# The name goes into DEPLOY_LOG: nothing that could break or forge a line of it.
+[[ "$DUMP_NAME" =~ ^[A-Za-z0-9._-]+$ ]] || fail "the dump name may only contain letters, digits, dots, dashes and underscores"
 
 if [ "$CONFIRMED" != true ]; then
     printf 'This replaces the current database with %s. Everything written after it is lost.\n' "$DUMP_NAME"
@@ -42,6 +45,12 @@ on_error() {
 }
 trap on_error ERR
 
+# What is about to be replaced is kept: choosing the wrong dump must not be final. The
+# manual stack is outside compose.sh, so --into-manual does not take this copy.
+if [ "$INTO_MANUAL" != true ]; then
+    "$SCRIPT_DIR/backup.sh" pre-restore > /dev/null
+fi
+
 # The dump is turned into SQL first, so a truncated or broken dump stops here without
 # touching the database. Then the schema is reset and the SQL applied in one transaction:
 # objects created after the dump (a newer version's tables) disappear too, and any error
@@ -52,7 +61,7 @@ sql="$(mktemp)"
 trap "rm -f \"\$sql\"" EXIT
 pg_restore --no-owner -f "$sql"
 { printf "DROP SCHEMA public CASCADE;\nCREATE SCHEMA public;\n"; cat "$sql"; } |
-    psql -X -q -v ON_ERROR_STOP=1 --single-transaction -U "$POSTGRES_USER" -d "$POSTGRES_DB" > /dev/null'
+    PGOPTIONS="--client-min-messages=warning" psql -X -q -v ON_ERROR_STOP=1 --single-transaction -U "$POSTGRES_USER" -d "$POSTGRES_DB" > /dev/null'
 if [ "$INTO_MANUAL" = true ]; then
     (cd "$MANUAL_DIR" && docker compose exec -T db sh -c "$RESTORE_COMMAND") < "$DUMP"
 else

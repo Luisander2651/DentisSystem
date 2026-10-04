@@ -33,6 +33,16 @@ log_operation() {
         >> "$DEPLOY_LOG"
 }
 
+# assert_logged <action> <version>
+# Fails unless the last line of DEPLOY_LOG is that operation with result=ok (CA15).
+assert_logged() {
+    local action="$1" version="$2" line
+
+    line="$(tail -n 1 "$DEPLOY_LOG" 2> /dev/null || true)"
+    [[ "$line" == *" action=$action version=$version result=ok" ]] ||
+        fail "the operation was not recorded in $DEPLOY_LOG"
+}
+
 # fail <message>: prints to stderr and exits with a non-zero code.
 fail() {
     printf 'ERROR: %s\n' "$1" >&2
