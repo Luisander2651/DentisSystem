@@ -175,3 +175,90 @@ it('refuses to report closed ports when timeout is not installed (R11)', functio
         ->and($output)->toContain('timeout')
         ->and($output)->not->toContain('is closed on the droplet IP');
 });
+
+/*
+ * /review R7, R8, R9, R13 and R14: the checks added to --remote and --local. `curl` and
+ * `docker` are shell functions that answer what the case says and record their arguments,
+ * so each check is seen to fail with the bad answer and to pass with the good one.
+ */
+
+const REMOTE_STAND_INS = 'DOMAIN=example.test; ORIGIN=203.0.113.10; '
+    .'curl() { echo "$*" >> "$CURL_ARGS"; printf "%b" "$CURL_OUTPUT"; }; '
+    .'docker() { printf "%b" "$DOCKER_OUTPUT"; }; ';
+
+/**
+ * @return array{0: int, 1: string} exit code and the curl arguments recorded
+ */
+function remoteCheck(object $test, string $check, string $curlOutput = '', string $dockerOutput = ''): array
+{
+    $arguments = $test->sandbox.'/curl-arguments';
+    file_put_contents($arguments, '');
+
+    [$exit] = verifyCheck($test, REMOTE_STAND_INS.$check, [
+        'CURL_ARGS' => $arguments,
+        'CURL_OUTPUT' => $curlOutput,
+        'DOCKER_OUTPUT' => $dockerOutput,
+    ]);
+
+    return [$exit, (string) file_get_contents($arguments)];
+}
+
+it('asks the origin itself, not Cloudflare, whether nginx reveals its version (R9)', function () {
+    [$hidden, $arguments] = remoteCheck($this, 'origin_lacks_header "server: nginx/"', 'HTTP/2 200\r\nserver: nginx\r\n');
+    [$revealed] = remoteCheck($this, 'origin_lacks_header "server: nginx/"', 'HTTP/2 200\r\nserver: nginx/1.30.5\r\n');
+
+    expect($hidden)->toBe(0)
+        ->and($revealed)->toBe(1)
+        ->and($arguments)->toContain('--resolve example.test:443:203.0.113.10');
+});
+
+it('checks the redirect and HSTS at the origin and for www (R13)', function () {
+    [$redirects, $arguments] = remoteCheck($this, 'origin_redirects_to_https', '301 https://example.test/');
+    [$serves] = remoteCheck($this, 'origin_redirects_to_https', '200 ');
+
+    expect($redirects)->toBe(0)
+        ->and($serves)->toBe(1)
+        ->and($arguments)->toContain('--resolve example.test:80:203.0.113.10');
+
+    [$www, $arguments] = remoteCheck($this, 'redirects_to_https www.example.test', '301 https://www.example.test/');
+    expect($www)->toBe(0)
+        ->and($arguments)->toContain('http://www.example.test/')
+        ->and(remoteCheck($this, 'redirects_to_https www.example.test', '200 ')[0])->toBe(1);
+
+    $hsts = 'HTTP/2 200\r\nstrict-transport-security: max-age=31536000\r\n';
+    expect(remoteCheck($this, 'origin_has_header "strict-transport-security: max-age="', $hsts)[0])->toBe(0)
+        ->and(remoteCheck($this, 'origin_has_header "strict-transport-security: max-age="', 'HTTP/2 200\r\n')[0])->toBe(1)
+        ->and(remoteCheck($this, 'has_header "strict-transport-security: max-age=" https://www.example.test/login', $hsts)[1])
+        ->toContain('https://www.example.test/login');
+});
+
+it('checks that an uploaded file is served with nosniff (R8)', function () {
+    [$protected, $arguments] = remoteCheck($this, 'static_file_has_nosniff', 'HTTP/2 200\r\nx-content-type-options: nosniff\r\n');
+    [$bare] = remoteCheck($this, 'static_file_has_nosniff', 'HTTP/2 200\r\ncontent-type: image/jpeg\r\n');
+
+    expect($protected)->toBe(0)
+        ->and($bare)->toBe(1)
+        ->and($arguments)->toContain('https://example.test/storage/login.jpg');
+});
+
+it('expects the rate limit to hold through the proxy when X-Forwarded-For is rotated (R7)', function () {
+    [$limited, $arguments] = remoteCheck($this, 'forged_forwarded_ip_is_ignored_through_proxy', '429');
+    [$dodged] = remoteCheck($this, 'forged_forwarded_ip_is_ignored_through_proxy', '200');
+
+    expect($limited)->toBe(0)
+        ->and($dodged)->toBe(1)
+        ->and(substr_count($arguments, "\n"))->toBe(11)
+        ->and($arguments)->toContain('X-Forwarded-For: 203.0.113.1 ')
+        ->and($arguments)->toContain('X-Forwarded-For: 203.0.113.11 ')
+        ->and($arguments)->not->toContain('--resolve');
+});
+
+it('checks that the backups folder is not mounted in nginx (R14)', function () {
+    $safe = "/etc/letsencrypt\n/var/www/certbot\n/var/lib/docker/volumes/dentissa_storage-public/_data\n";
+
+    expect(remoteCheck($this, 'backups_are_not_mounted_in_nginx', dockerOutput: $safe)[0])->toBe(0)
+        ->and(remoteCheck($this, 'backups_are_not_mounted_in_nginx', dockerOutput: $safe.$this->backups."\n")[0])->toBe(1)
+        ->and(remoteCheck($this, 'backups_are_not_mounted_in_nginx', dockerOutput: $safe.dirname($this->backups)."\n")[0])->toBe(1)
+        // No answer from docker proves nothing.
+        ->and(remoteCheck($this, 'backups_are_not_mounted_in_nginx', dockerOutput: '')[0])->toBe(1);
+});

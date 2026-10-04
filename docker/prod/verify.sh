@@ -20,6 +20,7 @@ source "$SCRIPT_DIR/lib.sh"
 
 DOMAIN="${DOMAIN:-dentissapp.com}"
 MANUAL_DB_CONTAINER="${MANUAL_DB_CONTAINER:-laravel-postgres}"
+NGINX_CONTAINER="${NGINX_CONTAINER:-dentissa-nginx}"
 RATE_LIMITED_PATH="/api/v1/public/certifications"
 CLOSED_PORTS=(5432 6379 3000 3100 5173 9000 12345)
 # Set by --in-operation: a deploy or rollback has just written its own pre-<tag> dump.
@@ -100,6 +101,19 @@ backups_are_private() {
     [ "$(stat -c %a "$BACKUP_DIR")" = "700" ] && [ -z "$(find "$BACKUP_DIR" -maxdepth 1 -name '*.dump' ! -perm 600)" ]
 }
 
+# The folder of the dumps, anything inside it or a folder that contains it must not be
+# reachable from the web server. No answer from docker proves nothing.
+backups_are_not_mounted_in_nginx() {
+    local mounts mount
+    mounts="$(docker inspect "$NGINX_CONTAINER" --format '{{range .Mounts}}{{println .Source}}{{end}}')" || return 1
+    [ -n "$mounts" ] || return 1
+    while read -r mount; do
+        [ -n "$mount" ] || continue
+        case "$BACKUP_DIR/" in "$mount"/*) return 1 ;; esac
+        case "$mount/" in "$BACKUP_DIR"/*) return 1 ;; esac
+    done <<< "$mounts"
+}
+
 old_daily_backups_are_rotated() {
     # -mtime counts whole days: +6 means seven full days or more.
     [ -z "$(find "$BACKUP_DIR" -maxdepth 1 -name 'daily-*.dump' -mtime +6)" ]
@@ -131,6 +145,7 @@ verify_local() {
         check "a daily backup from the last 25 hours exists" recent_backup_exists
     fi
     check "backups are private (folder 700, files 600)" backups_are_private
+    check "the backups folder is not mounted in nginx" backups_are_not_mounted_in_nginx
     check "daily backups of 7 days or more are gone" old_daily_backups_are_rotated
     check "the last operation in deploys.log is well formed" last_operation_is_recorded
     check "disk usage is below 80%" disk_has_room
@@ -142,14 +157,27 @@ headers_of() {
     curl -sS -D - -o /dev/null --max-time 10 "$@"
 }
 
+# redirects_to_https [host]: through Cloudflare, which may answer the redirect itself.
 redirects_to_https() {
-    local result
-    result="$(curl -sS -o /dev/null --max-time 10 -w '%{http_code} %{redirect_url}' "http://$DOMAIN/")"
+    local host="${1:-$DOMAIN}" result
+    result="$(curl -sS -o /dev/null --max-time 10 -w '%{http_code} %{redirect_url}' "http://$host/")"
     [[ "$result" =~ ^30[18]\ https:// ]]
 }
 
+# The same question asked to nginx on the droplet, where Cloudflare cannot answer for it.
+origin_redirects_to_https() {
+    local result
+    result="$(curl -sS -o /dev/null --max-time 10 -w '%{http_code} %{redirect_url}' \
+        --resolve "$DOMAIN:80:$ORIGIN" "http://$DOMAIN/")"
+    [[ "$result" =~ ^30[18]\ https:// ]]
+}
+
+# has_header <pattern> [curl arguments]
 has_header() {
-    grep -qiE "^$1" <<< "$(headers_of "https://$DOMAIN/login")"
+    local pattern="$1"
+    shift
+    [ $# -gt 0 ] || set -- "https://$DOMAIN/login"
+    grep -qiE "^$pattern" <<< "$(headers_of "$@")"
 }
 
 # lacks_header <pattern> [curl arguments]: a request that fails proves nothing.
@@ -160,6 +188,21 @@ lacks_header() {
     headers="$(headers_of "$@")" || return 1
     [ -n "$headers" ] || return 1
     ! grep -qiE "^$pattern" <<< "$headers"
+}
+
+# Cloudflare rewrites or adds headers (it always answers "server: cloudflare"), so what
+# nginx itself sends is asked to the droplet directly.
+origin_has_header() {
+    has_header "$1" --resolve "$DOMAIN:443:$ORIGIN" "https://$DOMAIN/login"
+}
+
+origin_lacks_header() {
+    lacks_header "$1" --resolve "$DOMAIN:443:$ORIGIN" "https://$DOMAIN/login"
+}
+
+# Uploaded files are served by nginx, not by PHP: they need the header from nginx (CA5).
+static_file_has_nosniff() {
+    has_header 'x-content-type-options: nosniff' "https://$DOMAIN/storage/login.jpg"
 }
 
 rejects_foreign_origin() {
@@ -200,6 +243,17 @@ forged_ip_is_ignored_at_origin() {
     [ "$code" = "429" ]
 }
 
+# Through Cloudflare the limit must follow the real visitor, whatever X-Forwarded-For the
+# visitor sends (CA16): eleven requests with eleven different addresses still end in 429.
+forged_forwarded_ip_is_ignored_through_proxy() {
+    local i code=""
+    for i in $(seq 1 11); do
+        code="$(curl -sS -o /dev/null --max-time 10 -w '%{http_code}' \
+            -H "X-Forwarded-For: 203.0.113.$i" "https://$DOMAIN$RATE_LIMITED_PATH")"
+    done
+    [ "$code" = "429" ]
+}
+
 verify_remote() {
     [ -n "${ORIGIN:-}" ] || fail "--remote needs --origin <ip of the droplet>"
     if ! [[ "$ORIGIN" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ || ( "$ORIGIN" == *:* && "$ORIGIN" =~ ^[0-9A-Fa-f:]+$ ) ]]; then
@@ -216,18 +270,25 @@ verify_remote() {
     check "X-Content-Type-Options is nosniff" has_header 'x-content-type-options: nosniff'
     check "Referrer-Policy is sent" has_header 'referrer-policy: '
     check "X-Powered-By is not sent" lacks_header 'x-powered-by:'
-    check "the nginx version is not sent" lacks_header 'server: nginx/'
+    check "X-Powered-By is not sent by the origin" origin_lacks_header 'x-powered-by:'
+    check "the nginx version is not sent by the origin" origin_lacks_header 'server: nginx/'
+    check "the origin redirects http to https" origin_redirects_to_https
+    check "HSTS is sent by the origin" origin_has_header 'strict-transport-security: max-age='
+    check "http://www redirects permanently to https" redirects_to_https "www.$DOMAIN"
+    check "HSTS is sent for www" has_header 'strict-transport-security: max-age=' "https://www.$DOMAIN/login"
     check "another origin cannot read the API" rejects_foreign_origin
     check "/.env is not served" status_is 404 /.env
     check "/.git/ is not served" status_is 404 /.git/
     check "/backups/ is not served" status_is 404 /backups/
     check "/storage/login.jpg is served" status_is 200 /storage/login.jpg
+    check "/storage/login.jpg is served with nosniff" static_file_has_nosniff
     check "an asset of the build manifest is served" manifest_asset_is_served
     local port
     for port in "${CLOSED_PORTS[@]}"; do
         check "port $port is closed on the droplet IP" origin_port_is_closed "$port"
     done
     check "a forged client IP is ignored when the proxy is bypassed" forged_ip_is_ignored_at_origin
+    check "a forged X-Forwarded-For is ignored through the proxy" forged_forwarded_ip_is_ignored_through_proxy
 }
 
 # --- entry point ------------------------------------------------------------------------
