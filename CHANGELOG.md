@@ -5,6 +5,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-04
+Primera versión etiquetada y primera desplegada con el procedimiento reproducible (specs 014 y 015).
+
 ### Added
 - Inicialización del flujo AI-DD: constitución, arquitectura, despliegue, seguridad, roadmap, ADRs y specs inferidas en `docs/`; validador en `.ai/bin/aidd.py`; workflow de CI `.ai/ci/ai-dd.yml`, guardado sin activar.
 - Despliegue reproducible en el VPS (spec 015): imágenes de producción versionadas, una composición de producción aparte de la de desarrollo y scripts para desplegar, volver atrás, hacer y restaurar backups y verificar el servidor, con un registro de cada operación.
