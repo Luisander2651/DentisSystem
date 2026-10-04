@@ -74,22 +74,28 @@ else
     "$SCRIPT_DIR/backup.sh" "pre-$TAG"
 fi
 
-PREVIOUS="$(cat .deploy/current 2> /dev/null || true)"
+# The version a rollback goes back to is the last one that passed verify.sh, not merely
+# the last one started: a deploy that failed must never become that target. A clone from
+# before .deploy/verified existed takes its version in service as verified.
+mkdir -p .deploy
+if [ ! -f .deploy/verified ] && [ -f .deploy/current ]; then
+    cp .deploy/current .deploy/verified
+fi
+PREVIOUS="$(cat .deploy/verified 2> /dev/null || true)"
 export APP_VERSION="$TAG"
 
 # Before switching versions: migrations are compatible with the code still in service (P9),
 # and a migration that fails leaves that version running and the deploy state untouched.
+# Without the image's entrypoint: it runs `artisan optimize`, which would recompile the views
+# into the storage volume the version in service is still reading.
 echo "==> Running migrations with the image of $TAG"
-"$SCRIPT_DIR/compose.sh" run --rm app php artisan migrate --force
+"$SCRIPT_DIR/compose.sh" run --rm --entrypoint php app artisan migrate --force
 
 # Written before `up`, so that if the start fails rollback.sh still knows where to go back.
-mkdir -p .deploy
 if [ -n "$PREVIOUS" ] && [ "$PREVIOUS" != "$TAG" ]; then
-    printf '%s
-' "$PREVIOUS" > .deploy/previous
+    printf '%s\n' "$PREVIOUS" > .deploy/previous
 fi
-printf '%s
-' "$TAG" > .deploy/current
+printf '%s\n' "$TAG" > .deploy/current
 
 echo "==> Starting $TAG"
 "$SCRIPT_DIR/compose.sh" up -d --remove-orphans
@@ -101,6 +107,7 @@ done
 
 echo "==> Verifying"
 "$SCRIPT_DIR/verify.sh" --local --in-operation
+printf '%s\n' "$TAG" > .deploy/verified
 
 # The version to go back to is the one in .deploy/previous, also when the same tag is
 # deployed again. A removal that fails is only reported: the deploy is already verified.
@@ -110,8 +117,7 @@ for repository in dentissa-app dentissa-web; do
     while read -r image_tag; do
         if [ "$image_tag" != "$TAG" ] && [ "$image_tag" != "$KEPT" ]; then
             docker image rm "$repository:$image_tag" > /dev/null 2>&1 ||
-                printf 'WARNING: could not remove %s:%s
-' "$repository" "$image_tag" >&2
+                printf 'WARNING: could not remove %s:%s\n' "$repository" "$image_tag" >&2
         fi
     done < <(docker image ls "$repository" --format '{{.Tag}}')
 done

@@ -196,7 +196,7 @@ Revisión del desglose contra el [plan](plan.md), sin repetir su análisis.
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas (depende de T054). `deployment.md`: variables nuevas por nombre, entorno prod y RD1.a, RD1.b, RD2.a, RD3.a, RD4.a, RD5.a, RD5.b, RD6.a y RD6.b → `mitigada (spec 015; versión en /release)`, una por una. `observability.md`: OB2.b, OB4.a, OB5.a, OB5.b, OB6.a y OB9.a → mitigada igual; en OB10.b, nota "parcial: whatsApp (spec 015); Auth pendiente" sin cambiar su estado; evento `health.dependency_failed`; `deploys.log`; IP real en los logs de nginx. Las correcciones que la spec deja fuera no cambian de estado
   - nota: 2026-10-02. `deployment.md`: variables nuevas por nombre (`REDIS_TIMEOUT`, `REDIS_READ_WRITE_TIMEOUT`, `CSP_REPORT_ONLY`, `COMPOSE_FILE`, `DATA_VOLUME_PREFIX`, y `APP_VERSION` fijada por `compose.sh`), Twilio y Brevo leídos con `config()`; entorno prod ya descrito en T055; RD1.a, RD1.b, RD2.a, RD3.a, RD4.a, RD5.a, RD5.b, RD6.a y RD6.b → `mitigada (spec 015; versión en /release)`, una por una con su evidencia. `observability.md`: OB2.b, OB4.a, OB5.a, OB5.b, OB6.a y OB9.a → mitigada igual; OB10.b sin cambio de estado con la nota de parcial (whatsApp y `SendResetPasswordEmailController` de Auth; el resto de Auth pendiente — el texto de la tarea decía "Auth pendiente", pero T047 ya cubrió ese controlador); evento `health.dependency_failed`, `deploys.log` e IP real en los logs de nginx; Resumen actualizado (canal, agregación en producción, `/up` y registro de operaciones). OB7 y OB8 siguen pendientes (spec de monitoreo).
 - [ ] T092 Marcar spec como `implemented`
-  - nota: 2026-10-02 marcada; reabierta el 2026-10-04 por `/review` ronda 1 (`changes_requested`). Depende de T076.
+  - nota: marcada el 2026-10-02 y el 2026-10-04; reabierta el 2026-10-04 por `/review` ronda 2 (`changes_requested`). Depende de T088.
 
 ## Correcciones de `/review` ronda 1
 Añadidas por `/review` el 2026-10-04 (decisión del usuario: corregir R1–R10 y los menores R11–R15,
@@ -252,8 +252,49 @@ etapa `dev` de la imagen local lo instala (T064); la CI ya lo trae. Los commits 
 - [x] T075 Verificar: `vendor/bin/pint --test` sobre los PHP del rango, `./vendor/bin/pest --parallel`, `shellcheck -x docker/prod/*.sh` y `npm run build` — sin archivos — hecho cuando: todo pasa y queda anotado aquí — cubre: CA14 — depende: T059, T063, T068, T071, T072, T073, T077
   - nota: añadida por /review: R1–R10
   - nota: 2026-10-04. `pint --test` sobre los 44 PHP de `131ea14..HEAD`: `passed`. `./vendor/bin/pest --parallel` (12 procesos): **904/904** (línea base de la review: 868/868; +36 casos nuevos). `tests/Modules/Core` dos veces: mismo resultado. `shellcheck -x` limpio en los ocho scripts de `docker/prod/`. `npm run build` ok. gitleaks sobre `e175328..HEAD`: sin fugas; `trivy config docker/`: 0 altos o críticos.
-- [ ] T076 Ensayo en el droplet, **con aprobación del usuario**: `git pull` en el clon, tag local `ensayo-3`, `deploy.sh ensayo-3` (orden nuevo), `verify.sh --local` y, desde fuera, `verify.sh --remote dentissapp.com --origin <IP>` con las comprobaciones nuevas (cabeceras en `/storage/login.jpg`, origen y `www`, 429 con `X-Forwarded-For` rotado a través de Cloudflare); después `rollback.sh` de ida y vuelta — sin archivos (resultado aquí) — hecho cuando: las dos verificaciones pasan enteras, los dos rollbacks quedan en `deploys.log` con `result=ok` y los tiempos quedan anotados — cubre: CA4, CA5, CA13, CA15, CA16 — depende: T074, T075
+- [x] T076 Ensayo en el droplet, **con aprobación del usuario**: `git pull` en el clon, tag local `ensayo-3`, `deploy.sh ensayo-3` (orden nuevo), `verify.sh --local` y, desde fuera, `verify.sh --remote dentissapp.com --origin <IP>` con las comprobaciones nuevas (cabeceras en `/storage/login.jpg`, origen y `www`, 429 con `X-Forwarded-For` rotado a través de Cloudflare); después `rollback.sh` de ida y vuelta — sin archivos (resultado aquí) — hecho cuando: las dos verificaciones pasan enteras, los dos rollbacks quedan en `deploys.log` con `result=ok` y los tiempos quedan anotados — cubre: CA4, CA5, CA13, CA15, CA16 — depende: T074, T075
   - nota: añadida por /review: R4–R9
+  - nota: 2026-10-04, ejecutado por el usuario en el droplet (aprobado), con el clon en `main` (`c2f91ad`, merge del PR #13) y el tag local `ensayo-3`. `deploy.sh ensayo-3` con el orden nuevo (build, backup, migración con la imagen nueva en un contenedor de un solo uso, estado, `up`): **1 min 38 s**, `verify.sh --local --in-operation` 14/14 (incluida "the backups folder is not mounted in nginx"), `current=ensayo-3`, `previous=ensayo-1` y la limpieza conservó las dos. `rollback.sh` de ida y vuelta: **13,1 s** (a `ensayo-1`) y **11,9 s** (a `ensayo-3`), 14/14 cada uno. `deploys.log`: backup `pre-ensayo-3`, `deploy ensayo-3 ok`, `rollback ensayo-1 ok` y `rollback ensayo-3 ok`, además del backup `daily` que el cron ejecutó solo a las 03:00 UTC. `verify.sh --local` sin `--in-operation`: pasa (existe el `daily` de menos de 25 h). `verify.sh --remote dentissapp.com --origin <IP>` desde WSL: 28/29 en la primera pasada; falló "/storage/login.jpg is served with nosniff" **por la caché de Cloudflare** (`cf-cache-status: HIT`, `Age: 5260`: copia guardada antes del deploy), no por nginx: el origen ya respondía con `nosniff`, `X-Frame-Options: DENY` y HSTS, y `/login` con cada cabecera una sola vez. Tras "Purge Everything" en Cloudflare (usuario): **29/29**, incluidas las de origen, `www` y la ráfaga con `X-Forwarded-For` rotado a través de Cloudflare (429). De aquí salen T078 y T079 (comprobación gemela contra el origen y nota de purga); con ellas, 30/30 contra el sitio.
+
+- [x] T078 Test: `VerifyScriptBehaviourTest` exige una comprobación `origin_static_file_has_nosniff`, que pregunta al origen (`--resolve`) por `/storage/login.jpg`, pasa con `nosniff` y falla sin él, de modo que `verify.sh --remote` distinga "nginx no envía la cabecera" de "Cloudflare sirve una copia en caché anterior" — `tests/Modules/Core/Unit/VerifyScriptBehaviourTest.php` — hecho cuando: el caso falla hoy porque la función no existe — cubre: CA5 — depende: T071
+  - nota: añadida durante /implement: en T076 la comprobación a través de Cloudflare falló por una copia en caché de antes del deploy, con el origen ya correcto (decisión del usuario, 2026-10-04: tarea nueva)
+  - nota: 2026-10-04. Caso nuevo en `VerifyScriptBehaviourTest`; falló por la razón esperada (la función no existía: código 127, visto con bash directo mientras Docker no tenía montada la unidad). Comprobado rompiendo el control (sin `--resolve`): falla; restaurado.
+- [x] T079 `verify.sh --remote`: comprobación "/storage/login.jpg is served with nosniff by the origin" antes de la que va a través de Cloudflare, cuyo texto indica que un fallo solo ahí es caché; y en `deployment.md`, purgar la caché de Cloudflare tras un despliegue que cambie las cabeceras de nginx — `docker/prod/verify.sh`, `docs/deployment.md` — hecho cuando: T078 pasa, `shellcheck -x` queda limpio y `verify.sh --remote` contra el sitio da 30/30 — cubre: CA5 — depende: T078
+  - nota: añadida durante /implement: ver T078
+  - nota: 2026-10-04. `origin_static_file_has_nosniff` y su comprobación, antes de la que va a través de Cloudflare, cuyo texto dice que un fallo solo ahí es caché. `deployment.md`: sección "Después de cambiar cabeceras de nginx" (purga de la caché de Cloudflare). `VerifyScriptBehaviourTest` 20/20, `shellcheck -x` limpio en los ocho scripts, `verify.sh --remote` contra el sitio: **30/30**. Suite completa `--parallel`: 905/905 (la primera pasada tras reiniciar Docker Desktop tardó 570 s con la máquina saturada, se cortó y dejó las bases de test paralelas a medio migrar; con `--recreate-databases`, limpia). En esa pasada un proceso de bash del test superó los 60 s: el límite pasa a 180 s, sin cambiar qué se comprueba; `tests/Modules/Core` dos veces, 98/98. La purga automática queda fuera por decisión del usuario (necesitaría un token de la API de Cloudflare en el droplet).
+
+## Correcciones de `/review` ronda 2
+Añadidas por `/review --rerun` el 2026-10-04 (decisión del usuario: corregir R36–R39 y los menores
+R40–R43 y R45; R44 y R46 van al roadmap).
+
+- [x] T080 Test: en `DeployScriptsBehaviourTest`, (a) la migración previa se llama como `compose run --rm --entrypoint php app artisan migrate --force`; (b) con `verify.sh` fallando en el deploy de v2 y un deploy posterior de v3 sin rollback, `.deploy/previous` sigue siendo v1, las imágenes de v1 no se borran y `.deploy/verified` queda en v3; (c) tras un deploy o un rollback verificado, `.deploy/verified` contiene esa versión; (d) `backup.sh daily`, ejecutado con un doble de `compose.sh`, borra los `daily-*` de 7 días cumplidos y conserva los más recientes y los `pre-*`; (e) el entorno de los procesos fija `SUDO_USER`, `GIT_DIR`, `GIT_WORK_TREE` y `GIT_INDEX_FILE` a `false` — `tests/Modules/Core/Unit/DeployScriptsBehaviourTest.php` — hecho cuando: (a), (b) y (c) fallan hoy; (d) pasa hoy y se comprueba rompiendo el borrado — cubre: CA12, CA13 — depende: ninguna
+  - nota: añadida por /review: R36, R37, R38, R42
+  - nota: 2026-10-04. Tres casos nuevos y uno modificado en `DeployScriptsBehaviourTest`; el doble de `verify.sh` puede fallar (`FAIL_VERIFY`) y el de `compose.sh` responde un dump a `pg_dump`. (a), (b) y (c) fallaron por la razón esperada. (d) pasaba desde el principio: comprobado cambiando el borrado de `backup.sh` a `-mtime +7` (falla) y restaurando. (e) hecho con las cuatro variables a `false`.
+- [x] T081 `deploy.sh`: migrar con `compose.sh run --rm --entrypoint php app artisan migrate --force` (sin el entrypoint, que recompila las vistas en el volumen compartido); escribir `.deploy/verified` tras `verify.sh`; al empezar, la versión que pasa a `.deploy/previous` es la de `.deploy/verified` (si no existe, la de `.deploy/current`); `printf '%s\n'` en lugar de saltos de línea literales. `rollback.sh`: escribir `.deploy/verified` tras su `verify.sh` — `docker/prod/deploy.sh`, `docker/prod/rollback.sh` — hecho cuando: T080 pasa y `shellcheck -x` queda limpio — cubre: CA13 — depende: T080
+  - nota: añadida por /review: R36, R38, R41
+  - nota: 2026-10-04. `deploy.sh`: migración con `--entrypoint php` (sin `artisan optimize`); `.deploy/verified` tras `verify.sh`; `previous` se toma de `verified` (un clon anterior a este cambio toma su `current` como verificado al empezar el primer deploy); `printf '%s
+'` restaurado. `rollback.sh` escribe `.deploy/verified` tras su verificación y conserva `previous` = versión de la que se vuelve, para la ida y vuelta. `DeployScriptsBehaviourTest` 14/14; `shellcheck -x` limpio.
+- [x] T082 Test: en `VerifyScriptBehaviourTest`, (a) la comprobación de rotación tolera un `daily-*` de 7 días y 1 hora (el que la rotación de las 03:00 puede dejar por segundos) y falla con uno de 8 días y 1 hora; (b) `backups_are_not_mounted_in_nginx` detecta el montaje cuando `BACKUP_DIR` lleva barra final; y los casos existentes usan `\r\n` escritos, no saltos de línea literales — `tests/Modules/Core/Unit/VerifyScriptBehaviourTest.php` — hecho cuando: (a) y (b) fallan hoy — cubre: CA12 — depende: ninguna
+  - nota: añadida por /review: R37, R41, R45
+  - nota: 2026-10-04. (a) falló por la razón esperada. (b): mi primera versión del caso (la carpeta misma, con barra final) ya pasaba; se cambió por lo que señalaba R45, un subdirectorio montado con `BACKUP_DIR` terminado en barra, que sí fallaba. Las cadenas con saltos de línea literales del caso de T078 vuelven a `
+`.
+- [x] T083 `verify.sh`: comprobación de rotación con `-mtime +7` (un día de margen sobre el `-mtime +6` con que borra `backup.sh`) y su texto; `BACKUP_DIR` sin barra final al comparar montajes; la comprobación a través del proxy se describe como "the rate limit follows the real visitor through the proxy (rotated X-Forwarded-For)"; comentario de `--in-operation` exacto (un rollback sin `--restore` no crea dump); continuación de línea restaurada en `origin_static_file_has_nosniff` — `docker/prod/verify.sh` — hecho cuando: T082 pasa y `shellcheck -x` queda limpio — cubre: CA12, CA16 — depende: T082
+  - nota: añadida por /review: R37, R39, R41, R43, R45
+  - nota: 2026-10-04. Rotación comprobada con `-mtime +7` y su texto; `BACKUP_DIR` y cada montaje sin barra final; texto del check a través del proxy; comentario de `--in-operation`; continuación de línea restaurada. `VerifyScriptBehaviourTest` y `ProdScriptsTest` 30/30; `shellcheck -x` limpio.
+- [x] T084 Test: `NginxProdConfTest` exige `fastcgi_param HTTP_X_FORWARDED_PROTO $scheme` tras el `include`; y `TrustedProxiesTest` añade el caso que explica por qué nginx sobrescribe la cabecera: con `REMOTE_ADDR` en un rango de Cloudflare y un `X-Forwarded-For` distinto, Laravel toma la cabecera (por eso nginx no debe dejar pasar la del cliente) — `tests/Modules/Core/Unit/NginxProdConfTest.php`, `tests/Modules/Core/Integration/TrustedProxiesTest.php` — hecho cuando: el caso de `NginxProdConfTest` falla hoy; el de `TrustedProxiesTest` pasa hoy y queda anotado como caracterización del riesgo — cubre: CA16, CA17 — depende: ninguna
+  - nota: añadida por /review: R39, R40
+  - nota: 2026-10-04. El caso de `NginxProdConfTest` falló por la razón esperada. El de `TrustedProxiesTest` pasa desde el principio y es caracterización: muestra que Laravel, por sí solo, toma el `X-Forwarded-For` de una conexión en rango de Cloudflare; el control que lo impide es la línea de nginx, protegida por `NginxProdConfTest`.
+- [x] T085 `prod.conf`: `fastcgi_param HTTP_X_FORWARDED_PROTO $scheme;` junto al de `X-Forwarded-For` — `docker/nginx/prod.conf` — hecho cuando: T084 pasa y `nginx -t` sobre `nginx:1.30-alpine` con un certificado de prueba no da error — cubre: CA16, CA17 — depende: T084
+  - nota: añadida por /review: R40
+  - nota: 2026-10-04. `fastcgi_param HTTP_X_FORWARDED_PROTO $scheme;` en el bloque de PHP. `NginxProdConfTest` y `TrustedProxiesTest` 11/11; `nginx -t` correcto en `nginx:1.30-alpine` con un certificado de prueba.
+- [x] T086 Documentar en `deployment.md` que la migración previa corre sin el entrypoint y qué es `.deploy/verified`; y en `CHANGELOG.md`, la corrección — `docs/deployment.md`, `CHANGELOG.md` — hecho cuando: "Despliegues siguientes" y "Rollback" describen `.deploy/verified` y `aidd.py validate` da 0 errores — cubre: CA13 — depende: T081
+  - nota: añadida por /review: R36, R38
+  - nota: 2026-10-04. `deployment.md`: la migración previa corre sin el arranque de la imagen, qué son `current`, `verified` y `previous`, y la rotación con su día de margen. `CHANGELOG.md`: una entrada en Fixed. `aidd.py validate`: 0 errores.
+- [x] T087 Verificar: `vendor/bin/pint --test` sobre los PHP del rango, `./vendor/bin/pest` en serie (la suite paralela tiene la carrera de la línea base), `shellcheck -x docker/prod/*.sh` y `npm run build` — sin archivos — hecho cuando: todo pasa y queda anotado aquí — cubre: CA14 — depende: T081, T083, T085, T086
+  - nota: añadida por /review: R36–R43
+  - nota: 2026-10-04. `pint --test` sobre los PHP del rango: `passed`. `./vendor/bin/pest` en serie: **911/911** (364 s). `shellcheck -x` limpio en los ocho scripts. `npm run build` ok.
+- [ ] T088 Ensayo en el droplet, **con aprobación del usuario**: `git pull`, tag local `ensayo-4`, `deploy.sh ensayo-4`, comprobar que `.deploy/verified` es `ensayo-4` y que las vistas compiladas no cambiaron antes del `up` (fecha de `storage/framework/views` en el volumen frente al inicio del deploy), `rollback.sh` de ida y vuelta, y desde fuera `verify.sh --remote` — sin archivos (resultado aquí) — hecho cuando: deploy y rollbacks quedan en `deploys.log` con `result=ok`, `verify.sh --local` y `--remote` pasan enteras y los tiempos quedan anotados — cubre: CA5, CA13, CA15, CA16 — depende: T087
+  - nota: añadida por /review: R36, R38, R40
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -268,19 +309,19 @@ etapa `dev` de la imagen local lo instala (T064); la CI ya lo trae. Los commits 
 | CA2 | T017, T018 | T032, T037, T040, T043 |
 | CA3 | T015, T016, T018, T052 | T028, T029, T032, T034, T044 |
 | CA4 | T018, T019, T064, T076 | T031, T056, T071 |
-| CA5 | T010, T046, T052, T069, T076 | T020, T021, T022, T023, T024, T056, T070, T071 |
+| CA5 | T010, T046, T052, T069, T076, T078 | T020, T021, T022, T023, T024, T056, T070, T071, T079 |
 | CA6 | T011 | T025 |
 | CA7 | T013, T014, T073 | T030, T050 |
 | CA8 | T014, T062 | T030, T063 |
 | CA9 | T017, T018, T019, T064 | T034, T050, T065 |
 | CA10 | T015, T017, T045, T073 | T028, T029, T033, T034, T040 |
 | CA11 | T012, T052 | T026, T027, T059 |
-| CA12 | T018, T053, T064 | T031, T035, T037, T044, T065, T071 |
-| CA13 | T051, T054, T058, T066, T073, T076 | T036, T038, T055, T057, T067, T068, T074 |
-| CA14 | T001, T045, T075 | T003, T042 |
+| CA12 | T018, T053, T064, T080, T082 | T031, T035, T037, T044, T065, T071, T083 |
+| CA13 | T051, T054, T058, T066, T073, T076, T080, T088 | T036, T038, T055, T057, T067, T068, T074, T081, T086 |
+| CA14 | T001, T045, T075, T087 | T003, T042 |
 | CA15 | T018, T054, T058, T066, T076 | T004, T035, T036, T037, T038, T067, T068 |
-| CA16 | T005, T006, T046, T052, T069, T076 | T021, T031, T070, T071 |
-| CA17 | T005, T018, T069 | T021, T070 |
+| CA16 | T005, T006, T046, T052, T069, T076, T084, T088 | T021, T031, T070, T071, T083, T085 |
+| CA17 | T005, T018, T069, T084 | T021, T070, T085 |
 | CA18 | T007, T008, T052, T072 | T028, T029, T032, T039, T041, T047, T077 |
 | CA19 | T008, T052 | T041 |
 
@@ -299,7 +340,7 @@ etapa `dev` de la imagen local lo instala (T064); la CI ya lo trae. Los commits 
 | TM11 | T035 | T018, T053 |
 | TM12 | T032 | T018 |
 | TM13 | T040, T037 | T017, T018 |
-| TM14 | T021, T031, T070, T071 | T005, T006, T018, T069 |
+| TM14 | T021, T031, T070, T071, T085 | T005, T006, T018, T069, T084 |
 | TM15 | T028, T029, T032, T039, T041, T047 | T007, T008, T018 |
 
 | Cambio del plan (módulo) | Tarea(s) |

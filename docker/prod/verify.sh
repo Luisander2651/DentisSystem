@@ -23,7 +23,9 @@ MANUAL_DB_CONTAINER="${MANUAL_DB_CONTAINER:-laravel-postgres}"
 NGINX_CONTAINER="${NGINX_CONTAINER:-dentissa-nginx}"
 RATE_LIMITED_PATH="/api/v1/public/certifications"
 CLOSED_PORTS=(5432 6379 3000 3100 5173 9000 12345)
-# Set by --in-operation: a deploy or rollback has just written its own pre-<tag> dump.
+# Set by --in-operation (deploy.sh and rollback.sh): any recent dump counts, not only a
+# daily one. A deploy has just written its pre-<tag> dump; a rollback without --restore
+# writes none and relies on the last dump of the daily cron or of a deploy.
 IN_OPERATION="${IN_OPERATION:-false}"
 
 failures=0
@@ -104,19 +106,21 @@ backups_are_private() {
 # The folder of the dumps, anything inside it or a folder that contains it must not be
 # reachable from the web server. No answer from docker proves nothing.
 backups_are_not_mounted_in_nginx() {
-    local mounts mount
+    local mounts mount backups="${BACKUP_DIR%/}"
     mounts="$(docker inspect "$NGINX_CONTAINER" --format '{{range .Mounts}}{{println .Source}}{{end}}')" || return 1
     [ -n "$mounts" ] || return 1
     while read -r mount; do
+        mount="${mount%/}"
         [ -n "$mount" ] || continue
-        case "$BACKUP_DIR/" in "$mount"/*) return 1 ;; esac
-        case "$mount/" in "$BACKUP_DIR"/*) return 1 ;; esac
+        case "$backups/" in "$mount"/*) return 1 ;; esac
+        case "$mount/" in "$backups"/*) return 1 ;; esac
     done <<< "$mounts"
 }
 
 old_daily_backups_are_rotated() {
-    # -mtime counts whole days: +6 means seven full days or more.
-    [ -z "$(find "$BACKUP_DIR" -maxdepth 1 -name 'daily-*.dump' -mtime +6)" ]
+    # backup.sh deletes at seven full days (-mtime +6). One more day of margin here: its
+    # 03:00 run can leave, by seconds, the dump that is just under seven days old.
+    [ -z "$(find "$BACKUP_DIR" -maxdepth 1 -name 'daily-*.dump' -mtime +7)" ]
 }
 
 last_operation_is_recorded() {
@@ -146,7 +150,7 @@ verify_local() {
     fi
     check "backups are private (folder 700, files 600)" backups_are_private
     check "the backups folder is not mounted in nginx" backups_are_not_mounted_in_nginx
-    check "daily backups of 7 days or more are gone" old_daily_backups_are_rotated
+    check "daily backups older than the rotation (7 days, plus a day of margin) are gone" old_daily_backups_are_rotated
     check "the last operation in deploys.log is well formed" last_operation_is_recorded
     check "disk usage is below 80%" disk_has_room
 }
@@ -203,6 +207,13 @@ origin_lacks_header() {
 # Uploaded files are served by nginx, not by PHP: they need the header from nginx (CA5).
 static_file_has_nosniff() {
     has_header 'x-content-type-options: nosniff' "https://$DOMAIN/storage/login.jpg"
+}
+
+# The same file asked to nginx directly. Through Cloudflare it may come from a copy cached
+# before the deploy: if only that check fails, purge Cloudflare's cache.
+origin_static_file_has_nosniff() {
+    has_header 'x-content-type-options: nosniff' \
+        --resolve "$DOMAIN:443:$ORIGIN" "https://$DOMAIN/storage/login.jpg"
 }
 
 rejects_foreign_origin() {
@@ -281,14 +292,15 @@ verify_remote() {
     check "/.git/ is not served" status_is 404 /.git/
     check "/backups/ is not served" status_is 404 /backups/
     check "/storage/login.jpg is served" status_is 200 /storage/login.jpg
-    check "/storage/login.jpg is served with nosniff" static_file_has_nosniff
+    check "/storage/login.jpg is served with nosniff by the origin" origin_static_file_has_nosniff
+    check "/storage/login.jpg is served with nosniff through Cloudflare (if only this fails: purge its cache)" static_file_has_nosniff
     check "an asset of the build manifest is served" manifest_asset_is_served
     local port
     for port in "${CLOSED_PORTS[@]}"; do
         check "port $port is closed on the droplet IP" origin_port_is_closed "$port"
     done
     check "a forged client IP is ignored when the proxy is bypassed" forged_ip_is_ignored_at_origin
-    check "a forged X-Forwarded-For is ignored through the proxy" forged_forwarded_ip_is_ignored_through_proxy
+    check "the rate limit follows the real visitor through the proxy (rotated X-Forwarded-For)" forged_forwarded_ip_is_ignored_through_proxy
 }
 
 # --- entry point ------------------------------------------------------------------------

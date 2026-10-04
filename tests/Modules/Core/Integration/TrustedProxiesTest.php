@@ -74,3 +74,15 @@ it('keeps the IP nginx resolved when that IP is itself inside a Cloudflare range
         ->assertOk()
         ->assertJson(['ip' => '173.245.48.10']);
 });
+
+it('would take a forwarded IP from a client inside a Cloudflare range, which is why nginx overwrites it (R39)', function () {
+    // What Laravel does on its own when the connection IP is in a trusted range: it believes
+    // X-Forwarded-For. nginx has already resolved the visitor's IP into REMOTE_ADDR, so if
+    // that visitor is itself inside Cloudflare's ranges (a Worker subrequest) the header it
+    // sent would be taken. docker/nginx/prod.conf therefore replaces the header with the IP
+    // it resolved (NginxProdConfTest); this case documents the risk that line removes.
+    $this->withServerVariables(['REMOTE_ADDR' => '173.245.48.10'])
+        ->getJson('/_test/client-ip', ['X-Forwarded-For' => '203.0.113.99'])
+        ->assertOk()
+        ->assertJson(['ip' => '203.0.113.99']);
+});

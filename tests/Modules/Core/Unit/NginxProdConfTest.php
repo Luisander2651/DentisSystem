@@ -123,3 +123,10 @@ it('does not send the headers twice on PHP responses (R8)', function () {
         ->and($php)->toMatch('/fastcgi_hide_header\s+X-Frame-Options\s*;/')
         ->and($php)->not->toContain('add_header');
 });
+
+it('hands PHP the scheme nginx saw, not the X-Forwarded-Proto the client sent (R40)', function () {
+    [, $locations] = nginxTlsServer();
+    $php = array_values(array_filter($locations, fn (array $location): bool => str_contains($location[1], 'fastcgi_pass')))[0][1];
+
+    expect($php)->toMatch('/include\s+fastcgi_params\s*;.*fastcgi_param\s+HTTP_X_FORWARDED_PROTO\s+\$scheme\s*;/s');
+});
