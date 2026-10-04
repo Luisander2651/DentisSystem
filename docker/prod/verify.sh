@@ -2,7 +2,11 @@
 # Checks a Dentissa production deployment (spec 015). Exits non-zero if any check fails.
 #
 #   verify.sh --local                            on the droplet, from the production clone
+#   verify.sh --local --in-operation             the same, called by deploy.sh and rollback.sh
 #   verify.sh --remote <domain> --origin <ip>    from a machine outside the droplet
+#
+# The checks are functions, so the tests can load this file with `source` and run them one
+# by one (tests/Modules/Core/Unit/VerifyScriptBehaviourTest.php).
 #
 # --remote talks to the domain (through Cloudflare) and, for the checks Cloudflare would
 # hide, straight to the droplet's IP: Docker publishes ports above ufw (CA9), and a forged
@@ -18,6 +22,8 @@ DOMAIN="${DOMAIN:-dentissapp.com}"
 MANUAL_DB_CONTAINER="${MANUAL_DB_CONTAINER:-laravel-postgres}"
 RATE_LIMITED_PATH="/api/v1/public/certifications"
 CLOSED_PORTS=(5432 6379 3000 3100 5173 9000 12345)
+# Set by --in-operation: a deploy or rollback has just written its own pre-<tag> dump.
+IN_OPERATION="${IN_OPERATION:-false}"
 
 failures=0
 
@@ -83,7 +89,11 @@ manual_database_is_stopped() {
 }
 
 recent_backup_exists() {
-    [ -n "$(find "$BACKUP_DIR" -maxdepth 1 -name '*.dump' -mmin -1500)" ]
+    # On its own, only a daily dump proves that the cron is running: inside an operation
+    # the pre-<tag> dump always exists.
+    local pattern='daily-*.dump'
+    [ "$IN_OPERATION" = true ] && pattern='*.dump'
+    [ -n "$(find "$BACKUP_DIR" -maxdepth 1 -name "$pattern" -mmin -1500)" ]
 }
 
 backups_are_private() {
@@ -91,7 +101,8 @@ backups_are_private() {
 }
 
 old_daily_backups_are_rotated() {
-    [ -z "$(find "$BACKUP_DIR" -maxdepth 1 -name 'daily-*.dump' -mtime +7)" ]
+    # -mtime counts whole days: +6 means seven full days or more.
+    [ -z "$(find "$BACKUP_DIR" -maxdepth 1 -name 'daily-*.dump' -mtime +6)" ]
 }
 
 last_operation_is_recorded() {
@@ -101,7 +112,7 @@ last_operation_is_recorded() {
 }
 
 disk_has_room() {
-    df -P "$DENTISSA_DIR" | awk 'NR == 2 { gsub("%", "", $5); exit ($5 < 80) ? 0 : 1 }'
+    df -P "$DENTISSA_DIR" | awk 'NR == 2 { gsub("%", "", $5); exit (($5 + 0) < 80) ? 0 : 1 }'
 }
 
 verify_local() {
@@ -114,9 +125,13 @@ verify_local() {
     check "image has no node, composer, dev packages, .env, .git or public/hot, and has the build" image_is_clean
     check "traces carry no arguments (zend.exception_ignore_args)" trace_args_are_ignored
     check "the manual stack database is not running at the same time" manual_database_is_stopped
-    check "a backup from the last 25 hours exists" recent_backup_exists
+    if [ "$IN_OPERATION" = true ]; then
+        check "a backup from the last 25 hours exists" recent_backup_exists
+    else
+        check "a daily backup from the last 25 hours exists" recent_backup_exists
+    fi
     check "backups are private (folder 700, files 600)" backups_are_private
-    check "daily backups older than 7 days are gone" old_daily_backups_are_rotated
+    check "daily backups of 7 days or more are gone" old_daily_backups_are_rotated
     check "the last operation in deploys.log is well formed" last_operation_is_recorded
     check "disk usage is below 80%" disk_has_room
 }
@@ -137,8 +152,14 @@ has_header() {
     grep -qiE "^$1" <<< "$(headers_of "https://$DOMAIN/login")"
 }
 
+# lacks_header <pattern> [curl arguments]: a request that fails proves nothing.
 lacks_header() {
-    ! grep -qiE "^$1" <<< "$(headers_of "https://$DOMAIN/login")"
+    local pattern="$1" headers
+    shift
+    [ $# -gt 0 ] || set -- "https://$DOMAIN/login"
+    headers="$(headers_of "$@")" || return 1
+    [ -n "$headers" ] || return 1
+    ! grep -qiE "^$pattern" <<< "$headers"
 }
 
 rejects_foreign_origin() {
@@ -163,7 +184,9 @@ manifest_asset_is_served() {
 }
 
 origin_port_is_closed() {
-    ! timeout 4 bash -c "</dev/tcp/$ORIGIN/$1"
+    # Host and port go as positional parameters, never inside the command text.
+    # shellcheck disable=SC2016 # expanded by the inner bash, on purpose
+    ! timeout 4 bash -c '</dev/tcp/$0/$1' "$ORIGIN" "$1"
 }
 
 forged_ip_is_ignored_at_origin() {
@@ -179,6 +202,11 @@ forged_ip_is_ignored_at_origin() {
 
 verify_remote() {
     [ -n "${ORIGIN:-}" ] || fail "--remote needs --origin <ip of the droplet>"
+    if ! [[ "$ORIGIN" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ || ( "$ORIGIN" == *:* && "$ORIGIN" =~ ^[0-9A-Fa-f:]+$ ) ]]; then
+        fail "--origin must be an IPv4 or IPv6 address"
+    fi
+    # Without it every port check would fail to run and be read as "closed".
+    command -v timeout > /dev/null || fail "timeout is not installed: the port checks cannot run"
 
     printf 'Dentissa, remote checks for %s (origin given)\n' "$DOMAIN"
     check "http redirects permanently to https" redirects_to_https
@@ -204,26 +232,34 @@ verify_remote() {
 
 # --- entry point ------------------------------------------------------------------------
 
-MODE=""
-ORIGIN=""
-while [ $# -gt 0 ]; do
-    case "$1" in
-        --local) MODE="local" ;;
-        --remote) MODE="remote"; DOMAIN="${2:?--remote needs a domain}"; shift ;;
-        --origin) ORIGIN="${2:?--origin needs an IP}"; shift ;;
-        *) fail "unknown argument: $1" ;;
+main() {
+    local mode=""
+    ORIGIN=""
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --local) mode="local" ;;
+            --in-operation) IN_OPERATION=true ;;
+            --remote) mode="remote"; DOMAIN="${2:?--remote needs a domain}"; shift ;;
+            --origin) ORIGIN="${2:?--origin needs an IP}"; shift ;;
+            *) fail "unknown argument: $1" ;;
+        esac
+        shift
+    done
+
+    case "$mode" in
+        local) verify_local ;;
+        remote) verify_remote ;;
+        *) fail "usage: verify.sh --local [--in-operation] | --remote <domain> --origin <ip>" ;;
     esac
-    shift
-done
 
-case "$MODE" in
-    local) verify_local ;;
-    remote) verify_remote ;;
-    *) fail "usage: verify.sh --local | --remote <domain> --origin <ip>" ;;
-esac
+    if [ "$failures" -gt 0 ]; then
+        printf '%d check(s) failed\n' "$failures"
+        exit 1
+    fi
+    printf 'all checks passed\n'
+}
 
-if [ "$failures" -gt 0 ]; then
-    printf '%d check(s) failed\n' "$failures"
-    exit 1
+# Only when executed: `source verify.sh` just defines the checks.
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
 fi
-printf 'all checks passed\n'

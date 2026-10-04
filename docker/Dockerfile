@@ -38,7 +38,8 @@ WORKDIR /var/www/html
 # --- dev: the local development image ----------------------------------------------------
 FROM base AS dev
 
-RUN apk add --no-cache git curl zip unzip nodejs npm
+# bash: the tests run the production scripts of docker/prod/ (spec 015, /review R10)
+RUN apk add --no-cache git curl zip unzip nodejs npm bash
 
 COPY --from=composer:2.9 /usr/bin/composer /usr/bin/composer
 
