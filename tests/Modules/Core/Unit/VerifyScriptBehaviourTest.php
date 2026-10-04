@@ -41,6 +41,8 @@ function verifyCheck(object $test, string $body, array $env = []): array
         'DEPLOY_LOG' => $test->sandbox.'/deploys.log',
         'DENTISSA_DIR' => $test->sandbox,
     ]);
+    // Generous: under a loaded machine starting bash alone can take seconds.
+    $process->setTimeout(180);
     $process->run();
 
     return [(int) $process->getExitCode(), $process->getOutput().$process->getErrorOutput()];
@@ -73,7 +75,7 @@ function runVerify(object $test, array $arguments, array $tools, array $standIns
         base_path(),
         ['PATH' => $bin, 'BACKUP_DIR' => $test->backups, 'DEPLOY_LOG' => $test->sandbox.'/deploys.log'],
     );
-    $process->setTimeout(60);
+    $process->setTimeout(180);
     $process->run();
 
     return [(int) $process->getExitCode(), $process->getOutput().$process->getErrorOutput()];
@@ -261,4 +263,20 @@ it('checks that the backups folder is not mounted in nginx (R14)', function () {
         ->and(remoteCheck($this, 'backups_are_not_mounted_in_nginx', dockerOutput: $safe.dirname($this->backups)."\n")[0])->toBe(1)
         // No answer from docker proves nothing.
         ->and(remoteCheck($this, 'backups_are_not_mounted_in_nginx', dockerOutput: '')[0])->toBe(1);
+});
+
+it('asks the origin for nosniff on an uploaded file, apart from the cached copy (T076)', function () {
+    // Through Cloudflare the same file may come from a copy cached before the deploy: asking
+    // nginx directly tells "nginx does not send it" from "the cache is stale".
+    [$protected, $arguments] = remoteCheck($this, 'origin_static_file_has_nosniff', 'HTTP/2 200
+x-content-type-options: nosniff
+');
+    [$bare] = remoteCheck($this, 'origin_static_file_has_nosniff', 'HTTP/2 200
+content-type: image/jpeg
+');
+
+    expect($protected)->toBe(0)
+        ->and($bare)->toBe(1)
+        ->and($arguments)->toContain('--resolve example.test:443:203.0.113.10')
+        ->and($arguments)->toContain('https://example.test/storage/login.jpg');
 });

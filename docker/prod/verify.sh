@@ -205,6 +205,12 @@ static_file_has_nosniff() {
     has_header 'x-content-type-options: nosniff' "https://$DOMAIN/storage/login.jpg"
 }
 
+# The same file asked to nginx directly. Through Cloudflare it may come from a copy cached
+# before the deploy: if only that check fails, purge Cloudflare's cache.
+origin_static_file_has_nosniff() {
+    has_header 'x-content-type-options: nosniff'         --resolve "$DOMAIN:443:$ORIGIN" "https://$DOMAIN/storage/login.jpg"
+}
+
 rejects_foreign_origin() {
     # A browser only exposes the response when the header is '*' or the requesting origin;
     # Laravel answers with the site's own origin, which still blocks the foreign one.
@@ -281,7 +287,8 @@ verify_remote() {
     check "/.git/ is not served" status_is 404 /.git/
     check "/backups/ is not served" status_is 404 /backups/
     check "/storage/login.jpg is served" status_is 200 /storage/login.jpg
-    check "/storage/login.jpg is served with nosniff" static_file_has_nosniff
+    check "/storage/login.jpg is served with nosniff by the origin" origin_static_file_has_nosniff
+    check "/storage/login.jpg is served with nosniff through Cloudflare (if only this fails: purge its cache)" static_file_has_nosniff
     check "an asset of the build manifest is served" manifest_asset_is_served
     local port
     for port in "${CLOSED_PORTS[@]}"; do

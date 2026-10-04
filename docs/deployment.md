@@ -208,6 +208,15 @@ migraciones tienen que ser compatibles con el código que está en servicio (P9)
 - Si falla **el arranque o la verificación**: la versión nueva queda arrancada y `.deploy/previous` apunta a la anterior; se vuelve con `docker/prod/rollback.sh` (ver "Rollback").
 - La limpieza conserva las imágenes de la versión en servicio y de `.deploy/previous`, también al redesplegar el mismo tag.
 
+### Después de cambiar cabeceras de nginx
+Cloudflare guarda unas dos horas los archivos estáticos (`/storage`, `/build`) **con las cabeceras
+que tenían al guardarlos**. Tras un despliegue que cambie `docker/nginx/prod.conf`, los visitantes
+siguen recibiendo las cabeceras anteriores hasta que la copia caduca. Para aplicarlas ya:
+Cloudflare → Caching → Configuration → Purge Cache → Purge Everything (no afecta al sitio; solo
+obliga a volver a pedir los archivos). `verify.sh --remote` lo detecta: si falla
+"… with nosniff through Cloudflare" y pasa "… by the origin", nginx está bien y falta purgar
+(visto en T076).
+
 ### Operación diaria
 Siempre desde `/home/deploy/dentissa`. `compose.sh` fija la versión en servicio; nunca `docker
 compose` a secas sobre producción.
@@ -282,7 +291,7 @@ Estado: ensayado en local (T058) y en el droplet (T051, T054). Cada rollback que
 (Solo nombres. Nunca valores. En el VPS, `.env` con permisos 600 y fuera de cualquier volumen servido por nginx.)
 
 ## Verificación post-deploy
-- Automática: `deploy.sh` y `rollback.sh` terminan con `verify.sh --local --in-operation` (14 comprobaciones, entre ellas `/up`, `APP_DEBUG`, el worker, la imagen sin artefactos, los backups y que su carpeta no está montada en nginx) y comprueban que la operación quedó en `deploys.log`. Desde fuera, `verify.sh --remote` (29): cabeceras a través de Cloudflare y preguntando al origen directamente (versión de nginx, redirección y HSTS), también para `www`; `nosniff` en un archivo subido; CORS; rutas prohibidas; puertos cerrados en la IP del droplet; y el límite de peticiones con la IP falsificada, tanto saltándose el proxy como a través de él. Necesita `curl` y `timeout`, y `--origin` debe ser una IP.
+- Automática: `deploy.sh` y `rollback.sh` terminan con `verify.sh --local --in-operation` (14 comprobaciones, entre ellas `/up`, `APP_DEBUG`, el worker, la imagen sin artefactos, los backups y que su carpeta no está montada en nginx) y comprueban que la operación quedó en `deploys.log`. Desde fuera, `verify.sh --remote`: cabeceras a través de Cloudflare y preguntando al origen directamente (versión de nginx, redirección y HSTS), también para `www`; `nosniff` en un archivo subido; CORS; rutas prohibidas; puertos cerrados en la IP del droplet; y el límite de peticiones con la IP falsificada, tanto saltándose el proxy como a través de él. `verify.sh --remote` (30) incluye la misma comprobación de `nosniff` contra el origen. Necesita `curl` y `timeout`, y `--origin` debe ser una IP.
 - Health check: `GET /up` responde 200 solo si PostgreSQL y Redis responden; si no, 500 en 1–2 s (medido en T052).
 - Smoke tests: login de un administrador, carga de `/agenda`, `/pacientes` y el expediente, y un restablecimiento de contraseña que el worker procesa (el correo llega con el enlace a `https://dentissapp.com`).
 - Logs: Alloy → Loki → Grafana (puerto 3000, solo por túnel SSH) recoge el stdout y stderr de los contenedores; Laravel escribe en `stderr` (`LOG_CHANNEL=stderr`, nivel `info`) y sin datos personales (CA18). Métricas y alertas: aún no existen; las cubre la spec de monitoreo pendiente (roadmap, objetivo 4). Ver [observability.md](observability.md).
