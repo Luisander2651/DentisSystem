@@ -195,8 +195,47 @@ Revisión del desglose contra el [plan](plan.md), sin repetir su análisis.
   - nota: 2026-10-02. `architecture.md`: Backend (canal `stderr`, `/up` con `CheckDependenciesOnHealth`, `TrustCloudflareProxies`, `SecurityHeaders`, CORS), Despliegue (dos Compose sobre el Dockerfile multietapa, imágenes `dev`/`prod`/`web`, clon aparte con volúmenes compartidos, Cloudflare e IP real, scripts de `docker/prod/`, backups y `deploys.log`) y Deuda técnica (se retiran `env()` en Twilio/Brevo, `.env.example` con sqlite/phpredis y la falta de worker; se añaden la falta de scheduler y el fallo de los listados con un solo registro).
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas (depende de T054). `deployment.md`: variables nuevas por nombre, entorno prod y RD1.a, RD1.b, RD2.a, RD3.a, RD4.a, RD5.a, RD5.b, RD6.a y RD6.b → `mitigada (spec 015; versión en /release)`, una por una. `observability.md`: OB2.b, OB4.a, OB5.a, OB5.b, OB6.a y OB9.a → mitigada igual; en OB10.b, nota "parcial: whatsApp (spec 015); Auth pendiente" sin cambiar su estado; evento `health.dependency_failed`; `deploys.log`; IP real en los logs de nginx. Las correcciones que la spec deja fuera no cambian de estado
   - nota: 2026-10-02. `deployment.md`: variables nuevas por nombre (`REDIS_TIMEOUT`, `REDIS_READ_WRITE_TIMEOUT`, `CSP_REPORT_ONLY`, `COMPOSE_FILE`, `DATA_VOLUME_PREFIX`, y `APP_VERSION` fijada por `compose.sh`), Twilio y Brevo leídos con `config()`; entorno prod ya descrito en T055; RD1.a, RD1.b, RD2.a, RD3.a, RD4.a, RD5.a, RD5.b, RD6.a y RD6.b → `mitigada (spec 015; versión en /release)`, una por una con su evidencia. `observability.md`: OB2.b, OB4.a, OB5.a, OB5.b, OB6.a y OB9.a → mitigada igual; OB10.b sin cambio de estado con la nota de parcial (whatsApp y `SendResetPasswordEmailController` de Auth; el resto de Auth pendiente — el texto de la tarea decía "Auth pendiente", pero T047 ya cubrió ese controlador); evento `health.dependency_failed`, `deploys.log` e IP real en los logs de nginx; Resumen actualizado (canal, agregación en producción, `/up` y registro de operaciones). OB7 y OB8 siguen pendientes (spec de monitoreo).
-- [x] T092 Marcar spec como `implemented`
-  - nota: 2026-10-02. `spec.md` → `status: implemented`.
+- [ ] T092 Marcar spec como `implemented`
+  - nota: 2026-10-02 marcada; reabierta el 2026-10-04 por `/review` ronda 1 (`changes_requested`). Depende de T076.
+
+## Correcciones de `/review` ronda 1
+Añadidas por `/review` el 2026-10-04 (decisión del usuario: corregir R1–R10 y los menores R11–R15,
+R17, R18, R29, R30 y R33–R35; el resto va al roadmap). Los tests de scripts ejecutan bash: la
+etapa `dev` de la imagen local lo instala (T064); la CI ya lo trae. Los commits citan el hallazgo
+(`fix(015): T0xx … — R3`).
+
+- [ ] T059 Formatear `HealthCheckTest.php` con Pint — `tests/Modules/Core/Integration/HealthCheckTest.php` — hecho cuando: `vendor/bin/pint --test` pasa sobre los archivos PHP de `131ea14..HEAD` y el test sigue pasando — cubre: CA11 — depende: ninguna
+  - nota: añadida por /review: R2
+- [ ] T062 Test: `EnvExampleDefaultsTest` exige en `.env.example` toda variable leída con `env()` en la sección `redis` de `config/database.php`, incluidas `REDIS_TIMEOUT` y `REDIS_READ_WRITE_TIMEOUT` — `tests/Modules/Core/Unit/EnvExampleDefaultsTest.php` — hecho cuando: el caso nuevo falla hoy por esas dos variables — cubre: CA8 — depende: ninguna
+  - nota: añadida por /review: R1
+- [ ] T063 Añadir `REDIS_TIMEOUT=2` y `REDIS_READ_WRITE_TIMEOUT=2` a `.env.example` — `.env.example` — hecho cuando: T062 pasa — cubre: CA8 — depende: T062
+  - nota: añadida por /review: R1
+- [ ] T064 Test: instalar `bash` en la etapa `dev` de la imagen y crear `VerifyScriptBehaviourTest`, que ejecuta con bash las funciones de `verify.sh` cargadas con `source` y rutas temporales: disco simulado al 9, 79, 80 y 100 % (pasa solo por debajo de 80); backup diario de menos de 25 h exigido fuera de una operación y no dentro (`--in-operation`); rotación (un `daily-*` de 7 días cumplidos cuenta como antiguo); `lacks_header` falla si no hay cabeceras; `--origin` con un valor que no es una IP sale con error; la comprobación de puertos falla si falta `timeout` — `tests/Modules/Core/Unit/VerifyScriptBehaviourTest.php`, `docker/Dockerfile` — hecho cuando: los casos fallan hoy (`verify.sh` no se puede cargar con `source`, y el de disco falla con 9 y 100) — cubre: CA9, CA12 — depende: ninguna
+  - nota: añadida por /review: R3, R9, R10, R11, R12, R15
+- [ ] T065 `verify.sh`: punto de entrada solo cuando se ejecuta (no al cargarlo con `source`); `disk_has_room` con comparación numérica; `--in-operation` (lo pasan `deploy.sh` y `rollback.sh`) omite la exigencia del backup diario, que fuera de una operación pide un `daily-*.dump` de menos de 25 h; rotación con `-mtime +6` en `verify.sh` y `backup.sh`; `lacks_header` exige que la petición devuelva cabeceras; `--origin` validado como IPv4 o IPv6 y pasado como parámetro posicional; `--remote` falla si falta `timeout` — `docker/prod/verify.sh`, `docker/prod/backup.sh` — hecho cuando: T064 pasa y `shellcheck -x` queda limpio — cubre: CA9, CA12 — depende: T064
+  - nota: añadida por /review: R3, R9, R11, R12, R15. La retención de los dumps `pre-<tag>` (parte de R15) va al roadmap.
+- [ ] T066 Test: `DeployScriptsBehaviourTest` ejecuta `deploy.sh`, `rollback.sh` y `restore.sh` en un clon temporal con `docker`, `compose.sh`, `backup.sh` y `verify.sh` sustituidos por dobles que registran sus llamadas: (a) la migración corre con la imagen nueva antes del `up`; (b) si la migración falla, `.deploy/current` no cambia y no hay `up`; (c) `.deploy/current` y `.deploy/previous` quedan escritos antes del `up`; (d) al redesplegar el mismo tag no se borran las imágenes de `.deploy/previous`; (e) un `docker image rm` fallido no marca el deploy como `failed`; (f) tras `log_operation` la última línea de `deploys.log` lleva la acción, la versión y `result=ok`, y el script falla si no; (g) `rollback.sh --restore` con ruta relativa la resuelve contra el directorio de quien lo invoca; (h) `restore.sh` hace `backup.sh pre-restore` antes de restaurar y rechaza un nombre de dump con caracteres fuera de `[A-Za-z0-9._-]` — `tests/Modules/Core/Unit/DeployScriptsBehaviourTest.php` — hecho cuando: los casos (a)–(h) fallan hoy — cubre: CA13, CA15 — depende: T064
+  - nota: añadida por /review: R4, R5, R6, R9, R10, R18, R30
+- [ ] T067 `deploy.sh`: backup, después `compose.sh run --rm app php artisan migrate --force` con la imagen nueva, después escribir `.deploy/current` y `.deploy/previous`, y después `up -d`; la limpieza conserva el tag de `.deploy/previous`, tolera un `docker image rm` fallido con aviso y nombra bien la versión anterior; `verify.sh --local --in-operation`. `lib.sh`: `assert_logged <acción> <versión>`, que `deploy.sh` llama tras su `log_operation` final — `docker/prod/deploy.sh`, `docker/prod/lib.sh` — hecho cuando: los casos (a)–(f) de T066 pasan y `shellcheck -x` queda limpio — cubre: CA13, CA15 — depende: T065, T066
+  - nota: añadida por /review: R4, R5, R6, R9, R30, R34
+- [ ] T068 `rollback.sh`: resolver `--restore <dump>` a ruta absoluta antes del `cd`, `verify.sh --local --in-operation` y `assert_logged`. `restore.sh`: `backup.sh pre-restore` antes de vaciar el esquema (se omite con `--into-manual`), validar el nombre del dump con `^[A-Za-z0-9._-]+$` y `client_min_messages=warning` — `docker/prod/rollback.sh`, `docker/prod/restore.sh` — hecho cuando: los casos (f)–(h) de T066 pasan, el caso de restauración de `ProdScriptsTest` sigue pasando y `shellcheck -x` queda limpio — cubre: CA13, CA15 — depende: T066, T067
+  - nota: añadida por /review: R9, R18, R35
+- [ ] T069 Test: `NginxProdConfTest` lee `docker/nginx/prod.conf` sin comentarios y exige: en el `server` de 443, `X-Content-Type-Options nosniff` y `X-Frame-Options DENY` a nivel de servidor y repetidas en cada `location` que declara `add_header`; y en el bloque de PHP, `fastcgi_param HTTP_X_FORWARDED_FOR $remote_addr` después de `include fastcgi_params`. Y en `TrustedProxiesTest`, un caso con la topología real: `REMOTE_ADDR` dentro de un rango de Cloudflare y `X-Forwarded-For` igual a ese `REMOTE_ADDR` → la IP del límite es esa misma — `tests/Modules/Core/Unit/NginxProdConfTest.php`, `tests/Modules/Core/Integration/TrustedProxiesTest.php` — hecho cuando: los casos de `NginxProdConfTest` fallan hoy — cubre: CA5, CA16, CA17 — depende: ninguna
+  - nota: añadida por /review: R7, R8
+- [ ] T070 `prod.conf`: `add_header X-Content-Type-Options nosniff always` y `add_header X-Frame-Options DENY always` en el `server` de 443 y en `/build/`; `fastcgi_param HTTP_X_FORWARDED_FOR $remote_addr;` tras `include fastcgi_params`, de modo que la IP se resuelve una sola vez, en nginx — `docker/nginx/prod.conf` — hecho cuando: T069 pasa y `nginx -t` sobre la imagen `web` construida en local no da error — cubre: CA5, CA16, CA17 — depende: T069
+  - nota: añadida por /review: R7, R8
+- [ ] T071 `verify.sh --remote`: `X-Powered-By`, la versión de nginx, el 301 y HSTS también contra el origen (`--resolve`) y para `www.<dominio>`; `/storage/login.jpg` con `nosniff`; y una ráfaga a través de Cloudflare con `X-Forwarded-For` distinto en cada petición que espera 429. `verify.sh --local`: `BACKUP_DIR` no figura entre los montajes de `dentissa-nginx` — `docker/prod/verify.sh`, `tests/Modules/Core/Unit/VerifyScriptBehaviourTest.php` — hecho cuando: `VerifyScriptBehaviourTest` comprueba, con `curl` y `docker` sustituidos por dobles, que cada comprobación nueva falla cuando el doble devuelve la respuesta mala y pasa con la buena; `shellcheck -x` limpio — cubre: CA4, CA5, CA12, CA16 — depende: T065, T070
+  - nota: añadida por /review: R7, R8, R9, R13, R14
+- [ ] T072 Reforzar los tests de logs: los casos de rechazo afirman la línea concreta del rechazo (Twilio y Brevo) y la lista de datos buscados incluye el email de contacto, el contacto de emergencia y la fecha y la hora de la cita — `tests/Modules/whatsApp/Integration/WhatsAppFlowLogsTest.php`, `tests/Modules/Email/Integration/PasswordResetEmailTest.php` — hecho cuando: los dos archivos pasan, y con el doble que rechaza sustituido por el que acepta los casos de rechazo fallan (comprobado y anotado aquí) — cubre: CA18 — depende: ninguna
+  - nota: añadida por /review: R10, R17
+- [ ] T073 Reforzar los tests de archivos: el filtro de credenciales de `ComposeFilesTest` cubre también `AUTH` y `KEY`, y el de `.dockerignore` exige `.env.*`; `ProdScriptsTest` ignora las líneas de comentario y retira los casos de solo texto que T064 y T066 ya cubren ejecutando los scripts; `WebUnexpectedErrorTest` usa `assertInternalServerError()` — `tests/Modules/Core/Unit/ComposeFilesTest.php`, `tests/Modules/Core/Unit/ProdScriptsTest.php`, `tests/Modules/Core/Integration/WebUnexpectedErrorTest.php` — hecho cuando: los tres archivos pasan y Pint queda limpio — cubre: CA7, CA10, CA13 — depende: T067, T068
+  - nota: añadida por /review: R10, R29, R33
+- [ ] T074 Documentar en `deployment.md` el orden nuevo del deploy (migrar con la imagen nueva antes de cambiar de versión), el backup `pre-restore`, las comprobaciones nuevas de `verify.sh` y `--in-operation`; y en `CHANGELOG.md`, las entradas de estas correcciones — `docs/deployment.md`, `CHANGELOG.md` — hecho cuando: "Cómo desplegar", "Operación diaria" y "Rollback" describen el comportamiento nuevo y `aidd.py validate` da 0 errores — cubre: CA13 — depende: T067, T068, T071
+  - nota: añadida por /review: R4, R6, R18
+- [ ] T075 Verificar: `vendor/bin/pint --test` sobre los PHP del rango, `./vendor/bin/pest --parallel`, `shellcheck -x docker/prod/*.sh` y `npm run build` — sin archivos — hecho cuando: todo pasa y queda anotado aquí — cubre: CA14 — depende: T059, T063, T068, T071, T072, T073
+  - nota: añadida por /review: R1–R10
+- [ ] T076 Ensayo en el droplet, **con aprobación del usuario**: `git pull` en el clon, tag local `ensayo-3`, `deploy.sh ensayo-3` (orden nuevo), `verify.sh --local` y, desde fuera, `verify.sh --remote dentissapp.com --origin <IP>` con las comprobaciones nuevas (cabeceras en `/storage/login.jpg`, origen y `www`, 429 con `X-Forwarded-For` rotado a través de Cloudflare); después `rollback.sh` de ida y vuelta — sin archivos (resultado aquí) — hecho cuando: las dos verificaciones pasan enteras, los dos rollbacks quedan en `deploys.log` con `result=ok` y los tiempos quedan anotados — cubre: CA4, CA5, CA13, CA15, CA16 — depende: T074, T075
+  - nota: añadida por /review: R4–R9
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -210,39 +249,39 @@ Revisión del desglose contra el [plan](plan.md), sin repetir su análisis.
 | CA1 | T010, T017, T046 | T020, T031, T032, T033 |
 | CA2 | T017, T018 | T032, T037, T040, T043 |
 | CA3 | T015, T016, T018, T052 | T028, T029, T032, T034, T044 |
-| CA4 | T018, T019 | T031, T056 |
-| CA5 | T010, T046, T052 | T020, T021, T022, T023, T024, T056 |
+| CA4 | T018, T019, T064, T076 | T031, T056, T071 |
+| CA5 | T010, T046, T052, T069, T076 | T020, T021, T022, T023, T024, T056, T070, T071 |
 | CA6 | T011 | T025 |
-| CA7 | T013, T014 | T030, T050 |
-| CA8 | T014 | T030 |
-| CA9 | T017, T018, T019 | T034, T050 |
-| CA10 | T015, T017, T045 | T028, T029, T033, T034, T040 |
-| CA11 | T012, T052 | T026, T027 |
-| CA12 | T018, T053 | T031, T035, T037, T044 |
-| CA13 | T051, T054, T058 | T036, T038, T055, T057 |
-| CA14 | T001, T045 | T003, T042 |
-| CA15 | T018, T054, T058 | T004, T035, T036, T037, T038 |
-| CA16 | T005, T006, T046, T052 | T021, T031 |
-| CA17 | T005, T018 | T021 |
-| CA18 | T007, T008, T052 | T028, T029, T032, T039, T041, T047 |
+| CA7 | T013, T014, T073 | T030, T050 |
+| CA8 | T014, T062 | T030, T063 |
+| CA9 | T017, T018, T019, T064 | T034, T050, T065 |
+| CA10 | T015, T017, T045, T073 | T028, T029, T033, T034, T040 |
+| CA11 | T012, T052 | T026, T027, T059 |
+| CA12 | T018, T053, T064 | T031, T035, T037, T044, T065, T071 |
+| CA13 | T051, T054, T058, T066, T073, T076 | T036, T038, T055, T057, T067, T068, T074 |
+| CA14 | T001, T045, T075 | T003, T042 |
+| CA15 | T018, T054, T058, T066, T076 | T004, T035, T036, T037, T038, T067, T068 |
+| CA16 | T005, T006, T046, T052, T069, T076 | T021, T031, T070, T071 |
+| CA17 | T005, T018, T069 | T021, T070 |
+| CA18 | T007, T008, T052, T072 | T028, T029, T032, T039, T041, T047 |
 | CA19 | T008, T052 | T041 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
 | TM1 | T034, T050 | T017, T018, T019 |
 | TM2 | T030, T050 | T013, T014 |
-| TM3 | T031 | T018, T019 |
-| TM4 | T020, T021, T022, T023, T024 | T010 |
+| TM3 | T031, T071 | T018, T019, T064 |
+| TM4 | T020, T021, T022, T023, T024, T070 | T010, T069 |
 | TM5 | T025 | T011 |
-| TM6 | T031, T032 | T018 |
+| TM6 | T031, T032, T071 | T018, T064 |
 | TM7 | T028, T029, T033, T034 | T015, T017 |
-| TM8 | T004, T035, T036, T037, T038 | T018, T054 |
+| TM8 | T004, T035, T036, T037, T038, T067, T068 | T018, T054, T066 |
 | TM9 | T035, T038 | T018, T054 |
 | TM10 | T003, T032, T043 | T001, T017, T045 |
 | TM11 | T035 | T018, T053 |
 | TM12 | T032 | T018 |
 | TM13 | T040, T037 | T017, T018 |
-| TM14 | T021, T031 | T005, T006, T018 |
+| TM14 | T021, T031, T070, T071 | T005, T006, T018, T069 |
 | TM15 | T028, T029, T032, T039, T041, T047 | T007, T008, T018 |
 
 | Cambio del plan (módulo) | Tarea(s) |
