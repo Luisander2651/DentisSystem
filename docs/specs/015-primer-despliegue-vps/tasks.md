@@ -298,8 +298,10 @@ R40–R43 y R45; R44 y R46 van al roadmap).
   - nota: 2026-10-04, ejecutado por el usuario en el droplet (aprobado), con el clon en `main` (merge del PR de la ronda 2) y el tag local `ensayo-4`. `deploy.sh ensayo-4`: **2 min 3 s**, `verify.sh --local --in-operation` sin fallos; `current=ensayo-4`, `previous=ensayo-3`, `verified=ensayo-4` (el clon no tenía `.deploy/verified`: se creó desde `current` al empezar). `rollback.sh` de ida y vuelta: **17,1 s** (a `ensayo-3`, `verified=ensayo-3`) y **24,9 s** (a `ensayo-4`, `verified=ensayo-4`; esta vez esperó 16,5 s a que `db` y `redis` estuvieran sanos). `deploys.log`: backup `pre-ensayo-4`, `deploy ensayo-4 ok`, `rollback ensayo-3 ok` y `rollback ensayo-4 ok`. `verify.sh --local` sin `--in-operation`: pasa. `verify.sh --remote dentissapp.com --origin <IP>` desde WSL, tras la purga de la caché de Cloudflare (usuario): **30/30**; en el origen `/login` lleva `X-Frame-Options` y `X-Content-Type-Options` una sola vez cada una, y el sitio sigue sirviendo por https con `X-Forwarded-Proto` fijado por nginx. Límite de esta comprobación: la fecha de las vistas compiladas antes del deploy (15:21:40 UTC, inicio a las 15:48:28) no permite aislar si la migración previa las tocó, porque el `up` posterior las recompila de todos modos. Que la migración corre sin el entrypoint lo prueba `DeployScriptsBehaviourTest` (argumento `--entrypoint php`); en el droplet solo se confirma que la migración así invocada funciona.
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
-- [ ] T096 Aprobación humana para producción
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
+  - nota: no aplica: no existe staging y la constitución no lo exige (P12). En su lugar: CI en verde en `main` (`599433a`) y ensayos en el droplet con este mismo código (T088, tag `ensayo-4`): `verify.sh --local` 14/14 y `--remote` 30/30.
+- [x] T096 Aprobación humana para producción
+  - aprobado por Luisander2651 el 2026-10-04 10:13 para v0.1.0 ("desplegar v0.1.0 a producción")
 - [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
 - [ ] T098 Marcar spec como `released`
 
