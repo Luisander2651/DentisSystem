@@ -21,10 +21,10 @@ workflow:
 skills_version: 1.8.1   # versión del paquete de skills con que se inicializó
 deploy:
   strategy: manual             # none | manual | ci-on-merge | ci-on-tag
-  platform: "VPS con Docker Compose (planificado, aún no existe)"
-  environments: [local, prod]  # prod planificado
+  platform: "Droplet de DigitalOcean con Docker Compose, detrás de Cloudflare (dentissapp.com)"
+  environments: [local, prod]
   prod_approval: human         # innegociable
-  rollback: "TODO(init): propuesto — tag por release + pg_dump antes de migrar + redeploy del tag anterior; sin probar"
+  rollback: "docker/prod/rollback.sh (versión anterior, con --restore <dump> o --to-manual); ensayado en el droplet (docs/deployment.md)"
 security:
   owasp_top10_edition: 2025
   asvs_level: 2

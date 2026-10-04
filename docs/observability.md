@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-10-02
+updated: 2026-10-04
 ---
 
 # Observabilidad y auditoría de Dentissa
@@ -114,8 +114,8 @@ Correcciones:
 (teléfono, nombre, email, variables de la plantilla de WhatsApp): `RetriveDataForScheduledAppointmenEventUseCase.php:55`, `CreateAppointmentController.php:51-52`, `CreatedAppointmentListener.php:38-39,61`, `SendAppointmentConfirmationUseCase.php:20-21,34-35,45`, `ConfirmationAppointmentMessage.php:21,31`, `TwilioConection.php:31,43,69,74,90`, `SendPasswordResetListener.php:44-45,50`, `BrevoApi.php:43` (RS9 de [security.md](security.md)). → [roadmap objetivo 5](roadmap.md)
 
 Correcciones:
-- OB2.a Retirar teléfono y nombre de los `Log::` de `CreateAppointmentController` (derivada) — estado: mitigada (spec 014; versión en `/release`)
-- OB2.b Retirar datos personales del resto de logs citados (whatsApp, Email, `RetriveDataForScheduledAppointmenEventUseCase`) (derivada) — estado: mitigada (spec 015; versión en `/release`): `WhatsAppFlowLogsTest`, `PasswordResetEmailTest`; comprobado en los logs de producción (T052)
+- OB2.a Retirar teléfono y nombre de los `Log::` de `CreateAppointmentController` (derivada) — estado: mitigada (v0.1.0; spec 014)
+- OB2.b Retirar datos personales del resto de logs citados (whatsApp, Email, `RetriveDataForScheduledAppointmenEventUseCase`) (derivada) — estado: mitigada (v0.1.0; spec 015): `WhatsAppFlowLogsTest`, `PasswordResetEmailTest`; comprobado en los logs de producción (T052)
 
 ### OB3 · Media — Sin correlación por petición
 → [roadmap objetivo 5](roadmap.md)
@@ -127,20 +127,20 @@ Correcciones:
 En local se usa `LOG_CHANNEL=stderr` (los logs llegan a Loki vía Alloy), pero `.env.example` declara `stack` → `single`: un entorno nuevo creado desde el ejemplo (p. ej. el VPS) escribiría en archivo y no enviaría logs a Loki. → [roadmap objetivo 5](roadmap.md)
 
 Correcciones:
-- OB4.a `LOG_CHANNEL=stderr` en `.env.example` — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`
+- OB4.a `LOG_CHANNEL=stderr` en `.env.example` — estado: mitigada (v0.1.0; spec 015): `EnvExampleDefaultsTest`
 
 ### OB5 · Media — `LOG_LEVEL=debug` y `APP_DEBUG=true` por defecto
 en `.env.example`. → [roadmap objetivo 5](roadmap.md)
 
 Correcciones:
-- OB5.a `LOG_LEVEL=info` por defecto (derivada) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`
-- OB5.b `APP_DEBUG=false` por defecto (derivada) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`, `WebUnexpectedErrorTest`; `verify.sh --local` lo comprueba en producción
+- OB5.a `LOG_LEVEL=info` por defecto (derivada) — estado: mitigada (v0.1.0; spec 015): `EnvExampleDefaultsTest`
+- OB5.b `APP_DEBUG=false` por defecto (derivada) — estado: mitigada (v0.1.0; spec 015): `EnvExampleDefaultsTest`, `WebUnexpectedErrorTest`; `verify.sh --local` lo comprueba en producción
 
 ### OB6 · Media — Grafana (3000) y Loki (3100) publicados en el host
 , aunque [deployment.md](deployment.md) prevé acceso solo por túnel SSH. → [roadmap objetivo 4](roadmap.md)
 
 Correcciones:
-- OB6.a No publicar Grafana ni Loki en el host; acceso por túnel SSH (derivada) — estado: mitigada (spec 015; versión en `/release`): `ComposeFilesTest`; `verify.sh --remote` confirma 3000 y 3100 cerrados en la IP del droplet (T051; con la pila manual, 3000 estaba abierto)
+- OB6.a No publicar Grafana ni Loki en el host; acceso por túnel SSH (derivada) — estado: mitigada (v0.1.0; spec 015): `ComposeFilesTest`; `verify.sh --remote` confirma 3000 y 3100 cerrados en la IP del droplet (T051; con la pila manual, 3000 estaba abierto)
 
 ### OB7 · Media — Sin métricas ni alertas
 → [roadmap objetivo 4](roadmap.md) (5xx y logins fallidos)
@@ -159,13 +159,13 @@ Correcciones:
 → [roadmap objetivo 4](roadmap.md)
 
 Correcciones:
-- OB9.a `/up` comprueba PostgreSQL y Redis (derivada) — estado: mitigada (spec 015; versión en `/release`): `HealthCheckTest`; en el droplet, 500 en 1,7 s (Redis) y 1,3 s (PostgreSQL) (T052)
+- OB9.a `/up` comprueba PostgreSQL y Redis (derivada) — estado: mitigada (v0.1.0; spec 015): `HealthCheckTest`; en el droplet, 500 en 1,7 s (Redis) y 1,3 s (PostgreSQL) (T052)
 
 ### OB10 · Baja — Trazas completas (`getTraceAsString`) en logs de Auth y whatsApp
 pueden incluir argumentos con datos; y las 500 devuelven el mensaje de la excepción. → [roadmap objetivo 1](roadmap.md)
 
 Correcciones:
-- OB10.a Respuestas 500 sin el mensaje de la excepción (derivada) — estado: mitigada (spec 014; versión en `/release`)
+- OB10.a Respuestas 500 sin el mensaje de la excepción (derivada) — estado: mitigada (v0.1.0; spec 014)
 - OB10.b Retirar `getTraceAsString()` y `getMessage()` de los logs de Auth y whatsApp (derivada) — estado: pendiente (roadmap, Pendientes y deuda). Parcial: whatsApp y `SendResetPasswordEmailController` de Auth (spec 015); el resto de Auth pendiente
 
 ### OB11 · Baja — Posible doble registro de listeners

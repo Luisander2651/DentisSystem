@@ -30,8 +30,8 @@ como completadas, y verlas en un calendario.
 - [x] CA9 · Dado un usuario autenticado, cuando consulta `GET /api/v1/appointments/{id}` o `/appointments/patient/{patientId}`, entonces obtiene la cita o el historial (U1 BR-6).
 - [ ] CA10 · Dado un usuario autenticado, cuando abre el formulario de cita, entonces `GET /api/v1/agenda/patients`, `/agenda/doctors` y `/agenda/treatments` alimentan los selectores (solo `/agenda/treatments` tiene test).
 - [x] CA11 · (abuso) Como staff no administrador, intento listar citas o borrar una cita → 403 (U1 BR-5).
-- [ ] CA12 · (abuso) Como staff no administrador, pido `GET /api/v1/agenda/today-appointments` → **HOY NO SE CUMPLE**: responde 500 en vez de 403 (U1 BR-5b).
-- [ ] CA13 · (abuso) Como paciente autenticado, intento crear o modificar citas con cualquier `patient_id` o `user_id` → **HOY NO SE CUMPLE**: está permitido (U1, hallazgo documentado).
+- [x] CA12 · (abuso) Como staff no administrador, pido `GET /api/v1/agenda/today-appointments` → resuelto por 014 (v0.1.0): responde acceso denegado (antes: responde 500 en vez de 403 (U1 BR-5b)).
+- [x] CA13 · (abuso) Como paciente autenticado, intento crear o modificar citas con cualquier `patient_id` o `user_id` → resuelto por 014 (v0.1.0): los pacientes ya no acceden a estas rutas (antes: está permitido (U1, hallazgo documentado)).
 - [ ] CA14 · Dada una fecha u hora ya pasada, cuando se intenta crear o reprogramar una cita, entonces se rechaza → **HOY NO SE CUMPLE**: se permite (decisión del 2026-09-22; corrección en una spec nueva).
 
 ## Fuera de alcance
@@ -77,6 +77,7 @@ como completadas, y verlas en un calendario.
 | 2026-09-22 | Creación inferida del código | /init |
 | 2026-09-22 | Aclaraciones: solapamiento para toda la clínica; se deben rechazar fechas pasadas (CA14, pendiente) | /clarify |
 | 2026-09-22 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
+| 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA1, CA3–CA6 y CA10 solo para el administrador; CA9 para todo el staff; CA12 y CA13 resueltos | /release |
 
 ## Aclaraciones
 ### Sesión 2026-09-22

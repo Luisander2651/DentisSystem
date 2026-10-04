@@ -26,7 +26,7 @@ diagnóstico, procedimiento, observaciones, recomendaciones) y las recetas emiti
 - [ ] CA5 · Dado un administrador, cuando hace `GET /api/v1/appointments/{id}/tracking`, entonces obtiene el seguimiento con sus recetas (se muestra en el detalle de la cita).
 - [ ] CA6 · Dado un administrador, cuando usa `PUT /api/v1/appointment-tracking/{id}` y el CRUD de `/appointment-tracking/{id}/prescriptions`, entonces edita el seguimiento y las recetas.
 - [x] CA7 · (abuso) Como staff no administrador o paciente, intento completar una cita o leer su seguimiento → 403.
-- [ ] CA8 · (abuso) Como atacante, provoco un error interno → **HOY NO SE CUMPLE**: el 500 incluye `$e->getMessage()`.
+- [x] CA8 · (abuso) Como atacante, provoco un error interno → resuelto por 014 (v0.1.0): 500 genérico (antes: el 500 incluye `$e->getMessage()`).
 - [ ] CA9 · Dado un doctor activo, cuando completa una cita, consulta su seguimiento o edita el seguimiento y las recetas, entonces se le permite → **HOY NO SE CUMPLE**: solo el administrador puede (decisión del 2026-09-22).
 - [ ] CA10 · (abuso) Como asistente o paciente, intento completar una cita, leer o editar su seguimiento → se rechaza (403). Hoy se cumple para ambos porque solo el administrador tiene permiso; debe seguir cumpliéndose al abrirlo al doctor.
 - [ ] CA11 · Dado un doctor o administrador, cuando abre el detalle de una cita completada en el panel, entonces puede corregir el seguimiento y añadir, cambiar o borrar recetas → **HOY NO SE CUMPLE**: la API existe pero ninguna pantalla la usa.
@@ -76,6 +76,7 @@ diagnóstico, procedimiento, observaciones, recomendaciones) y las recetas emiti
 | 2026-09-22 | Creación inferida del código | /init |
 | 2026-09-22 | Aclaraciones: seguimiento por doctor y administrador (CA9), edición desde el panel (CA11), completar solo con seguimiento (CA12); pendientes de spec nueva | /clarify |
 | 2026-09-22 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
+| 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA8 resuelto | /release |
 
 ## Aclaraciones
 ### Sesión 2026-09-22

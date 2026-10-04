@@ -213,8 +213,10 @@ Mismo orden que en Patients: primero los controladores y después los casos de u
   - nota: no aplica: no existe staging y la constitución no lo exige (P12). En su lugar: CI en verde en `main` (`599433a`) y los módulos de la spec (Patients, Appointments, Users) pasan; el código de la 014 lleva en producción desde el primer despliegue de la spec 015 (2026-10-01).
 - [x] T096 Aprobación humana para producción
   - aprobado por Luisander2651 el 2026-10-04 10:13 para v0.1.0 ("desplegar v0.1.0 a producción")
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-- [ ] T098 Marcar spec como `released`
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: 2026-10-04. `v0.1.0` desplegada con `docker/prod/deploy.sh v0.1.0` (ver T097 de la spec 015). El control de acceso y los errores genéricos ya servían en producción desde el primer despliegue de la 015; sin incidencias en la ventana de 15 min.
+- [x] T098 Marcar spec como `released`
+  - nota: 2026-10-04. `spec.md` → `status: released`, `released: v0.1.0 (2026-10-04)`.
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

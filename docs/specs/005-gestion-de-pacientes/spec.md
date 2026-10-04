@@ -28,8 +28,8 @@ médicos (tipo de sangre, alergias, medicamentos, última visita al dentista).
 - [x] CA8 · Dado un subrecurso inexistente, cuando se hace `PUT`, entonces no se crea (sin upsert: create y update son operaciones separadas) (U2 BR-9).
 - [x] CA9 · Dado un nombre de 3 o más palabras, cuando se guarda, entonces las dos últimas son el apellido y cada palabra se capitaliza (U2 BR-10).
 - [x] CA10 · (abuso) Como miembro del staff que no es administrador, intento crear o borrar un paciente → 403.
-- [ ] CA11 · (abuso) Como paciente autenticado, intento leer o modificar los datos (incluidos los médicos) de otro paciente → **HOY NO SE CUMPLE**: el acceso está permitido (ver Observaciones).
-- [ ] CA12 · (abuso) Como atacante, provoco un error interno → **HOY NO SE CUMPLE**: el 500 incluye `$e->getMessage()`.
+- [x] CA11 · (abuso) Como paciente autenticado, intento leer o modificar los datos (incluidos los médicos) de otro paciente → resuelto por 014 (v0.1.0): los pacientes ya no acceden a estas rutas (antes: el acceso está permitido (ver Observaciones)).
+- [x] CA12 · (abuso) Como atacante, provoco un error interno → resuelto por 014 (v0.1.0): 500 genérico (antes: el 500 incluye `$e->getMessage()`).
 
 ## Fuera de alcance
 - Expediente consolidado (spec 006).
@@ -70,3 +70,4 @@ médicos (tipo de sangre, alergias, medicamentos, última visita al dentista).
 |---|---|---|
 | 2026-09-22 | Creación inferida del código | /init |
 | 2026-09-22 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
+| 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA3 y CA4 pasan de "usuario autenticado" a staff con permiso; CA11 y CA12 resueltos | /release |
