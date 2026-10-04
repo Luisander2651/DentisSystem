@@ -50,7 +50,7 @@ it('keeps every credential out of both Compose files (CA10)', function (string $
             if (is_int($key)) {
                 [$key, $value] = array_pad(explode('=', (string) $value, 2), 2, '');
             }
-            if (preg_match('/PASSWORD|SECRET|TOKEN|POSTGRES_(USER|DB)/', (string) $key)) {
+            if (preg_match('/PASSWORD|SECRET|TOKEN|AUTH|KEY|POSTGRES_(USER|DB)/', (string) $key)) {
                 expect(isInterpolated((string) $value))->toBeTrue("{$file}: {$serviceName}.{$key} is not read from the environment");
             }
         }
@@ -138,7 +138,8 @@ it('keeps secrets and local artefacts out of the image build context (CA2, TM13)
     expect(is_file($path))->toBeTrue('.dockerignore does not exist');
 
     $patterns = array_map('trim', file($path, FILE_IGNORE_NEW_LINES));
-    foreach (['.env', '.git', 'public/hot'] as $pattern) {
+    // .env.* keeps .env.production or .env.backup out; vendor and node_modules are rebuilt inside.
+    foreach (['.env', '.env.*', '.git', 'public/hot', 'node_modules', 'vendor'] as $pattern) {
         expect($patterns)->toContain($pattern);
     }
 });
