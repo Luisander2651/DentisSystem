@@ -24,7 +24,7 @@ it('answers a generic 500 page without internal details when debug is off (abuse
 
     $response = $this->get('/_test/boom');
 
-    $response->assertStatus(500);
+    $response->assertInternalServerError();
     expect($response->getContent())->not->toContain('internal-detail-7731')
         ->and($response->getContent())->not->toContain('/var/www/html')
         ->and($response->getContent())->not->toContain('RuntimeException')

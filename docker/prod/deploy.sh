@@ -6,6 +6,9 @@
 #                              (never removes it) and copies its public storage. Also used
 #                              to come back after rollback.sh --to-manual.
 #
+# Order: build, backup, migrate with the new image, write .deploy/, start, verify. Until
+# the migration succeeds the previous version keeps serving and the state does not change.
+#
 # Run it from the clone, with the tag checked out. Any failure is recorded in DEPLOY_LOG
 # with result=failed and stops the deploy; nothing is rolled back automatically.
 
@@ -74,6 +77,20 @@ fi
 PREVIOUS="$(cat .deploy/current 2> /dev/null || true)"
 export APP_VERSION="$TAG"
 
+# Before switching versions: migrations are compatible with the code still in service (P9),
+# and a migration that fails leaves that version running and the deploy state untouched.
+echo "==> Running migrations with the image of $TAG"
+"$SCRIPT_DIR/compose.sh" run --rm app php artisan migrate --force
+
+# Written before `up`, so that if the start fails rollback.sh still knows where to go back.
+mkdir -p .deploy
+if [ -n "$PREVIOUS" ] && [ "$PREVIOUS" != "$TAG" ]; then
+    printf '%s
+' "$PREVIOUS" > .deploy/previous
+fi
+printf '%s
+' "$TAG" > .deploy/current
+
 echo "==> Starting $TAG"
 "$SCRIPT_DIR/compose.sh" up -d --remove-orphans
 
@@ -82,27 +99,24 @@ for _ in $(seq 1 30); do
     sleep 2
 done
 
-echo "==> Running migrations"
-"$SCRIPT_DIR/compose.sh" exec -T app php artisan migrate --force
-
-mkdir -p .deploy
-if [ -n "$PREVIOUS" ] && [ "$PREVIOUS" != "$TAG" ]; then
-    printf '%s\n' "$PREVIOUS" > .deploy/previous
-fi
-printf '%s\n' "$TAG" > .deploy/current
-
 echo "==> Verifying"
-"$SCRIPT_DIR/verify.sh" --local
+"$SCRIPT_DIR/verify.sh" --local --in-operation
 
-echo "==> Keeping only the images of $TAG and ${PREVIOUS:-no previous version}"
+# The version to go back to is the one in .deploy/previous, also when the same tag is
+# deployed again. A removal that fails is only reported: the deploy is already verified.
+KEPT="$(cat .deploy/previous 2> /dev/null || true)"
+echo "==> Keeping only the images of $TAG and ${KEPT:-no previous version}"
 for repository in dentissa-app dentissa-web; do
-    docker image ls "$repository" --format '{{.Tag}}' | while read -r image_tag; do
-        if [ "$image_tag" != "$TAG" ] && [ "$image_tag" != "$PREVIOUS" ]; then
-            docker image rm "$repository:$image_tag" > /dev/null
+    while read -r image_tag; do
+        if [ "$image_tag" != "$TAG" ] && [ "$image_tag" != "$KEPT" ]; then
+            docker image rm "$repository:$image_tag" > /dev/null 2>&1 ||
+                printf 'WARNING: could not remove %s:%s
+' "$repository" "$image_tag" >&2
         fi
-    done
+    done < <(docker image ls "$repository" --format '{{.Tag}}')
 done
 
 trap - ERR
 log_operation "$ACTION" "$TAG" ok
+assert_logged "$ACTION" "$TAG"
 echo "==> $TAG deployed"

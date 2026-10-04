@@ -20,11 +20,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 ### Fixed
 - El selector de doctores del formulario de cita respondía 500 a todos (rol `admin` inexistente).
 - Volver a una versión anterior con restauración de la base deja la base exactamente como en el backup, y un backup dañado ya no la modifica (spec 015).
+- Un despliegue aplica las migraciones antes de cambiar de versión: si fallan, la versión anterior sigue en servicio y la vuelta atrás apunta a la versión correcta (spec 015).
+- Redesplegar la misma versión ya no borra las imágenes de la anterior, y antes de restaurar un backup se guarda una copia de la base actual (spec 015).
+- La comprobación de espacio en disco del servidor comparaba texto y daba por bueno un disco lleno (spec 015).
 
 ### Security
 - Cabeceras de seguridad en todo el sitio (spec 015): política de contenido (CSP) con nonce, HSTS, protección contra ser embebido en otros sitios y contra la interpretación de tipos; sin versión de PHP ni de nginx en las respuestas.
 - Solo el propio sitio puede leer la API desde un navegador (CORS restringido), y el límite de peticiones usa la IP real del visitante detrás de Cloudflare: una IP falsificada no lo esquiva (spec 015).
-- Los logs de WhatsApp y del restablecimiento de contraseña ya no incluyen teléfono, nombre, email ni token, y las trazas no llevan argumentos (spec 015).
+- Los logs de WhatsApp y del restablecimiento de contraseña ya no incluyen teléfono, nombre, email ni token, los de creación de citas ya no incluyen la fecha ni la hora, y las trazas no llevan argumentos (spec 015).
+- Los archivos subidos y los estáticos también se sirven con las cabeceras que impiden interpretarlos como otro tipo o embeberlos en otro sitio, y la IP del visitante se resuelve en un solo punto (spec 015).
 - Configuración segura por defecto en `.env.example` (sin modo debug, sesión cifrada, logs a `stderr` con nivel `info`) y credenciales de Docker fuera de los archivos de Compose (spec 015).
 - Grafana, la base de datos y la caché ya no son accesibles desde Internet en la IP del servidor (spec 015).
 - Dependencias de build sin vulnerabilidades conocidas (`npm audit fix`) y `laravel/framework` 12.69.3 (spec 015).

@@ -127,7 +127,8 @@ it('logs a reset e-mail rejected by Brevo without personal data, provider body o
     $this->postJson($this->sendResetUrl(), ['email' => 'rosaura.pruebamail@example.com']);
 
     $log = (string) @file_get_contents($this->logFile);
-    expect($log)->not->toBeEmpty();
+    // The rejection itself must have happened and been logged, or the test proves nothing.
+    expect($log)->toContain('Brevo API rejected the transactional email request');
     expectNoResetPersonalData($log);
     expect($log)->not->toContain('is blocked')
         ->and($log)->not->toContain('#0 ');

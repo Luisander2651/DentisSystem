@@ -28,6 +28,12 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+# Before the cd: a relative dump path is relative to whoever runs the script.
+if [ -n "$DUMP" ]; then
+    [ -f "$DUMP" ] || fail "dump not found: $DUMP"
+    DUMP="$(cd "$(dirname "$DUMP")" && pwd)/$(basename "$DUMP")"
+fi
+
 cd "$DENTISSA_DIR"
 
 wait_for_app() {
@@ -48,6 +54,7 @@ if [ "$TO_MANUAL" = true ]; then
 
     trap - ERR
     log_operation rollback-to-manual manual ok
+    assert_logged rollback-to-manual manual
     echo "==> The manual stack is serving again"
     exit 0
 fi
@@ -61,7 +68,6 @@ docker image inspect "dentissa-app:$TAG" "dentissa-web:$TAG" > /dev/null 2>&1 ||
     fail "the images of $TAG are not on this machine"
 
 if [ -n "$DUMP" ]; then
-    [ -f "$DUMP" ] || fail "dump not found: $DUMP"
     printf 'Rolling back to %s and restoring %s. Everything written after that dump is lost.\n' "$TAG" "$(basename "$DUMP")"
     read -r -p "Type 'rollback' to continue: " answer
     [ "$answer" = "rollback" ] || fail "cancelled"
@@ -86,8 +92,9 @@ if [ -n "$CURRENT" ] && [ "$CURRENT" != "$TAG" ]; then
     printf '%s\n' "$CURRENT" > .deploy/previous
 fi
 
-"$SCRIPT_DIR/verify.sh" --local
+"$SCRIPT_DIR/verify.sh" --local --in-operation
 
 trap - ERR
 log_operation rollback "$TAG" ok
+assert_logged rollback "$TAG"
 echo "==> Rolled back to $TAG"

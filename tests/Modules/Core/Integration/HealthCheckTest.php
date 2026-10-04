@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use Tests\Modules\Core\Integration\CoreIntegrationTestCase;
 
 uses(CoreIntegrationTestCase::class);
@@ -39,7 +40,7 @@ afterEach(function () {
 });
 
 /**
- * @return array{0: \Illuminate\Testing\TestResponse, 1: float}
+ * @return array{0: TestResponse, 1: float}
  */
 function timedHealthCheck($test): array
 {

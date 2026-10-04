@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 uses(TestCase::class);
@@ -29,23 +30,36 @@ it('never pipes into a reader that stops early in the production scripts', funct
 it('gives php-fpm time to start before failing the /up check (T054)', function () {
     // rollback.sh waits for `artisan --version`, which answers while the entrypoint still
     // runs `artisan optimize` and before php-fpm listens, so nginx answers 502 for a moment.
-    $verify = (string) file_get_contents(base_path('docker/prod/verify.sh'));
-    preg_match('/^health_answers\(\) \{\n(.*?)\n\}/ms', $verify, $body);
+    // The check is run with a curl that fails at first: it must keep trying, and give up.
+    $health = function (string $curl): array {
+        $process = new Process(
+            ['bash', '-c', 'source docker/prod/verify.sh; calls=0; sleep() { :; }; '.$curl.' health_answers; status=$?; echo "calls=$calls"; exit $status'],
+            base_path(),
+        );
+        $process->run();
 
-    expect($body[1] ?? '')->toMatch('/for _ in \$\(seq 1 \d+\)/')
-        ->and($body[1] ?? '')->toContain('sleep');
+        return [(int) $process->getExitCode(), trim($process->getOutput())];
+    };
+
+    expect($health('curl() { calls=$((calls + 1)); [ "$calls" -ge 3 ]; };'))->toBe([0, 'calls=3'])
+        ->and($health('curl() { calls=$((calls + 1)); return 7; };'))->toBe([1, 'calls=15']);
 });
 
 it('restores a dump exactly, atomically and without wiping the database on a bad dump (T054)', function () {
-    // pg_restore --clean only drops what the dump contains, so tables created after the
-    // backup (a newer version's migrations) survived the T054 rollback and would break the
-    // next migrate. The schema is reset and the dump applied in one transaction, and only
-    // after pg_restore has read the whole dump.
-    $restore = (string) file_get_contents(base_path('docker/prod/restore.sh'));
+    // pg_restore's clean option only drops what the dump contains, so tables created after
+    // the backup (a newer version's migrations) survived the T054 rollback and would break
+    // the next migrate. The command needs a PostgreSQL server, so here it is read (without
+    // comments) and its order checked; DeployScriptsBehaviourTest runs the script around it.
+    $restore = (string) preg_replace('/^\s*#.*$/m', '', (string) file_get_contents(base_path('docker/prod/restore.sh')));
+
+    $convert = strpos($restore, 'pg_restore --no-owner -f "$sql"');
+    $reset = strpos($restore, 'DROP SCHEMA public CASCADE');
+    $apply = strpos($restore, 'psql -X -q -v ON_ERROR_STOP=1 --single-transaction');
 
     expect($restore)->not->toContain('--clean')
-        ->and($restore)->toContain('DROP SCHEMA public CASCADE')
-        ->and($restore)->toContain('--single-transaction')
-        ->and($restore)->toContain('ON_ERROR_STOP=1')
-        ->and($restore)->toMatch('/pg_restore --no-owner -f "\$sql"/');
+        ->and($convert)->not->toBeFalse('the dump is not converted to SQL first')
+        ->and($reset)->not->toBeFalse('the schema is not reset')
+        ->and($apply)->not->toBeFalse('the SQL is not applied in one transaction that stops on error')
+        ->and($convert)->toBeLessThan($reset)
+        ->and($reset)->toBeLessThan($apply);
 });

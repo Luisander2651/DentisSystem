@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-10-02
+updated: 2026-10-04
 ---
 
 # Despliegue de Dentissa
@@ -166,7 +166,7 @@ El `certbot renew --dry-run` no se ejecuta aquí: el nginx de la pila manual no 
 vencimiento (comprobado con `certbot certificates` en 3a). Si hubiera que deshacerlo, se vuelve a
 copiar el `.pre-015`.
 
-4. `docker/prod/deploy.sh --first <tag>`: backup de la pila manual, `stop` de la pila manual, copia de su `storage/app/public` al volumen `storage-public` (solo si está vacío), build de `dentissa-app:<tag>` y `dentissa-web:<tag>`, `up`, `migrate --force` y `verify.sh --local`.
+4. `docker/prod/deploy.sh --first <tag>`: backup de la pila manual, `stop` de la pila manual, copia de su `storage/app/public` al volumen `storage-public` (solo si está vacío), build de `dentissa-app:<tag>` y `dentissa-web:<tag>`, `migrate --force` con la imagen nueva, `up` y `verify.sh --local --in-operation`.
 5. `certbot renew --dry-run` y cron diario del usuario `deploy`: `0 3 * * * /home/deploy/dentissa/docker/prod/backup.sh daily`.
 6. Desde fuera del droplet: `docker/prod/verify.sh --remote dentissapp.com --origin <IP del droplet>`.
 
@@ -191,15 +191,22 @@ versión nueva: basta `git pull` en el clon (y `docker/prod/compose.sh up -d` si
 ```bash
 cd /home/deploy/dentissa
 git fetch --tags && git checkout vX.Y.Z
-time docker/prod/deploy.sh vX.Y.Z      # backup pre-vX.Y.Z, build, up, migrate y verify --local; registra el resultado
+time docker/prod/deploy.sh vX.Y.Z      # build, backup pre-vX.Y.Z, migrate, up y verify; registra el resultado
 ```
 Desde fuera del droplet (el equipo del dueño del repo):
 ```bash
 docker/prod/verify.sh --remote dentissapp.com --origin <IP del droplet>
 ```
 Tiempo medido (T054): 1 min 28 s en total con las imágenes base en caché; el corte se limita a la
-recreación de `app`, `queue` y `nginx`. Si `deploy.sh` termina con error, la versión nueva puede
-quedar sirviendo: se corrige o se vuelve con `rollback.sh` (ver "Rollback").
+recreación de `app`, `queue` y `nginx`.
+
+Orden de `deploy.sh`: build → backup `pre-<tag>` → migraciones con la imagen nueva (en un
+contenedor de un solo uso, mientras la versión anterior sigue sirviendo) → escribir `.deploy/` →
+`up -d` → `verify.sh --local --in-operation` → limpieza de imágenes → registro. Por eso las
+migraciones tienen que ser compatibles con el código que está en servicio (P9).
+- Si falla **la migración**: la versión anterior sigue sirviendo y `.deploy/` no cambia. Se corrige y se repite el deploy; si la migración quedó a medias, se restaura el dump `pre-<tag>` ("Restaurar sin cambiar de versión"). Con `--first` no hay versión de producción sirviendo: se vuelve con `rollback.sh --to-manual`.
+- Si falla **el arranque o la verificación**: la versión nueva queda arrancada y `.deploy/previous` apunta a la anterior; se vuelve con `docker/prod/rollback.sh` (ver "Rollback").
+- La limpieza conserva las imágenes de la versión en servicio y de `.deploy/previous`, también al redesplegar el mismo tag.
 
 ### Operación diaria
 Siempre desde `/home/deploy/dentissa`. `compose.sh` fija la versión en servicio; nunca `docker
@@ -207,13 +214,13 @@ compose` a secas sobre producción.
 ```bash
 docker/prod/compose.sh ps                                   # estado de los servicios
 docker/prod/compose.sh logs -f --since 10m app queue nginx  # logs (sin datos personales, CA18)
-docker/prod/verify.sh --local                               # 13 comprobaciones; también tras cualquier cambio
+docker/prod/verify.sh --local                               # 14 comprobaciones; también tras cualquier cambio
 tail -20 /home/deploy/deploys.log                           # deploys, rollbacks, restores y backups
 docker/prod/compose.sh exec -T app php artisan queue:failed # trabajos fallidos
 ssh -L 3000:127.0.0.1:3000 deploy@<IP del droplet>          # desde el equipo: Grafana en http://localhost:3000
 ```
-- **Backups:** cron diario del usuario `deploy` a las 03:00 (`crontab -l`), con la salida en `/home/deploy/backup-cron.log`; dumps en `/home/deploy/backups` (carpeta 700, archivos 600), y los diarios se rotan a los 7 días. A mano: `docker/prod/backup.sh <etiqueta>`.
-- **Restaurar sin cambiar de versión** (pierde lo escrito después del dump): `docker/prod/compose.sh stop nginx app queue`, `docker/prod/restore.sh /home/deploy/backups/<dump>` (pide escribir `restore`) y `docker/prod/compose.sh up -d`. La restauración es exacta y atómica: vacía el esquema y aplica el dump en una sola transacción; con un dump roto no toca la base.
+- **Backups:** cron diario del usuario `deploy` a las 03:00 (`crontab -l`), con la salida en `/home/deploy/backup-cron.log`; dumps en `/home/deploy/backups` (carpeta 700, archivos 600), y los diarios se borran al cumplir 7 días (los `pre-<tag>` y `pre-restore` no se rotan). A mano: `docker/prod/backup.sh <etiqueta>`. Fuera de un deploy, `verify.sh --local` exige un `daily-*` de menos de 25 h: si falla, el cron no está corriendo.
+- **Restaurar sin cambiar de versión** (pierde lo escrito después del dump): `docker/prod/compose.sh stop nginx app queue`, `docker/prod/restore.sh /home/deploy/backups/<dump>` (pide escribir `restore`) y `docker/prod/compose.sh up -d`. Antes de tocar nada, `restore.sh` guarda un dump `pre-restore` de la base actual, por si se eligió el dump equivocado. La restauración es exacta y atómica: vacía el esquema y aplica el dump en una sola transacción; con un dump roto no toca la base. El nombre del dump solo admite letras, dígitos, puntos, guiones y guiones bajos.
 - **Certificado:** `sudo certbot certificates` (vencimiento) y `sudo certbot renew --dry-run` tras cualquier cambio en Cloudflare o nginx. La renovación automática empieza a 30 días del vencimiento.
 - **Correo:** si cambia la IP pública del droplet, Brevo rechaza los envíos hasta autorizarla (Brevo avisa con un correo "authorize the new IP" a la cuenta).
 - **Disco:** `verify.sh --local` falla por encima del 80 %; `deploy.sh` ya retira las imágenes anteriores a las dos últimas versiones.
@@ -250,7 +257,7 @@ Estado: ensayado en local (T058) y en el droplet (T051, T054). Cada rollback que
 **Volver a la versión anterior** (imágenes aún en el droplet; se conservan las dos últimas):
 1. `docker/prod/rollback.sh` (a `.deploy/previous`) o `docker/prod/rollback.sh <tag>`: `up -d` con esas imágenes y `verify.sh --local`. Tiempo medido: 12–14 s, corte incluido.
 2. Si la release incluía migraciones compatibles hacia atrás (P9), no se toca la base.
-3. Si no lo eran: `docker/prod/rollback.sh <tag> --restore /home/deploy/backups/pre-<tag-actual>-*.dump`. Pide confirmación escribiendo `rollback`, detiene `nginx`, `app` y `queue`, restaura el dump de forma exacta y atómica (también desaparecen las tablas que la versión nueva hubiera creado) y arranca la versión anterior. Se pierden las escrituras posteriores al dump. Tiempo medido: 18,8 s en total, corte incluido (objetivo < 15 min).
+3. Si no lo eran: `docker/prod/rollback.sh <tag> --restore /home/deploy/backups/pre-<tag-actual>-*.dump`. Pide confirmación escribiendo `rollback`, detiene `nginx`, `app` y `queue`, guarda un dump `pre-restore`, restaura el dump de forma exacta y atómica (también desaparecen las tablas que la versión nueva hubiera creado) y arranca la versión anterior. La ruta del dump puede ser relativa al directorio desde el que se ejecuta. Se pierden las escrituras posteriores al dump. Tiempo medido: 18,8 s en total, corte incluido (objetivo < 15 min).
 - `compose.sh up -d` después de un rollback mantiene la versión de `.deploy/current`; el `.env` no puede cambiarla.
 - En código: cada merge a `main` es `--no-ff` y se puede revertir con `git revert -m 1 <merge>`; después se etiqueta y se despliega una versión nueva.
 
@@ -275,7 +282,7 @@ Estado: ensayado en local (T058) y en el droplet (T051, T054). Cada rollback que
 (Solo nombres. Nunca valores. En el VPS, `.env` con permisos 600 y fuera de cualquier volumen servido por nginx.)
 
 ## Verificación post-deploy
-- Automática: `deploy.sh` y `rollback.sh` terminan con `verify.sh --local` (13 comprobaciones, entre ellas `/up`, `APP_DEBUG`, el worker, la imagen sin artefactos y los backups). Desde fuera, `verify.sh --remote` (22: cabeceras, CORS, rutas prohibidas, puertos cerrados en la IP del droplet e IP falsificada).
+- Automática: `deploy.sh` y `rollback.sh` terminan con `verify.sh --local --in-operation` (14 comprobaciones, entre ellas `/up`, `APP_DEBUG`, el worker, la imagen sin artefactos, los backups y que su carpeta no está montada en nginx) y comprueban que la operación quedó en `deploys.log`. Desde fuera, `verify.sh --remote` (29): cabeceras a través de Cloudflare y preguntando al origen directamente (versión de nginx, redirección y HSTS), también para `www`; `nosniff` en un archivo subido; CORS; rutas prohibidas; puertos cerrados en la IP del droplet; y el límite de peticiones con la IP falsificada, tanto saltándose el proxy como a través de él. Necesita `curl` y `timeout`, y `--origin` debe ser una IP.
 - Health check: `GET /up` responde 200 solo si PostgreSQL y Redis responden; si no, 500 en 1–2 s (medido en T052).
 - Smoke tests: login de un administrador, carga de `/agenda`, `/pacientes` y el expediente, y un restablecimiento de contraseña que el worker procesa (el correo llega con el enlace a `https://dentissapp.com`).
 - Logs: Alloy → Loki → Grafana (puerto 3000, solo por túnel SSH) recoge el stdout y stderr de los contenedores; Laravel escribe en `stderr` (`LOG_CHANNEL=stderr`, nivel `info`) y sin datos personales (CA18). Métricas y alertas: aún no existen; las cubre la spec de monitoreo pendiente (roadmap, objetivo 4). Ver [observability.md](observability.md).

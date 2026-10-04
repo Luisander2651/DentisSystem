@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # PostgreSQL backup of Dentissa (spec 015, CA12).
 #
-#   backup.sh daily                  daily cron (03:00); keeps the last 7 days of daily dumps
+#   backup.sh daily                  daily cron (03:00); keeps the daily dumps of the last 7 days
 #   backup.sh pre-<tag>              before a deploy (deploy.sh)
 #   backup.sh --from-manual <label>  from the manual stack in MANUAL_DIR (first step)
 #
@@ -52,7 +52,8 @@ chmod 600 "$DUMP"
 [ "$(head -c 5 "$DUMP")" = "PGDMP" ] || { printf 'ERROR: %s is not a valid dump\n' "$DUMP" >&2; false; }
 
 if [ "$LABEL" = "daily" ]; then
-    find "$BACKUP_DIR" -maxdepth 1 -name 'daily-*.dump' -mtime +7 -delete
+    # -mtime counts whole days: +6 deletes the dumps of seven full days or more.
+    find "$BACKUP_DIR" -maxdepth 1 -name 'daily-*.dump' -mtime +6 -delete
 fi
 
 trap - ERR

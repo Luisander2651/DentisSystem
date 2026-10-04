@@ -55,7 +55,12 @@ beforeEach(function () {
         $this->actingAsAdmin();
         $this->postJson($this->appointmentsUrl(), $this->validCreateAppointmentPayload(['patient_id' => $patient->id]));
 
-        return ['555 010 9876', '5550109876', 'Zacarias', 'Pruebatel'];
+        // Everything the flow knows about the patient and the template variables: phone,
+        // name, contact e-mail, emergency contact and the date and time of the appointment.
+        return [
+            '555 010 9876', '5550109876', 'Zacarias', 'Pruebatel',
+            'zacarias.contacto@example.com', 'Jane Doe', '2026-09-01', '10:00',
+        ];
     };
 });
 
@@ -95,6 +100,9 @@ function twilioRejectingTheNumber(): Client
 
 function expectNoPersonalData(string $text, array $personalData): void
 {
+    // Without the timestamp of each line, which could contain the appointment's time by chance.
+    $text = (string) preg_replace('/^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] /m', '', $text);
+
     foreach ($personalData as $value) {
         expect($text)->not->toContain($value);
     }
@@ -117,7 +125,8 @@ it('logs a WhatsApp confirmation rejected by Twilio without personal data, provi
     $personalData = ($this->bookAppointmentForPatientWithPhone)();
 
     $log = (string) @file_get_contents($this->logFile);
-    expect($log)->not->toBeEmpty();
+    // The rejection itself must have happened and been logged, or the test proves nothing.
+    expect($log)->toContain('TwilioConection::sendTemplate - ERROR');
     expectNoPersonalData($log, $personalData);
     expect($log)->not->toContain('is not a valid phone number')
         ->and($log)->not->toContain('#0 ');

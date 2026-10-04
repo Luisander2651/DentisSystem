@@ -29,8 +29,6 @@ final readonly class CreateAppointmentController
             Log::info('CreateAppointmentController: Iniciando creación de appointment', [
                 'user_id' => $request->string('user_id')->value(),
                 'patient_id' => $request->string('patient_id')->value(),
-                'date' => $request->string('date')->value(),
-                'time' => $request->string('time')->value(),
             ]);
 
             $createAppointmentDTO = CreateAppointmentDTO::create(

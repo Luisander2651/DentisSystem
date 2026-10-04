@@ -54,3 +54,23 @@ it('declares by name every variable the deployment needs', function (string $nam
     'APP_VERSION',
     'CSP_REPORT_ONLY',
 ]);
+
+it('declares every variable the project adds to config/database.php (P8)', function () {
+    // Compared with Laravel's stock file, so a variable added later cannot be forgotten:
+    // the list is derived, not maintained by hand.
+    $variablesOf = function (string $path): array {
+        preg_match_all("/env\(\s*'([A-Z0-9_]+)'/", (string) file_get_contents($path), $matches);
+
+        return array_values(array_unique($matches[1]));
+    };
+
+    $stock = base_path('vendor/laravel/framework/config/database.php');
+    expect(is_file($stock))->toBeTrue('the stock database config is missing');
+
+    $added = array_values(array_diff($variablesOf(config_path('database.php')), $variablesOf($stock)));
+
+    expect($added)->not->toBeEmpty('no project variable found: the comparison is not working');
+    foreach ($added as $name) {
+        expect(envExample())->toHaveKey($name);
+    }
+});

@@ -64,3 +64,13 @@ it('keeps counting a direct client by its connection IP when it rotates fake for
         ->getJson(publicCertificationsUrl(), ['X-Forwarded-For' => '203.0.113.99', 'CF-Connecting-IP' => '203.0.113.99'])
         ->assertTooManyRequests();
 });
+
+it('keeps the IP nginx resolved when that IP is itself inside a Cloudflare range (R7)', function () {
+    // The production topology: nginx has already put the visitor's IP in REMOTE_ADDR and
+    // overwrites X-Forwarded-For with it, so a visitor inside Cloudflare's ranges (a Worker
+    // subrequest) cannot choose its own IP with the header.
+    $this->withServerVariables(['REMOTE_ADDR' => '173.245.48.10'])
+        ->getJson('/_test/client-ip', ['X-Forwarded-For' => '173.245.48.10'])
+        ->assertOk()
+        ->assertJson(['ip' => '173.245.48.10']);
+});
