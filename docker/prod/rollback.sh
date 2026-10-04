@@ -93,6 +93,8 @@ if [ -n "$CURRENT" ] && [ "$CURRENT" != "$TAG" ]; then
 fi
 
 "$SCRIPT_DIR/verify.sh" --local --in-operation
+# The next deploy takes its rollback target from here (deploy.sh).
+printf '%s\n' "$TAG" > .deploy/verified
 
 trap - ERR
 log_operation rollback "$TAG" ok

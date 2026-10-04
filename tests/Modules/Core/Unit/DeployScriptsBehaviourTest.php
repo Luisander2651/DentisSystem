@@ -23,6 +23,7 @@ const STAND_INS = [
         case "$*" in
             *migrate*) [ -z "${FAIL_MIGRATE:-}" ] || exit 1 ;;
             up*) echo "state current=$(cat "$DENTISSA_DIR/.deploy/current" 2> /dev/null) previous=$(cat "$DENTISSA_DIR/.deploy/previous" 2> /dev/null)" >> "$CALLS" ;;
+            *pg_dump*) printf 'PGDMP-stand-in' ;;
             *"exec -T db"*) cat > /dev/null ;;
         esac
         SH,
@@ -34,6 +35,7 @@ const STAND_INS = [
     'verify.sh' => <<<'SH'
         #!/usr/bin/env bash
         echo "verify $*" >> "$CALLS"
+        [ -z "${FAIL_VERIFY:-}" ] || exit 1
         SH,
     'restore.sh' => <<<'SH'
         #!/usr/bin/env bash
@@ -82,10 +84,13 @@ beforeEach(function () {
         'GIT_AUTHOR_NAME' => 'tester', 'GIT_AUTHOR_EMAIL' => 'tester@example.test',
         'GIT_COMMITTER_NAME' => 'tester', 'GIT_COMMITTER_EMAIL' => 'tester@example.test',
         'GIT_CONFIG_GLOBAL' => '/dev/null',
+        // Removed from the environment: lib.sh prefers SUDO_USER, and inside a git hook these
+        // would point the test's `git` at the real repository.
+        'SUDO_USER' => false, 'GIT_DIR' => false, 'GIT_WORK_TREE' => false, 'GIT_INDEX_FILE' => false,
     ];
 
     /**
-     * Builds the clone with the given real scripts (the rest are stand-ins) and tags v1, v2.
+     * Builds the clone with the given real scripts (the rest are stand-ins) and tags v1 to v3.
      *
      * @param  list<string>  $real
      */
@@ -103,7 +108,7 @@ beforeEach(function () {
         }
         file_put_contents("{$this->clone}/.gitignore", "/.deploy\n");
 
-        foreach ([['init', '-q'], ['add', '-A'], ['commit', '-q', '-m', 'release'], ['tag', 'v1'], ['tag', 'v2']] as $arguments) {
+        foreach ([['init', '-q'], ['add', '-A'], ['commit', '-q', '-m', 'release'], ['tag', 'v1'], ['tag', 'v2'], ['tag', 'v3']] as $arguments) {
             (new Process(['git', ...$arguments], $this->clone, $this->env))->mustRun();
         }
     };
@@ -140,6 +145,9 @@ beforeEach(function () {
 
         return null;
     };
+    $this->deployState = fn (string $name): ?string => is_file("{$this->clone}/.deploy/{$name}")
+        ? trim((string) file_get_contents("{$this->clone}/.deploy/{$name}"))
+        : null;
     $this->lastLogLine = fn (): string => (string) last(file($this->sandbox.'/deploys.log', FILE_IGNORE_NEW_LINES));
 });
 
@@ -153,7 +161,9 @@ it('migrates with the new image before switching versions (R6)', function () {
 
     [$exit, $output] = ($this->run)(['bash', 'docker/prod/deploy.sh', 'v2']);
 
-    $migrate = ($this->position)('compose run --rm app php artisan migrate --force');
+    // Without the image's entrypoint: `artisan optimize` would recompile the views into the
+    // storage volume the running version is still serving from (R36).
+    $migrate = ($this->position)('compose run --rm --entrypoint php app artisan migrate --force');
     $up = ($this->position)('compose up -d');
 
     expect($exit)->toBe(0, $output)
@@ -286,4 +296,68 @@ it('refuses a dump whose name would break the operations log (R18)', function ()
     expect($exit)->not->toBe(0)
         ->and(($this->position)('compose exec -T db'))->toBeNull('the restore ran with an invalid dump name')
         ->and(is_file($this->sandbox.'/deploys.log'))->toBeFalse('the invalid name reached the operations log');
+});
+
+it('only promotes a verified version to the one a rollback goes back to (R38)', function () {
+    ($this->buildClone)(['deploy.sh']);
+    ($this->state)('v1', null);
+    file_put_contents($this->sandbox.'/images', 'v1
+v2
+v3
+');
+
+    // v2 starts but does not pass the checks, and nobody rolls back before the next deploy.
+    [$failed] = ($this->run)(['bash', 'docker/prod/deploy.sh', 'v2'], ['FAIL_VERIFY' => '1']);
+
+    expect($failed)->not->toBe(0)
+        ->and(($this->deployState)('current'))->toBe('v2')
+        ->and(($this->deployState)('previous'))->toBe('v1')
+        ->and(($this->deployState)('verified'))->toBe('v1');
+
+    (new Process(['git', 'checkout', '-q', 'v3'], $this->clone, $this->env))->mustRun();
+    file_put_contents($this->calls, '');
+    [$exit, $output] = ($this->run)(['bash', 'docker/prod/deploy.sh', 'v3']);
+
+    expect($exit)->toBe(0, $output)
+        ->and(($this->deployState)('current'))->toBe('v3')
+        ->and(($this->deployState)('previous'))->toBe('v1', 'a version that never passed the checks became the rollback target')
+        ->and(($this->deployState)('verified'))->toBe('v3')
+        ->and(($this->position)('docker image rm dentissa-app:v1'))->toBeNull('the last good version lost its image')
+        ->and(($this->position)('docker image rm dentissa-app:v2'))->not->toBeNull();
+});
+
+it('records the version as verified after a deploy and after a rollback (R38)', function () {
+    ($this->buildClone)(['deploy.sh', 'rollback.sh']);
+    ($this->state)('v1', null);
+
+    ($this->run)(['bash', 'docker/prod/deploy.sh', 'v2']);
+    expect(($this->deployState)('verified'))->toBe('v2');
+
+    ($this->run)(['bash', 'docker/prod/rollback.sh', 'v1']);
+    expect(($this->deployState)('verified'))->toBe('v1')
+        ->and(($this->deployState)('current'))->toBe('v1')
+        ->and(($this->deployState)('previous'))->toBe('v2');
+});
+
+it('deletes the daily dumps of seven full days and keeps the rest (R37)', function () {
+    ($this->buildClone)(['backup.sh']);
+    $aged = function (string $name, float $days): string {
+        $path = "{$this->sandbox}/backups/{$name}";
+        file_put_contents($path, 'PGDMP');
+        touch($path, time() - (int) round($days * 86400));
+
+        return $path;
+    };
+    $overdue = $aged('daily-20260101T030000Z.dump', 7.05);
+    $recent = $aged('daily-20260102T030000Z.dump', 6.5);
+    $beforeDeploy = $aged('pre-v1-20251201T000000Z.dump', 30);
+
+    [$exit, $output] = ($this->run)(['bash', 'docker/prod/backup.sh', 'daily']);
+
+    expect($exit)->toBe(0, $output)
+        ->and(is_file($overdue))->toBeFalse('a daily dump of seven full days was kept')
+        ->and(is_file($recent))->toBeTrue()
+        ->and(is_file($beforeDeploy))->toBeTrue()
+        ->and(glob("{$this->sandbox}/backups/daily-*.dump"))->toHaveCount(2)
+        ->and(($this->lastLogLine)())->toContain('action=backup version=daily result=ok');
 });

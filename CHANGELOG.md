@@ -22,6 +22,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - Volver a una versión anterior con restauración de la base deja la base exactamente como en el backup, y un backup dañado ya no la modifica (spec 015).
 - Un despliegue aplica las migraciones antes de cambiar de versión: si fallan, la versión anterior sigue en servicio y la vuelta atrás apunta a la versión correcta (spec 015).
 - Redesplegar la misma versión ya no borra las imágenes de la anterior, y antes de restaurar un backup se guarda una copia de la base actual (spec 015).
+- Un despliegue que falla ya no puede quedar como versión a la que volver, y la versión en servicio no ve cambios hasta que el despliegue cambia de versión (spec 015).
 - La comprobación de espacio en disco del servidor comparaba texto y daba por bueno un disco lleno (spec 015).
 
 ### Security

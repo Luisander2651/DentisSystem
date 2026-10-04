@@ -126,11 +126,16 @@ it('asks for a daily backup of the last 25 hours outside an operation (R9)', fun
     expect(verifyCheck($this, 'IN_OPERATION=false; recent_backup_exists')[0])->toBe(0);
 });
 
-it('treats a daily backup of seven full days as overdue for rotation (R15)', function () {
+it('reports a daily backup the rotation should have deleted, with a day of margin (R15, R37)', function () {
+    // backup.sh deletes at seven full days. Its 03:00 run can leave, by seconds, the dump
+    // that is just under seven days old: the check must not fail for that one.
     dumpAgedHours($this, 'daily-20260101T030000Z.dump', 6 * 24 + 12);
     expect(verifyCheck($this, 'old_daily_backups_are_rotated')[0])->toBe(0);
 
     dumpAgedHours($this, 'daily-20251225T030000Z.dump', 7 * 24 + 1);
+    expect(verifyCheck($this, 'old_daily_backups_are_rotated')[0])->toBe(0);
+
+    dumpAgedHours($this, 'daily-20251224T030000Z.dump', 8 * 24 + 1);
     expect(verifyCheck($this, 'old_daily_backups_are_rotated')[0])->toBe(1);
 });
 
@@ -268,15 +273,24 @@ it('checks that the backups folder is not mounted in nginx (R14)', function () {
 it('asks the origin for nosniff on an uploaded file, apart from the cached copy (T076)', function () {
     // Through Cloudflare the same file may come from a copy cached before the deploy: asking
     // nginx directly tells "nginx does not send it" from "the cache is stale".
-    [$protected, $arguments] = remoteCheck($this, 'origin_static_file_has_nosniff', 'HTTP/2 200
-x-content-type-options: nosniff
-');
-    [$bare] = remoteCheck($this, 'origin_static_file_has_nosniff', 'HTTP/2 200
-content-type: image/jpeg
-');
+    [$protected, $arguments] = remoteCheck($this, 'origin_static_file_has_nosniff', 'HTTP/2 200\r\nx-content-type-options: nosniff\r\n');
+    [$bare] = remoteCheck($this, 'origin_static_file_has_nosniff', 'HTTP/2 200\r\ncontent-type: image/jpeg\r\n');
 
     expect($protected)->toBe(0)
         ->and($bare)->toBe(1)
         ->and($arguments)->toContain('--resolve example.test:443:203.0.113.10')
         ->and($arguments)->toContain('https://example.test/storage/login.jpg');
+});
+
+it('finds a folder inside the backups among the mounts when BACKUP_DIR ends with a slash (R45)', function () {
+    $mounts = "/etc/letsencrypt\n{$this->backups}/2026\n";
+
+    [$exit] = verifyCheck($this, REMOTE_STAND_INS.'backups_are_not_mounted_in_nginx', [
+        'BACKUP_DIR' => $this->backups.'/',
+        'CURL_ARGS' => $this->sandbox.'/curl-arguments',
+        'CURL_OUTPUT' => '',
+        'DOCKER_OUTPUT' => $mounts,
+    ]);
+
+    expect($exit)->toBe(1);
 });

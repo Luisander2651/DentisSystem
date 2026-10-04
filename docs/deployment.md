@@ -201,8 +201,14 @@ Tiempo medido (T054): 1 min 28 s en total con las imágenes base en caché; el c
 recreación de `app`, `queue` y `nginx`.
 
 Orden de `deploy.sh`: build → backup `pre-<tag>` → migraciones con la imagen nueva (en un
-contenedor de un solo uso, mientras la versión anterior sigue sirviendo) → escribir `.deploy/` →
-`up -d` → `verify.sh --local --in-operation` → limpieza de imágenes → registro. Por eso las
+contenedor de un solo uso y sin el arranque normal de la imagen, que recompilaría las vistas en el
+volumen que comparte con la versión en servicio) → escribir `.deploy/` → `up -d` →
+`verify.sh --local --in-operation` → `.deploy/verified` → limpieza de imágenes → registro.
+
+Estado en `.deploy/` (no versionado): `current` es la versión arrancada, `verified` la última que
+pasó `verify.sh` y `previous` la versión a la que vuelve `rollback.sh` sin argumentos. Un deploy
+toma su `previous` de `verified`, no de `current`: una versión que falló nunca se convierte en el
+destino del rollback ni hace que se borren las imágenes de la última buena. Por eso las
 migraciones tienen que ser compatibles con el código que está en servicio (P9).
 - Si falla **la migración**: la versión anterior sigue sirviendo y `.deploy/` no cambia. Se corrige y se repite el deploy; si la migración quedó a medias, se restaura el dump `pre-<tag>` ("Restaurar sin cambiar de versión"). Con `--first` no hay versión de producción sirviendo: se vuelve con `rollback.sh --to-manual`.
 - Si falla **el arranque o la verificación**: la versión nueva queda arrancada y `.deploy/previous` apunta a la anterior; se vuelve con `docker/prod/rollback.sh` (ver "Rollback").
@@ -228,6 +234,7 @@ tail -20 /home/deploy/deploys.log                           # deploys, rollbacks
 docker/prod/compose.sh exec -T app php artisan queue:failed # trabajos fallidos
 ssh -L 3000:127.0.0.1:3000 deploy@<IP del droplet>          # desde el equipo: Grafana en http://localhost:3000
 ```
+- **Rotación:** `backup.sh daily` borra los diarios al cumplir 7 días; `verify.sh` avisa solo si queda alguno de 8 días o más (un día de margen).
 - **Backups:** cron diario del usuario `deploy` a las 03:00 (`crontab -l`), con la salida en `/home/deploy/backup-cron.log`; dumps en `/home/deploy/backups` (carpeta 700, archivos 600), y los diarios se borran al cumplir 7 días (los `pre-<tag>` y `pre-restore` no se rotan). A mano: `docker/prod/backup.sh <etiqueta>`. Fuera de un deploy, `verify.sh --local` exige un `daily-*` de menos de 25 h: si falla, el cron no está corriendo.
 - **Restaurar sin cambiar de versión** (pierde lo escrito después del dump): `docker/prod/compose.sh stop nginx app queue`, `docker/prod/restore.sh /home/deploy/backups/<dump>` (pide escribir `restore`) y `docker/prod/compose.sh up -d`. Antes de tocar nada, `restore.sh` guarda un dump `pre-restore` de la base actual, por si se eligió el dump equivocado. La restauración es exacta y atómica: vacía el esquema y aplica el dump en una sola transacción; con un dump roto no toca la base. El nombre del dump solo admite letras, dígitos, puntos, guiones y guiones bajos.
 - **Certificado:** `sudo certbot certificates` (vencimiento) y `sudo certbot renew --dry-run` tras cualquier cambio en Cloudflare o nginx. La renovación automática empieza a 30 días del vencimiento.
