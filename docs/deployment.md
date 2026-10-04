@@ -260,12 +260,16 @@ Estado: ensayado en local (T058) y en el droplet (T051, T054). Cada rollback que
 | APP_NAME, APP_ENV, APP_KEY, APP_DEBUG, APP_URL | ✓ | ✓ | `.env` (prod: `APP_ENV=production`, `APP_DEBUG=false`) |
 | DB_CONNECTION, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD | ✓ | ✓ | `.env` |
 | REDIS_CLIENT, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT | ✓ | ✓ | `.env` (usar `predis`) |
-| QUEUE_CONNECTION, CACHE_STORE, SESSION_* | ✓ | ✓ | `.env` (prod: `SESSION_ENCRYPT=true`, `SESSION_SECURE_COOKIE=true`) |
+| QUEUE_CONNECTION, CACHE_STORE, SESSION_* | ✓ | ✓ | `.env` (prod: `QUEUE_CONNECTION=redis`, `CACHE_STORE=redis`, `SESSION_DRIVER=redis`, `SESSION_ENCRYPT=true`, `SESSION_SECURE_COOKIE=true`) |
+| REDIS_TIMEOUT, REDIS_READ_WRITE_TIMEOUT | opcional | opcional | `.env` (por defecto 2 s; acotan `/up` y las esperas a Redis) |
 | SANCTUM_STATEFUL_DOMAINS, SANCTUM_TOKEN_EXPIRATION, SANCTUM_TOKEN_PREFIX | opcional | ✓ | `.env` (no están en `.env.example`) |
 | R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_DEFAULT_REGION, R2_BUCKET, R2_URL, R2_ENDPOINT, R2_USE_PATH_STYLE_ENDPOINT | ✓ | ✓ | `.env` |
-| TWILIO_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, TWILIO_APPOINTMENT_TEMPLATE_SID | opcional | ✓ | `.env` (no están en `.env.example`) |
-| BREVO_EMAIL_SENDER_API_KEY, BREVO_RESET_PASSWORD_TEMPLATE_ID | opcional | ✓ | `.env` (no están en `.env.example`) |
-| LOG_CHANNEL, LOG_STACK, LOG_LEVEL | ✓ | ✓ | `.env` (prod: `LOG_LEVEL=info` o superior) |
+| TWILIO_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, TWILIO_APPOINTMENT_TEMPLATE_SID | opcional | ✓ | `.env` (vacías en `.env.example`; se leen con `config('services.twilio.*')`) |
+| BREVO_EMAIL_SENDER_API_KEY, BREVO_RESET_PASSWORD_TEMPLATE_ID | opcional | ✓ | `.env` (vacías en `.env.example`; se leen con `config('services.brevo.*')`) |
+| LOG_CHANNEL, LOG_STACK, LOG_LEVEL | ✓ | ✓ | `.env` (`stderr` e `info` por defecto en `.env.example`) |
+| CSP_REPORT_ONLY | opcional | ✓ | `.env` (`false`; `true` solo como interruptor de emergencia) |
+| COMPOSE_FILE, DATA_VOLUME_PREFIX | — | ✓ | `.env` del clon de producción (`docker-compose.prod.yml` y el proyecto Compose de la pila manual, `dentissystem`) |
+| APP_VERSION | — | — | no va en `.env`: la fija `docker/prod/compose.sh` desde `.deploy/current` |
 | GRAFANA_PASSWORD | ✓ | ✓ | `.env` |
 
 (Solo nombres. Nunca valores. En el VPS, `.env` con permisos 600 y fuera de cualquier volumen servido por nginx.)
@@ -284,35 +288,35 @@ cambios; la prioridad de cada riesgo está por asignar: el documento no la indic
 ### RD1 · Prioridad por asignar — Sin rollback probado ni backups automáticos de PostgreSQL.
 
 Correcciones:
-- RD1.a Ensayar el rollback una vez (derivada) — estado: pendiente (roadmap objetivo 4)
-- RD1.b Backups automáticos de PostgreSQL (derivada) — estado: pendiente (roadmap objetivo 4)
+- RD1.a Ensayar el rollback una vez (derivada) — estado: mitigada (spec 015; versión en `/release`): `rollback.sh` (vuelta a la pila manual y a la versión anterior, con restauración exacta y atómica) ensayado en local (T058) y en el droplet (T051, T054)
+- RD1.b Backups automáticos de PostgreSQL (derivada) — estado: mitigada (spec 015; versión en `/release`): `backup.sh daily` por cron a las 03:00, rotación de 7 días, carpeta 700 y archivos 600 (T053), y un backup antes de cada deploy
 
 ### RD2 · Prioridad por asignar — `Dockerfile` solo de desarrollo; no hay imagen de producción.
 
 Correcciones:
-- RD2.a Imagen de producción (derivada) — estado: pendiente (roadmap objetivo 4)
+- RD2.a Imagen de producción (derivada) — estado: mitigada (spec 015; versión en `/release`): etapas `prod` y `web` de `docker/Dockerfile` (ADR 0004); `ComposeFilesTest`, `verify.sh` (imagen sin Node, Composer, paquetes de desarrollo, `.env`, `.git` ni `public/hot`)
 
 ### RD3 · Prioridad por asignar — Sin worker de colas en `docker-compose.yml`: WhatsApp y el correo de reset no se enviarían.
 
 Correcciones:
-- RD3.a Worker de colas en `docker-compose.yml` (derivada) — estado: pendiente (roadmap objetivo 4)
+- RD3.a Worker de colas en `docker-compose.yml` (derivada) — estado: mitigada (spec 015; versión en `/release`): servicio `queue` en los dos Compose; probado en el droplet (correo de restablecimiento y reinicio automático, T052)
 
 ### RD4 · Prioridad por asignar — `env()` fuera de `config/` en Twilio y Brevo: `config:cache` los deja en null.
 
 Correcciones:
-- RD4.a Leer Twilio y Brevo con `config('services.*')` en lugar de `env()` (derivada, P8) — estado: pendiente (roadmap, Pendientes y deuda)
+- RD4.a Leer Twilio y Brevo con `config('services.*')` en lugar de `env()` (derivada, P8) — estado: mitigada (spec 015; versión en `/release`): `NoEnvOutsideConfigTest`, `ProvidersReadConfigTest`
 
 ### RD5 · Prioridad por asignar — `.env.example` trae `APP_DEBUG=true`, `SESSION_ENCRYPT=false`, `DB_CONNECTION=sqlite` y `REDIS_CLIENT=phpredis` (el Dockerfile no instala phpredis).
 
 Correcciones:
-- RD5.a `APP_DEBUG=false` y `SESSION_ENCRYPT=true` en `.env.example` (derivada; = RS10) — estado: pendiente
-- RD5.b `DB_CONNECTION=pgsql` y `REDIS_CLIENT=predis` en `.env.example` (derivada) — estado: pendiente (roadmap, Pendientes y deuda)
+- RD5.a `APP_DEBUG=false` y `SESSION_ENCRYPT=true` en `.env.example` (derivada; = RS10) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`
+- RD5.b `DB_CONNECTION=pgsql` y `REDIS_CLIENT=predis` en `.env.example` (derivada) — estado: mitigada (spec 015; versión en `/release`): `EnvExampleDefaultsTest`
 
 ### RD6 · Prioridad por asignar — `docker-compose.yml` publica PostgreSQL y Redis en el host y escribe credenciales en el archivo.
 
 Correcciones:
-- RD6.a No publicar PostgreSQL ni Redis en el host (derivada) — estado: pendiente
-- RD6.b Credenciales de `docker-compose.yml` desde `.env` (derivada) — estado: pendiente
+- RD6.a No publicar PostgreSQL ni Redis en el host (derivada) — estado: mitigada (spec 015; versión en `/release`): en producción solo 80, 443 y Grafana en `127.0.0.1`; en local, `db` y `redis` solo en `127.0.0.1`; `ComposeFilesTest` y `verify.sh --remote` (puertos cerrados en la IP del droplet, T051)
+- RD6.b Credenciales de `docker-compose.yml` desde `.env` (derivada) — estado: mitigada (spec 015; versión en `/release`): `ComposeFilesTest`
 
 ### RD7 · Prioridad por asignar — `phpunit.xml` apunta a `DB_HOST=db`: `composer run test` fuera de Docker falla sin override.
 
