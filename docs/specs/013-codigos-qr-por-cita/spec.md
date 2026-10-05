@@ -90,14 +90,25 @@ spec 014).
 ## Preguntas abiertas
 - Ninguna.
 
-## Supuestos
-- La fecha "de hoy" se evalúa en la zona horaria de la clínica (`config('app.timezone')`).
-- El QR se genera dentro del módulo Appointments; no se reutiliza en otros módulos.
-- La base es PostgreSQL y las rutas cuelgan de `/api/v1` (el diseño original dice MySQL y `/api`).
-- Los controles de acceso de esta feature (CA16, CA17, CA21) se implementan en sus propios endpoints, sin depender de que el objetivo 1 del roadmap (cerrar el control de acceso general) esté terminado.
-- El paciente usa su cuenta actual (registro de la spec 002 o alta por el staff) para iniciar sesión en la app Android.
-- Las rutas de paciente de esta spec quedan fuera del grupo de rutas de staff de la spec 014.
-- CA23 y CA24 cierran RS1.c y RS1.b de `docs/security.md`, que la spec 014 dejó fuera (decisión del usuario, 2026-09-24).
+## Decisiones
+Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract.md` → "Decisiones").
+Convertida desde "Supuestos" y "Aclaraciones" en `/init --upgrade` a 1.11.2 (2026-10-04), sin
+cambiar su contenido.
+
+| Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
+|---|---|---|---|---|
+| 2026-09-22 | brecha | ¿Quién puede verificar el QR, registrar la entrada y consultar el QR de una cita? | El QR lo tiene el paciente en una app Android; al llegar lo escanea un sistema de registro de entrada; el servidor invalida el QR y elimina su imagen de R2 para no guardar archivos que ya no sirven. | usuario (`/clarify`) |
+| 2026-09-22 | brecha | ¿Cuándo es válido registrar la entrada con el QR? | Solo el día de la cita. | usuario (`/clarify`) |
+| 2026-09-22 | brecha | Si una cita se marca completada sin haber escaneado su QR, ¿qué pasa con el QR? | Deja de ser válido (pasa a `expired`). | usuario (`/clarify`) |
+| 2026-09-22 | brecha | ¿La imagen del QR es pública o con URL temporal? | Temporal o privada. El enlace se genera en cada consulta del paciente, no al crear la cita, así que su caducidad no depende de la fecha de la cita. | usuario (`/clarify`) |
+| 2026-09-22 | brecha | ¿Quién opera el lector y cómo se autentica? | Un lector fijo sin operador (ESP32) envía un POST a un webhook del servidor, que procesa el acceso y la invalidación de forma automática. | usuario (`/clarify`) |
+| 2026-09-22 | supuesto | ¿En qué zona horaria se evalúa la fecha "de hoy"? | En la de la clínica (`config('app.timezone')`). | /specify |
+| 2026-09-22 | supuesto | ¿Dónde se genera el QR? | Dentro del módulo Appointments; no se reutiliza en otros módulos. | /specify |
+| 2026-09-22 | supuesto | El diseño original dice MySQL y rutas bajo `/api`. | La base es PostgreSQL y las rutas cuelgan de `/api/v1`. | /specify |
+| 2026-09-22 | supuesto | ¿Dependen los controles de acceso de esta feature del objetivo 1 del roadmap? | No: CA16, CA17 y CA21 se implementan en sus propios endpoints, sin esperar a que el control de acceso general esté terminado. | /specify |
+| 2026-09-22 | supuesto | ¿Con qué cuenta inicia sesión el paciente en la app Android? | Con su cuenta actual (registro de la spec 002 o alta por el staff). | /specify |
+| 2026-09-24 | supuesto | ¿Entran las rutas de paciente de esta spec en el grupo de rutas de staff de la spec 014? | No, quedan fuera de ese grupo. | /specify |
+| 2026-09-24 | brecha | La spec 014 dejó fuera RS1.b y RS1.c de `docs/security.md`. | CA23 y CA24 las cierran en esta spec. | usuario |
 
 ## Notas para /plan
 - **Integración nueva de hardware:** el lector ESP32 es un cliente máquina que llama a un endpoint tipo webhook. Requiere ADR (P3/P10) y modelo de amenazas (P11): cómo se registra y autentica cada dispositivo (credencial por dispositivo revocable, firma HMAC de la petición con marca de tiempo contra repetición, TLS), limitación por dispositivo y qué registra el servidor.
@@ -119,11 +130,4 @@ spec 014).
 | 2026-09-24 | Sección "Cobertura de riesgos" y citas por ID (RS/OB) | `/init --upgrade` a 1.6.0 (formato 1.5.6); decisión del usuario |
 | 2026-09-24 | `extends: [014]` y orden de implementación después de la 014 | Segundo `/analyze 014` (B6); decisión del usuario |
 | 2026-09-24 | CA23 (autenticación separada de pacientes y staff) y CA24 (propiedad del recurso en toda ruta de paciente), traídos desde la spec 014 | Riesgo 1 de `docs/security.md`; decisión del usuario |
-
-## Aclaraciones
-### Sesión 2026-09-22
-- P: ¿Quién puede verificar el QR, registrar la entrada y consultar el QR de una cita? → R: El QR lo tiene el paciente en una app Android; al llegar lo escanea un sistema de registro de entrada; el servidor invalida el QR y elimina su imagen de R2 para no guardar archivos que ya no sirven.
-- P: ¿Cuándo es válido registrar la entrada con el QR? → R: Solo el día de la cita.
-- P: Si una cita se marca completada sin haber escaneado su QR, ¿qué pasa con el QR? → R: Deja de ser válido (pasa a `expired`).
-- P: ¿La imagen del QR es pública o con URL temporal? → R: Temporal o privada. Aclarado: el enlace se genera en cada consulta del paciente, no al crear la cita, así que su caducidad no depende de la fecha de la cita.
-- P: ¿Quién opera el lector y cómo se autentica? → R: Un lector fijo sin operador (ESP32) envía un POST a un webhook del servidor, que procesa el acceso y la invalidación de forma automática.
+| 2026-10-04 | "Supuestos" y "Aclaraciones" convertidas a la tabla "Decisiones", sin cambiar su contenido | `/init --upgrade` a 1.11.2; decisión del usuario |

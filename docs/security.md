@@ -65,15 +65,23 @@ Esta tabla es una guía técnica, no asesoría legal: conviene validarla con un 
 - Rotación: TODO(init): sin procedimiento definido (decisión del usuario, 2026-09-22). Mínimo propuesto hasta definirlo: rotar las claves de Twilio, Brevo y R2 al pasar a producción y ante cualquier sospecha de exposición.
 
 ## Herramientas
-Adoptadas en la inicialización (ninguna estaba instalada). Hoy se ejecutan en local desde `/implement`, `/review` y `/release`; el workflow de CI que las automatiza está preparado en `.ai/ci/ai-dd.yml` pero **inactivo** hasta cerrar las brechas conocidas (riesgos 1–9):
+Adoptadas en la inicialización. gitleaks, semgrep y trivy no están instalados en el equipo: se
+ejecutan con sus imágenes de Docker desde la raíz del repositorio (decisión del usuario,
+2026-10-04), y así corrieron en `/implement`, `/review` y `/release` de las specs 014 y 015. El
+workflow de CI que las automatizaría está preparado en `.ai/ci/ai-dd.yml`, **inactivo**. Los
+comandos exactos están en `.ai/project.yaml → security.tools`.
 
-| Tipo | Herramienta | Comando | Cuándo corre |
-|---|---|---|---|
-| Secretos | gitleaks | `gitleaks detect --no-banner` | /implement, CI |
-| SAST | semgrep | `semgrep scan --config p/php --error` | /implement (archivos tocados), /review, CI |
-| SCA (dependencias) | composer audit / npm audit | `composer audit && npm audit --audit-level=high` | /review, /release, CI |
-| Contenedores / IaC | trivy | `trivy config --severity HIGH,CRITICAL docker/ docker-compose.yml` | /review, /release, CI |
-| DAST | — | no aplica (no hay staging) | — |
+| Tipo | Herramienta | Comando | Estado | Cuándo corre |
+|---|---|---|---|---|
+| Secretos | gitleaks | `docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest detect --no-banner --source /repo` | instalada (imagen de Docker) | /implement, /review |
+| SAST | semgrep | `docker run --rm -v "$PWD:/src" -w /src semgrep/semgrep:latest semgrep scan --config p/php --metrics=off --error app config bootstrap routes` | instalada (imagen de Docker) | /implement (archivos tocados), /review |
+| SCA (dependencias) | composer audit / npm audit | `docker compose exec -T app composer audit && docker compose exec -T app npm audit --audit-level=high` | instalada | /review, /release |
+| Contenedores / IaC | trivy | `docker run --rm -v "$PWD:/repo" aquasec/trivy:latest config --severity HIGH,CRITICAL /repo/docker` | instalada (imagen de Docker) | /review, /release |
+| DAST | — | — | no-aplica (no hay staging) | — |
+
+Ninguna herramienta envía código ni métricas a un servicio externo: semgrep usa el conjunto de
+reglas fijado `p/php`, que descarga de semgrep.dev, con `--metrics=off` (nunca `--config auto`,
+que exige métricas). Las imágenes se descargan de Docker Hub.
 
 ## Permisos del agente
 Reglas base en `shared/agent-security.md` del plugin. Específicas de este proyecto:
