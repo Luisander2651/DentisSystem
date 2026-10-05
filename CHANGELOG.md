@@ -7,6 +7,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ### Added
 - Documentación del diseño actual de la interfaz en `docs/design/`: colores, tipografía y componentes medidos en la app, capturas de todas las pantallas a 390 y 1440 px y la lista de deuda de diseño (`DS1`–`DS14`). No cambia la aplicación.
+- CI: el workflow `ai-dd` queda activo en `.github/workflows/`. En cada PR valida las specs, el formato (Pint) de los archivos PHP cambiados y la seguridad de lo que cambia el PR (gitleaks, semgrep, auditoría de dependencias y trivy); cada lunes revisa el repositorio completo sin bloquear. Acciones e imágenes fijadas a una versión y semgrep sin envío de métricas.
 
 ### Changed
 - Flujo AI-DD actualizado a 1.11.2: validador y plantillas nuevas, herramientas de seguridad con su estado (se ejecutan con sus imágenes de Docker) y tabla "Decisiones" en la spec 013.

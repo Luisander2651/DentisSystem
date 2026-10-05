@@ -67,16 +67,18 @@ Esta tabla es una guía técnica, no asesoría legal: conviene validarla con un 
 ## Herramientas
 Adoptadas en la inicialización. gitleaks, semgrep y trivy no están instalados en el equipo: se
 ejecutan con sus imágenes de Docker desde la raíz del repositorio (decisión del usuario,
-2026-10-04), y así corrieron en `/implement`, `/review` y `/release` de las specs 014 y 015. El
-workflow de CI que las automatizaría está preparado en `.ai/ci/ai-dd.yml`, **inactivo**. Los
-comandos exactos están en `.ai/project.yaml → security.tools`.
+2026-10-04), y así corrieron en `/implement`, `/review` y `/release` de las specs 014 y 015. Desde el 2026-10-05 también corren en
+CI con `.github/workflows/ai-dd.yml` (decisión del usuario): en cada PR solo fallan por problemas
+nuevos del PR (modo baseline) y un job semanal revisa el repositorio completo sin bloquear. En CI
+las imágenes están fijadas a una versión. Los comandos locales exactos están en
+`.ai/project.yaml → security.tools`.
 
 | Tipo | Herramienta | Comando | Estado | Cuándo corre |
 |---|---|---|---|---|
-| Secretos | gitleaks | `docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest detect --no-banner --source /repo` | instalada (imagen de Docker) | /implement, /review |
-| SAST | semgrep | `docker run --rm -v "$PWD:/src" -w /src semgrep/semgrep:latest semgrep scan --config p/php --metrics=off --error app config bootstrap routes` | instalada (imagen de Docker) | /implement (archivos tocados), /review |
-| SCA (dependencias) | composer audit / npm audit | `docker compose exec -T app composer audit && docker compose exec -T app npm audit --audit-level=high` | instalada | /review, /release |
-| Contenedores / IaC | trivy | `docker run --rm -v "$PWD:/repo" aquasec/trivy:latest config --severity HIGH,CRITICAL /repo/docker` | instalada (imagen de Docker) | /review, /release |
+| Secretos | gitleaks | `docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest detect --no-banner --source /repo` | en-ci (imagen de Docker) | /implement, /review, CI |
+| SAST | semgrep | `docker run --rm -v "$PWD:/src" -w /src semgrep/semgrep:latest semgrep scan --config p/php --metrics=off --error app config bootstrap routes` | en-ci (imagen de Docker) | /implement (archivos tocados), /review, CI |
+| SCA (dependencias) | composer audit / npm audit | `docker compose exec -T app composer audit && docker compose exec -T app npm audit --audit-level=high` | en-ci | /review, /release, CI (si el PR cambia lockfiles) |
+| Contenedores / IaC | trivy | `docker run --rm -v "$PWD:/repo" aquasec/trivy:latest config --severity HIGH,CRITICAL /repo/docker` | en-ci (imagen de Docker) | /review, /release, CI (si el PR cambia `docker/` o `docker-compose.yml`) |
 | DAST | — | — | no-aplica (no hay staging) | — |
 
 Ninguna herramienta envía código ni métricas a un servicio externo: semgrep usa el conjunto de

@@ -48,7 +48,7 @@ Texto alternativo: un PR pasa CI, se integra en `main`, se etiqueta, se verifica
 del repo aprueba y se despliega a mano en el VPS.
 
 - `.github/workflows/tests.yml` (push y PR, todas las ramas): PHP 8.4, Node 22, PostgreSQL 16 y Redis 7 como servicios; `composer install`, `npm ci`, `npm run build`, `migrate --env=testing`, `./vendor/bin/pest --parallel`.
-- `.ai/ci/ai-dd.yml` (**inactivo**): valida specs con `.ai/bin/aidd.py`, Pint en modo test y las herramientas de seguridad de [security.md](security.md). Se activa moviéndolo a `.github/workflows/` cuando el código pase esas herramientas; hasta entonces se ejecutan en local durante `/implement`, `/review` y `/release`.
+- `.github/workflows/ai-dd.yml` (activo desde el 2026-10-05; decisión del usuario): en cada PR valida specs con `.ai/bin/aidd.py`, Pint en modo test sobre los archivos PHP del PR y las herramientas de seguridad de [security.md](security.md) en modo baseline (solo fallan problemas nuevos del PR); cada lunes revisa el repositorio completo sin bloquear. Las mismas herramientas se siguen ejecutando en local durante `/implement`, `/review` y `/release`.
 - No hay job de despliegue: el despliegue es manual.
 
 ## Cómo desplegar
