@@ -66,7 +66,7 @@ en el flujo AI-DLC. Sus reglas están en [AIDLC.md](AIDLC.md) y su estado en
 | `tests/Modules/`, `tests/Support/` | Suite Pest por módulo y helpers |
 | `database/` | Migraciones técnicas, `RoleSeeder` |
 | `docker/`, `docker-compose.yml` | Entorno Docker (app, nginx, postgres, redis, Loki/Grafana/Alloy) |
-| `docs/` | Constitución, arquitectura, despliegue, seguridad, roadmap, specs, ADRs, plantillas |
+| `docs/` | Constitución, arquitectura, despliegue, seguridad, diseño, roadmap, specs, ADRs, plantillas |
 | `.ai/` | `project.yaml` (configuración del flujo) y `bin/aidd.py` (validador) |
 
 ## Documentación
@@ -75,6 +75,7 @@ en el flujo AI-DLC. Sus reglas están en [AIDLC.md](AIDLC.md) y su estado en
 - [Despliegue](docs/deployment.md) — entornos, deploy y rollback
 - [Seguridad](docs/security.md) — datos sensibles, auth, herramientas y excepciones
 - [Observabilidad](docs/observability.md) — logs, correlación, auditoría, métricas y brechas
+- [Diseño](docs/design/system.md) — sistema extraído del código, deuda `DS` y [vista en HTML](docs/design/system.html)
 - [Roadmap](docs/roadmap.md) — etapa actual y objetivos
 - [Specs](docs/specs/README.md)
 - [ADRs](docs/adr/)

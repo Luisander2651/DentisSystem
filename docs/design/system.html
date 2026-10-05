@@ -1,0 +1,545 @@
+<!doctype html>
+<!-- Sistema de diseño EXTRAÍDO del código de Dentissa (ai-dd 1.11.2, 2026-10-04). Nada está dibujado a mano:
+     las pantallas son capturas de la app local con datos de prueba y los componentes son recortes de esas capturas. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dentissa — sistema de diseño extraído</title>
+<style id="viewer">
+  /* Marco del visor: neutro y discreto, para que destaque la opción y no el visor. */
+  :root {
+    --ui-bg: #f6f7f8; --ui-panel: #ffffff; --ui-text: #1d2125; --ui-muted: #5b636b;
+    --ui-line: #d9dde1; --ui-ok: #1e7a3c; --ui-fail: #b42318; --ui-focus: #1f5fd1;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-viewer="light"]) {
+      --ui-bg: #17191c; --ui-panel: #1f2226; --ui-text: #e8eaed; --ui-muted: #a3a9b0;
+      --ui-line: #343940; --ui-ok: #6fd08c; --ui-fail: #ff8a80; --ui-focus: #8ab4ff;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--ui-bg); color: var(--ui-text);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
+  .v-wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+  .v-head { padding: 40px 0 24px; border-bottom: 1px solid var(--ui-line); }
+  .v-project { margin: 0 0 4px; color: var(--ui-muted); }
+  .v-head h1 { margin: 0 0 12px; font-size: 28px; line-height: 1.2; }
+  .v-why { margin: 0 0 6px; max-width: 70ch; }
+  .v-risk { margin: 0; max-width: 70ch; color: var(--ui-muted); }
+  .v-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .v-toggle { font: inherit; padding: 8px 14px; min-height: 40px; border-radius: 8px; cursor: pointer;
+              border: 1px solid var(--ui-line); background: var(--ui-panel); color: var(--ui-text); }
+  .v-toggle[aria-pressed="true"] { border-color: var(--ui-text); box-shadow: inset 0 0 0 1px var(--ui-text); }
+  .v-toc { position: sticky; top: 0; z-index: 5; background: var(--ui-bg); border-bottom: 1px solid var(--ui-line); }
+  .v-toc ul { display: flex; gap: 20px; margin: 0; padding: 12px 0; list-style: none; overflow-x: auto; }
+  .v-toc a { text-decoration: none; color: var(--ui-muted); white-space: nowrap; }
+  .v-toc a:hover { color: var(--ui-text); }
+  .v-section { padding: 36px 0; border-bottom: 1px solid var(--ui-line); }
+  .v-section > h2 { margin: 0 0 6px; font-size: 20px; }
+  .v-section > .v-note { margin: 0 0 20px; color: var(--ui-muted); max-width: 70ch; }
+  .v-stage { background: var(--ui-panel); border: 1px solid var(--ui-line); border-radius: 12px; overflow: hidden; }
+  .v-stage > .opt { padding: 24px; }
+  .v-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .v-swatch { margin: 0; }
+  .v-chip { height: 64px; border-radius: 8px; border: 1px solid var(--ui-line); }
+  .v-swatch figcaption { margin-top: 6px; font-size: 13px; color: var(--ui-muted); }
+  .v-swatch code { color: var(--ui-text); font-size: 13px; }
+  .v-pairs { margin: 24px 0 0; padding: 0; list-style: none; display: grid; gap: 8px;
+             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .v-pair { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 12px; row-gap: 2px;
+            padding: 10px 12px; border-radius: 8px; border: 1px solid var(--ui-line); background: var(--ui-panel); }
+  .v-pair-sample { grid-row: span 2; width: 44px; height: 32px; border-radius: 6px; display: grid;
+                   place-items: center; font-weight: 600; }
+  .v-pair-ratio { grid-column: 2; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .v-pair[data-ok="true"] .v-pair-ratio { color: var(--ui-ok); }
+  .v-pair[data-ok="false"] .v-pair-ratio { color: var(--ui-fail); font-weight: 600; }
+  .v-grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .v-label { display: block; margin: 0 0 10px; font-size: 13px; color: var(--ui-muted); }
+  .v-frames { display: grid; gap: 28px; }
+  .v-frame figcaption { margin: 0 0 8px; color: var(--ui-muted); font-size: 13px; }
+  .v-viewport { border: 1px solid var(--ui-line); border-radius: 12px; overflow: hidden; background: var(--ui-panel); }
+  .v-scaler { transform-origin: 0 0; }
+  .v-scaler > .opt { min-height: var(--frame-h, 720px); }
+  /* Cada marco es un contenedor: las reglas responsivas de la opción usan @container, no @media,
+     para que el marco de 390 px se vea como la app a 390 px aunque la ventana sea ancha. */
+  .v-scaler > .opt, .v-stage > .opt { container-type: inline-size; }
+  .v-motion { margin: 0; padding-left: 20px; max-width: 75ch; }
+  .v-motion li { margin-bottom: 10px; }
+  .v-foot { padding: 28px 0 48px; color: var(--ui-muted); font-size: 13px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+<style id="viewer-extracted">
+  .v-brand { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin: 0 0 16px; }
+  .v-logo { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #fff; border: 1px solid var(--ui-line); border-radius: 12px; color: #0f172b; }
+  .v-logo small { color: var(--ui-muted); margin-left: 8px; font-size: 12px; }
+  .v-group { margin: 32px 0 12px; font-size: 16px; }
+  .v-shot { margin: 0 0 28px; }
+  .v-shot figcaption { margin: 0 0 8px; font-size: 13px; }
+  .v-shot figcaption span { color: var(--ui-muted); }
+  .v-pairing { display: flex; gap: 16px; align-items: flex-start; }
+  .v-img { display: block; position: relative; border: 1px solid var(--ui-line); border-radius: 10px; overflow: auto; max-height: 560px; background: #fff; text-decoration: none; }
+  .v-img img { display: block; width: 100%; height: auto; }
+  .v-img span { position: sticky; bottom: 0; display: block; padding: 2px 8px; font-size: 12px; background: var(--ui-panel); color: var(--ui-muted); border-top: 1px solid var(--ui-line); }
+  .v-img-390 { flex: 0 0 200px; } .v-img-1440 { flex: 1 1 0; min-width: 0; }
+  .v-gap { padding: 24px; border: 1px dashed var(--ui-line); border-radius: 10px; color: var(--ui-muted); }
+  .v-comp { margin: 0 0 24px; } .v-src { opacity: .8; }
+  .v-crop-scroll { overflow-x: auto; }
+  .v-crop { overflow: hidden; border: 1px solid var(--ui-line); border-radius: 8px; background: #fff; }
+  .v-crop img { display: block; max-width: none; }
+  .v-fail { color: var(--ui-fail); font-weight: 600; }
+  table.v-table { border-collapse: collapse; font-size: 13px; } .v-table td, .v-table th { border: 1px solid var(--ui-line); padding: 6px 10px; text-align: left; }
+</style>
+<style id="fonts">
+  /* Fuente del sistema: la app no carga ninguna fuente web (document.fonts vacío en las capturas medidas). */
+</style>
+<style id="tokens">
+  /* Valores MEDIDOS en la app. Los nombres son los del documento (docs/design/system.md): el código
+     no declara estos tokens, usa utilidades de Tailwind y valores arbitrarios (deuda DS1). */
+  .opt {
+    --color-bg: #f8fafc;
+    --color-surface: #ffffff;
+    --color-text: #0f172b;
+    --color-text-muted: #62748e;
+    --color-text-faint: #90a1b9;
+    --color-primary: #E91E63;
+    --color-on-primary: #ffffff;
+    --color-primary-strong: #B5114A;
+    --color-primary-soft: #FDF1F6;
+    --color-border: #e2e8f0;
+    --color-border-field: #cad5e2;
+    --color-border-brand: #F5C2D6;
+    --color-focus: #E91E63;
+    --color-focus-ring: #F8BBD0;
+    --color-danger: #e7000b;
+    --color-danger-bg: #fef2f2;
+    --color-success: #007a55;
+    --color-success-bg: #ecfdf5;
+    --color-whatsapp: #00bc7d;
+    --color-warning: #bb4d00;
+    --color-warning-bg: #fffbeb;
+
+    --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: ui-monospace, monospace;
+    --text-h1: 30px; --text-h2: 16px; --text-body: 16px; --text-small: 14px;
+    --weight-regular: 400; --weight-strong: 600;
+
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+    --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+    --space-gutter: 16px;
+    --radius-sm: 8px; --radius-md: 16px; --radius-lg: 24px;
+    --border-width: 1px;
+    --shadow-1: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);
+    --touch-min: 44px;
+
+    --duration-fast: 150ms; --duration-base: 200ms;
+    --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+</style>
+<style id="components">
+  .opt { background: var(--color-bg); color: var(--color-text); font-family: var(--font-sans); font-size: var(--text-body); line-height: 1.5; }
+  .opt .t-h1 { font-size: var(--text-h1); line-height: 36px; font-weight: var(--weight-strong); margin: 0; }
+  .opt .t-h2 { font-size: var(--text-h2); line-height: 24px; font-weight: var(--weight-strong); margin: 0; }
+  .opt .t-body { font-size: var(--text-body); margin: 0; }
+  .opt .t-small { font-size: var(--text-small); color: var(--color-text-muted); margin: 0; }
+  .opt .t-micro { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--color-text-faint); margin: 0; }
+</style>
+</head>
+<body>
+<header class="v-head">
+  <div class="v-wrap">
+    <p class="v-project">Dentissa — sistema de diseño extraído del código, aprobado el 2026-10-04</p>
+    <h1>La interfaz de Dentissa tal como está hoy</h1>
+    <div class="v-brand">
+      <div class="v-logo"><span style="display:flex;width:40px;height:40px;align-items:center;justify-content:center;border-radius:16px;background:#FDF1F6;color:#B5114A"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M12 6c-3.31 0-6 2.69-6 6 0 1.66.67 3.16 1.76 4.24l1.42-1.42A3.98 3.98 0 0 1 8 12c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .83-.25 1.59-.68 2.24l1.42 1.42C17.33 15.16 18 13.66 18 12c0-3.31-2.69-6-6-6z"/></svg></span><span style="font-size:20px;font-weight:700;letter-spacing:-.025em">Dent<span style="color:#B5114A">issa</span></span><small>sitio público · components/landing/nav.blade.php</small></div>
+      <div class="v-logo"><span style="display:flex;width:40px;height:40px;align-items:center;justify-content:center;border-radius:16px;background:#E91E63;color:#fff"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.74 8 11 4.6-1.26 8-6 8-11V5l-8-3z"/></svg></span><span style="font-size:16px;font-weight:700;letter-spacing:-.025em">Dentissa</span><small>panel · components/ui/sidebar.blade.php</small></div>
+    </div>
+    <p class="v-why">Extraído el 2026-10-04 con ai-dd 1.11.2: 65 vistas y estados capturados a 390 y 1440 px con la base local de pruebas, y sus estilos calculados medidos. No hay archivo de logo: los dos de arriba son los SVG en línea del código (deuda DS9).</p>
+    <p class="v-risk">Los pares de color en rojo no cumplen el contraste mínimo: es deuda registrada en <code>system.md</code> (DS3), no se corrige aquí.</p>
+    <div class="v-controls">
+      <button type="button" class="v-toggle" id="toggle-scheme" aria-pressed="false">Modo oscuro</button>
+      <button type="button" class="v-toggle" id="toggle-motion" aria-pressed="false" hidden>Sin movimiento</button>
+    </div>
+  </div>
+</header>
+
+<nav class="v-toc" aria-label="Secciones">
+  <div class="v-wrap"><ul>
+    <li><a href="#color">Color</a></li><li><a href="#tipografia">Tipografía</a></li><li><a href="#espaciado">Espaciado y forma</a></li>
+    <li><a href="#componentes">Componentes</a></li><li><a href="#pantallas">Pantallas</a></li><li><a href="#movimiento">Movimiento</a></li>
+  </ul></div>
+</nav>
+
+<main class="v-wrap">
+  <section class="v-section" id="color">
+    <h2>Color</h2>
+    <p class="v-note">Valores medidos con <code>getComputedStyle</code>. El contraste lo calcula esta página. Mínimo: 4.5:1 en texto y 3:1 en bordes de control y foco. La app no tiene modo oscuro.</p>
+    <div class="v-swatches" id="swatches"></div>
+    <ul class="v-pairs" id="pairs">
+      <li class="v-pair" data-fg="--color-text" data-bg="--color-bg" data-min="4.5">Texto sobre fondo</li>
+      <li class="v-pair" data-fg="--color-text-muted" data-bg="--color-surface" data-min="4.5">Texto secundario sobre tarjeta</li>
+      <li class="v-pair" data-fg="--color-text-faint" data-bg="--color-surface" data-min="4.5">Etiquetas en mayúsculas y textos de ayuda (slate-400)</li>
+      <li class="v-pair" data-fg="--color-on-primary" data-bg="--color-primary" data-min="4.5">Texto del botón principal (#E91E63)</li>
+      <li class="v-pair" data-fg="--color-on-primary" data-bg="--color-primary-strong" data-min="4.5">Texto del botón #B5114A</li>
+      <li class="v-pair" data-fg="--color-primary-strong" data-bg="--color-primary-soft" data-min="4.5">Elemento activo del menú</li>
+      <li class="v-pair" data-fg="--color-on-primary" data-bg="--color-whatsapp" data-min="4.5">Texto del botón WhatsApp</li>
+      <li class="v-pair" data-fg="--color-danger" data-bg="--color-danger-bg" data-min="4.5">Eliminar (rojo sobre rojo claro)</li>
+      <li class="v-pair" data-fg="--color-on-primary" data-bg="--color-danger" data-min="4.5">Texto del botón Eliminar</li>
+      <li class="v-pair" data-fg="--color-success" data-bg="--color-success-bg" data-min="4.5">Estado Activo / Completada</li>
+      <li class="v-pair" data-fg="--color-warning" data-bg="--color-warning-bg" data-min="4.5">Estado Asignada</li>
+      <li class="v-pair" data-fg="--color-border-field" data-bg="--color-surface" data-min="3">Borde de campo sobre superficie</li>
+      <li class="v-pair" data-fg="--color-border" data-bg="--color-surface" data-min="3">Borde de tarjeta y de campo claro</li>
+      <li class="v-pair" data-fg="--color-focus" data-bg="--color-surface" data-min="3">Borde de foco</li>
+      <li class="v-pair" data-fg="--color-focus-ring" data-bg="--color-surface" data-min="3">Anillo de foco (#F8BBD0)</li>
+    </ul>
+  </section>
+
+  <section class="v-section" id="tipografia">
+    <h2>Tipografía</h2>
+    <p class="v-note">Fuente del sistema (<code>ui-sans-serif, system-ui, …</code>); ninguna fuente web cargada. Los textos son los de la pantalla Pacientes, con los tamaños medidos a 390 px (el título pasa a 36 px en el sitio público a 1440 px; el del panel no cambia).</p>
+    <div class="v-stage"><div class="opt">
+      <p class="t-h1">Pacientes</p>
+      <p class="t-body">Gestiona la base de datos de pacientes de la clinica.</p>
+      <p class="t-h2">Juan Pérez</p>
+      <p class="t-small">jua.perez@example.com</p>
+      <p class="t-micro">Total pacientes</p>
+    </div></div>
+  </section>
+
+  <section class="v-section" id="espaciado">
+    <h2>Espaciado y forma</h2>
+    <p class="v-note">Escala de Tailwind (múltiplos de 4 px). Radios medidos: 8 px (campos de formularios internos), 12 y 16 px (botones y campos), 24 px (tarjetas), 32 px (encabezado de página) y píldora. El recuadro de 44 px es la referencia de toque de WCAG: la app no fija un mínimo y mide entre 24 y 48 px (deuda DS4).</p>
+    <div class="v-stage"><div class="opt" id="space-demo"></div></div>
+  </section>
+
+  <section class="v-section" id="componentes">
+    <h2>Componentes</h2>
+    <p class="v-note">Recortes de las capturas reales, a tamaño real.</p>
+    
+        <figure class="v-comp"><figcaption class="v-label">Encabezado de página con acción principal (x-ui.page-hero) <span class="v-src">recorte de pacientes-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:1064px;height:210px"><img src="capturas/pacientes-1440.png" width="1440" alt="Encabezado de página con acción principal (x-ui.page-hero)" loading="lazy" style="margin-left:-360px;margin-top:-16px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Contadores <span class="v-src">recorte de pacientes-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:1064px;height:102px"><img src="capturas/pacientes-1440.png" width="1440" alt="Contadores" loading="lazy" style="margin-left:-360px;margin-top:-234px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Búsqueda y filtro por estado <span class="v-src">recorte de pacientes-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:1064px;height:64px"><img src="capturas/pacientes-1440.png" width="1440" alt="Búsqueda y filtro por estado" loading="lazy" style="margin-left:-360px;margin-top:-344px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Aviso informativo <span class="v-src">recorte de pacientes-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:1064px;height:106px"><img src="capturas/pacientes-1440.png" width="1440" alt="Aviso informativo" loading="lazy" style="margin-left:-360px;margin-top:-416px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Tarjeta de paciente con acciones de icono <span class="v-src">recorte de pacientes-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:356px;height:220px"><img src="capturas/pacientes-1440.png" width="1440" alt="Tarjeta de paciente con acciones de icono" loading="lazy" style="margin-left:-360px;margin-top:-530px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Menú lateral del panel (x-ui.sidebar) <span class="v-src">recorte de pacientes-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:336px;height:768px"><img src="capturas/pacientes-1440.png" width="1440" alt="Menú lateral del panel (x-ui.sidebar)" loading="lazy" style="margin-left:-16px;margin-top:-16px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Menú del sitio público en móvil <span class="v-src">recorte de inicio-menu-390.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:390px;height:416px"><img src="capturas/inicio-menu-390.png" width="390" alt="Menú del sitio público en móvil" loading="lazy" style="margin-left:-0px;margin-top:-0px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Campos de formulario dentro de un diálogo <span class="v-src">recorte de agenda-cita-completar-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:672px;height:440px"><img src="capturas/agenda-cita-completar-1440.png" width="1440" alt="Campos de formulario dentro de un diálogo" loading="lazy" style="margin-left:-384px;margin-top:-32px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Mensaje de error de validación en un formulario <span class="v-src">recorte de agenda-cita-completar-validacion-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:672px;height:170px"><img src="capturas/agenda-cita-completar-validacion-1440.png" width="1440" alt="Mensaje de error de validación en un formulario" loading="lazy" style="margin-left:-384px;margin-top:-690px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Diálogo de confirmación de borrado <span class="v-src">recorte de contenido-promociones-eliminar-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:468px;height:332px"><img src="capturas/contenido-promociones-eliminar-1440.png" width="1440" alt="Diálogo de confirmación de borrado" loading="lazy" style="margin-left:-486px;margin-top:-284px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Diálogo con lista (citas del día) <span class="v-src">recorte de agenda-dia-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:532px;height:284px"><img src="capturas/agenda-dia-1440.png" width="1440" alt="Diálogo con lista (citas del día)" loading="lazy" style="margin-left:-454px;margin-top:-308px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Tabla con acciones (expediente) <span class="v-src">recorte de expediente-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:1064px;height:174px"><img src="capturas/expediente-1440.png" width="1440" alt="Tabla con acciones (expediente)" loading="lazy" style="margin-left:-360px;margin-top:-1090px"></div></div></figure>
+    
+        <figure class="v-comp"><figcaption class="v-label">Estado vacío en tabla <span class="v-src">recorte de expediente-1440.png</span></figcaption>
+          <div class="v-crop-scroll"><div class="v-crop" style="width:1064px;height:188px"><img src="capturas/expediente-1440.png" width="1440" alt="Estado vacío en tabla" loading="lazy" style="margin-left:-360px;margin-top:-1454px"></div></div></figure>
+  </section>
+
+  <section class="v-section" id="pantallas">
+    <h2>Pantallas</h2>
+    <p class="v-note">Todas las vistas del inventario a 390 y 1440 px, con datos de prueba. Cada imagen enlaza a la captura completa; las altas se desplazan dentro de su marco. Una vista sin captura es un hueco con su motivo.</p>
+    
+      <h3 class="v-group" id="g-publico">Sitio público</h3>
+        <figure class="v-shot"><figcaption><strong>Inicio</strong> · público<br><span>/ · pages/landing/inicio.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/inicio-390.png"><img src="capturas/inicio-390.png" alt="Inicio a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/inicio-1440.png"><img src="capturas/inicio-1440.png" alt="Inicio a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Inicio, menú móvil abierto</strong> · público<br><span>/ · components/landing/nav.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/inicio-menu-390.png"><img src="capturas/inicio-menu-390.png" alt="Inicio, menú móvil abierto a 390 px" loading="lazy"><span>390 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Acerca de Nosotros</strong> · público<br><span>/acerca-de-nosotros · pages/landing/acerca.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/acerca-390.png"><img src="capturas/acerca-390.png" alt="Acerca de Nosotros a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/acerca-1440.png"><img src="capturas/acerca-1440.png" alt="Acerca de Nosotros a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Galería</strong> · público<br><span>/galeria · pages/landing/galeria.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/galeria-390.png"><img src="capturas/galeria-390.png" alt="Galería a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/galeria-1440.png"><img src="capturas/galeria-1440.png" alt="Galería a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Galería, visor de imagen</strong> · público<br><span>/galeria (visor)</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/galeria-visor-390.png"><img src="capturas/galeria-visor-390.png" alt="Galería, visor de imagen a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/galeria-visor-1440.png"><img src="capturas/galeria-visor-1440.png" alt="Galería, visor de imagen a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contacto</strong> · público<br><span>/contacto · pages/landing/contacto.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contacto-390.png"><img src="capturas/contacto-390.png" alt="Contacto a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contacto-1440.png"><img src="capturas/contacto-1440.png" alt="Contacto a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Bienvenida de Laravel</strong> · —<br><span>welcome.blade.php</span></figcaption><div class="v-gap">no accesible (plantilla sin ruta)</div></figure>
+      <h3 class="v-group" id="g-acceso">Acceso</h3>
+        <figure class="v-shot"><figcaption><strong>Iniciar sesión</strong> · público<br><span>/login · pages/auth/login.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/login-390.png"><img src="capturas/login-390.png" alt="Iniciar sesión a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/login-1440.png"><img src="capturas/login-1440.png" alt="Iniciar sesión a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Registrarse</strong> · público<br><span>/register · pages/auth/register.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/register-390.png"><img src="capturas/register-390.png" alt="Registrarse a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/register-1440.png"><img src="capturas/register-1440.png" alt="Registrarse a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Recuperar contraseña</strong> · público<br><span>/forgot-password · pages/auth/forgot-password.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/forgot-password-390.png"><img src="capturas/forgot-password-390.png" alt="Recuperar contraseña a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/forgot-password-1440.png"><img src="capturas/forgot-password-1440.png" alt="Recuperar contraseña a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Restablecer contraseña (con token)</strong> · público<br><span>/reset-password?token=… · pages/auth/reset-password.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/reset-password-390.png"><img src="capturas/reset-password-390.png" alt="Restablecer contraseña (con token) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/reset-password-1440.png"><img src="capturas/reset-password-1440.png" alt="Restablecer contraseña (con token) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Restablecer contraseña (sin token)</strong> · público<br><span>/reset-password</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/reset-password-sin-token-390.png"><img src="capturas/reset-password-sin-token-390.png" alt="Restablecer contraseña (sin token) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/reset-password-sin-token-1440.png"><img src="capturas/reset-password-sin-token-1440.png" alt="Restablecer contraseña (sin token) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Cerrar sesión</strong> · Paciente<br><span>/logout · pages/auth/logout.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/logout-390.png"><img src="capturas/logout-390.png" alt="Cerrar sesión a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/logout-1440.png"><img src="capturas/logout-1440.png" alt="Cerrar sesión a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+      <h3 class="v-group" id="g-panel">Inicio del panel</h3>
+        <figure class="v-shot"><figcaption><strong>Inicio del panel</strong> · Administrador<br><span>/dashboard · pages/dashboard.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-administrador-390.png"><img src="capturas/dashboard-administrador-390.png" alt="Inicio del panel a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/dashboard-administrador-1440.png"><img src="capturas/dashboard-administrador-1440.png" alt="Inicio del panel a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Inicio del panel</strong> · Asistente<br><span>/dashboard</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-asistente-390.png"><img src="capturas/dashboard-asistente-390.png" alt="Inicio del panel a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/dashboard-asistente-1440.png"><img src="capturas/dashboard-asistente-1440.png" alt="Inicio del panel a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Inicio del panel</strong> · Doctor<br><span>/dashboard</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-doctor-390.png"><img src="capturas/dashboard-doctor-390.png" alt="Inicio del panel a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/dashboard-doctor-1440.png"><img src="capturas/dashboard-doctor-1440.png" alt="Inicio del panel a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Inicio del panel</strong> · Paciente<br><span>/dashboard</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-paciente-390.png"><img src="capturas/dashboard-paciente-390.png" alt="Inicio del panel a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/dashboard-paciente-1440.png"><img src="capturas/dashboard-paciente-1440.png" alt="Inicio del panel a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Menú lateral abierto en móvil</strong> · Administrador<br><span>/dashboard · components/ui/sidebar.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-menu-390.png"><img src="capturas/dashboard-menu-390.png" alt="Menú lateral abierto en móvil a 390 px" loading="lazy"><span>390 px</span></a></div></figure>
+      <h3 class="v-group" id="g-agenda">Agenda</h3>
+        <figure class="v-shot"><figcaption><strong>Agenda, mes actual sin citas</strong> · Administrador<br><span>/agenda · pages/agenda/index.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/agenda-390.png"><img src="capturas/agenda-390.png" alt="Agenda, mes actual sin citas a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/agenda-1440.png"><img src="capturas/agenda-1440.png" alt="Agenda, mes actual sin citas a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Agenda, mes con citas</strong> · Administrador<br><span>/agenda (julio de 2026)</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/agenda-con-citas-390.png"><img src="capturas/agenda-con-citas-390.png" alt="Agenda, mes con citas a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/agenda-con-citas-1440.png"><img src="capturas/agenda-con-citas-1440.png" alt="Agenda, mes con citas a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Agenda, citas del día</strong> · Administrador<br><span>components/calendar/day-details-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/agenda-dia-390.png"><img src="capturas/agenda-dia-390.png" alt="Agenda, citas del día a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/agenda-dia-1440.png"><img src="capturas/agenda-dia-1440.png" alt="Agenda, citas del día a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Agenda, detalle de cita</strong> · Administrador<br><span>components/calendar/view-appointment-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/agenda-cita-detalle-390.png"><img src="capturas/agenda-cita-detalle-390.png" alt="Agenda, detalle de cita a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/agenda-cita-detalle-1440.png"><img src="capturas/agenda-cita-detalle-1440.png" alt="Agenda, detalle de cita a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Agenda, detalle de cita asignada (con "Editar cita")</strong> · Administrador<br><span>components/calendar/view-appointment-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/agenda-cita-detalle-pendiente-390.png"><img src="capturas/agenda-cita-detalle-pendiente-390.png" alt="Agenda, detalle de cita asignada (con "Editar cita") a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/agenda-cita-detalle-pendiente-1440.png"><img src="capturas/agenda-cita-detalle-pendiente-1440.png" alt="Agenda, detalle de cita asignada (con "Editar cita") a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Agenda, editar cita</strong> · Administrador<br><span>components/calendar/edit-appointment-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/agenda-cita-editar-390.png"><img src="capturas/agenda-cita-editar-390.png" alt="Agenda, editar cita a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/agenda-cita-editar-1440.png"><img src="capturas/agenda-cita-editar-1440.png" alt="Agenda, editar cita a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Agenda, agendar cita</strong> · Administrador<br><span>components/calendar/create-appointment-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/agenda-cita-crear-390.png"><img src="capturas/agenda-cita-crear-390.png" alt="Agenda, agendar cita a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/agenda-cita-crear-1440.png"><img src="capturas/agenda-cita-crear-1440.png" alt="Agenda, agendar cita a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Agenda, completar cita (paso 1)</strong> · Administrador<br><span>components/calendar/complete-appointment-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/agenda-cita-completar-390.png"><img src="capturas/agenda-cita-completar-390.png" alt="Agenda, completar cita (paso 1) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/agenda-cita-completar-1440.png"><img src="capturas/agenda-cita-completar-1440.png" alt="Agenda, completar cita (paso 1) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Agenda, completar cita con error de validación</strong> · Administrador<br><span>components/calendar/complete-appointment-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/agenda-cita-completar-validacion-390.png"><img src="capturas/agenda-cita-completar-validacion-390.png" alt="Agenda, completar cita con error de validación a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/agenda-cita-completar-validacion-1440.png"><img src="capturas/agenda-cita-completar-validacion-1440.png" alt="Agenda, completar cita con error de validación a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Agenda, completar cita (paso 2, sin recetas)</strong> · Administrador<br><span>components/calendar/complete-appointment-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/agenda-cita-completar-paso2-390.png"><img src="capturas/agenda-cita-completar-paso2-390.png" alt="Agenda, completar cita (paso 2, sin recetas) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/agenda-cita-completar-paso2-1440.png"><img src="capturas/agenda-cita-completar-paso2-1440.png" alt="Agenda, completar cita (paso 2, sin recetas) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Agenda, completar cita (paso 2, con una receta)</strong> · Administrador<br><span>components/calendar/complete-appointment-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/agenda-cita-completar-receta-390.png"><img src="capturas/agenda-cita-completar-receta-390.png" alt="Agenda, completar cita (paso 2, con una receta) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/agenda-cita-completar-receta-1440.png"><img src="capturas/agenda-cita-completar-receta-1440.png" alt="Agenda, completar cita (paso 2, con una receta) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+      <h3 class="v-group" id="g-pacientes">Pacientes</h3>
+        <figure class="v-shot"><figcaption><strong>Pacientes</strong> · Administrador<br><span>/pacientes · pages/patients/index.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/pacientes-390.png"><img src="capturas/pacientes-390.png" alt="Pacientes a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/pacientes-1440.png"><img src="capturas/pacientes-1440.png" alt="Pacientes a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Pacientes, nuevo paciente</strong> · Administrador<br><span>components/ui/create-patient-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/pacientes-crear-390.png"><img src="capturas/pacientes-crear-390.png" alt="Pacientes, nuevo paciente a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/pacientes-crear-1440.png"><img src="capturas/pacientes-crear-1440.png" alt="Pacientes, nuevo paciente a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Pacientes, editar</strong> · Administrador<br><span>components/ui/edit-patient-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/pacientes-editar-390.png"><img src="capturas/pacientes-editar-390.png" alt="Pacientes, editar a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/pacientes-editar-1440.png"><img src="capturas/pacientes-editar-1440.png" alt="Pacientes, editar a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Pacientes, confirmar eliminación</strong> · Administrador<br><span>components/ui/confirm-delete-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/pacientes-eliminar-390.png"><img src="capturas/pacientes-eliminar-390.png" alt="Pacientes, confirmar eliminación a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/pacientes-eliminar-1440.png"><img src="capturas/pacientes-eliminar-1440.png" alt="Pacientes, confirmar eliminación a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+      <h3 class="v-group" id="g-expedientes">Expedientes clínicos</h3>
+        <figure class="v-shot"><figcaption><strong>Expedientes clínicos</strong> · Administrador<br><span>/expedientes-clinicos · pages/records/index.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/expedientes-390.png"><img src="capturas/expedientes-390.png" alt="Expedientes clínicos a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/expedientes-1440.png"><img src="capturas/expedientes-1440.png" alt="Expedientes clínicos a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Expediente de un paciente</strong> · Administrador<br><span>/expedientes-clinicos/{patientId}</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/expediente-390.png"><img src="capturas/expediente-390.png" alt="Expediente de un paciente a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/expediente-1440.png"><img src="capturas/expediente-1440.png" alt="Expediente de un paciente a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Expediente, formulario de contacto</strong> · Administrador<br><span>components/records/contact-info-table.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/expediente-contacto-form-390.png"><img src="capturas/expediente-contacto-form-390.png" alt="Expediente, formulario de contacto a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/expediente-contacto-form-1440.png"><img src="capturas/expediente-contacto-form-1440.png" alt="Expediente, formulario de contacto a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Expediente, formulario de dirección</strong> · Administrador<br><span>components/records/address-table.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/expediente-direccion-form-390.png"><img src="capturas/expediente-direccion-form-390.png" alt="Expediente, formulario de dirección a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/expediente-direccion-form-1440.png"><img src="capturas/expediente-direccion-form-1440.png" alt="Expediente, formulario de dirección a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Expediente, formulario de datos médicos</strong> · Administrador<br><span>components/records/medical-data-table.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/expediente-medicos-form-390.png"><img src="capturas/expediente-medicos-form-390.png" alt="Expediente, formulario de datos médicos a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/expediente-medicos-form-1440.png"><img src="capturas/expediente-medicos-form-1440.png" alt="Expediente, formulario de datos médicos a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Expediente de un paciente</strong> · Doctor<br><span>/expedientes-clinicos/{patientId}</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/expediente-doctor-390.png"><img src="capturas/expediente-doctor-390.png" alt="Expediente de un paciente a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/expediente-doctor-1440.png"><img src="capturas/expediente-doctor-1440.png" alt="Expediente de un paciente a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+      <h3 class="v-group" id="g-tratamientos">Tratamientos</h3>
+        <figure class="v-shot"><figcaption><strong>Tratamientos</strong> · Administrador<br><span>/tratamientos · pages/tratamientos/index.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/tratamientos-390.png"><img src="capturas/tratamientos-390.png" alt="Tratamientos a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/tratamientos-1440.png"><img src="capturas/tratamientos-1440.png" alt="Tratamientos a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Tratamientos, detalle</strong> · Administrador<br><span>pages/tratamientos/index.blade.php (modal)</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/tratamientos-ver-390.png"><img src="capturas/tratamientos-ver-390.png" alt="Tratamientos, detalle a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/tratamientos-ver-1440.png"><img src="capturas/tratamientos-ver-1440.png" alt="Tratamientos, detalle a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Tratamientos, nuevo</strong> · Administrador<br><span>pages/tratamientos/index.blade.php (modal)</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/tratamientos-crear-390.png"><img src="capturas/tratamientos-crear-390.png" alt="Tratamientos, nuevo a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/tratamientos-crear-1440.png"><img src="capturas/tratamientos-crear-1440.png" alt="Tratamientos, nuevo a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Tratamientos, editar</strong> · Administrador<br><span>pages/tratamientos/index.blade.php (modal)</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/tratamientos-editar-390.png"><img src="capturas/tratamientos-editar-390.png" alt="Tratamientos, editar a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/tratamientos-editar-1440.png"><img src="capturas/tratamientos-editar-1440.png" alt="Tratamientos, editar a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Tratamientos, confirmar eliminación</strong> · Administrador<br><span>pages/tratamientos/index.blade.php (modal)</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/tratamientos-eliminar-390.png"><img src="capturas/tratamientos-eliminar-390.png" alt="Tratamientos, confirmar eliminación a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/tratamientos-eliminar-1440.png"><img src="capturas/tratamientos-eliminar-1440.png" alt="Tratamientos, confirmar eliminación a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+      <h3 class="v-group" id="g-contenido">Gestión de contenido</h3>
+        <figure class="v-shot"><figcaption><strong>Contenido, pestaña Galería</strong> · Administrador<br><span>/contenido · pages/contenido/index.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-galeria-390.png"><img src="capturas/contenido-galeria-390.png" alt="Contenido, pestaña Galería a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-galeria-1440.png"><img src="capturas/contenido-galeria-1440.png" alt="Contenido, pestaña Galería a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, nueva imagen</strong> · Administrador<br><span>pages/contenido/galeria/create-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-galeria-crear-390.png"><img src="capturas/contenido-galeria-crear-390.png" alt="Contenido, nueva imagen a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-galeria-crear-1440.png"><img src="capturas/contenido-galeria-crear-1440.png" alt="Contenido, nueva imagen a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, editar imagen</strong> · Administrador<br><span>pages/contenido/galeria/edit-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-galeria-editar-390.png"><img src="capturas/contenido-galeria-editar-390.png" alt="Contenido, editar imagen a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-galeria-editar-1440.png"><img src="capturas/contenido-galeria-editar-1440.png" alt="Contenido, editar imagen a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, eliminar imagen</strong> · Administrador<br><span>pages/contenido/galeria/ (modal)</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-galeria-eliminar-390.png"><img src="capturas/contenido-galeria-eliminar-390.png" alt="Contenido, eliminar imagen a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-galeria-eliminar-1440.png"><img src="capturas/contenido-galeria-eliminar-1440.png" alt="Contenido, eliminar imagen a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, pestaña Promociones</strong> · Administrador<br><span>/contenido</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-promociones-390.png"><img src="capturas/contenido-promociones-390.png" alt="Contenido, pestaña Promociones a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-promociones-1440.png"><img src="capturas/contenido-promociones-1440.png" alt="Contenido, pestaña Promociones a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, nueva promoción</strong> · Administrador<br><span>pages/contenido/promociones/create-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-promociones-crear-390.png"><img src="capturas/contenido-promociones-crear-390.png" alt="Contenido, nueva promoción a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-promociones-crear-1440.png"><img src="capturas/contenido-promociones-crear-1440.png" alt="Contenido, nueva promoción a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, editar promoción</strong> · Administrador<br><span>pages/contenido/promociones/edit-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-promociones-editar-390.png"><img src="capturas/contenido-promociones-editar-390.png" alt="Contenido, editar promoción a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-promociones-editar-1440.png"><img src="capturas/contenido-promociones-editar-1440.png" alt="Contenido, editar promoción a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, eliminar promoción</strong> · Administrador<br><span>pages/contenido/promociones/ (modal)</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-promociones-eliminar-390.png"><img src="capturas/contenido-promociones-eliminar-390.png" alt="Contenido, eliminar promoción a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-promociones-eliminar-1440.png"><img src="capturas/contenido-promociones-eliminar-1440.png" alt="Contenido, eliminar promoción a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, pestaña Certificaciones</strong> · Administrador<br><span>/contenido</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-certificaciones-390.png"><img src="capturas/contenido-certificaciones-390.png" alt="Contenido, pestaña Certificaciones a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-certificaciones-1440.png"><img src="capturas/contenido-certificaciones-1440.png" alt="Contenido, pestaña Certificaciones a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, nueva certificación</strong> · Administrador<br><span>pages/contenido/certificaciones/create-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-certificaciones-crear-390.png"><img src="capturas/contenido-certificaciones-crear-390.png" alt="Contenido, nueva certificación a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-certificaciones-crear-1440.png"><img src="capturas/contenido-certificaciones-crear-1440.png" alt="Contenido, nueva certificación a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, editar certificación</strong> · Administrador<br><span>pages/contenido/certificaciones/edit-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-certificaciones-editar-390.png"><img src="capturas/contenido-certificaciones-editar-390.png" alt="Contenido, editar certificación a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-certificaciones-editar-1440.png"><img src="capturas/contenido-certificaciones-editar-1440.png" alt="Contenido, editar certificación a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, eliminar certificación</strong> · Administrador<br><span>pages/contenido/certificaciones/ (modal)</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-certificaciones-eliminar-390.png"><img src="capturas/contenido-certificaciones-eliminar-390.png" alt="Contenido, eliminar certificación a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-certificaciones-eliminar-1440.png"><img src="capturas/contenido-certificaciones-eliminar-1440.png" alt="Contenido, eliminar certificación a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, pestaña Testimonios</strong> · Administrador<br><span>/contenido</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-testimonios-390.png"><img src="capturas/contenido-testimonios-390.png" alt="Contenido, pestaña Testimonios a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-testimonios-1440.png"><img src="capturas/contenido-testimonios-1440.png" alt="Contenido, pestaña Testimonios a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, editar testimonio</strong> · Administrador<br><span>pages/contenido/testimonios/edit-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-testimonios-editar-390.png"><img src="capturas/contenido-testimonios-editar-390.png" alt="Contenido, editar testimonio a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-testimonios-editar-1440.png"><img src="capturas/contenido-testimonios-editar-1440.png" alt="Contenido, editar testimonio a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Contenido, eliminar testimonio</strong> · Administrador<br><span>pages/contenido/testimonios/ (modal)</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/contenido-testimonios-eliminar-390.png"><img src="capturas/contenido-testimonios-eliminar-390.png" alt="Contenido, eliminar testimonio a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/contenido-testimonios-eliminar-1440.png"><img src="capturas/contenido-testimonios-eliminar-1440.png" alt="Contenido, eliminar testimonio a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+      <h3 class="v-group" id="g-usuarios">Usuarios</h3>
+        <figure class="v-shot"><figcaption><strong>Usuarios</strong> · Administrador<br><span>/usuarios · pages/usuarios/index.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/usuarios-390.png"><img src="capturas/usuarios-390.png" alt="Usuarios a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/usuarios-1440.png"><img src="capturas/usuarios-1440.png" alt="Usuarios a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Usuarios, nuevo usuario</strong> · Administrador<br><span>components/ui/create-user-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/usuarios-crear-390.png"><img src="capturas/usuarios-crear-390.png" alt="Usuarios, nuevo usuario a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/usuarios-crear-1440.png"><img src="capturas/usuarios-crear-1440.png" alt="Usuarios, nuevo usuario a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Usuarios, editar</strong> · Administrador<br><span>components/ui/edit-user-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/usuarios-editar-390.png"><img src="capturas/usuarios-editar-390.png" alt="Usuarios, editar a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/usuarios-editar-1440.png"><img src="capturas/usuarios-editar-1440.png" alt="Usuarios, editar a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Usuarios, confirmar eliminación</strong> · Administrador<br><span>components/ui/confirm-delete-modal.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/usuarios-eliminar-390.png"><img src="capturas/usuarios-eliminar-390.png" alt="Usuarios, confirmar eliminación a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/usuarios-eliminar-1440.png"><img src="capturas/usuarios-eliminar-1440.png" alt="Usuarios, confirmar eliminación a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+      <h3 class="v-group" id="g-errores">Rechazos y errores</h3>
+        <figure class="v-shot"><figcaption><strong>Página no encontrada</strong> · público<br><span>ruta inexistente · página por defecto de Laravel</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/error-404-390.png"><img src="capturas/error-404-390.png" alt="Página no encontrada a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/error-404-1440.png"><img src="capturas/error-404-1440.png" alt="Página no encontrada a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Acceso denegado (paciente en ruta de staff)</strong> · Paciente<br><span>/expedientes-clinicos · página por defecto de Laravel</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/error-403-staff-390.png"><img src="capturas/error-403-staff-390.png" alt="Acceso denegado (paciente en ruta de staff) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/error-403-staff-1440.png"><img src="capturas/error-403-staff-1440.png" alt="Acceso denegado (paciente en ruta de staff) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Acceso denegado (asistente en ruta de administrador)</strong> · Asistente<br><span>/agenda · respuesta JSON del middleware only.admin</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/error-403-admin-390.png"><img src="capturas/error-403-admin-390.png" alt="Acceso denegado (asistente en ruta de administrador) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/error-403-admin-1440.png"><img src="capturas/error-403-admin-1440.png" alt="Acceso denegado (asistente en ruta de administrador) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+  </section>
+
+  <section class="v-section" id="movimiento">
+    <h2>Movimiento</h2>
+    <ul class="v-motion">
+      <li><strong>Transiciones de color y sombra</strong>: <code>transition</code>, <code>transition-all</code> y <code>transition-colors</code> (150 ms por defecto, 200 y 300 ms declarados) en botones, enlaces y tarjetas.</li>
+      <li><strong>Escala al pasar el puntero</strong>: tarjetas de cita (<code>hover:scale-[1.02]</code>) y logo del sitio público (<code>group-hover:scale-105</code>).</li>
+      <li><strong>Fondo de diálogo</strong>: capa oscura con <code>backdrop-blur-sm</code>.</li>
+      <li><strong>Carga</strong>: <code>animate-spin</code> en 5 lugares.</li>
+      <li class="v-fail">Sin versión para <code>prefers-reduced-motion</code>: ninguna regla en todo <code>resources/</code> (deuda DS12).</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="v-wrap v-foot">
+  <p>Generado por ai-dd para Dentissa el 2026-10-04. Sistema: <code>docs/design/system.md</code>.</p>
+</footer>
+<script>
+(() => {
+  const opts = () => document.querySelectorAll('.opt');
+  const probe = document.createElement('span');
+  probe.style.display = 'none';
+
+  // Color resuelto de un token dentro de la primera .opt (respeta el modo activo).
+  function rgbOf(token) {
+    const host = document.querySelector('.opt');
+    if (!getComputedStyle(host).getPropertyValue(token).trim()) return null;  // token no definido
+    host.appendChild(probe);
+    probe.style.color = `var(${token})`;
+    const m = getComputedStyle(probe).color.match(/[\d.]+/g);
+    probe.remove();
+    return m ? m.slice(0, 3).map(Number) : null;
+  }
+  const lum = ([r, g, b]) => {
+    const c = [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const hex = rgb => '#' + rgb.map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+
+  const tokens = [...document.getElementById('tokens').textContent.matchAll(/(--color-[\w-]+)\s*:/g)]
+    .map(m => m[1]).filter((t, i, a) => a.indexOf(t) === i);
+
+  function paint() {
+    const sw = document.getElementById('swatches');
+    sw.innerHTML = '';
+    for (const t of tokens) {
+      const rgb = rgbOf(t);
+      if (!rgb) continue;
+      const f = document.createElement('figure');
+      f.className = 'v-swatch';
+      f.innerHTML = `<div class="v-chip" style="background:${hex(rgb)}"></div>` +
+                    `<figcaption><code>${t}</code><br>${hex(rgb)}</figcaption>`;
+      sw.appendChild(f);
+    }
+    for (const li of document.querySelectorAll('.v-pair')) {
+      const fg = rgbOf(li.dataset.fg), bg = rgbOf(li.dataset.bg);
+      const min = parseFloat(li.dataset.min);
+      li.querySelectorAll('.v-pair-sample, .v-pair-ratio').forEach(n => n.remove());
+      li.hidden = false;
+      if (!fg || !bg) {
+        if (li.hasAttribute('data-optional')) { li.hidden = true; continue; }
+        li.dataset.ok = 'false';
+        li.insertAdjacentHTML('beforeend', `<span class="v-pair-ratio">falta el token ${!fg ? li.dataset.fg : li.dataset.bg}</span>`);
+        continue;
+      }
+      const r = ratio(fg, bg);
+      li.dataset.ok = String(r >= min);
+      li.insertAdjacentHTML('afterbegin',
+        `<span class="v-pair-sample" aria-hidden="true" style="color:${hex(fg)};background:${hex(bg)};` +
+        `box-shadow:inset 0 0 0 1px ${hex(fg)}33">Aa</span>`);
+      li.insertAdjacentHTML('beforeend',
+        `<span class="v-pair-ratio">${r.toFixed(2)}:1 ${r >= min ? 'cumple' : 'no cumple'} (mín. ${min})</span>`);
+    }
+  }
+
+  function spaceDemo() {
+    const host = document.getElementById('space-demo');
+    const cs = getComputedStyle(host);
+    const rows = [1, 2, 3, 4, 5, 6, 7, 8].map(n => {
+      const v = cs.getPropertyValue(`--space-${n}`).trim();
+      return `<div style="display:flex;align-items:center;gap:var(--space-3)">` +
+        `<span class="t-small" style="flex:none;width:9.5em;white-space:nowrap">--space-${n} ${v}</span>` +
+        `<span style="height:var(--space-3);width:var(--space-${n});background:var(--color-primary);border-radius:2px"></span></div>`;
+    }).join('');
+    const radii = ['sm', 'md', 'lg'].map(r =>
+      `<div style="display:grid;gap:var(--space-1);justify-items:center">` +
+      `<span style="width:64px;height:48px;background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-${r})"></span>` +
+      `<span class="t-small">--radius-${r}</span></div>`).join('');
+    host.innerHTML = `<div class="v-grid"><div style="display:grid;gap:var(--space-2)">${rows}</div>` +
+      `<div style="display:grid;gap:var(--space-5);align-content:start">` +
+      `<div style="display:flex;gap:var(--space-5)">${radii}</div>` +
+      `<div style="display:flex;align-items:center;gap:var(--space-3)">` +
+      `<span style="width:var(--touch-min);height:var(--touch-min);border:var(--border-width) dashed var(--color-text-muted);border-radius:var(--radius-sm)"></span>` +
+      `<span class="t-small">--touch-min ${cs.getPropertyValue('--touch-min').trim()}: objetivo de toque mínimo</span></div></div></div>`;
+  }
+
+  // Las pantallas anchas se dibujan a su ancho real y se escalan al espacio disponible.
+  function fit() {
+    for (const fr of document.querySelectorAll('.v-frame')) {
+      const w = parseFloat(fr.dataset.width) || 390, h = parseFloat(fr.dataset.height) || 720;
+      const vp = fr.querySelector('.v-viewport'), sc = fr.querySelector('.v-scaler');
+      const avail = fr.clientWidth - 2;
+      const k = Math.min(1, avail / w);
+      sc.style.width = w + 'px';
+      sc.style.setProperty('--frame-h', h + 'px');
+      sc.style.transform = `scale(${k})`;
+      vp.style.width = Math.ceil(w * k + 2) + 'px';
+      vp.style.height = Math.ceil(h * k + 2) + 'px';
+      sc.querySelector('.opt').style.minHeight = h + 'px';
+    }
+  }
+
+  const hasDark = /\[data-scheme="dark"\]\s*\{[^}]*--color/.test(document.getElementById('tokens').textContent);
+  const bScheme = document.getElementById('toggle-scheme');
+  if (!hasDark) bScheme.hidden = true;
+  bScheme.addEventListener('click', () => {
+    const on = bScheme.getAttribute('aria-pressed') !== 'true';
+    bScheme.setAttribute('aria-pressed', String(on));
+    opts().forEach(o => on ? o.setAttribute('data-scheme', 'dark') : o.removeAttribute('data-scheme'));
+    paint();
+  });
+  const bMotion = document.getElementById('toggle-motion');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const setMotion = on => {
+    bMotion.setAttribute('aria-pressed', String(on));
+    opts().forEach(o => on ? o.setAttribute('data-motion', 'reduced') : o.removeAttribute('data-motion'));
+  };
+  bMotion.addEventListener('click', () => setMotion(bMotion.getAttribute('aria-pressed') !== 'true'));
+  if (reduced) setMotion(true);
+
+  paint(); spaceDemo(); fit();
+  addEventListener('resize', fit);
+})();
+</script>
+</body>
+</html>
