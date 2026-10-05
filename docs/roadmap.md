@@ -51,7 +51,6 @@ Para pasar de **prototipo** a **MVP** con una clínica real:
 - Portal del paciente sin pantallas; módulo `Estadisticas` vacío.
 - Arquitectura: fugas de capa (`TreatmentsService`, `LoginService`), imports cruzados sobrantes, grafías `Aplication`/`Application` y `Http`/`HTTP`, posible doble registro de listeners.
 - Configuración: `env()` fuera de `config/` (Twilio, Brevo), variables `TWILIO_*`, `BREVO_*` y `SANCTUM_*` ausentes de `.env.example`, `.env.example` con SQLite y phpredis.
-- CI de seguridad inactivo: activar `.ai/ci/ai-dd.yml` (moverlo a `.github/workflows/`) cuando gitleaks, semgrep, composer/npm audit y trivy pasen sobre el código actual.
 - Calidad: Pint no se aplicaba (154 archivos sin salto de línea final, 57 con `!$x`); `assertStatus(N)` en lugar de asserts específicos; restos del skeleton en `tests/Pest.php` y `DatabaseSeeder`.
 - Documentación: README y `ARCHITECTURE.md` declaran PHP 8.2 y PHPUnit; `Docker.md` usa un nombre de contenedor incorrecto.
 - `features/QRModule/` quedó migrado a `docs/specs/013-codigos-qr-por-cita/`; se puede borrar el original.
