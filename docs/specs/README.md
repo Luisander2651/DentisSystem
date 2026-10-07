@@ -30,6 +30,7 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 | 013 | [Código QR por cita](013-codigos-qr-por-cita/spec.md) | Appointments | approved | — | — | — |
 | 014 | [Control de acceso y errores sin detalles internos](014-control-de-acceso-y-errores/spec.md) | Patients, Appointments, AppointmentTracking, ContentManagement | released (v0.1.0) | — | — | — |
 | 015 | [Despliegue de producción en el VPS](015-primer-despliegue-vps/spec.md) | Infraestructura, whatsApp, Email, Appointments, Auth | released (v0.1.0) | — | — | — |
+| 016 | [Sistema de diseño aplicado](016-sistema-de-diseno-aplicado/spec.md) | Interfaz (todas las vistas), Core | approved | — | — | — |
 
 ## Pendientes sin spec
 - **Dashboard por rol** (`/dashboard`, accesos rápidos): pantalla de navegación, sin reglas de negocio propias.

@@ -24,7 +24,7 @@ backups ni un rollback probado, y las herramientas de build arrastran vulnerabil
 y altas cuya excepción (EX1) vence con este despliegue. Afecta al dueño del repositorio, que
 opera el servidor, y a cualquier persona que visite el sitio. Sin resolverlo no se puede liberar
 ninguna versión a producción (P12). Esta spec cubre la primera parte del objetivo 4 del roadmap:
-las alertas y la retención de logs (OB7, OB8) quedan fuera, en la spec 016. Retira los datos
+las alertas y la retención de logs (OB7, OB8) quedan fuera, en la spec 017. Retira los datos
 personales de todos los logs que cita OB2 (RS9), pero de las trazas solo las de whatsApp, así que
 atiende OB10 **parcialmente** (de Auth solo el controlador del restablecimiento; el resto queda en Pendientes); el resto de riesgos citados, por
 completo.
@@ -61,7 +61,7 @@ completo.
 - [x] CA19 · Dado producción con su dominio configurado, cuando alguien pide restablecer su contraseña, entonces el enlace del correo apunta a `https://dentissapp.com/…` (el dominio configurado del sitio) y no a `localhost`.
 
 ## Fuera de alcance
-- Alertas de tasa de errores 5xx y de logins fallidos, y retención del almacén de logs (OB7, OB8): spec 016.
+- Alertas de tasa de errores 5xx y de logins fallidos, y retención del almacén de logs (OB7, OB8): spec 017.
 - Cargar datos reales de pacientes: requiere cerrar antes la comprobación de propiedad del recurso, el cifrado en reposo de los datos de salud y las obligaciones de la LFPDPPP (restricciones de la constitución).
 - Copia de los backups fuera del droplet y cifrado de volumen y backups (roadmap, Próxima etapa).
 - Entorno de staging y despliegue automático desde CI.
@@ -90,7 +90,7 @@ completo.
 
 ## Cobertura de riesgos
 Cada corrección de cada riesgo citado (IDs de `docs/deployment.md`, `docs/observability.md` y
-`docs/security.md`). OB7 y OB8 quedan **fuera** (spec 016); OB10 se atiende **parcialmente** (solo
+`docs/security.md`). OB7 y OB8 quedan **fuera** (spec 017); OB10 se atiende **parcialmente** (solo
 whatsApp); el resto, dentro.
 
 | Corrección | Alcance | Criterios / motivo y destino |
@@ -107,9 +107,9 @@ whatsApp); el resto, dentro.
 | OB5.a `LOG_LEVEL=info` por defecto | dentro | CA8 (traída del objetivo 5, decisión del usuario, 2026-09-29) |
 | OB5.b `APP_DEBUG=false` por defecto | dentro | CA7, CA8 |
 | OB6.a Grafana y Loki no publicados; acceso por túnel SSH | dentro | CA9 |
-| OB7.a Alerta de tasa de errores 5xx | fuera | monitoreo separado del despliegue (decisión del usuario, 2026-09-29) → spec 016 |
-| OB7.b Alerta de logins fallidos | fuera | monitoreo separado del despliegue (decisión del usuario, 2026-09-29) → spec 016 |
-| OB8.a Retención de Loki | fuera | monitoreo separado del despliegue (decisión del usuario, 2026-09-29) → spec 016 |
+| OB7.a Alerta de tasa de errores 5xx | fuera | monitoreo separado del despliegue (decisión del usuario, 2026-09-29) → spec 017 |
+| OB7.b Alerta de logins fallidos | fuera | monitoreo separado del despliegue (decisión del usuario, 2026-09-29) → spec 017 |
+| OB8.a Retención de Loki | fuera | monitoreo separado del despliegue (decisión del usuario, 2026-09-29) → spec 017 |
 | OB9.a `/up` comprueba PostgreSQL y Redis | dentro | CA11 |
 | RS6.a Cabeceras CSP, HSTS, X-Frame-Options y X-Content-Type-Options | dentro | CA4, CA5 |
 | RS6.b CORS restrictivo | dentro | CA6 |
@@ -139,7 +139,7 @@ operaciones sobre producción dejen rastro:
 Ninguna.
 
 ## Supuestos
-- La spec se divide en 015 (despliegue) y 016 (alertas y retención de logs) (decisión del usuario, 2026-09-29). Aun así la 015 tiene 19 criterios; se mantiene junta porque todos son requisitos del primer despliegue (decisión del usuario, 2026-09-29).
+- La spec se divide en 015 (despliegue) y 017 (alertas y retención de logs) (decisión del usuario, 2026-09-29). Aun así la 015 tiene 19 criterios; se mantiene junta porque todos son requisitos del primer despliegue (decisión del usuario, 2026-09-29).
 - Solo datos ficticios en esta versión (decisión del usuario, 2026-09-29).
 - La app ya corre en `dentissapp.com` sin usuarios, así que el despliegue no necesita ventana de mantenimiento (confirmado por el usuario, 2026-09-29).
 - Backups solo en el droplet, 7 días (decisión del usuario, 2026-09-29).
@@ -177,3 +177,4 @@ Ninguna.
 | 2026-09-29 | Editada: CA18 incluye el controlador que recibe la solicitud de restablecimiento y los fallos procesados en segundo plano | `/analyze` ronda 3: A53 y A54 |
 | 2026-09-29 | Reaprobada tras la edición de la ronda 3 | Aprobación del usuario |
 | 2026-09-29 | Aclarada la redacción de CA18: trazas del sistema en segundo plano solo sin argumentos ni datos personales (decisión del usuario, 2026-09-29) | `/analyze` ronda 4: A61 |
+| 2026-10-06 | Referencia corregida: la spec de monitoreo (alertas y retención de logs) pasa de 016 a 017, porque el número 016 lo toma la spec del sistema de diseño. Sin cambios de alcance ni de criterios | `/specify --edit`; decisión del usuario |
