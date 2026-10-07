@@ -39,3 +39,6 @@ prod-files.md
 
 # Spec 015: deploy state of the production clone (deploy.sh, rollback.sh)
 /.deploy
+
+# Diagramas C4 y ER del microservicio de asistencias (solo local)
+/docs/arquitectura-microservicio-asistencias.html
