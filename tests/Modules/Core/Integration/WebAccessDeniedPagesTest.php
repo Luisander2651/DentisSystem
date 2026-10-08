@@ -68,7 +68,7 @@ function actAsDeniedActor(CoreIntegrationTestCase $test, string $actor): UserMod
     };
 }
 
-function expectNothingInternal(TestResponse $response, string $screen): void
+function expectNoAccessDeniedDetails(TestResponse $response, string $screen): void
 {
     foreach (DENIED_INTERNAL_MESSAGES as $message) {
         expect($response->getContent())->not->toContain($message);
@@ -104,7 +104,7 @@ it('shows the "Sin permiso" page to an actor without permission (abuse)', functi
     $response->assertSee('No tienes permiso para ver esta pantalla');
     $response->assertSee('href="'.route('dashboard').'"', false);
     $response->assertSee('lang="es"', false);
-    expectNothingInternal($response, $screen);
+    expectNoAccessDeniedDetails($response, $screen);
 })->with(deniedScreensByActor())->skip('016: pendiente de T070');
 
 it('answers a fixed Spanish body when an actor without permission asks for JSON (abuse)', function (string $actor, string $screen) {
