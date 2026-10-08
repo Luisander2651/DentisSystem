@@ -4,7 +4,9 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "test:ui": "node tests/Browser/ui-audit.mjs",
+        "brand:assets": "node tests/Browser/make-brand-assets.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

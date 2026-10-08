@@ -1,0 +1,884 @@
+{
+    "$comment": "Inventario de ui-audit (spec 016). screen: pantalla para --only (sin sus diálogos). dialog: nombre del diálogo para --only, en cada pantalla que lo monta. Las fechas son las de UiAuditSeeder (julio de 2026).",
+    "now": "2026-07-22T10:00:00-06:00",
+    "timezone": "America/Mexico_City",
+    "locale": "es-MX",
+    "entries": [
+        {
+            "id": "inicio",
+            "screen": "inicio",
+            "path": "/"
+        },
+        {
+            "id": "inicio-menu",
+            "screen": "inicio",
+            "path": "/",
+            "widths": [
+                390
+            ],
+            "steps": [
+                {
+                    "click": "#mobile-menu-btn"
+                },
+                {
+                    "waitFor": "#mobile-menu"
+                }
+            ]
+        },
+        {
+            "id": "acerca",
+            "screen": "acerca",
+            "path": "/acerca-de-nosotros"
+        },
+        {
+            "id": "galeria",
+            "screen": "galeria",
+            "path": "/galeria"
+        },
+        {
+            "id": "galeria-visor",
+            "screen": "galeria",
+            "dialog": "visor-galeria",
+            "dialogSelector": "#gallery-lightbox",
+            "path": "/galeria",
+            "steps": [
+                {
+                    "click": "[data-gallery-list] > :first-child"
+                }
+            ]
+        },
+        {
+            "id": "contacto",
+            "screen": "contacto",
+            "path": "/contacto"
+        },
+        {
+            "id": "login",
+            "screen": "login",
+            "path": "/login"
+        },
+        {
+            "id": "register",
+            "screen": "register",
+            "path": "/register"
+        },
+        {
+            "id": "forgot-password",
+            "screen": "forgot-password",
+            "path": "/forgot-password"
+        },
+        {
+            "id": "reset-password",
+            "screen": "reset-password",
+            "path": "/reset-password?token=token-de-prueba&email=paciente%40ui-audit.dentissa.test"
+        },
+        {
+            "id": "reset-password-sin-token",
+            "screen": "reset-password",
+            "path": "/reset-password"
+        },
+        {
+            "id": "logout",
+            "screen": "logout",
+            "path": "/logout",
+            "role": "paciente"
+        },
+        {
+            "id": "dashboard-administrador",
+            "screen": "dashboard",
+            "path": "/dashboard",
+            "role": "administrador"
+        },
+        {
+            "id": "dashboard-asistente",
+            "screen": "dashboard",
+            "path": "/dashboard",
+            "role": "asistente"
+        },
+        {
+            "id": "dashboard-doctor",
+            "screen": "dashboard",
+            "path": "/dashboard",
+            "role": "doctor"
+        },
+        {
+            "id": "dashboard-paciente",
+            "screen": "dashboard",
+            "path": "/dashboard",
+            "role": "paciente"
+        },
+        {
+            "id": "dashboard-menu",
+            "screen": "dashboard",
+            "path": "/dashboard",
+            "role": "administrador",
+            "widths": [
+                390
+            ],
+            "steps": [
+                {
+                    "click": "[data-sidebar-toggle]"
+                },
+                {
+                    "waitFor": "[data-sidebar-menu]"
+                }
+            ]
+        },
+        {
+            "id": "dashboard-crear-paciente",
+            "screen": "dashboard",
+            "dialog": "crear-paciente",
+            "dialogSelector": "#patients-create-modal",
+            "path": "/dashboard",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-create-patient-open]"
+                }
+            ]
+        },
+        {
+            "id": "dashboard-crear-usuario",
+            "screen": "dashboard",
+            "dialog": "crear-usuario",
+            "dialogSelector": "#users-create-modal",
+            "path": "/dashboard",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-create-user-open]"
+                }
+            ]
+        },
+        {
+            "id": "agenda",
+            "screen": "agenda",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "#next-month"
+                }
+            ]
+        },
+        {
+            "id": "agenda-con-citas",
+            "screen": "agenda",
+            "path": "/agenda",
+            "role": "administrador"
+        },
+        {
+            "id": "agenda-dia",
+            "screen": "agenda",
+            "dialog": "citas-del-dia",
+            "dialogSelector": "#day-details-modal",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(24)"
+                }
+            ],
+            "widths": [
+                1440
+            ]
+        },
+        {
+            "id": "agenda-cita-detalle",
+            "screen": "agenda",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(8)"
+                },
+                {
+                    "click": "[data-view-appointment-trigger][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-detalle-pendiente",
+            "screen": "agenda",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(24)"
+                },
+                {
+                    "click": "[data-view-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-editar",
+            "screen": "agenda",
+            "dialog": "editar-cita",
+            "dialogSelector": "[data-edit-appointment-modal]",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(24)"
+                },
+                {
+                    "click": "[data-view-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                },
+                {
+                    "click": "[data-view-appointment-edit]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-crear",
+            "screen": "agenda",
+            "dialog": "nueva-cita",
+            "dialogSelector": "[data-create-appointment-modal]",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-create-appointment-open]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-completar",
+            "screen": "agenda",
+            "dialog": "completar-cita",
+            "dialogSelector": "[data-complete-appointment-modal]",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(24)"
+                },
+                {
+                    "click": "[data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-completar-validacion",
+            "screen": "agenda",
+            "dialog": "completar-cita",
+            "dialogSelector": "[data-complete-appointment-modal]",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(24)"
+                },
+                {
+                    "click": "[data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                },
+                {
+                    "click": "[data-complete-appointment-next]"
+                },
+                {
+                    "waitFor": "[data-complete-appointment-error]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-completar-paso2",
+            "screen": "agenda",
+            "dialog": "completar-cita",
+            "dialogSelector": "[data-complete-appointment-modal]",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(24)"
+                },
+                {
+                    "click": "[data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                },
+                {
+                    "fill": "[data-complete-appointment-reason]",
+                    "value": "Revisión de rutina"
+                },
+                {
+                    "fill": "[data-complete-appointment-symptoms]",
+                    "value": "sensibilidad"
+                },
+                {
+                    "fill": "[data-complete-appointment-diagnosis]",
+                    "value": "Sin hallazgos"
+                },
+                {
+                    "fill": "[data-complete-appointment-procedure]",
+                    "value": "Limpieza"
+                },
+                {
+                    "click": "[data-complete-appointment-next]"
+                },
+                {
+                    "waitFor": "[data-complete-appointment-step=\"2\"]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-completar-receta",
+            "screen": "agenda",
+            "dialog": "completar-cita",
+            "dialogSelector": "[data-complete-appointment-modal]",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(24)"
+                },
+                {
+                    "click": "[data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                },
+                {
+                    "fill": "[data-complete-appointment-reason]",
+                    "value": "Revisión de rutina"
+                },
+                {
+                    "fill": "[data-complete-appointment-symptoms]",
+                    "value": "sensibilidad"
+                },
+                {
+                    "fill": "[data-complete-appointment-diagnosis]",
+                    "value": "Sin hallazgos"
+                },
+                {
+                    "fill": "[data-complete-appointment-procedure]",
+                    "value": "Limpieza"
+                },
+                {
+                    "click": "[data-complete-appointment-next]"
+                },
+                {
+                    "waitFor": "[data-complete-appointment-step=\"2\"]"
+                },
+                {
+                    "click": "[data-complete-appointment-add-prescription]"
+                },
+                {
+                    "waitFor": "[data-prescription-medication]"
+                }
+            ]
+        },
+        {
+            "id": "pacientes",
+            "screen": "pacientes",
+            "path": "/pacientes",
+            "role": "administrador"
+        },
+        {
+            "id": "pacientes-crear",
+            "screen": "pacientes",
+            "dialog": "crear-paciente",
+            "dialogSelector": "#patients-create-modal",
+            "path": "/pacientes",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-create-patient-open]"
+                }
+            ]
+        },
+        {
+            "id": "pacientes-editar",
+            "screen": "pacientes",
+            "dialog": "editar-paciente",
+            "dialogSelector": "#patients-edit-modal",
+            "path": "/pacientes",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-patient-edit][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                }
+            ]
+        },
+        {
+            "id": "pacientes-eliminar",
+            "screen": "pacientes",
+            "dialog": "confirmar-eliminacion",
+            "dialogSelector": "#patients-delete-modal",
+            "path": "/pacientes",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-patient-delete][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                }
+            ]
+        },
+        {
+            "id": "expedientes",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos",
+            "role": "administrador"
+        },
+        {
+            "id": "expediente",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "administrador"
+        },
+        {
+            "id": "expediente-contacto-form",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-record-open-contact-form]"
+                }
+            ]
+        },
+        {
+            "id": "expediente-direccion-form",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-record-open-address-form]"
+                }
+            ]
+        },
+        {
+            "id": "expediente-medicos-form",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-record-open-medical-form]"
+                }
+            ]
+        },
+        {
+            "id": "expediente-asistente",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "asistente"
+        },
+        {
+            "id": "expediente-doctor",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "doctor"
+        },
+        {
+            "id": "expediente-administrador-cita-detalle",
+            "screen": "expedientes",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-record-view-appointment][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
+                }
+            ]
+        },
+        {
+            "id": "expediente-administrador-eliminar",
+            "screen": "expedientes",
+            "dialog": "confirmar-eliminacion",
+            "dialogSelector": "#record-delete-modal",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-record-delete-contact]"
+                }
+            ]
+        },
+        {
+            "id": "expediente-asistente-cita-detalle",
+            "screen": "expedientes",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "asistente",
+            "steps": [
+                {
+                    "click": "[data-record-view-appointment][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
+                }
+            ]
+        },
+        {
+            "id": "expediente-asistente-eliminar",
+            "screen": "expedientes",
+            "dialog": "confirmar-eliminacion",
+            "dialogSelector": "#record-delete-modal",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "asistente",
+            "steps": [
+                {
+                    "click": "[data-record-delete-contact]"
+                }
+            ]
+        },
+        {
+            "id": "expediente-doctor-cita-detalle",
+            "screen": "expedientes",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "doctor",
+            "steps": [
+                {
+                    "click": "[data-record-view-appointment][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
+                }
+            ]
+        },
+        {
+            "id": "tratamientos",
+            "screen": "tratamientos",
+            "path": "/tratamientos",
+            "role": "administrador"
+        },
+        {
+            "id": "tratamientos-ver",
+            "screen": "tratamientos",
+            "dialog": "ver-tratamiento",
+            "dialogSelector": "#treatments-view-modal",
+            "path": "/tratamientos",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-treatments-view]"
+                }
+            ]
+        },
+        {
+            "id": "tratamientos-crear",
+            "screen": "tratamientos",
+            "dialog": "crear-tratamiento",
+            "dialogSelector": "#treatments-create-modal",
+            "path": "/tratamientos",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-treatments-create-open]"
+                }
+            ]
+        },
+        {
+            "id": "tratamientos-editar",
+            "screen": "tratamientos",
+            "dialog": "editar-tratamiento",
+            "dialogSelector": "#treatments-edit-modal",
+            "path": "/tratamientos",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-treatments-edit]"
+                }
+            ]
+        },
+        {
+            "id": "tratamientos-eliminar",
+            "screen": "tratamientos",
+            "dialog": "eliminar-tratamiento",
+            "dialogSelector": "#treatments-delete-modal",
+            "path": "/tratamientos",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-treatments-delete]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-galeria",
+            "screen": "contenido-galeria",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"galeria\"]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-galeria-crear",
+            "screen": "contenido-galeria",
+            "dialog": "crear-imagen",
+            "dialogSelector": "#gallery-create-modal",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"galeria\"]"
+                },
+                {
+                    "click": "[data-gallery-create-open]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-galeria-editar",
+            "screen": "contenido-galeria",
+            "dialog": "editar-imagen",
+            "dialogSelector": "#gallery-edit-modal",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"galeria\"]"
+                },
+                {
+                    "click": "[data-gallery-edit]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-galeria-eliminar",
+            "screen": "contenido-galeria",
+            "dialog": "eliminar-imagen",
+            "dialogSelector": "#gallery-delete-modal",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"galeria\"]"
+                },
+                {
+                    "click": "[data-gallery-delete]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-promociones",
+            "screen": "contenido-promociones",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"promociones\"]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-promociones-crear",
+            "screen": "contenido-promociones",
+            "dialog": "crear-promocion",
+            "dialogSelector": "#promotions-create-modal",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"promociones\"]"
+                },
+                {
+                    "click": "[data-promotions-create-open]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-promociones-editar",
+            "screen": "contenido-promociones",
+            "dialog": "editar-promocion",
+            "dialogSelector": "#promotions-edit-modal",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"promociones\"]"
+                },
+                {
+                    "click": "[data-promotions-edit]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-promociones-eliminar",
+            "screen": "contenido-promociones",
+            "dialog": "eliminar-promocion",
+            "dialogSelector": "#promotions-delete-modal",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"promociones\"]"
+                },
+                {
+                    "click": "[data-promotions-delete]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-certificaciones",
+            "screen": "contenido-certificaciones",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"certificaciones\"]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-certificaciones-crear",
+            "screen": "contenido-certificaciones",
+            "dialog": "crear-certificacion",
+            "dialogSelector": "#certifications-create-modal",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"certificaciones\"]"
+                },
+                {
+                    "click": "[data-certifications-create-open]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-certificaciones-editar",
+            "screen": "contenido-certificaciones",
+            "dialog": "editar-certificacion",
+            "dialogSelector": "#certifications-edit-modal",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"certificaciones\"]"
+                },
+                {
+                    "click": "[data-certifications-edit]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-certificaciones-eliminar",
+            "screen": "contenido-certificaciones",
+            "dialog": "eliminar-certificacion",
+            "dialogSelector": "#certifications-delete-modal",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"certificaciones\"]"
+                },
+                {
+                    "click": "[data-certifications-delete]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-testimonios",
+            "screen": "contenido-testimonios",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"testimonios\"]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-testimonios-editar",
+            "screen": "contenido-testimonios",
+            "dialog": "editar-testimonio",
+            "dialogSelector": "#testimonials-edit-modal",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"testimonios\"]"
+                },
+                {
+                    "click": "[data-testimonials-edit]"
+                }
+            ]
+        },
+        {
+            "id": "contenido-testimonios-eliminar",
+            "screen": "contenido-testimonios",
+            "dialog": "eliminar-testimonio",
+            "dialogSelector": "#testimonials-delete-modal",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"testimonios\"]"
+                },
+                {
+                    "click": "[data-testimonials-delete]"
+                }
+            ]
+        },
+        {
+            "id": "usuarios",
+            "screen": "usuarios",
+            "path": "/usuarios",
+            "role": "administrador"
+        },
+        {
+            "id": "usuarios-crear",
+            "screen": "usuarios",
+            "dialog": "crear-usuario",
+            "dialogSelector": "#users-create-modal",
+            "path": "/usuarios",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-create-user-open]"
+                }
+            ]
+        },
+        {
+            "id": "usuarios-editar",
+            "screen": "usuarios",
+            "dialog": "editar-usuario",
+            "dialogSelector": "#users-edit-modal",
+            "path": "/usuarios",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-user-edit][data-user-id=\"9dc7104c-d479-5b65-b39d-5901c84d0415\"]"
+                }
+            ]
+        },
+        {
+            "id": "usuarios-eliminar",
+            "screen": "usuarios",
+            "dialog": "confirmar-eliminacion",
+            "dialogSelector": "#users-delete-modal",
+            "path": "/usuarios",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-user-delete][data-user-id=\"9dc7104c-d479-5b65-b39d-5901c84d0415\"]"
+                }
+            ]
+        },
+        {
+            "id": "error-404",
+            "screen": "error-404",
+            "path": "/pagina-que-no-existe"
+        },
+        {
+            "id": "error-404-con-sesion",
+            "screen": "error-404",
+            "path": "/pagina-que-no-existe",
+            "role": "asistente"
+        },
+        {
+            "id": "error-403-staff",
+            "screen": "error-403",
+            "path": "/expedientes-clinicos",
+            "role": "paciente"
+        },
+        {
+            "id": "error-403-admin",
+            "screen": "error-403",
+            "path": "/agenda",
+            "role": "asistente"
+        }
+    ]
+}

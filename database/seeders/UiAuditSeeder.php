@@ -160,7 +160,7 @@ final class UiAuditSeeder extends Seeder
             $user = UserModel::query()->firstOrNew(['email' => self::STAFF_EMAILS[$key]]);
 
             if (! $user->exists) {
-                $user->id = (string) Str::uuid();
+                $user->id = self::stableId('user', $key);
                 $user->password = Hash::make(Str::random(40));
             }
 
@@ -182,7 +182,7 @@ final class UiAuditSeeder extends Seeder
         $patient = PatientModel::query()->firstOrNew(['email' => $email]);
 
         if (! $patient->exists) {
-            $patient->id = (string) Str::uuid();
+            $patient->id = self::stableId('patient', $email);
             $patient->password = Hash::make(Str::random(40));
         }
 
@@ -263,7 +263,7 @@ final class UiAuditSeeder extends Seeder
         ];
 
         foreach ($appointments as $index => [$day, $time, $status, $treatment]) {
-            AppointmentModel::query()->updateOrCreate(['id' => $this->stableId('appointment', $index)], [
+            AppointmentModel::query()->updateOrCreate(['id' => self::stableId('appointment', $index)], [
                 'date' => self::APPOINTMENTS_MONTH.'-'.$day,
                 'time' => $time,
                 'whatsapp_reminder' => false,
@@ -274,17 +274,17 @@ final class UiAuditSeeder extends Seeder
             ]);
         }
 
-        $tracking = AppointmentTrackingModel::query()->updateOrCreate(['id' => $this->stableId('tracking', 0)], [
+        $tracking = AppointmentTrackingModel::query()->updateOrCreate(['id' => self::stableId('tracking', 0)], [
             'reason' => 'Limpieza semestral.',
             'symptoms' => ['sensibilidad'],
             'diagnosis' => 'Acumulación leve de sarro.',
             'procedure_performed' => 'Limpieza con ultrasonido.',
             'observations' => 'Sin complicaciones.',
             'recommendations' => 'Usar hilo dental a diario.',
-            'appointment_id' => $this->stableId('appointment', 0),
+            'appointment_id' => self::stableId('appointment', 0),
         ]);
 
-        AppointmentTrackingPrescriptionModel::query()->updateOrCreate(['id' => $this->stableId('prescription', 0)], [
+        AppointmentTrackingPrescriptionModel::query()->updateOrCreate(['id' => self::stableId('prescription', 0)], [
             'medication' => 'Ibuprofeno 400 mg',
             'dosage' => '1 tableta',
             'duration_days' => 3,
@@ -373,8 +373,11 @@ final class UiAuditSeeder extends Seeder
         return '/storage/'.self::IMAGE_DIRECTORY.'/';
     }
 
-    private function stableId(string $kind, int $index): string
+    /**
+     * The same id on every database, so screens.json can address a seeded record by its URL.
+     */
+    public static function stableId(string $kind, int|string $key): string
     {
-        return Uuid::uuid5(Uuid::NAMESPACE_URL, 'https://'.self::EMAIL_DOMAIN.'/'.$kind.'/'.$index)->toString();
+        return Uuid::uuid5(Uuid::NAMESPACE_URL, 'https://'.self::EMAIL_DOMAIN.'/'.$kind.'/'.$key)->toString();
     }
 }
