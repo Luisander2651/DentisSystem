@@ -24,6 +24,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { IN_PAGE_LIBRARY, decodePng, toneRange } from './audit-lib.mjs';
+
 const here = dirname(fileURLToPath(import.meta.url));
 const CHECK_MODULES = ['composition', 'global', 'dialogs', 'screens', 'a11y'];
 const ROLES = ['administrador', 'asistente', 'doctor', 'paciente'];
@@ -97,6 +99,10 @@ class Page {
 
     #lastActivity = Date.now();
 
+    #styles = false;
+
+    #responder = null;
+
     consoleErrors = [];
 
     /** Seconds the API asked to wait (429), or null when it never limited this page. */
@@ -129,6 +135,21 @@ class Page {
             } else if (method === 'Network.loadingFinished' || method === 'Network.loadingFailed') {
                 this.#inflight.delete(params.requestId);
                 this.#lastActivity = Date.now();
+            } else if (method === 'Fetch.requestPaused') {
+                const answer = this.#responder?.(params.request) ?? null;
+
+                if (answer === null) {
+                    this.send('Fetch.continueRequest', { requestId: params.requestId }).catch(() => {});
+                } else if (answer.fail) {
+                    this.send('Fetch.failRequest', { requestId: params.requestId, errorReason: 'InternetDisconnected' }).catch(() => {});
+                } else {
+                    this.send('Fetch.fulfillRequest', {
+                        requestId: params.requestId,
+                        responseCode: answer.status,
+                        responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+                        body: Buffer.from(JSON.stringify(answer.body)).toString('base64'),
+                    }).catch(() => {});
+                }
             } else if (method === 'Page.javascriptDialogOpening') {
                 this.send('Page.handleJavaScriptDialog', { accept: true }).catch(() => {});
             } else if (method === 'Runtime.exceptionThrown') {
@@ -207,9 +228,105 @@ class Page {
         await this.evaluate((target) => {
             const element = [...document.querySelectorAll(target)].find((candidate) => candidate.getClientRects().length > 0);
             element.scrollIntoView({ block: 'center' });
+            element.focus({ preventScroll: true });
+            window.__audit.lastClicked = element;
             element.click();
         }, selector);
         await this.settle();
+    }
+
+    /** The elements a function returns inside the page, as handles for the calls below. */
+    async handles(code, ...args) {
+        const expression = `(${code})(${args.map((arg) => JSON.stringify(arg)).join(', ')})`;
+        const { result, exceptionDetails } = await this.send('Runtime.evaluate', { expression, objectGroup: 'ui-audit' });
+
+        if (exceptionDetails) {
+            throw new Error(exceptionDetails.exception?.description ?? exceptionDetails.text);
+        }
+
+        const { result: properties } = await this.send('Runtime.getProperties', { objectId: result.objectId, ownProperties: true });
+
+        return properties.filter((property) => /^\d+$/.test(property.name)).map((property) => property.value.objectId);
+    }
+
+    /** Runs a function with an element handle as `this` and returns its JSON value. */
+    async call(objectId, code, ...args) {
+        const { result, exceptionDetails } = await this.send('Runtime.callFunctionOn', {
+            objectId,
+            functionDeclaration: String(code),
+            arguments: args.map((value) => ({ value })),
+            returnByValue: true,
+            awaitPromise: true,
+        });
+
+        if (exceptionDetails) {
+            throw new Error(exceptionDetails.exception?.description ?? exceptionDetails.text);
+        }
+
+        return result.value;
+    }
+
+    /** Measures an element as if it were hovered or focused with the keyboard. */
+    async withPseudoState(objectId, states, code, ...args) {
+        if (!this.#styles) {
+            await this.send('DOM.enable');
+            await this.send('CSS.enable');
+            await this.send('DOM.getDocument', { depth: 0 });
+            this.#styles = true;
+        }
+
+        const { nodeId } = await this.send('DOM.requestNode', { objectId });
+        await this.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: states });
+
+        try {
+            return await this.call(objectId, code, ...args);
+        } finally {
+            await this.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [] });
+        }
+    }
+
+    /** The event types an element listens to itself (not what bubbles to its ancestors). */
+    async listeners(objectId) {
+        const { listeners } = await this.send('DOMDebugger.getEventListeners', { objectId });
+
+        return [...new Set(listeners.map((listener) => listener.type))];
+    }
+
+    /** The accessibility tree Chrome hands to a screen reader, without the ignored nodes. */
+    async accessibilityTree() {
+        const { nodes } = await this.send('Accessibility.getFullAXTree');
+
+        return nodes.filter((node) => !node.ignored).map((node) => ({
+            role: node.role?.value ?? '',
+            name: (node.name?.value ?? '').trim(),
+            backendNodeId: node.backendDOMNodeId,
+            properties: Object.fromEntries((node.properties ?? []).map((property) => [property.name, property.value?.value])),
+        }));
+    }
+
+    /** The darkest and the lightest tone actually painted in a rectangle of the page. */
+    async tones(box) {
+        const { data } = await this.send('Page.captureScreenshot', {
+            format: 'png',
+            clip: { x: box.x, y: box.y, width: Math.max(1, box.width), height: Math.max(1, box.height), scale: 1 },
+            captureBeyondViewport: true,
+        });
+
+        return toneRange(decodePng(Buffer.from(data, 'base64')));
+    }
+
+    /**
+     * Answers the page's requests to the API in its place: `responder` receives each request
+     * and returns { status, body } or null to let it through. Returns how to stop.
+     */
+    async intercept(responder) {
+        this.#responder = responder;
+        await this.send('Fetch.enable', { patterns: [{ urlPattern: '*/api/*', requestStage: 'Request' }] });
+
+        return async () => {
+            this.#responder = null;
+            await this.send('Fetch.disable');
+        };
     }
 
     async press(key) {
@@ -448,9 +565,10 @@ async function openEntry(browser, entry, width, options, session, config) {
     await page.send('Emulation.setTouchEmulationEnabled', { enabled: width < 768 });
     await page.send('Emulation.setTimezoneOverride', { timezoneId: config.timezone });
     await page.send('Emulation.setLocaleOverride', { locale: config.locale });
+    await page.send('Page.addScriptToEvaluateOnNewDocument', { source: IN_PAGE_LIBRARY });
     await page.send('Page.addScriptToEvaluateOnNewDocument', {
         source: `(() => {
-            const offset = new Date(${JSON.stringify(config.now)}).getTime() - Date.now();
+            const offset = new Date(${JSON.stringify(entry.now ?? config.now)}).getTime() - Date.now();
             const RealDate = Date;
             window.Date = class extends RealDate {
                 constructor(...args) { super(...(args.length === 0 ? [RealDate.now() + offset] : args)); }
