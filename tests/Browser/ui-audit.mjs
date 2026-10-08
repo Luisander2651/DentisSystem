@@ -349,19 +349,28 @@ function sessionSource(artisan) {
     const [command, ...prefix] = artisan.split(/\s+/).filter(Boolean);
     const tokens = new Map();
 
-    return (role) => {
+    const issue = (role) => {
+        const result = spawnSync(command, [...prefix, 'ui:audit-session', role], { encoding: 'utf8' });
+
+        if (result.status !== 0) {
+            throw new Error(`No pude obtener la sesión de ${role}: ${(result.stderr || result.stdout || result.error?.message || '').trim()}`);
+        }
+
+        return result.stdout.trim().split(/\s+/).pop();
+    };
+
+    // A screen that ends its session (cerrar sesión) asks for one of its own.
+    return (role, fresh = false) => {
         if (!ROLES.includes(role)) {
             throw new Error(`Rol desconocido en screens.json: ${role}`);
         }
 
+        if (fresh) {
+            return issue(role);
+        }
+
         if (!tokens.has(role)) {
-            const result = spawnSync(command, [...prefix, 'ui:audit-session', role], { encoding: 'utf8' });
-
-            if (result.status !== 0) {
-                throw new Error(`No pude obtener la sesión de ${role}: ${(result.stderr || result.stdout || result.error?.message || '').trim()}`);
-            }
-
-            tokens.set(role, result.stdout.trim().split(/\s+/).pop());
+            tokens.set(role, issue(role));
         }
 
         return tokens.get(role);
@@ -451,7 +460,7 @@ async function openEntry(browser, entry, width, options, session, config) {
     });
 
     if (entry.role) {
-        await page.send('Network.setCookie', { name: 'auth_token', value: session(entry.role), url: options.baseUrl, httpOnly: true });
+        await page.send('Network.setCookie', { name: 'auth_token', value: session(entry.role, entry.freshSession === true), url: options.baseUrl, httpOnly: true });
     }
 
     const dispose = () => browser.cdp.send('Target.disposeBrowserContext', { browserContextId }).catch(() => {});
@@ -531,6 +540,42 @@ async function auditPage(page, entry, width, options, checks, baseline) {
     return failures;
 }
 
+/*
+ * The baseline is taken once, before any view changes. Afterwards --baseline only writes an
+ * entry that has none yet, or one whose difference an acceptance criterion admits.
+ */
+function writeBaseline(file, baseline, admitted) {
+    const screens = { ...(baseline.stored?.screens ?? {}) };
+    const open = new Set(admitted.flatMap((difference) => difference.entries));
+    const written = [];
+    const frozen = [];
+
+    for (const [id, skeleton] of Object.entries(baseline.captured)) {
+        if (screens[id] === undefined || open.has(id)) {
+            screens[id] = skeleton;
+            written.push(id);
+        } else {
+            frozen.push(id);
+        }
+    }
+
+    const comment = 'Generado por npm run test:ui -- --baseline antes de tocar las vistas (spec 016, CA22). Por entrada: cajas, encabezados y acciones a 1440 px, con su posición horizontal en % del ancho. No se edita a mano; solo se reescriben las entradas de "admitted".';
+
+    writeFileSync(file, [
+        '{',
+        `    "$comment": ${JSON.stringify(comment)},`,
+        `    "admitted": ${JSON.stringify(admitted, null, 4).replace(/\n/g, '\n    ')},`,
+        '    "screens": {',
+        Object.entries(screens).map(([id, skeleton]) => `        ${JSON.stringify(id)}: ${JSON.stringify(skeleton)}`).join(',\n'),
+        '    }',
+        '}',
+        '',
+    ].join('\n'));
+
+    const kept = frozen.length > 0 ? `, ${frozen.length} conservadas (ya tenían línea base y ningún criterio admite cambiarla)` : '';
+    console.log(`\nLínea base: ${written.length} entradas escritas${kept}.`);
+}
+
 async function main() {
     const options = parseArguments(process.argv.slice(2));
     const config = JSON.parse(readFileSync(join(here, 'screens.json'), 'utf8'));
@@ -586,7 +631,7 @@ async function main() {
     };
 
     try {
-        for (const role of new Set(entries.map((entry) => entry.role).filter(Boolean))) {
+        for (const role of new Set(entries.filter((entry) => !entry.freshSession).map((entry) => entry.role).filter(Boolean))) {
             session(role);
         }
 
@@ -598,10 +643,7 @@ async function main() {
     const visited = visits.length;
 
     if (options.baseline) {
-        const stored = baseline.stored ?? {};
-        const merged = { ...stored, screens: { ...(stored.screens ?? {}), ...baseline.captured } };
-        writeFileSync(baselineFile, `${JSON.stringify(merged, null, 4)}\n`);
-        console.log(`\nLínea base escrita en ${baselineFile} (${Object.keys(baseline.captured).length} entradas).`);
+        writeBaseline(baselineFile, baseline, checks.find((check) => check.capture)?.ADMITTED ?? []);
     }
 
     console.log(`\n${visited} visitas (${entries.length} entradas), ${failed} con fallos. Módulos: ${checks.map((check) => check.name).join(', ') || 'ninguno'}.`);

@@ -81,7 +81,8 @@
             "id": "logout",
             "screen": "logout",
             "path": "/logout",
-            "role": "paciente"
+            "role": "paciente",
+            "freshSession": true
         },
         {
             "id": "dashboard-administrador",
