@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\Console\UiAuditDataCommand;
+use App\Core\Console\UiAuditSessionCommand;
 use Database\Seeders\UiAuditSeeder;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Foundation\Inspiring;
@@ -18,6 +19,7 @@ if (app()->environment(UiAuditSeeder::ALLOWED_ENVIRONMENTS)) {
     ConsoleApplication::starting(function (ConsoleApplication $artisan): void {
         $artisan->resolveCommands([
             UiAuditDataCommand::class,
+            UiAuditSessionCommand::class,
         ]);
     });
 }

@@ -62,7 +62,7 @@ it('cannot run the ui-audit commands when the application boots in production (a
 
 it('registers both commands when the application boots in testing', function () {
     expect(artisanCommandNamesIn('testing'))->toContain('ui:audit-session', 'ui:audit-data');
-})->skip('016: pendiente de T003');
+});
 
 it('issues a session of the seeded account of each role', function (string $role, string $email) {
     Storage::fake('public');
@@ -79,7 +79,7 @@ it('issues a session of the seeded account of each role', function (string $role
     'asistente' => ['asistente', UiAuditSeeder::STAFF_EMAILS['asistente']],
     'doctor' => ['doctor', UiAuditSeeder::STAFF_EMAILS['doctor']],
     'paciente' => ['paciente', UiAuditSeeder::PATIENT_EMAIL],
-])->skip('016: pendiente de T003');
+]);
 
 it('issues no session when the seeded accounts do not exist, even if others do (abuse)', function () {
     $this->createUserWithRole('Administrador');
@@ -90,7 +90,7 @@ it('issues no session when the seeded accounts do not exist, even if others do (
         ->and(PersonalAccessToken::query()->count())->toBe(0)
         ->and(UserModel::query()->count())->toBe(1)
         ->and(PatientModel::query()->count())->toBe(1);
-})->skip('016: pendiente de T003');
+});
 
 it('rejects anything that is not one of its roles (abuse)', function (string $role) {
     Storage::fake('public');
@@ -100,7 +100,7 @@ it('rejects anything that is not one of its roles (abuse)', function (string $ro
     expect(Artisan::call('ui:audit-session', ['rol' => $role]))->not->toBe(0)
         ->and(PersonalAccessToken::query()->count())->toBe(0)
         ->and($foreign->tokens()->count())->toBe(0);
-})->with(['root@example.com', 'Administrador ', 'inactivo', 'admin', ''])->skip('016: pendiente de T003');
+})->with(['root@example.com', 'Administrador ', 'inactivo', 'admin', '']);
 
 it('issues no session outside local and testing (abuse)', function () {
     Storage::fake('public');
@@ -109,4 +109,4 @@ it('issues no session outside local and testing (abuse)', function () {
 
     expect(Artisan::call('ui:audit-session', ['rol' => 'administrador']))->not->toBe(0)
         ->and(PersonalAccessToken::query()->count())->toBe(0);
-})->skip('016: pendiente de T003');
+});
