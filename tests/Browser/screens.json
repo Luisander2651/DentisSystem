@@ -169,6 +169,13 @@
             "role": "administrador"
         },
         {
+            "id": "agenda-hoy-sin-citas",
+            "screen": "agenda",
+            "path": "/agenda",
+            "role": "administrador",
+            "now": "2026-08-12T10:00:00-06:00"
+        },
+        {
             "id": "agenda-dia",
             "screen": "agenda",
             "dialog": "citas-del-dia",
