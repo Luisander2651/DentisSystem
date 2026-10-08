@@ -1,151 +1,217 @@
 ---
-status: approved         # draft | approved (solo el usuario aprueba) — aprobado por el usuario, 2026-10-04
-source: extracted        # chosen: elegido entre opciones · extracted: documentado del código
-version: 1.0.0
-extracted_with: 1.11.2   # versión del plugin que lo extrajo
+status: draft            # draft | approved (solo el usuario aprueba) — 2.0.0 pendiente de aprobación del usuario (spec 016, T001)
+source: chosen           # chosen: elegido entre opciones · extracted: documentado del código
+version: 2.0.0
+extracted_with: 1.11.2   # versión del plugin que extrajo el sistema 1.0.0 (archivado en history/)
 html: docs/design/system.html
 canvas: null
 widths: [390, 1440]
 created: 2026-10-04
-updated: 2026-10-04
+updated: 2026-10-08
 ---
 
 # Sistema de diseño de Dentissa
 
-Describe la interfaz **tal como está hoy**, sin mejoras: lo que se midió en la app y lo que declara
-el código. Toda pantalla nueva o modificada parte de estos valores; un valor que no esté aquí se
-añade primero aquí (sección "Cambios a incorporar" del plan que lo necesite). Vista:
-[system.html](system.html).
+Sistema **elegido** (versión 2.0.0): la variante **B · Neutra** de la
+[propuesta de la spec 016](../specs/016-sistema-de-diseno-aplicado/design/propuesta.html). Sustituye
+al sistema 1.0.0, que describía la interfaz tal como estaba y queda archivado en
+[history/system.1.0.0.md](history/system.1.0.0.md). Toda pantalla nueva o modificada parte de estos
+valores; un valor que no esté aquí se añade primero aquí (sección "Cambios a incorporar" del plan
+que lo necesite). Vista: [system.html](system.html).
+
+La spec 016 aplica este sistema a todas las pantallas. Hasta que termine, el código convive con
+valores del sistema anterior en las vistas aún sin migrar (ver "Deuda de diseño"), y las capturas del
+inventario muestran el aspecto anterior: se rehacen al cerrar la spec.
 
 ## Dirección
 
-Sistema extraído del código el 2026-10-04 (`/init --upgrade`, ai-dd 1.11.2). No hubo una dirección
-escrita: la interfaz es Tailwind CSS 4 con su paleta por defecto (grises `slate`) más una familia de
-rosas escritos como valores arbitrarios, tarjetas blancas de esquinas muy redondeadas sobre un fondo
-casi blanco con un degradado rosa tenue, y fuente del sistema. Hay dos superficies: el sitio público
-(`/`, `/acerca-de-nosotros`, `/galeria`, `/contacto`) y el panel del staff con menú lateral.
+La marca y la composición de las pantallas se mantienen; cambian la paleta, los tamaños de control
+y las piezas compartidas. Tinta pizarra casi negra sobre los grises fríos que la app ya usaba,
+tarjetas blancas de esquinas redondeadas y fuente del sistema. El rosa de la marca (`#d75078`) se
+reserva para la acción principal y los acentos no textuales; el texto va siempre en tinta. Hay dos
+superficies: el sitio público (`/`, `/acerca-de-nosotros`, `/galeria`, `/contacto`) y el panel del
+staff con menú lateral.
 
-**Procedimiento.** 65 vistas y estados capturados con Chrome sin interfaz a 390 × 844 y 1440 × 900 px
-sobre la base local de pruebas, con un usuario por rol. Antes de capturar se sustituyeron por valores
-ficticios los datos personales que había en la base local (un correo, teléfonos, una dirección) y las
-imágenes subidas a la galería y a certificaciones, que ahora son imágenes neutras "Imagen de prueba"
-(decisión del usuario, 2026-10-04). Las capturas de página completa se toman con la página arriba y los elementos
-`sticky` (la barra del sitio público) en su lugar del flujo, que es donde se ven sin desplazar. En cada captura se midieron los estilos calculados (`getComputedStyle`). Los
-nombres de token de este documento (`--color-*`, `--radius-*`…) son **del documento**: el código no
-los declara (deuda DS1). Las equivalencias con Tailwind van entre paréntesis.
+Los tokens se declaran una sola vez en `@theme` de `resources/css/app.css`, que además retira la
+paleta por defecto de Tailwind: una utilidad de color cuyo nombre no sea un token no existe. Los
+nombres de este documento son los del código.
 
 ## Color
 
-| Token | Valor | Uso | Contraste sobre su fondo |
-|---|---|---|---|
-| `--color-bg` | `#f8fafc` (`slate-50`) | Fondo base; el panel usa un degradado `#FFF7FA` → `slate-50` → blanco | — |
-| `--color-surface` | `#ffffff` | Tarjetas, menú lateral, diálogos, campos | — |
-| `--color-text` | `#0f172b` (`slate-900`) | Texto principal y títulos | 17.04:1 sobre `--color-bg` |
-| `--color-text-muted` | `#62748e` (`slate-500`) | Texto secundario, elementos de menú | 4.76:1 sobre `--color-surface` |
-| `--color-text-faint` | `#90a1b9` (`slate-400`) | Etiquetas en mayúsculas, rol, textos de ayuda | **2.63:1** sobre `--color-surface` (no cumple, DS3) |
-| `--color-primary` | `#E91E63` | Acción principal ("Nuevo paciente", "Completar"), logo del panel, título de las páginas de acceso | — |
-| `--color-on-primary` | `#ffffff` | Texto sobre la acción principal | **4.35:1** sobre `--color-primary` (no cumple, DS3) |
-| `--color-primary-strong` | `#B5114A` | Segunda acción principal ("Consultar Expediente"), enlaces, elemento activo, marca del sitio público | 6.68:1 sobre blanco |
-| `--color-primary-soft` | `#FDF1F6` | Fondo del elemento activo y de avisos | `--color-primary-strong` encima: 6.07:1 |
-| `--color-border` | `#e2e8f0` (`slate-200`) | Bordes de tarjeta, separadores y campos claros | 1.23:1 sobre `--color-surface` (no cumple 3:1 como borde de campo, DS3) |
-| `--color-border-field` | `#cad5e2` (`slate-300`) | Borde de campos de formulario | 1.49:1 (no cumple 3:1, DS3) |
-| `--color-border-brand` | `#F5C2D6` | Borde del encabezado de página y de avisos | decorativo |
-| `--color-focus` | `#E91E63` | Borde del campo con foco (también `#B5114A`, DS6) | 4.35:1 sobre `--color-surface` |
-| `--color-focus-ring` | `#F8BBD0` | Anillo de foco (también `#B5114A` al 10 %, DS6) | **1.61:1** (no cumple 3:1, DS6) |
-| `--color-danger` | `#e7000b` (`red-600`) | Eliminar, errores | 4.77:1 con texto blanco encima; **4.36:1** sobre `--color-danger-bg` (no cumple, DS3) |
-| `--color-danger-bg` | `#fef2f2` (`red-50`) | Fondo de avisos y botones de borrado | — |
-| `--color-success` | `#007a55` (`emerald-700`) | Estados "Activo" y "Completada" | 5.09:1 sobre `--color-success-bg` |
-| `--color-success-bg` | `#ecfdf5` (`emerald-50`) | Fondo de esos estados | — |
-| `--color-whatsapp` | `#00bc7d` (`emerald-500`) | Botón WhatsApp, punto de estado | texto blanco encima: **2.47:1** (no cumple, DS3) |
-| `--color-warning` | `#bb4d00` (`amber-700`) | Estado "Asignada" | 4.85:1 sobre `--color-warning-bg` |
-| `--color-warning-bg` | `#fffbeb` (`amber-50`) | Fondo de ese estado | — |
+Un token por fila. `DesignTokensTest` exige que los valores de esta tabla sean los de `@theme` y que
+cada par declarado cumpla su contraste (WCAG: ≥ 4.5:1 texto, ≥ 3:1 bordes de control, foco e
+iconos).
 
-Otros rosas en uso sin función propia: `#FFF7FA` (inicio del degradado, hover claro), `#d61b5b` y
-`#D81B60` (dos hover del mismo botón, DS2). Estado "Reprogramada": `blue-700` sobre `blue-50`
-(6.28:1). Usos en el código, contados por el explorador: `#B5114A` 275, `#F5C2D6` 92, `#E91E63` 88,
-`#FDF1F6` 61, `#FFF7FA` 35, `#F8BBD0` 32, `#D61B5B` 21, `#D81B60` 15.
+| Token | Valor | Utilidades | Uso | Contraste |
+|---|---|---|---|---|
+| `--color-primary` | `#d75078` | `bg-primary`, `border-primary`, `decoration-primary` | Acción principal y acentos no textuales | 3.96:1 sobre `--color-surface` (acento ≥ 3:1); nunca texto |
+| `--color-primary-hover` | `#dc6588` | `hover:bg-primary-hover` | Hover de la acción principal: más claro, nunca más oscuro | `--color-ink` encima 5.61:1 |
+| `--color-primary-soft` | `#fbe9ee` | `bg-primary-soft` | Elemento activo y avisos | `--color-ink` encima 16.13:1 |
+| `--color-secondary` | `#f2b0a6` | `border-secondary`, `bg-secondary` | Bordes de avisos e insignias, fondos decorativos | decorativo |
+| `--color-ink` | `#0b1120` | `text-ink`, `bg-ink`, `outline-ink` | Texto principal, texto sobre el primario, foco, superficie oscura del visor | 4.76:1 sobre `--color-primary` · 18.83:1 sobre `--color-surface` |
+| `--color-muted` | `#556274` | `text-muted`, `placeholder:text-muted` | Texto secundario, iconos de acción y texto de ejemplo de los campos | 6.20:1 sobre `--color-surface` · 5.93:1 sobre `--color-canvas` · 5.31:1 sobre `--color-primary-soft` |
+| `--color-canvas` | `#f8fafc` | `bg-canvas` | Fondo de página | — |
+| `--color-surface` | `#ffffff` | `bg-surface` | Tarjetas, diálogos, campos | — |
+| `--color-on-dark` | `#ffffff` | `text-on-dark`, `outline-on-dark` | Texto sobre peligro y sobre tinta; foco sobre superficies oscuras | 6.47:1 sobre `--color-danger` · 18.83:1 sobre `--color-ink` |
+| `--color-line` | `#e2e8f0` | `border-line` | Separadores y bordes de tarjeta | decorativo |
+| `--color-field` | `#7c8aa0` | `border-field` | Borde de campo y de control | 3.50:1 sobre `--color-surface` · 3.35:1 sobre `--color-canvas` |
+| `--color-overlay` | `rgb(11 17 32 / 0.55)` | `bg-overlay` | Capa tras un diálogo | — |
+| `--color-danger` | `#b91c1c` | `bg-danger`, `text-danger` | Eliminar y errores | 5.91:1 sobre `--color-danger-soft` · 6.47:1 sobre `--color-surface` |
+| `--color-danger-soft` | `#fef2f2` | `bg-danger-soft` | Fondo de errores y de "Cancelada" | `--color-danger` encima 5.91:1 |
+| `--color-success` | `#047857` | `text-success` | "Activo", "Completada" | 5.21:1 sobre `--color-success-soft` |
+| `--color-success-soft` | `#ecfdf5` | `bg-success-soft` | Fondo de esos estados | `--color-success` encima 5.21:1 |
+| `--color-warning` | `#b45309` | `text-warning` | "Asignada" | 4.84:1 sobre `--color-warning-soft` |
+| `--color-warning-soft` | `#fffbeb` | `bg-warning-soft` | Fondo de ese estado | `--color-warning` encima 4.84:1 |
+| `--color-info` | `#1d4ed8` | `text-info` | "Reprogramada" | 6.16:1 sobre `--color-info-soft` |
+| `--color-info-soft` | `#eff6ff` | `bg-info-soft` | Fondo de ese estado | `--color-info` encima 6.16:1 |
+| `--color-whatsapp` | `#25d366` | `bg-whatsapp` | Botón de WhatsApp, con texto en tinta | `--color-ink` encima 9.49:1 |
 
-Todo color de texto declara su contraste calculado (WCAG: ≥ 4.5:1 texto normal, ≥ 3:1 texto grande
-y bordes de control). Modo oscuro: no aplica (ninguna clase `dark:`; `color-scheme: normal` en las
-primera tanda de 114 capturas).
+Reglas de color:
+- El rosa nunca es color de **texto** (3.96:1 sobre blanco). Sí pinta iconos, subrayados y bordes,
+  donde basta 3:1: los iconos de acento usan `text-primary` dentro de un contenedor marcado
+  `data-accent`, el único sitio donde `OnlyDesignTokensTest` lo admite.
+- No se usa ningún color fuera de esta tabla: ni literales ni la paleta por defecto de Tailwind.
+  `white` y `black` tampoco existen: se usan `surface`, `on-dark` e `ink`. Sí se admiten
+  `transparent`, `current` e `inherit`.
+- El texto de ejemplo de todo campo se pinta en `muted`, fijado en `@layer base`.
+- Opacidad: un token admite modificador de opacidad solo en fondos, bordes y sombras
+  (`bg-surface/90`, `border-on-dark/20`, `shadow-primary/20`), nunca en texto.
+- Degradados: solo entre tokens y decorativos; ningún texto se apoya en un degradado sin que
+  `ui-audit` mida su contraste sobre el tono más desfavorable.
+- Modo oscuro: no aplica.
 
 ## Tipografía
 
 | Token | Familia | Pesos | Uso |
 |---|---|---|---|
-| `--font-sans` | `ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` (único token real, `resources/css/app.css`) | 400, 500, 600, 700, 800 | Todo |
+| `--font-sans` | `ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` | 400, 500, 600, 700, 800 | Todo |
 | `--font-mono` | no aplica | — | — |
 
 | Nivel | Móvil | Escritorio | Interlineado |
 |---|---|---|---|
 | Título del sitio público (`h1`) | 36px / 800 | 60px / 800 | 1.1 · 1.0 |
-| Título de página del panel (es un `h2`, DS14) | 30px / 600 | 30px / 600 | 1.2 |
-| Título de las páginas de acceso (`h1`, color `--color-primary`) | 30px / 600 | 36px / 600 | 1.2 · 1.1 |
-| Título de tarjeta y de sección (`h3`) | 16px / 600 (también 18 y 20px / 700) | igual | 1.5 |
-| `--text-body` | 16px | 16px | 1.5 |
-| `--text-small` (tablas, campos, botones, etiquetas de campo 14px / 500) | 14px | 14px | 1.43 |
-| Etiqueta en mayúsculas espaciadas | 10–12px / 600–700 | igual | — |
+| Título de página del panel (`h1`, uno por pantalla) | 30px / 600 | 30px / 600 | 1.2 |
+| Título de las páginas de acceso y de error (`h1`, en tinta) | 30px / 600 | 36px / 600 | 1.2 · 1.1 |
+| Subtítulo con acción (`h2`, `x-ui.section-title`) | 18px / 700 | 20px / 700 | 1.4 |
+| Título de tarjeta y de sección (`h3`) | 16px / 600 | igual | 1.5 |
+| Texto | 16px | 16px | 1.5 |
+| Texto pequeño (tablas, botones, etiquetas de campo 14px / 600) | 14px | 14px | 1.43 |
+| `--text-control` (letra de todo campo) | 16px | 16px | 1.5 |
+| `--text-min` (texto más pequeño permitido: etiquetas en mayúsculas, insignias) | 12px | 12px | 1.33 |
 
-Fuentes: del sistema; ninguna fuente web se carga (`document.fonts` vacío en todas las capturas).
-`welcome.blade.php` declara Instrument Sans, pero no tiene ruta.
+Fuentes: del sistema; ninguna fuente web se carga. Ningún texto mide menos de 12 px y ningún campo
+menos de 16 px.
 
 ## Espaciado, radios, bordes y sombras
 
-- Escala de espaciado: la de Tailwind, múltiplos de 4 px (`--space-1` … `--space-8` = 4, 8, 12, 16,
-  24, 32, 48, 64 px). Con excepciones arbitrarias (`min-h-[100px]`, `text-[10px]`, `text-[11px]`).
-- Margen lateral de pantalla: 16 px a 390 px (menú de 358 px) · 24 px a 1440 px; menú lateral de
-  320 px en escritorio.
-- Radios medidos: 6 y 8 px (campos de algunos formularios), 12 px y 16 px (botones y campos), 24 px
-  (tarjetas, `rounded-3xl`), 32 px (encabezado de página) y píldora (`rounded-full`). Sin escala
-  única (DS5).
-- Bordes: 1 px. Sombras: `shadow-sm` en tarjetas; `shadow-lg` teñida de rosa en el logo y la acción
-  principal.
-- Objetivo de toque mínimo: **no definido**. Medido a 390 px: de 24 a 48 px de alto (DS4).
+| Token | Valor | Utilidades | Uso |
+|---|---|---|---|
+| `--radius-control` | 12px | `rounded-control` | Botones y campos |
+| `--radius-box` | 16px | `rounded-box` | Avisos, contadores y barras |
+| `--radius-card` | 24px | `rounded-card` | Tarjetas y diálogos |
+| `--spacing-control` | 44px | `h-control`, `min-h-control`, `size-control` | Alto de botón, campo, filtro y elemento de menú |
+| `--text-control` | 16px | `text-control` | Letra de campo |
+| `--text-min` | 12px | `text-min` | Texto más pequeño permitido |
+
+- Insignias y filtros usan `rounded-full`. No hay más radios: desaparecen los de 6, 8 y 32 px.
+- Escala de espaciado: la de Tailwind, múltiplos de 4 px.
+- Margen lateral de pantalla: 16 px a 390 px · 24 px a 1440 px; menú lateral de 320 px en escritorio.
+- Bordes: 1 px (2 px en el campo con error y en el día de hoy del calendario). Sombras: `shadow-sm`
+  en tarjetas; las sombras teñidas usan un token con opacidad (`shadow-primary/20`), nunca un valor
+  arbitrario.
+- Objetivo de toque mínimo: **44 × 44 px** a 390 px en botones, campos, selectores, filtros,
+  elementos de menú, iconos de acción y enlaces solos en su línea o en una lista de navegación. Los
+  enlaces dentro de un párrafo quedan fuera, como permite WCAG.
+- Dos tokens de espacios distintos nunca producen la misma utilidad (por eso la letra de campo es
+  `--text-control` y no `--text-field`, que chocaría con el color `--color-field`).
+
+## Foco
+
+Un solo estilo, fijado en `@layer base`: contorno de 3 px con 2 px de separación, en `ink` sobre
+superficies claras y en `on-dark` dentro de un contenedor oscuro marcado `data-surface="dark"` (visor
+de la galería, controles sobre imagen). `focus:outline-none` no se usa.
 
 ## Componentes
 
-Vista en `system.html` → Componentes (recortes de las capturas). Componentes Blade:
-`resources/views/components/{ui,calendar,records,landing}/`.
+Vista en `system.html` → Componentes. Componentes Blade: `resources/views/components/ui/`; módulos
+de navegador: `resources/js/ui/`.
 
-### Botón
-`x-ui.button` declara cinco variantes (`principal` blanco con borde rosa, `primary` `#E91E63`,
-`danger`, `warning`, `ok`), 14px / 600, radio 8 px, foco con `focus-visible:ring-2` y
-`disabled:opacity-60`. La mayoría de los botones de las pantallas **no lo usan** y escriben sus
-clases: alturas medidas de 24, 28, 30, 32, 36, 38, 40, 44, 46 y 48 px y radios de 8, 12, 16 px y
-píldora (DS5). Botones de icono (editar, eliminar, ver) de 28–38 px con `aria-label`.
+### Botón · `x-ui.button`
+Cuatro variantes y un solo tamaño (44 px de alto, radio `control`, 14px / 600):
+- `primary`: fondo `primary`, texto en tinta, hover `primary-hover`. Una sola acción principal por pantalla.
+- `secondary`: fondo `surface`, texto en tinta, borde `field`.
+- `danger`: fondo `danger`, texto `on-dark`.
+- `icon`: 44 × 44 px, fondo `surface`, borde `field`; exige nombre accesible.
 
-### Campo de formulario
-`x-ui.input`: etiqueta visible 14px / 500 `slate-700`, campo de 14px. Tres formas medidas: 48 px de
-alto con radio 16 px sin borde (búsquedas), 38 px con radio 8 o 12 px y borde `slate-300`
-(formularios en diálogos), 47 px con radio 16 px sobre `slate-50` (completar cita). Texto de ayuda
-"(opcional)" en `slate-400`.
+Enlace: texto en tinta, 600, subrayado de 2 px en `primary`.
+
+### Campo de formulario · `x-ui.input`
+44 px de alto, letra `text-control` (16 px) en tinta, borde `field`, radio `control`. Etiqueta
+visible asociada (14px / 600), marca de obligatorio, texto de ayuda en `muted`, error en `danger`
+bajo el campo y enlazado con `aria-describedby` (borde de 2 px en `danger`). El botón de mostrar
+contraseña mide 44 px y tiene nombre. Los campos de correo, nombre, contraseña y teléfono declaran
+su propósito con `autocomplete`.
+
+### Marca · `x-ui.brand`
+En las barras, el icono (blanco sobre rosa) junto a "Dentissa"; el logo completo en el pie del sitio,
+el acceso y las páginas de error. Siempre con texto alternativo. Archivos en `public/images/brand/`
+y `public/favicon.ico`.
+
+### Diálogo · `x-ui.dialog` y `resources/js/ui/dialog.js`
+Sobre el elemento nativo `<dialog>`: título enlazado con `aria-labelledby`, foco dentro al abrir y
+devuelto al cerrar, Escape cierra, capa `overlay`. Ancho y alto máximos los de la ventana, con el
+cuerpo desplazable y el pie de acciones fijo. Radio `card`. Lleva su propia región de estado.
+
+### Región de estado · `x-ui.status` y `resources/js/ui/status.js`
+Una por marco, siempre montada y vacía (`role="status"`); los errores de guardado usan
+`role="alert"`. El módulo anuncia en la región del diálogo abierto si lo hay y, si no, en la del
+marco. Muestra un texto propio en español por tipo de error y solo deja pasar los mensajes de
+validación.
+
+### Contador · `x-ui.stat`
+Tarjeta compacta de radio `box`: etiqueta en mayúsculas de 12 px en `muted` y cifra de 20px / 700.
+Tres por fila a 390 px.
+
+### Filtro · `x-ui.chip`
+Botón de 44 px de alto, `rounded-full`, borde `field`, texto en tinta; el elegido
+(`aria-pressed="true"`) lleva fondo `primary-soft` y borde `primary`. Los grupos de filtros van en
+una fila desplazable dentro del ancho.
+
+### Insignia de estado · `x-ui.badge` y `resources/js/ui/badge.js`
+Píldora de 12px / 700 con texto además de color: "Asignada" (`warning`), "Completada" y "Activo"
+(`success`), "Cancelada" e "Inactivo" (`danger`), "Reprogramada" (`info`) y la neutra de marca
+(tinta sobre `primary-soft` con borde `secondary`). El módulo de navegador pinta el mismo marcado.
+
+### Registro · `x-ui.record`
+Par de etiqueta (12 px, mayúsculas, `muted`) y valor, separado por una línea `line`. Sustituye a
+las tablas del expediente por debajo de `md`.
+
+### Subtítulo con acción · `x-ui.section-title`
+Un `h2` con su acción a la derecha.
 
 ### Lista o tarjeta
-Tarjeta blanca, radio 24 px, borde `slate-200`, `shadow-sm`: paciente, usuario, tratamiento,
-contenido, contador. Tablas (`components/records/*`) con cabecera 14px / 600 sobre una fila gris claro y
-celdas de 14 px. `x-ui.table` existe y no se usa (DS13).
+Tarjeta `surface`, radio `card`, borde `line`, `shadow-sm`. Aviso informativo: fondo `primary-soft`,
+borde `secondary`, radio `box`, texto en tinta.
 
-### Aviso, diálogo y mensajes
-Aviso informativo rosa (`#FDF1F6`, borde `#F5C2D6`); aviso de borrado rojo claro. Diálogos: capa
-oscura con desenfoque y tarjeta centrada de radio 24–32 px; **no hay componente base**, cada diálogo
-repite su marcado (DS8). Estados de cita como píldoras de color (asignada ámbar, completada verde,
-cancelada roja, reprogramada azul).
+### Página de error
+Marco propio con el logo completo, el código en `muted`, un `h1`, un texto fijo en español y un botón
+principal de vuelta. Pantallas: "Sin permiso" (403), "No encontrada" (404), método no permitido (405)
+y formulario caducado (419).
 
 ### Estados de pantalla
-Vacío: texto centrado ("Sin citas registradas.", "No hay actividad reciente para mostrar.", "Sin
-promociones por el momento"), sin acción. Carga: `animate-spin` en algunos botones. Error de acceso:
-páginas por defecto de Laravel o JSON crudo (DS10).
+Vacío: texto centrado y completo, sin recortes. Carga: `animate-spin` en el botón que envía. Error:
+mensaje en la región de estado y, si es de un campo, bajo el campo.
 
 ## Movimiento
 
 | Token | Valor | Uso |
 |---|---|---|
-| `--duration-fast` | 150ms | `transition`, `transition-colors`, `transition-all` (valor por defecto de Tailwind) |
+| `--duration-fast` | 150ms | `transition`, `transition-colors` (valor por defecto de Tailwind) |
 | `--duration-base` | 200ms (también 300ms) | `duration-200` en botones y menú; `duration-300` en la barra del sitio público |
 | `--ease-out` | `cubic-bezier(0.4, 0, 0.2, 1)` | Curva por defecto de Tailwind |
 
-También: `hover:scale-[1.02]` en tarjetas de cita, `backdrop-blur-sm` en la capa de los diálogos.
-Ninguna animación declara versión con `prefers-reduced-motion` (DS12).
+Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
+`prefers-reduced-motion` (DS12, fuera de la spec 016).
 
 ## Pantallas principales
 
@@ -160,7 +226,8 @@ Ninguna animación declara versión con `prefers-reduced-motion` (DS12).
 ## Inventario de vistas
 
 **Todas** las vistas de la app, con capturas de la app real hechas con datos de prueba. Nada se
-dibuja a mano. **65 de 66 capturadas** (128 imágenes); la única sin captura es `welcome.blade.php`, que no tiene ruta.
+dibuja a mano. Las capturas son las del sistema 1.0.0 (2026-10-04): muestran el aspecto anterior y
+se rehacen al cerrar la spec 016 (T076), junto con las de las pantallas nuevas de error. **65 de 66 capturadas** (128 imágenes); la única sin captura es `welcome.blade.php`, que no tiene ruta.
 
 | Vista | Ruta / plantilla | Rol | Capturas | Estado |
 |---|---|---|---|---|
@@ -238,33 +305,39 @@ cita" se recorrió hasta el paso 2 sin enviarlo, así que no escribió nada.
 
 ## Reglas de uso
 
-- Hoy no hay reglas escritas. Lo observado: una acción principal rosa por pantalla, arriba a la
-  derecha del encabezado; rojo solo para borrar; verde, ámbar, azul y rojo para estados de cita.
-- Ningún valor literal de color, tamaño o espaciado fuera de los tokens: **aún no se cumple** (DS1);
-  el principio "solo tokens" de la constitución se propondrá en la spec del objetivo 6 del roadmap
-  (decisión del usuario, 2026-10-04).
+- Una acción principal por pantalla, arriba a la derecha del encabezado.
+- El texto nunca va en rosa; enlaces y elemento activo en tinta, con el rosa como acento.
+- Ningún color, radio ni tamaño de control fuera de los tokens (P15 de la constitución, que añade la
+  spec 016): lo verifican `OnlyDesignTokensTest`, `DesignTokensTest` y `npm run test:ui`.
+- Rojo solo para eliminar y errores; verde, ámbar, azul y rojo para estados de cita, siempre con
+  texto además de color.
+- Todo lo que hace algo al pulsarlo es un control nativo (`button`, `a`, campo) o tiene rol, foco y
+  activación con Intro y barra espaciadora.
+- Un solo `h1` por pantalla.
+- La composición a 1440 px no cambia respecto al sistema 1.0.0, salvo el encabezado único de
+  gestión de contenido.
 
 ## Deuda de diseño
 
-Lo que el código hace hoy y no cumple este sistema o las pautas de accesibilidad. No bloquea el
-código previo; se corrige cuando una spec toca la pantalla o como objetivo del roadmap.
+Lo que el código hace hoy y no cumple este sistema o las pautas de accesibilidad. La spec 016
+resuelve toda la deuda salvo DS12; cada fila pasa a "resuelta por 016" al cerrarla.
 
 | ID | Problema | Dónde (evidencia) | Corrección propuesta | Estado |
 |---|---|---|---|---|
-| DS1 | No hay tokens de diseño: los colores de marca son valores arbitrarios repetidos (unas 620 apariciones de 8 rosas) y el único token es `--font-sans` | `resources/css/app.css` (`@theme`); vistas y JS de `resources/` | Declarar los colores en `@theme` y sustituir los valores arbitrarios | pendiente |
-| DS2 | Dos rosas para la misma función de acción principal (`#E91E63` y `#B5114A`) y dos hover del mismo botón (`#d61b5b`, `#D81B60`) | `capturas/pacientes-1440.png` ("Nuevo paciente") frente a `capturas/expedientes-1440.png` ("Consultar Expediente") | Elegir uno como principal y documentar el uso del otro | pendiente |
-| DS3 | Contraste insuficiente: texto blanco sobre `#E91E63` 4.35:1; `slate-400` sobre blanco 2.63:1; blanco sobre el verde de WhatsApp 2.47:1; `red-600` sobre `red-50` 4.36:1; bordes de campo 1.23–1.49:1 | `system.html` → Color (pares en rojo); `capturas/pacientes-1440.png`, `capturas/inicio-menu-390.png` | Oscurecer el rosa principal o usar `#B5114A`; subir etiquetas a `slate-500`; borde de campo ≥ 3:1 | pendiente |
-| DS4 | Objetivos de toque menores de 44 px a 390 px: "Eliminar" 70×30, "Editar" 58×30, menú 36×36, iconos 28×28 y 32×32, "Consultar Expediente" 147×28, filtros de 32 px de alto, "Cancelar" 38 px | medidas de `capturas/*-390.png` (p. ej. `capturas/expediente-390.png`, `capturas/pacientes-390.png`) | Alto mínimo de 44 px en controles táctiles | pendiente |
-| DS5 | Sin escala de tamaños: 10 alturas de botón (24–48 px), 4 de campo (38–48 px) y radios de 6, 8, 12, 16, 24, 32 px y píldora para el mismo tipo de control; `x-ui.button` casi no se usa | `resources/views/components/ui/button.blade.php`; medidas de todas las capturas | Tamaños y radios fijos en el componente y usarlo en las pantallas | pendiente |
-| DS6 | Tres estilos de foco distintos y `focus:outline-none` 62 veces; el anillo `#F8BBD0` da 1.61:1 y el de `#B5114A` al 10 % es casi invisible | `resources/views/components/ui/input.blade.php`, modales de `pages/contenido/` y `components/calendar/` | Un solo estilo de foco visible (≥ 3:1) | pendiente |
-| DS7 | Desbordamiento horizontal en la agenda a 390 px (el contenido mide 480 px) | `capturas/agenda-390.png`; `resources/views/components/calendar/grid.blade.php` | Calendario adaptado al ancho móvil | pendiente |
-| DS8 | No hay componente base de diálogo: unos 20 diálogos repiten marcado y estilos; `aria-labelledby="modal-title"` apunta a un id que no existe; los de agendar y completar cita son más altos que una ventana de 900 px | `resources/views/components/ui/*-modal.blade.php`, `components/calendar/*-modal.blade.php`, `pages/contenido/**`; `capturas/agenda-cita-completar-1440.png` | Componente de diálogo único con título enlazado, foco atrapado y alto máximo | pendiente |
-| DS9 | Marca sin recursos: no hay archivo de logo (dos SVG en línea distintos, anillo en el sitio público y escudo en el panel) y `public/favicon.ico` pesa 0 bytes | `components/landing/nav.blade.php:10`, `components/ui/sidebar.blade.php:93`, `public/favicon.ico` | Un logo en archivo y un favicon real | pendiente |
-| DS10 | Los rechazos de acceso no tienen pantalla propia: `/agenda` con un rol no administrador muestra JSON crudo y en inglés; 403 y 404 usan la página por defecto de Laravel, sin marca ni camino de vuelta | `capturas/error-403-admin-1440.png`, `capturas/error-403-staff-1440.png`, `capturas/error-404-1440.png` | Vistas de error con la marca y un enlace de regreso; el middleware responde con vista en rutas web | pendiente |
-| DS11 | Textos del panel sin acentos ("Gestion de contenido", "Expedientes clinicos", "Iniciar Sesion", "Esta accion eliminara la promocion") frente al sitio público, que sí los lleva | `capturas/contenido-promociones-eliminar-1440.png`, `capturas/expediente-1440.png`, `capturas/login-1440.png` | Corregir la ortografía de los textos del panel | pendiente |
+| DS1 | No hay tokens de diseño: los colores de marca son valores arbitrarios repetidos (unas 620 apariciones de 8 rosas) y el único token es `--font-sans` | `resources/css/app.css` (`@theme`); vistas y JS de `resources/` | Declarar los colores en `@theme` y sustituir los valores arbitrarios | la resuelve 016 |
+| DS2 | Dos rosas para la misma función de acción principal (`#E91E63` y `#B5114A`) y dos hover del mismo botón (`#d61b5b`, `#D81B60`) | `capturas/pacientes-1440.png` ("Nuevo paciente") frente a `capturas/expedientes-1440.png` ("Consultar Expediente") | Elegir uno como principal y documentar el uso del otro | la resuelve 016 |
+| DS3 | Contraste insuficiente: texto blanco sobre `#E91E63` 4.35:1; `slate-400` sobre blanco 2.63:1; blanco sobre el verde de WhatsApp 2.47:1; `red-600` sobre `red-50` 4.36:1; bordes de campo 1.23–1.49:1 | `system.html` → Color (pares en rojo); `capturas/pacientes-1440.png`, `capturas/inicio-menu-390.png` | Oscurecer el rosa principal o usar `#B5114A`; subir etiquetas a `slate-500`; borde de campo ≥ 3:1 | la resuelve 016 |
+| DS4 | Objetivos de toque menores de 44 px a 390 px: "Eliminar" 70×30, "Editar" 58×30, menú 36×36, iconos 28×28 y 32×32, "Consultar Expediente" 147×28, filtros de 32 px de alto, "Cancelar" 38 px | medidas de `capturas/*-390.png` (p. ej. `capturas/expediente-390.png`, `capturas/pacientes-390.png`) | Alto mínimo de 44 px en controles táctiles | la resuelve 016 |
+| DS5 | Sin escala de tamaños: 10 alturas de botón (24–48 px), 4 de campo (38–48 px) y radios de 6, 8, 12, 16, 24, 32 px y píldora para el mismo tipo de control; `x-ui.button` casi no se usa | `resources/views/components/ui/button.blade.php`; medidas de todas las capturas | Tamaños y radios fijos en el componente y usarlo en las pantallas | la resuelve 016 |
+| DS6 | Tres estilos de foco distintos y `focus:outline-none` 62 veces; el anillo `#F8BBD0` da 1.61:1 y el de `#B5114A` al 10 % es casi invisible | `resources/views/components/ui/input.blade.php`, modales de `pages/contenido/` y `components/calendar/` | Un solo estilo de foco visible (≥ 3:1) | la resuelve 016 |
+| DS7 | Desbordamiento horizontal en la agenda a 390 px (el contenido mide 480 px) | `capturas/agenda-390.png`; `resources/views/components/calendar/grid.blade.php` | Calendario adaptado al ancho móvil | la resuelve 016 |
+| DS8 | No hay componente base de diálogo: unos 20 diálogos repiten marcado y estilos; `aria-labelledby="modal-title"` apunta a un id que no existe; los de agendar y completar cita son más altos que una ventana de 900 px | `resources/views/components/ui/*-modal.blade.php`, `components/calendar/*-modal.blade.php`, `pages/contenido/**`; `capturas/agenda-cita-completar-1440.png` | Componente de diálogo único con título enlazado, foco atrapado y alto máximo | la resuelve 016 |
+| DS9 | Marca sin recursos: no hay archivo de logo (dos SVG en línea distintos, anillo en el sitio público y escudo en el panel) y `public/favicon.ico` pesa 0 bytes | `components/landing/nav.blade.php:10`, `components/ui/sidebar.blade.php:93`, `public/favicon.ico` | Un logo en archivo y un favicon real | la resuelve 016 |
+| DS10 | Los rechazos de acceso no tienen pantalla propia: `/agenda` con un rol no administrador muestra JSON crudo y en inglés; 403 y 404 usan la página por defecto de Laravel, sin marca ni camino de vuelta | `capturas/error-403-admin-1440.png`, `capturas/error-403-staff-1440.png`, `capturas/error-404-1440.png` | Vistas de error con la marca y un enlace de regreso; el middleware responde con vista en rutas web | la resuelve 016 |
+| DS11 | Textos del panel sin acentos ("Gestion de contenido", "Expedientes clinicos", "Iniciar Sesion", "Esta accion eliminara la promocion") frente al sitio público, que sí los lleva | `capturas/contenido-promociones-eliminar-1440.png`, `capturas/expediente-1440.png`, `capturas/login-1440.png` | Corregir la ortografía de los textos del panel | la resuelve 016 |
 | DS12 | Movimiento sin alternativa: ninguna regla `prefers-reduced-motion` ni `motion-reduce:` en `resources/`; `transition-all` 94 veces; clases `animate-in…` sin CSS que las defina | `resources/views/**`, `resources/js/pages/**` | Versión sin movimiento y animar solo `transform` y `opacity` | pendiente |
-| DS13 | Interfaz sin uso o inalcanzable: `x-ui.table` sin usos, `welcome.blade.php` sin ruta y la rama de botones "ver y editar" de la tarjeta de cita, que solo se pinta para quien no es administrador en una pantalla solo para administradores (editar sí es accesible desde el detalle de la cita) | `resources/views/components/ui/table.blade.php`, `resources/views/welcome.blade.php`, `resources/js/pages/agenda/index.js:202` | Decidir por pieza: usarla o retirarla | pendiente |
-| DS14 | La mayoría de las pantallas del panel no tienen `h1`: el título de página es un `h2` (hay `h1` en 14 de 58 capturas a 390 px) | `resources/views/components/ui/page-hero.blade.php`; medidas de las capturas | Título de página como `h1` | pendiente |
+| DS13 | Interfaz sin uso o inalcanzable: `x-ui.table` sin usos, `welcome.blade.php` sin ruta y la rama de botones "ver y editar" de la tarjeta de cita, que solo se pinta para quien no es administrador en una pantalla solo para administradores (editar sí es accesible desde el detalle de la cita) | `resources/views/components/ui/table.blade.php`, `resources/views/welcome.blade.php`, `resources/js/pages/agenda/index.js:202` | Decidir por pieza: usarla o retirarla | la resuelve 016 |
+| DS14 | La mayoría de las pantallas del panel no tienen `h1`: el título de página es un `h2` (hay `h1` en 14 de 58 capturas a 390 px) | `resources/views/components/ui/page-hero.blade.php`; medidas de las capturas | Título de página como `h1` | la resuelve 016 |
 
 Estados: `pendiente` · `la resuelve NNN` · `resuelta por NNN` · `no se confirma (re-extracción
 AAAA-MM-DD: evidencia)`. Un ID nunca se reutiliza: una re-extracción conserva los vigentes y numera
@@ -284,3 +357,7 @@ lo nuevo a partir del último.
 | 2026-10-04 | diseño | ¿Se aprueba este documento como descripción del diseño actual? | Aprobado | usuario |
 | 2026-10-04 | diseño | ¿Cuándo se añade a la constitución el principio "La interfaz usa solo el sistema de diseño"? | En la spec del objetivo 6 del roadmap, que crea los tokens; esa spec va antes que el arreglo de la galería pública | usuario |
 | 2026-10-04 | contradicción | La primera extracción dio por inaccesible "Editar cita" y por no capturable el paso 2 de "Completar cita" | Corregido: editar se abre desde el detalle de una cita asignada, y completar solo escribe al confirmar el paso 2; ambos capturados | usuario |
+| 2026-10-06 | diseño | ¿Qué variante de la propuesta de la spec 016 se aplica? | La variante B · Neutra: tinta pizarra y los grises fríos que la app ya usa, con `#d75078` como principal y `#f2b0a6` como secundario | usuario |
+| 2026-10-06 | diseño | ¿Cómo se usa el logo? | El consultorio se llama Dentissa; en las barras, el icono junto a "Dentissa"; el logo completo de la doctora en el pie del sitio, el acceso y las páginas de error | usuario |
+| 2026-10-07 | diseño | ¿Cómo queda el panel lateral de las pantallas de acceso? | En rosa suave con texto en tinta, el logo completo y la foto | usuario |
+| 2026-10-08 | diseño | Paso del sistema extraído (1.0.0) al elegido (2.0.0) | Hecho en la spec 016 (T001): tokens, componentes y reglas de "Cambios a incorporar al sistema" del plan; el sistema 1.0.0 queda en `history/` | docs/specs/016-sistema-de-diseno-aplicado/plan.md |

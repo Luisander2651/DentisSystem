@@ -2,6 +2,7 @@
 spec: 016-sistema-de-diseno-aplicado
 plan: plan.md
 status: approved
+impl_base: 744284f
 ---
 
 # Tareas · 016 Sistema de diseño aplicado: paleta nueva, accesibilidad y pantallas de error
@@ -54,6 +55,7 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 
 ## Preparación
 - [ ] T001 Actualizar el sistema de diseño al sistema elegido: tabla de tokens, componentes y reglas de "Cambios a incorporar al sistema" del plan; `source: chosen`, `version: 2.0.0`, `status: draft`; elección de la variante B en "Decisiones"; deuda `DS1`–`DS11`, `DS13`, `DS14` → "la resuelve 016" — `docs/design/system.md`, `docs/design/system.html`, `docs/design/history/ (generado por copia del sistema 1.0.0)` — hecho cuando: `system.md` lista los tokens del plan con su contraste, `system.html` los muestra y el sistema anterior queda archivado · verificación manual: el usuario aprueba el sistema 2.0.0 y entonces pasa a `status: approved` — cubre: CA23
+  - nota: artefactos escritos el 2026-10-08 (`system.md` y `system.html` 2.0.0 en `draft`; sistema 1.0.0 en `docs/design/history/system.1.0.0.{md,html}`). `system.html` incrusta el icono y el logo de la propuesta para abrirse sin red. Queda abierta hasta la verificación manual: el usuario aprueba el sistema 2.0.0.
 - [ ] T002 Actualizar `shell-quote` y `source-map-js` a la versión corregida con al menos 7 días de publicada, y anotar RS16.a como reabierta y vuelta a mitigar — `package-lock.json`, `docs/security.md` — hecho cuando: `npm audit --audit-level=high` no reporta nada, las dependencias de `package.json` no cambian y `npm run build` termina bien; si no hay versión elegible, la tarea se bloquea y se registra la excepción con vencimiento a 14 días que describe el plan — cubre: CA39, TM6
 - [ ] T004 Crear `UiAuditSeeder` y el comando `ui:audit-data`, que siembra y, con `--clean`, retira solo lo que el seeder marcó. Datos: un usuario por rol y uno de staff inactivo, un paciente con expediente completo y otro vacío, citas en un mes fijo con los cuatro estados, tres tratamientos y contenido en las cuatro secciones con imágenes neutras. Idempotente; solo corre en `local` y `testing` — `database/seeders/UiAuditSeeder.php`, `app/Core/Console/UiAuditDataCommand.php` — hecho cuando: T024 pasa — cubre: TM5 — depende: T024
 - [ ] T003 Crear el comando `ui:audit-session {rol}`, que emite un token de un usuario de `UiAuditSeeder`, y registrar los dos comandos solo en `local` y `testing` con `app()->environment()` — `app/Core/Console/UiAuditSessionCommand.php`, `routes/console.php` — hecho cuando: T009 pasa — cubre: TM5 — depende: T004, T009
