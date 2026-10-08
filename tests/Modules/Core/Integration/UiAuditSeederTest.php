@@ -86,7 +86,7 @@ it('seeds one user per role, an inactive staff member, two patients, appointment
         ->and(PromotionModel::query()->count())->toBeGreaterThan(0)
         ->and(CertificationModel::query()->count())->toBeGreaterThan(0)
         ->and(TestimonialModel::query()->count())->toBeGreaterThan(0);
-})->skip('016: pendiente de T004');
+});
 
 it('stores neutral images of its own under its reserved directory', function () {
     (new UiAuditSeeder)->run();
@@ -104,7 +104,7 @@ it('stores neutral images of its own under its reserved directory', function () 
         expect($url)->toStartWith('/storage/'.UiAuditSeeder::IMAGE_DIRECTORY.'/');
         Storage::disk('public')->assertExists(Str::after($url, '/storage/'));
     }
-})->skip('016: pendiente de T004');
+});
 
 it('refuses to run outside local and testing and writes nothing (abuse)', function (string $environment) {
     $this->app['env'] = $environment;
@@ -112,7 +112,7 @@ it('refuses to run outside local and testing and writes nothing (abuse)', functi
     expect(fn () => (new UiAuditSeeder)->run())->toThrow(RuntimeException::class);
 
     expect(array_sum(uiAuditRowCounts()))->toBe(0);
-})->with(['production', 'staging', 'prod'])->skip('016: pendiente de T004');
+})->with(['production', 'staging', 'prod']);
 
 it('refuses to clean outside local and testing (abuse)', function () {
     (new UiAuditSeeder)->run();
@@ -122,7 +122,7 @@ it('refuses to clean outside local and testing (abuse)', function () {
 
     expect(fn () => (new UiAuditSeeder)->clean())->toThrow(RuntimeException::class)
         ->and(uiAuditRowCounts())->toBe($before);
-})->skip('016: pendiente de T004');
+});
 
 it('does not duplicate anything when it runs twice', function () {
     (new UiAuditSeeder)->run();
@@ -131,13 +131,13 @@ it('does not duplicate anything when it runs twice', function () {
     (new UiAuditSeeder)->run();
 
     expect(uiAuditRowCounts())->toBe($first);
-})->skip('016: pendiente de T004');
+});
 
 it('seeds through the ui:audit-data command', function () {
     $this->artisan('ui:audit-data')->assertSuccessful();
 
     expect(UserModel::query()->where('email', 'like', '%@'.UiAuditSeeder::EMAIL_DOMAIN)->count())->toBe(4);
-})->skip('016: pendiente de T004');
+});
 
 it('fails the ui:audit-data command outside local and testing without writing (abuse)', function () {
     $this->app['env'] = 'production';
@@ -145,7 +145,7 @@ it('fails the ui:audit-data command outside local and testing without writing (a
     $this->artisan('ui:audit-data')->assertFailed();
 
     expect(array_sum(uiAuditRowCounts()))->toBe(0);
-})->skip('016: pendiente de T004');
+});
 
 it('removes with --clean only what the seeder marked', function () {
     $this->artisan('ui:audit-data')->assertSuccessful();
@@ -217,7 +217,7 @@ it('removes with --clean only what the seeder marked', function () {
         ->and($foreignCertification->fresh())->not->toBeNull()
         ->and($foreignTestimonial->fresh())->not->toBeNull()
         ->and(PersonalAccessToken::query()->pluck('id')->all())->toBe([$foreignToken->accessToken->id]);
-})->skip('016: pendiente de T004');
+});
 
 it('keeps a seeded user and treatment that an appointment of someone else still uses', function () {
     (new UiAuditSeeder)->run();
@@ -242,4 +242,4 @@ it('keeps a seeded user and treatment that an appointment of someone else still 
         ->and($seededTreatment->fresh())->not->toBeNull()
         ->and(UserModel::query()->where('email', UiAuditSeeder::STAFF_EMAILS['administrador'])->exists())->toBeFalse()
         ->and(TreatmentModel::query()->where('name', UiAuditSeeder::TREATMENT_NAMES[1])->exists())->toBeFalse();
-})->skip('016: pendiente de T004');
+});
