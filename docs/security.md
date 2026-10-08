@@ -129,7 +129,7 @@ Correcciones:
 `npm audit` (2026-09-25) reporta 2 críticas y 5 altas en herramientas de build y desarrollo (vite, rollup, postcss, nanoid, picomatch, concurrently, shell-quote). axios, que se incluye en el bundle del navegador, ya se actualizó a 1.20.0 (spec 014, T083).
 
 Correcciones:
-- RS16.a Actualizar las herramientas de build a versiones sin avisos — estado: mitigada (v0.1.0; spec 015): `npm audit fix` sin cambios mayores; EX1 cerrada
+- RS16.a Actualizar las herramientas de build a versiones sin avisos — estado: mitigada (v0.1.0; spec 015): `npm audit fix` sin cambios mayores; EX1 cerrada. Reabierta el 2026-10-07: `npm audit` volvió a reportar `shell-quote` (crítica, vía `concurrently`) y `source-map-js` (alta, vía `vite` y `tailwindcss`), ambas herramientas de desarrollo. Vuelta a mitigar el 2026-10-08 (spec 016, T002): `source-map-js` 1.2.2 y `shell-quote` 1.11.0, las dos con más de 7 días de publicadas. `concurrently` 9.2.1–9.2.4 fija versiones exactas de `shell-quote` vulnerables, así que la corregida se impone con `overrides` en `package.json` (decisión del usuario, 2026-10-08); se retira cuando `concurrently` publique una versión que ya la traiga. `npm audit --audit-level=high`: 0 vulnerabilidades
 
 ### RS3 · Media — Fuga de detalles internos
 48 controladores devuelven `$e->getMessage()` en respuestas 500 (Patients, Appointments, AppointmentTracking, ContentManagement).
