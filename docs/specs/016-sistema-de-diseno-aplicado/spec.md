@@ -20,7 +20,7 @@ constitución (WCAG 2.1 AA) y cada pantalla nueva repite el desorden.
 
 Esta spec aplica la paleta nueva de la clínica, ordena la interfaz sobre un único sistema de diseño
 y cierra la deuda `DS1`–`DS11`, `DS13` y `DS14` de [docs/design/system.md](../../design/system.md).
-`DS12` queda fuera (ver "Fuera de alcance").
+`DS12` queda fuera (ver "Fuera de alcance"). Además atiende RS16 de `docs/security.md` (herramientas de desarrollo con vulnerabilidades conocidas), que reapareció tras la versión 0.1.0.
 
 ## Historias de usuario
 - Como dueña de la clínica, quiero que toda la interfaz use los colores y el logo de mi marca para que el sistema se reconozca como de la clínica.
@@ -64,6 +64,7 @@ y cierra la deuda `DS1`–`DS11`, `DS13` y `DS14` de [docs/design/system.md](../
 - [ ] CA18 · (abuso) Como usuario con sesión, entro a una pantalla que mi rol no puede ver → veo una página "Sin permiso" con la marca, un mensaje en español y un botón que me lleva a mi inicio; la página no muestra ningún dato de la pantalla pedida y el acceso sigue rechazado como denegado. Sustituye a lo que se ve hoy: una página en negro con un mensaje en crudo (p. ej. un asistente que abre la agenda) o la página genérica en inglés (p. ej. un paciente que abre expedientes).
 - [ ] CA19 · Dado cualquier persona, cuando entra a una dirección que no existe, entonces ve una página "No encontrada" con la marca y un enlace de vuelta: a su inicio si tiene sesión, al inicio del sitio público si no la tiene.
 - [ ] CA20 · (abuso) Como usuario curioso, provoco un acceso denegado o una dirección inexistente en cualquier pantalla web → nunca recibo datos en crudo, texto en inglés ni detalles técnicos (nombres internos, trazas, rutas del servidor).
+- [ ] CA41 · Dado cualquier persona, cuando la aplicación rechaza una petición a una pantalla web porque el método no está permitido o porque el formulario caducó, entonces ve una página propia con la marca, un mensaje en español que dice qué pasó y un enlace de vuelta, igual que en CA19.
 - [ ] CA21 · Dado un visitante sin sesión, cuando entra a una pantalla protegida, entonces se le lleva a iniciar sesión, como hoy.
 
 ### Móvil (390 px)
@@ -77,22 +78,32 @@ Hallazgos `M01`–`M16` de la revisión de las 65 pantallas a 390 px (ver "Dise�
 - [ ] CA31 · Dado un miembro del staff a 390 px, cuando elige un paciente en expedientes clínicos, entonces el expediente de ese paciente queda a la vista sin tener que recorrer la lista de pacientes.
 - [ ] CA32 · Dada la galería de gestión de contenido a 390 px, cuando se listan las imágenes, entonces cada tarjeta cabe en una pantalla (844 px de alto), se identifica por su descripción y no por el nombre interno del archivo, no muestra la dirección interna de la imagen y todo texto sobre una imagen cumple el contraste de CA6.
 - [ ] CA33 · Dado cualquier listado del panel (pacientes, expedientes, tratamientos, contenido, usuarios) a 390 px, cuando se abre la pantalla, entonces el primer elemento del listado empieza dentro de la primera pantalla (844 px).
-- [ ] CA34 · Dado cualquier pantalla del panel a 390 px, cuando se revisa, entonces no hay espacio vacío sin función: gestión de contenido tiene un solo encabezado de página, una tarjeta sin datos (como "Citas para hoy" sin citas) no mide más de 320 px de alto y la cabecera del panel no tiene hueco bajo su contenido.
+- [ ] CA34 · Dado cualquier pantalla del panel a 390 px, cuando se revisa, entonces no hay espacio vacío sin función: gestión de contenido tiene un solo encabezado de página (también a 1440 px; cada pestaña muestra su nombre como subtítulo junto a su acción de agregar), una tarjeta sin datos (como "Citas para hoy" sin citas) no mide más de 320 px de alto y la cabecera del panel no tiene hueco bajo su contenido.
+
+### Accesibilidad completa (WCAG 2.1 AA)
+- [ ] CA35 · Dado cualquier control interactivo (incluidos los botones que solo muestran un icono) y cualquier imagen con información, cuando lo lee un lector de pantalla, entonces tiene un nombre que dice qué hace o qué es; las imágenes decorativas no se anuncian.
+- [ ] CA36 · Dado cualquier campo de formulario, cuando se muestra, entonces tiene una etiqueta visible asociada a él, y los campos obligatorios se distinguen de los opcionales.
+- [ ] CA37 · Dado un formulario o una acción, cuando ocurre un error de validación, un error al guardar o termina bien, entonces el mensaje se anuncia al lector de pantalla sin mover el foco, y el error de un campo queda asociado a ese campo.
+- [ ] CA38 · Dado cualquier icono de acción, borde de control o indicador que transmite información sin texto, cuando se mide contra su fondo, entonces su contraste es de al menos 3:1; y ningún estado se distingue solo por el color.
+
+- [ ] CA40 · Dado cualquier elemento que hace algo al pulsarlo con el ratón o con el dedo (incluidos los días del calendario y las tarjetas de la galería), cuando se usa solo el teclado, entonces se puede llegar a él con el tabulador y activarlo con Intro o con la barra espaciadora.
 
 ### Lo que no cambia y lo que queda escrito
-- [ ] CA22 · Dado cualquier pantalla a 1440 px, cuando se compara con su captura anterior, entonces conserva su composición: las mismas secciones en la misma disposición, las mismas acciones, la misma tipografía y los mismos flujos; solo cambian colores, tamaños, radios, foco, diálogos, logo y textos corregidos. A 390 px se conserva igual, salvo los cambios de disposición que piden CA11 y CA25–CA34.
+- [ ] CA22 · Dado cualquier pantalla a 1440 px, cuando se compara con su captura anterior, entonces conserva su composición: las mismas secciones en la misma disposición, las mismas acciones, la misma tipografía y los mismos flujos; solo cambian colores, tamaños, radios, foco, diálogos, logo y textos corregidos. A 390 px se conserva igual, salvo los cambios de disposición que piden CA11 y CA25–CA34. Única excepción a 1440 px: gestión de contenido pasa a un solo encabezado (CA34).
 - [ ] CA23 · Dado el sistema de diseño, cuando termina esta spec, entonces su documento y su vista describen la interfaz nueva, con capturas de todas las pantallas a 390 y 1440 px, y la deuda `DS1`–`DS11`, `DS13` y `DS14` figura como resuelta por esta spec.
-- [ ] CA24 · Dada la constitución, cuando termina esta spec, entonces incluye el principio "La interfaz usa solo el sistema de diseño", con su forma de verificación, aprobado por el usuario como enmienda.
+- [ ] CA39 · Dado el análisis de dependencias del proyecto, cuando termina esta spec, entonces no reporta ninguna vulnerabilidad alta ni crítica, o la que quede tiene una excepción aprobada por el usuario con fecha de vencimiento.
+- [ ] CA24 · Dada la constitución, cuando termina esta spec, entonces incluye el principio "La interfaz usa solo el sistema de diseño", con su forma de verificación, y su principio de pruebas admite la prueba en navegador para lo que solo existe en un navegador; ambos cambios aprobados por el usuario como una misma enmienda.
 
 ## Fuera de alcance
-- Rediseño: no cambian la tipografía, la navegación ni los flujos, ni la disposición de las pantallas a 1440 px. A 390 px la disposición cambia solo donde lo piden CA11 y CA25–CA34 (decisión del usuario, 2026-10-06).
+- Rediseño: no cambian la tipografía, la navegación ni los flujos, ni la disposición de las pantallas a 1440 px (salvo el encabezado único de gestión de contenido). A 390 px la disposición cambia solo donde lo piden CA11 y CA25–CA34 (decisión del usuario, 2026-10-06).
 - Paginación o carga progresiva de los listados largos: CA32 y CA33 acortan cada elemento y lo que hay antes del listado, no el número de elementos.
 - `DS12`, movimiento sin alternativa para quien pide menos movimiento: sigue en "Pendientes y deuda" del roadmap (decisión del usuario, 2026-10-04).
 - Modo oscuro.
 - Contadores del inicio del panel, que muestran "-": tendrán su propia spec (decisión del usuario, 2026-10-04).
 - Portal del paciente: no tiene pantallas; no se crean aquí.
 - Arreglo de la galería pública cuando hay un solo registro: va después de esta spec (roadmap → "Pendientes y deuda").
-- Pantalla propia para errores inesperados del servidor y para sesión caducada: esta spec cubre solo "sin permiso" y "no encontrada".
+- Pantalla propia para errores inesperados del servidor y para sesión caducada: esta spec cubre "sin permiso", "no encontrada", método no permitido y formulario caducado (CA18, CA19, CA41).
+- Páginas de error que responde el servidor web por su cuenta en producción, sin pasar por la aplicación (direcciones de archivos ocultos y de recursos compilados que no existen): siguen con la página genérica; van a "Pendientes y deuda" del roadmap (decisión del usuario, 2026-10-07).
 - Cambios en quién puede ver o hacer qué: los permisos son los de la spec 014; aquí solo cambia cómo se presenta el rechazo.
 - Registro de auditoría de los accesos denegados: objetivo 5 del roadmap.
 - Crear o retocar el logo: se integra el que entrega la clínica, tal cual.
@@ -103,6 +114,13 @@ Hallazgos `M01`–`M16` de la revisión de las 65 pantallas a 390 px (ver "Dise�
 - Casos de abuso (cada uno con su criterio `CA` marcado `(abuso)`):
   - Como usuario con sesión sin permiso para una pantalla, intento abrirla por su dirección → se rechaza y veo "Sin permiso" sin ningún dato de esa pantalla (CA18).
   - Como usuario curioso, provoco rechazos y direcciones inexistentes para obtener detalles internos → las páginas de error no revelan nada técnico (CA20).
+
+## Cobertura de riesgos
+Cada corrección de cada riesgo citado, dentro o fuera de alcance.
+
+| Corrección | Alcance | Criterios / motivo y destino |
+|---|---|---|
+| RS16.a — Actualizar las herramientas de build a versiones sin avisos | dentro | CA39 |
 
 ## Auditoría
 Esta spec no emite eventos de auditoría: no cambia quién accede a qué, solo cómo se presenta el
@@ -167,10 +185,10 @@ Deuda de diseño que cierra:
 | DS14 — pantallas del panel sin título principal | dentro | CA14 |
 
 ## Requisitos no funcionales
-- Accesibilidad: todas las pantallas cumplen WCAG 2.1 AA en lo que cubren CA6–CA9, CA12–CA14 y CA29 (constitución, "Restricciones").
+- Accesibilidad: todas las pantallas cumplen WCAG 2.1 AA (constitución, "Restricciones"): lo comprueban CA6–CA9, CA12–CA14, CA29, CA35–CA38 y CA40, más una revisión de accesibilidad por grupo de pantallas.
 - Anchos de comprobación: 390 y 1440 px, sin desplazamiento horizontal de página en ninguna pantalla.
 - Sin regresiones: todo lo que el staff y los visitantes pueden hacer hoy sigue funcionando igual (CA22); la suite de tests existente pasa sin cambios en su comportamiento esperado.
-- El logo y el icono de pestaña se sirven desde la propia aplicación, no desde terceros.
+- El logo, el icono de pestaña y la imagen de las pantallas de acceso forman parte de la aplicación: no se sirven desde terceros ni dependen de un archivo suelto en el servidor.
 
 ## Preguntas abiertas
 - Ninguna.
@@ -197,6 +215,15 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 | 2026-10-06 | supuesto | ¿Cuál es "su inicio" para cada rol? | El inicio del panel que cada rol ya ve hoy. | /specify |
 | 2026-10-06 | supuesto | ¿Qué specs extiende? | Solo la 014 (presentación del acceso denegado en pantallas web). En las specs 001–012 cambia el aspecto, no ningún criterio. | /specify |
 | 2026-10-06 | supuesto | DS13: ¿cada pieza sin uso se usa o se retira? | Lo decide el usuario pieza por pieza en `/plan`; la spec solo exige que ninguna quede sin uso (CA17). | /specify |
+| 2026-10-06 | contradicción | La constitución pide WCAG 2.1 AA en toda pantalla modificada y la spec solo comprobaba contraste, foco, tamaños, diálogos y títulos. | AA completo: CA35–CA38 nuevos y una revisión de accesibilidad por grupo de pantallas. | usuario (`/analyze` A8) |
+| 2026-10-06 | contradicción | El principio de pruebas de la constitución exige un test de la suite del servidor para todo cambio de comportamiento, y parte de esta spec solo se puede probar en un navegador. | La misma enmienda que añade el principio del sistema de diseño aclara el de pruebas (CA24). | usuario (`/analyze` A7) |
+| 2026-10-06 | brecha | Con un solo título principal por pantalla, ¿qué encabezado queda en gestión de contenido? | Uno, en móvil y en escritorio: "Gestión de contenido" con las pestañas; cada pestaña muestra su nombre como subtítulo. Es la única excepción a conservar la composición a 1440 px (CA22, CA34). | usuario (`/analyze` A10) |
+| 2026-10-06 | brecha | Las pantallas de acceso muestran una imagen que no está en el repositorio. | Se versiona junto con la marca. | usuario (`/analyze` A31) |
+| 2026-10-06 | brecha | El análisis de dependencias vuelve a reportar vulnerabilidades altas y críticas en herramientas de desarrollo, ajenas a esta spec, que bloquearían la liberación. | Se corrigen dentro de esta spec (CA39, RS16.a). | usuario (`/plan`) |
+| 2026-10-07 | brecha | El panel lateral de las pantallas de acceso usa los rosas anteriores con texto blanco, que con el rosa nuevo no cumple contraste. | Fondo rosa suave con texto oscuro, el logo completo y la foto. | usuario (`/analyze` A38) |
+| 2026-10-07 | brecha | En el móvil la lista de citas del día aparece bajo el calendario. ¿Sigue existiendo el diálogo "Citas del día"? | Solo en escritorio; en el móvil lo sustituye la lista. | usuario (`/analyze` A48) |
+| 2026-10-07 | contradicción | CA20 dice "nunca texto en inglés ni detalles técnicos" en cualquier pantalla web, pero el servidor web responde algunos errores por su cuenta y la aplicación tiene otros dos rechazos sin página propia. | La aplicación gana página propia para método no permitido y formulario caducado (CA41). Las páginas que responde el servidor web por su cuenta quedan fuera, en el roadmap. | usuario (`/analyze` A49) |
+| 2026-10-07 | contradicción | La constitución pide WCAG 2.1 AA y nada comprobaba que todo se pueda usar con teclado. | CA40 nuevo. | `/analyze` A35; decisión del usuario del 2026-10-06 de cubrir AA completo |
 | 2026-10-06 | supuesto | ¿Qué umbrales miden los hallazgos del móvil? | Primer elemento de un listado dentro de 844 px (CA33); tarjeta de galería de 844 px como máximo (CA32); tarjeta sin datos de 320 px como máximo (CA34); letra de campo de 16 px y texto mínimo de 12 px (CA29). | /specify |
 | 2026-10-06 | supuesto | CA32 quita de la tarjeta de galería el nombre interno y la dirección del archivo. ¿Se pierde algo? | No: son datos internos sin uso para quien gestiona el contenido; la imagen y su descripción la identifican. | /specify |
 | 2026-10-06 | supuesto | ¿Cubre la pantalla de error inesperado del servidor? | No; solo "sin permiso" y "no encontrada", que son las que cita DS10. | /specify |
@@ -213,7 +240,8 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 - Enmienda de la constitución: principio nuevo → versión MINOR (1.2.0), con entrada en "Enmiendas"; solo con aprobación del usuario. Su verificación debe ser por test o lint (contrato → Constitution Check).
 - Revisión a 390 px: hecha con Chrome sin interfaz (móvil de 390 × 844, táctil); el reporte, las capturas y los scripts quedaron en una carpeta temporal fuera del repositorio (incluyen imágenes de la galería local, no se versionan). Las medidas que importan están en los criterios CA25–CA34 y en la tabla de "Diseño"; el plan debe repetir la medición como test o verificación manual.
 - M01: la fila de filtros de la agenda no hace salto de línea (470 px). M03 es consecuencia de M01. M05: las tablas están en `components/records/*`, dentro de una caja con `overflow-x-auto`. M12: los contadores van uno por fila en móvil.
-- Spec grande (34 criterios): conviene planear por fases entregables (tokens y paleta → componentes y escala → diálogos → agenda móvil → errores → logo y textos).
+- Hallazgos de `/analyze` ronda 1 que afectan al diseño: ver [analysis.md](analysis.md). La imagen de acceso es `storage/login.jpg` (no versionada), usada en iniciar sesión, registrarse y recuperar contraseña.
+- Spec grande (41 criterios): conviene planear por fases entregables (tokens y paleta → componentes y escala → diálogos → agenda móvil → errores → logo y textos).
 - Al cerrar (`/release`): anotar en el Historial de la spec 014 que el acceso denegado en pantallas web muestra la página "Sin permiso".
 
 ## Historial
@@ -222,3 +250,9 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 | 2026-10-06 | Creación | Objetivo 6 del roadmap |
 | 2026-10-06 | CA25–CA34 nuevos (móvil a 390 px) y CA22 acotado: conserva la composición a 1440 px y admite en el móvil los cambios de CA11 y CA25–CA34 | Revisión de las 65 pantallas a 390 px (M01–M16); decisión del usuario |
 | 2026-10-06 | Aprobada | Aprobación del usuario |
+| 2026-10-06 | Vuelve a `draft`: CA35–CA38 nuevos (WCAG 2.1 AA completo), CA24 incluye la aclaración del principio de pruebas, CA22 y CA34 admiten el encabezado único de gestión de contenido a 1440 px, e imagen de acceso versionada | `/analyze` ronda 1 (A7, A8, A10, A31); decisión del usuario |
+| 2026-10-06 | Reaprobada tras la edición | Aprobación del usuario |
+| 2026-10-07 | Vuelve a `draft`: CA39 y "Cobertura de riesgos" con RS16.a, que el plan ya atendía por decisión del usuario | `/analyze` ronda 1 (A18) |
+| 2026-10-07 | Reaprobada tras la edición | Aprobación del usuario |
+| 2026-10-07 | Vuelve a `draft`: CA40 (uso con teclado) y CA41 (páginas para método no permitido y formulario caducado) nuevos; fuera de alcance, las páginas de error del servidor web | `/analyze` ronda 2 (A35, A38, A48, A49); decisión del usuario |
+| 2026-10-07 | Reaprobada tras la edición | Aprobación del usuario |
