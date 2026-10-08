@@ -27,7 +27,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { IN_PAGE_LIBRARY, decodePng, toneRange } from './audit-lib.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const CHECK_MODULES = ['composition', 'global', 'dialogs', 'screens', 'a11y'];
+// checks-dialogs goes last: it closes the dialog the others measure.
+const CHECK_MODULES = ['composition', 'global', 'screens', 'a11y', 'dialogs'];
 const ROLES = ['administrador', 'asistente', 'doctor', 'paciente'];
 const VIEWPORTS = { 390: 844, 1440: 900 };
 const SETTLE_TIMEOUT = 15000;
@@ -515,10 +516,13 @@ function selectEntries(entries, only) {
 async function loadChecks(names) {
     const checks = [];
 
-    for (const name of names ?? CHECK_MODULES) {
+    for (const name of names ?? []) {
         if (!CHECK_MODULES.includes(name)) {
             throw new Error(`Módulo de comprobación desconocido: ${name} (${CHECK_MODULES.join(', ')})`);
         }
+    }
+
+    for (const name of CHECK_MODULES.filter((module) => names === null || names.includes(module))) {
 
         const file = join(here, `checks-${name}.mjs`);
 
@@ -593,7 +597,7 @@ async function openEntry(browser, entry, width, options, session, config) {
  */
 const rateLimit = { resumeAt: 0 };
 
-async function auditEntry(browser, entry, width, options, session, config, checks, baseline) {
+async function visit(browser, entry, width, options, session, config, work) {
     for (let attempt = 1; ; attempt++) {
         const wait = rateLimit.resumeAt - Date.now();
 
@@ -604,7 +608,7 @@ async function auditEntry(browser, entry, width, options, session, config, check
         const { page, dispose } = await openEntry(browser, entry, width, options, session, config);
 
         try {
-            const failures = await auditPage(page, entry, width, options, checks, baseline);
+            const failures = await work(page);
 
             if (page.rateLimited === null || attempt === 6) {
                 return failures;
@@ -617,15 +621,41 @@ async function auditEntry(browser, entry, width, options, session, config, check
     }
 }
 
+async function enter(page, entry, options) {
+    await page.goto(options.baseUrl + entry.path);
+
+    for (const step of entry.steps ?? []) {
+        await runStep(page, step);
+    }
+}
+
+/*
+ * A module measures in `run`, on the page every module shares. One that has to use the
+ * screen up (send a form) also exports `runFresh`, and gets a visit of its own for it.
+ */
+async function auditEntry(browser, entry, width, options, session, config, checks, baseline) {
+    const failures = await visit(browser, entry, width, options, session, config, (page) => auditPage(page, entry, width, options, checks, baseline));
+
+    for (const check of options.baseline ? [] : checks.filter((candidate) => candidate.runFresh)) {
+        failures.push(...await visit(browser, entry, width, options, session, config, async (page) => {
+            try {
+                await enter(page, entry, options);
+
+                return (await check.runFresh(page, entry, { baseUrl: options.baseUrl })).map((failure) => ({ check: check.name, ...failure }));
+            } catch (error) {
+                return [{ check: check.name, rule: 'error del módulo', message: error.message }];
+            }
+        }));
+    }
+
+    return failures;
+}
+
 async function auditPage(page, entry, width, options, checks, baseline) {
     const failures = [];
 
     try {
-        await page.goto(options.baseUrl + entry.path);
-
-        for (const step of entry.steps ?? []) {
-            await runStep(page, step);
-        }
+        await enter(page, entry, options);
     } catch (error) {
         return [{ check: 'ui-audit', rule: 'no abre', message: error.message }];
     }
