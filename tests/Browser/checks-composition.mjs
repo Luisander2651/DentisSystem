@@ -19,6 +19,11 @@
 
 export const ADMITTED = [
     {
+        criterion: 'CA9, CA10',
+        entries: ['pacientes'],
+        difference: 'Los filtros por estado dejan de ser un control segmentado dentro de una caja y pasan a ser filtros del sistema (x-ui.chip) de 44 px, en el mismo lugar. Aspecto aprobado por el usuario en la vista previa de pacientes (2026-10-08).',
+    },
+    {
         criterion: 'CA28, CA29',
         entries: ['inicio'],
         difference: 'Las dos insignias de la imagen principal del inicio público crecen al pasar su letra de 10 a 12 px y cuentan como caja propia; siguen en su sitio.',

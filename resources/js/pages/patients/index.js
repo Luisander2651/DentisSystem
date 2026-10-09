@@ -99,9 +99,7 @@
 
         statusFilter.querySelectorAll('[data-status-value]').forEach(function (button) {
             var isActive = String(button.getAttribute('data-status-value') || '') === String(value || '');
-            button.classList.toggle('bg-[#FDF1F6]', isActive);
-            button.classList.toggle('text-[#B5114A]', isActive);
-            button.classList.toggle('text-slate-600', !isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
     }
 
@@ -128,47 +126,47 @@
             const statusLabel = normalizeStatus(status);
             
             const statusClasses = status === 'active'
-                ? 'bg-emerald-50 text-emerald-700'
-                : 'bg-slate-100 text-slate-600';
+                ? 'bg-success-soft text-success'
+                : 'bg-danger-soft text-danger';
 
             const initial = (firstName.charAt(0) || lastName.charAt(0) || 'P').toUpperCase();
 
             // "Granito de arena": Colores dinámicos para las iniciales basados en el nombre
-            const colors = ['bg-[#FDF1F6] text-[#B5114A]', 'bg-sky-50 text-sky-700', 'bg-emerald-50 text-emerald-700', 'bg-amber-50 text-amber-700'];
+            const colors = ['bg-primary-soft text-ink', 'bg-info-soft text-info', 'bg-success-soft text-success', 'bg-warning-soft text-warning'];
             const colorIndex = (firstName.length + lastName.length) % colors.length;
             const avatarClasses = colors[colorIndex];
 
             return [
-                '<article class="group rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-[#F5C2D6] hover:shadow-md">',
+                '<article class="rounded-card border border-line bg-surface p-4 shadow-sm md:p-5">',
                     '<div class="flex items-start justify-between gap-4">',
                         '<div class="flex items-center gap-3">',
-                            '<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ' + avatarClasses + ' text-sm font-bold transition-transform group-hover:scale-110">', escapeHtml(initial), '</div>',
+                            '<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-box ' + avatarClasses + ' text-sm font-bold" aria-hidden="true">', escapeHtml(initial), '</div>',
                             '<div>',
-                                '<h3 class="text-base font-semibold text-slate-900 wrap-break-word group-hover:text-[#B5114A] transition-colors">', escapeHtml(fullName), '</h3>',
-                                '<span class="inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ' + statusClasses + '">', escapeHtml(statusLabel), '</span>',
+                                '<h3 class="text-base font-semibold text-ink wrap-break-word">', escapeHtml(fullName), '</h3>',
+                                '<span class="inline-flex rounded-full px-2.5 py-0.5 text-min font-bold ' + statusClasses + '">', escapeHtml(statusLabel), '</span>',
                             '</div>',
                         '</div>',
-                        '<div class="flex gap-1">',
-                            '<button type="button" data-patient-edit data-patient-id="', escapeHtml(id), '" data-patient-first-name="', escapeHtml(firstName), '" data-patient-last-name="', escapeHtml(lastName), '" data-patient-email="', escapeHtml(email), '" data-patient-status="', escapeHtml(status), '" class="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition" title="Editar">',
-                                '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>',
+                        '<div class="flex gap-2">',
+                            '<button type="button" data-patient-edit data-patient-id="', escapeHtml(id), '" data-patient-first-name="', escapeHtml(firstName), '" data-patient-last-name="', escapeHtml(lastName), '" data-patient-email="', escapeHtml(email), '" data-patient-status="', escapeHtml(status), '" class="flex size-control items-center justify-center rounded-control border border-field bg-surface text-ink transition-colors hover:bg-canvas" aria-label="Editar a ', escapeHtml(fullName), '">',
+                                '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>',
                             '</button>',
-                            '<button type="button" data-patient-delete data-patient-id="', escapeHtml(id), '" data-patient-label="', escapeHtml(fullName), '" class="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-red-50 hover:text-red-600 transition" title="Eliminar">',
-                                '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+                            '<button type="button" data-patient-delete data-patient-id="', escapeHtml(id), '" data-patient-label="', escapeHtml(fullName), '" class="flex size-control items-center justify-center rounded-control border border-field bg-surface text-ink transition-colors hover:bg-danger-soft hover:text-danger" aria-label="Eliminar a ', escapeHtml(fullName), '">',
+                                '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
                             '</button>',
                         '</div>',
                     '</div>',
                     
                     '<div class="mt-4">',
-                        '<div class="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-600 group-hover:bg-[#FFF7FA] transition-colors">',
-                            '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-[#B5114A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
+                        '<div class="flex items-center gap-2 rounded-box bg-canvas px-4 py-3 text-sm text-muted">',
+                            '<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
                             '<span class="break-all font-medium">', escapeHtml(email), '</span>',
                         '</div>',
                     '</div>',
 
                     '<div class="mt-4 flex items-center justify-between">',
-                         '<a href="/expedientes-clinicos/' + escapeHtml(id) + '" class="text-xs font-bold text-[#B5114A] hover:underline flex items-center gap-1">',
-                            'Ver Expediente',
-                            '<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>',
+                         '<a href="/expedientes-clinicos/' + escapeHtml(id) + '" class="inline-flex min-h-control items-center gap-1 text-sm font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4">',
+                            'Ver expediente',
+                            '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>',
                          '</a>',
                     '</div>',
                 '</article>'
@@ -199,7 +197,7 @@
             const payload = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                const message = payload.error || payload.message || 'No se pudieron cargar los pacientes.';
+                const message = 'No se pudieron cargar los pacientes. Inténtalo de nuevo en un momento.';
                 showError(message);
                 renderPatientCards([]);
                 return;
@@ -211,7 +209,7 @@
             rebuildCounters(allPatients);
             renderPatientCards(allPatients);
         } catch (error) {
-            showError('Error de conexion. Intentalo de nuevo.');
+            showError('No hay conexión. Revisa tu red e inténtalo de nuevo.');
             renderPatientCards([]);
         } finally {
             setLoading(false);

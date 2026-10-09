@@ -47,7 +47,6 @@ const PAGE_STRUCTURE_ACCESS_SCREENS = ['login', 'register', 'forgot-password', '
 const PAGE_STRUCTURE_PENDING = [
     'h1' => [
         'agenda' => 'T064',
-        'pacientes' => 'T042',
         'usuarios' => 'T045',
         'tratamientos' => 'T047',
         'contenido' => 'T061',

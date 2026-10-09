@@ -2,6 +2,13 @@
     "$comment": "Generado por npm run test:ui -- --baseline antes de tocar las vistas (spec 016, CA22). Por entrada: cajas, encabezados y acciones a 1440 px, con su posición horizontal en % del ancho. No se edita a mano; solo se reescriben las entradas de \"admitted\".",
     "admitted": [
         {
+            "criterion": "CA9, CA10",
+            "entries": [
+                "pacientes"
+            ],
+            "difference": "Los filtros por estado dejan de ser un control segmentado dentro de una caja y pasan a ser filtros del sistema (x-ui.chip) de 44 px, en el mismo lugar. Aspecto aprobado por el usuario en la vista previa de pacientes (2026-10-08)."
+        },
+        {
             "criterion": "CA28, CA29",
             "entries": [
                 "inicio"
@@ -55,7 +62,7 @@
         "agenda-cita-completar-validacion": [{"k":"card","x":27,"w":47,"c":[{"k":"card","x":27,"w":47,"c":[{"k":"heading","x":29,"w":10},{"k":"press","x":68,"w":3},{"k":"card","x":29,"w":42,"c":[]},{"k":"field","x":29,"w":42},{"k":"field","x":29,"w":42},{"k":"field","x":29,"w":42},{"k":"field","x":29,"w":42},{"k":"field","x":29,"w":42},{"k":"field","x":29,"w":42},{"k":"card","x":29,"w":42,"c":[]},{"k":"press","x":54,"w":7},{"k":"press","x":63,"w":9}]}]}],
         "agenda-cita-completar-paso2": [{"k":"card","x":27,"w":47,"c":[{"k":"card","x":27,"w":47,"c":[{"k":"heading","x":29,"w":11},{"k":"press","x":68,"w":3},{"k":"card","x":29,"w":42,"c":[]},{"k":"press","x":60,"w":11},{"k":"card","x":29,"w":42,"c":[]},{"k":"press","x":54,"w":6},{"k":"press","x":60,"w":11}]}]}],
         "agenda-cita-completar-receta": [{"k":"card","x":27,"w":47,"c":[{"k":"card","x":27,"w":47,"c":[{"k":"heading","x":29,"w":11},{"k":"press","x":68,"w":3},{"k":"card","x":29,"w":42,"c":[]},{"k":"press","x":60,"w":11},{"k":"card","x":29,"w":42,"c":[{"k":"field","x":30,"w":18},{"k":"field","x":49,"w":18},{"k":"field","x":30,"w":18},{"k":"field","x":49,"w":18},{"k":"field","x":30,"w":37},{"k":"press","x":67,"w":3}]},{"k":"press","x":54,"w":6},{"k":"press","x":60,"w":11}]}]}],
-        "pacientes": [{"k":"card","x":0,"w":100,"c":[{"k":"card","x":2,"w":22,"c":[{"k":"link","x":3,"w":19},{"k":"link","x":3,"w":19}]},{"k":"card","x":26,"w":73,"c":[{"k":"heading","x":28,"w":25},{"k":"press","x":85,"w":11}]},{"k":"card","x":26,"w":24,"c":[]},{"k":"card","x":50,"w":24,"c":[]},{"k":"card","x":75,"w":24,"c":[]},{"k":"field","x":26,"w":57},{"k":"card","x":83,"w":15,"c":[{"k":"press","x":84,"w":4}]},{"k":"card","x":26,"w":73,"c":[]},{"k":"card","x":26,"w":24,"c":[{"k":"heading","x":31,"w":5},{"k":"press","x":43,"w":2},{"k":"press","x":45,"w":2},{"k":"card","x":27,"w":21,"c":[]},{"k":"link","x":27,"w":7}]},{"k":"card","x":0,"w":100,"c":[]}]}],
+        "pacientes": [{"k":"card","x":0,"w":100,"c":[{"k":"card","x":2,"w":22,"c":[{"k":"link","x":3,"w":19},{"k":"link","x":3,"w":19}]},{"k":"card","x":26,"w":73,"c":[{"k":"heading","x":28,"w":17},{"k":"press","x":85,"w":11}]},{"k":"card","x":26,"w":24,"c":[]},{"k":"card","x":50,"w":24,"c":[]},{"k":"card","x":75,"w":24,"c":[]},{"k":"field","x":26,"w":54},{"k":"press","x":80,"w":5},{"k":"card","x":26,"w":73,"c":[]},{"k":"card","x":26,"w":24,"c":[{"k":"heading","x":31,"w":5},{"k":"press","x":41,"w":3},{"k":"press","x":45,"w":3},{"k":"card","x":27,"w":21,"c":[]},{"k":"link","x":27,"w":8}]},{"k":"card","x":0,"w":100,"c":[]}]}],
         "pacientes-crear": [{"k":"card","x":32,"w":36,"c":[{"k":"card","x":32,"w":36,"c":[{"k":"heading","x":34,"w":16},{"k":"press","x":63,"w":3},{"k":"field","x":34,"w":15},{"k":"field","x":51,"w":15},{"k":"field","x":34,"w":31},{"k":"field","x":34,"w":31},{"k":"press","x":63,"w":3},{"k":"press","x":47,"w":7},{"k":"press","x":55,"w":11}]}]}],
         "pacientes-editar": [{"k":"card","x":30,"w":40,"c":[{"k":"card","x":30,"w":40,"c":[{"k":"heading","x":32,"w":21},{"k":"press","x":65,"w":3},{"k":"field","x":32,"w":17},{"k":"field","x":51,"w":17},{"k":"select","x":32,"w":17},{"k":"field","x":51,"w":17},{"k":"press","x":65,"w":3},{"k":"press","x":47,"w":7},{"k":"press","x":56,"w":12}]}]}],
         "pacientes-eliminar": [{"k":"card","x":34,"w":31,"c":[{"k":"card","x":34,"w":31,"c":[{"k":"heading","x":37,"w":27},{"k":"press","x":41,"w":8},{"k":"press","x":50,"w":10}]}]}],
