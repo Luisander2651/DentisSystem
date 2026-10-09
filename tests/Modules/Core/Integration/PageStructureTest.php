@@ -61,9 +61,6 @@ const PAGE_STRUCTURE_PENDING = [
         'expediente' => 'T048',
     ],
     'brand' => [
-        'forgot-password' => 'T037',
-        'reset-password' => 'T037',
-        'logout' => 'T037',
         'dashboard-administrador' => 'T040',
         'dashboard-asistente' => 'T040',
         'dashboard-doctor' => 'T040',
@@ -79,9 +76,6 @@ const PAGE_STRUCTURE_PENDING = [
         'expediente' => 'T040',
     ],
     'icons' => [
-        'forgot-password' => 'T037',
-        'reset-password' => 'T037',
-        'logout' => 'T037',
         'dashboard-administrador' => 'T039',
         'dashboard-asistente' => 'T039',
         'dashboard-doctor' => 'T039',
@@ -97,8 +91,6 @@ const PAGE_STRUCTURE_PENDING = [
         'expediente' => 'T039',
     ],
     'access-image' => [
-        'forgot-password' => 'T037',
-        'reset-password' => 'T037',
     ],
     'labels' => [
         'dashboard-administrador' => 'T084',
