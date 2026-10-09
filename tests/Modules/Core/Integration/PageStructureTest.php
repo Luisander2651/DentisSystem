@@ -61,10 +61,6 @@ const PAGE_STRUCTURE_PENDING = [
         'expediente' => 'T048',
     ],
     'brand' => [
-        'inicio' => 'T032',
-        'acerca' => 'T032',
-        'galeria' => 'T032',
-        'contacto' => 'T032',
         'login' => 'T036',
         'register' => 'T036',
         'forgot-password' => 'T037',
@@ -85,10 +81,6 @@ const PAGE_STRUCTURE_PENDING = [
         'expediente' => 'T040',
     ],
     'icons' => [
-        'inicio' => 'T032',
-        'acerca' => 'T032',
-        'galeria' => 'T032',
-        'contacto' => 'T032',
         'login' => 'T036',
         'register' => 'T036',
         'forgot-password' => 'T037',

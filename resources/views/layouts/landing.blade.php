@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dentissa - Clínica Dental')</title>
 
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/brand/icon-192.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/icon-180.png') }}">
+
     <!-- Styles / Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="w-full min-h-screen bg-slate-50/50 text-slate-800 flex flex-col antialiased">
+<body class="flex min-h-screen w-full flex-col bg-canvas text-ink antialiased">
     <!-- Navbar Component -->
     <x-landing.nav />
 
@@ -19,5 +23,7 @@
 
     <!-- Footer Component -->
     <x-landing.footer />
+
+    <x-ui.status />
 </body>
 </html>

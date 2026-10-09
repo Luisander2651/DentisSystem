@@ -51,7 +51,8 @@ function uiCopyVisibleTexts(string $file, string $content): array
         preg_match_all("/'((?:[^'\\\\\\n]|\\\\.)*)'/", $content, $strings);
         array_push($texts, ...array_filter($strings[1], fn (string $string): bool => (bool) preg_match('/\s|^\p{Lu}/u', $string)));
 
-        $withoutBlade = (string) preg_replace(['/\{\{.*?\}\}/s', '/\{!!.*?!!\}/s', '/@[a-zA-Z]+\s*\((?:[^()]|\([^()]*\))*\)/', '/@[a-zA-Z]+/'], ' ', $content);
+        // The code of a @php block is not text; its phrases were read just above.
+        $withoutBlade = (string) preg_replace(['/@php\b.*?@endphp/s', '/\{\{.*?\}\}/s', '/\{!!.*?!!\}/s', '/@[a-zA-Z]+\s*\((?:[^()]|\([^()]*\))*\)/', '/@[a-zA-Z]+/'], ' ', $content);
         array_push($texts, ...explode("\n", $stripTags($withoutBlade)));
     } else {
         $content = (string) preg_replace(['/\/\*.*?\*\//s', '/^\s*\/\/.*$/m'], ' ', $content);
