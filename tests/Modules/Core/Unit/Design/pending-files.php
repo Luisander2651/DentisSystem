@@ -88,8 +88,6 @@ return [
     'resources/views/pages/contenido/testimonios/edit-modal.blade.php',
     'resources/views/pages/contenido/testimonios/index.blade.php',
     'resources/views/pages/dashboard.blade.php',
-    'resources/views/pages/landing/acerca.blade.php',
-    'resources/views/pages/landing/contacto.blade.php',
     'resources/views/pages/landing/galeria.blade.php',
     'resources/views/pages/patients/index.blade.php',
     'resources/views/pages/records/index.blade.php',
