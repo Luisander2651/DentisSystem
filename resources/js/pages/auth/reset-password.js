@@ -1,3 +1,5 @@
+import { announce, announceError, announceFailure, clearAnnouncements } from '../../ui/status';
+
 (function () {
     const form = document.getElementById('reset-form');
     const errorBox = document.getElementById('reset-error');
@@ -24,7 +26,7 @@
     // Si no hay token en la URL, mostrar error inmediato y deshabilitar
     if (!token) {
         if (errorBox) {
-            errorBox.textContent = 'Token de restablecimiento no válido o ausente. Solicita un nuevo enlace.';
+            errorBox.textContent = 'El enlace de restablecimiento no es válido o ya caducó. Solicita uno nuevo.';
             errorBox.classList.remove('hidden');
         }
         const inputs = form.querySelectorAll('input');
@@ -50,13 +52,11 @@
             errorBox.classList.add('hidden');
             errorBox.textContent = '';
         }
+        clearAnnouncements();
 
         // Validar coincidencia en cliente antes de enviar
         if (password !== confirmPassword) {
-            if (errorBox) {
-                errorBox.textContent = 'Las contraseñas ingresadas no coinciden.';
-                errorBox.classList.remove('hidden');
-            }
+            announceError('Las contraseñas no coinciden.');
             return;
         }
 
@@ -72,7 +72,7 @@
             });
 
             if (!csrfResponse.ok) {
-                throw new Error('No se pudo inicializar la cookie CSRF.');
+                throw new Error('csrf');
             }
 
             const xsrfToken = getCookie('XSRF-TOKEN');
@@ -98,11 +98,7 @@
             });
 
             if (!response.ok) {
-                const message = payload.error || payload.message || 'No se pudo restablecer la contraseña.';
-                if (errorBox) {
-                    errorBox.textContent = message;
-                    errorBox.classList.remove('hidden');
-                }
+                announceFailure(response.status, payload);
                 return;
             }
 
@@ -111,13 +107,11 @@
             }
             if (successBox) {
                 successBox.classList.remove('hidden');
+                announce(successBox.textContent.trim());
             }
 
         } catch (error) {
-            if (errorBox) {
-                errorBox.textContent = 'Error de conexión. Inténtalo de nuevo.';
-                errorBox.classList.remove('hidden');
-            }
+            announceFailure(0);
         } finally {
             if (submitButton && !successBox.classList.contains('hidden')) {
                 submitButton.disabled = false;
