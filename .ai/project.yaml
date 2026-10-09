@@ -12,7 +12,7 @@ stack:
   database: "PostgreSQL 16 (Eloquent); Redis 7 (tokens de reset)"
   package_manager: "composer + npm"
 packages: []
-constitution_version: 1.1.2
+constitution_version: 1.2.0
 workflow:
   enforcement: warn            # off | warn (pide aprobación) | block — lo aplica el hook del plugin
   # Flujo AI-DLC previo en pausa: reglas en AIDLC.md, estado en aidlc-docs/aidlc-state.md
@@ -62,8 +62,8 @@ observability:
 skills:
   enabled: [design]
 design:                        # solo proyectos con interfaz (frontend, fullstack, mobile)
-  status: approved             # extraído del código y aprobado por el usuario el 2026-10-04 (/init --upgrade)
-  source: extracted            # chosen: elegido entre opciones · extracted: documentado del código
+  status: approved             # sistema 2.0.0 (variante B de la spec 016), aprobado por el usuario el 2026-10-08
+  source: chosen               # chosen: elegido entre opciones · extracted: documentado del código
   system: docs/design/system.md
   html: docs/design/system.html
   canvas: null

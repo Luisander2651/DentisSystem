@@ -1,5 +1,5 @@
 ---
-version: 1.1.2
+version: 1.2.0
 ratified: 2026-09-23
 last_amended: 2026-09-24
 status: approved
@@ -22,8 +22,8 @@ Los principios se exigen a todo código **nuevo o modificado**.
 **Por qué:** El proyecto acumuló contradicciones entre README, documentos y código; la spec es la única fuente de verdad del comportamiento.
 
 ### P2. Test que falla antes y pasa después
-**Regla:** Todo cambio de comportamiento lleva un test Pest en `tests/Modules/<Módulo>/` que falla sin el cambio y pasa con él. Los value objects nuevos o modificados llevan tests de propiedades (Eris, `UsesEris`).
-**Cómo se verifica:** `./vendor/bin/pest --parallel` en CI; `/review` comprueba la trazabilidad criterio → test.
+**Regla:** Todo cambio de comportamiento lleva un test Pest en `tests/Modules/<Módulo>/` que falla sin el cambio y pasa con él. Los value objects nuevos o modificados llevan tests de propiedades (Eris, `UsesEris`). Lo que solo existe en un navegador (medidas de pantalla, contraste pintado, foco, diálogos, nombres accesibles) se prueba con `npm run test:ui` (`tests/Browser/`), que también debe fallar sin el cambio y pasar con él.
+**Cómo se verifica:** `./vendor/bin/pest --parallel` en CI; `npm run test:ui` en CI; `/review` comprueba la trazabilidad criterio → test.
 **Por qué:** La suite (≈437 casos, con property-based testing) es lo que permitió endurecer las Unidades 1–4 sin regresiones.
 
 ### P3. Capas del módulo
@@ -86,6 +86,11 @@ Los principios se exigen a todo código **nuevo o modificado**.
 **Cómo se verifica:** `aidd.py validate` (secciones "Auditoría" en la spec y "Observabilidad" en el plan); un test por evento de auditoría; `/review`.
 **Por qué:** La LFPDPPP trata los datos de salud como sensibles y hoy no queda rastro de quién accede a un expediente (riesgo 11 de [security.md](security.md), roadmap objetivo 5). Detalle en [observability.md](observability.md).
 
+### P15. La interfaz usa solo el sistema de diseño
+**Regla:** Toda vista y todo JS de página nuevo o modificado toma colores, radios y tamaños de control de los tokens de `resources/css/app.css` y usa los componentes de `docs/design/system.md`. Ningún color literal ni valor arbitrario de color fuera del archivo de tokens. Un valor que falte se añade primero al sistema.
+**Cómo se verifica:** `OnlyDesignTokensTest` y `DesignTokensTest` en la suite Pest; `npm run test:ui` en CI.
+**Por qué:** La interfaz llegó a tener 8 rosas en unas 620 apariciones y contrastes insuficientes (deuda `DS1`–`DS3`).
+
 ## Restricciones
 - Stack fijo: PHP 8.4, Laravel 12, PostgreSQL 16, Pest 3, Tailwind 4; cambiarlo requiere ADR.
 - Prototipo sin datos reales de pacientes. **Antes de cargar datos reales**: cerrar el control de acceso (roadmap objetivo 1), cumplir las obligaciones de la LFPDPPP para datos personales sensibles (aviso de privacidad, consentimiento expreso, derechos ARCO; ver [security.md](security.md)) y cifrar en reposo los datos de salud.
@@ -113,6 +118,7 @@ Los principios se exigen a todo código **nuevo o modificado**.
 |---|---|---|---|
 | 1.0.0 | 2026-09-22 | Versión inicial | /init |
 | 1.0.0 | 2026-09-23 | Ratificada por el usuario, sin cambios de contenido | Aprobación explícita |
+| 1.2.0 | 2026-10-08 | Añade P15 (la interfaz usa solo el sistema de diseño) y aclara P2: lo que solo existe en un navegador se prueba con `npm run test:ui` | Spec 016 (CA24); textos aprobados por el usuario el 2026-10-06 |
 | 1.1.0 | 2026-09-24 | Añade P14 (trazabilidad: correlación y auditoría) | Propuesta de `/init --upgrade` a 1.5.3, aprobada por el usuario |
 | 1.1.2 | 2026-09-24 | Aclara el alcance de P5 (aplica cuando cambia la autorización del endpoint), con el mismo criterio que P6 | `/analyze 014` (B2); aprobado por el usuario |
 | 1.1.1 | 2026-09-24 | Aclara el alcance de P6 (solo cuando cambia la entrada del endpoint) y de P7 (aplica a errores inesperados; los mensajes de negocio no llevan datos personales ni de salud) | `/analyze 014` (A2, A13); aprobado por el usuario |
