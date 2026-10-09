@@ -1,4 +1,6 @@
 import './bootstrap';
+import './ui/dialog';
+import './ui/status';
 
 function syncSidebarMenu(sidebar, menu, toggleButton, openIcon, closeIcon) {
 	if (!sidebar || !menu || !toggleButton) {
