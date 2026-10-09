@@ -152,7 +152,7 @@ function measureInPage(dialogSelector, entryId, needsRegion) {
         const dot = box.width <= 16 && box.height <= 16 && parseFloat(style.borderTopLeftRadius) >= box.width / 2 - 0.5
             && A.rgba(style.backgroundColor)[3] > 0.5 && element.textContent.trim() === '' && element.children.length === 0;
 
-        if (dot && element.getAttribute('aria-hidden') !== 'true' && element.parentElement.textContent.trim() === '') {
+        if (dot && element.closest('[aria-hidden="true"]') === null && element.parentElement.textContent.trim() === '') {
             found.color.push(`${A.describe(element)} es un punto de color sin texto que lo acompañe`);
         }
     }

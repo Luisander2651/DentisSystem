@@ -27,7 +27,7 @@ const ROLE_COPY = [
 const ROLE_COPY_PENDING = [
     'badge' => null,
     'menu' => null,
-    'inicio' => 'T041',
+    'inicio' => null,
 ];
 
 /**

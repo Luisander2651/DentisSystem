@@ -46,10 +46,6 @@ const PAGE_STRUCTURE_ACCESS_SCREENS = ['login', 'register', 'forgot-password', '
 /** check => screen => task that unblocks the case. */
 const PAGE_STRUCTURE_PENDING = [
     'h1' => [
-        'dashboard-administrador' => 'T041',
-        'dashboard-asistente' => 'T041',
-        'dashboard-doctor' => 'T041',
-        'dashboard-paciente' => 'T041',
         'agenda' => 'T064',
         'pacientes' => 'T042',
         'usuarios' => 'T045',
