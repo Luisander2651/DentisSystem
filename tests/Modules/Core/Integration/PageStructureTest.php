@@ -64,7 +64,6 @@ const PAGE_STRUCTURE_PENDING = [
     'labels' => [
         'dashboard-administrador' => 'T084',
         'agenda' => 'T068',
-        'pacientes' => 'T044',
         'usuarios' => 'T084',
         'tratamientos' => 'T047',
         'expedientes-administrador' => 'T050',
