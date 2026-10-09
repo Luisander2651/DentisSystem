@@ -25,7 +25,7 @@ const ROLE_COPY = [
 
 /** check => task that unblocks its cases. */
 const ROLE_COPY_PENDING = [
-    'badge' => 'T028',
+    'badge' => null,
     'menu' => 'T040',
     'inicio' => 'T041',
 ];
