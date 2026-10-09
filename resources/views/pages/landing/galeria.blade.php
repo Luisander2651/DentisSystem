@@ -6,8 +6,8 @@
 <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
     <!-- Header -->
     <div class="mx-auto mb-16 max-w-3xl space-y-4 text-center">
-        <h1 class="text-base font-semibold uppercase tracking-wider text-ink underline decoration-primary decoration-2 underline-offset-8">Galería Dentissa</h1>
-        <p class="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">Nuestros Casos y Consultorios</p>
+        <p class="text-base font-semibold uppercase tracking-wider text-ink underline decoration-primary decoration-2 underline-offset-8">Galería Dentissa</p>
+        <h1 class="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">Nuestros Casos y Consultorios</h1>
         <p class="text-muted">Un recorrido visual por nuestras instalaciones de vanguardia y los resultados reales de nuestros pacientes.</p>
     </div>
 

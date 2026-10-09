@@ -13,11 +13,13 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="flex min-h-screen w-full flex-col bg-canvas text-ink antialiased">
+    <a href="#contenido" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:inline-flex focus:min-h-control focus:items-center focus:rounded-control focus:bg-surface focus:px-4 focus:text-sm focus:font-semibold focus:text-ink">Saltar al contenido</a>
+
     <!-- Navbar Component -->
     <x-landing.nav />
 
     <!-- Main Content Area -->
-    <main class="flex-1">
+    <main id="contenido" tabindex="-1" class="flex-1">
         @yield('content')
     </main>
 

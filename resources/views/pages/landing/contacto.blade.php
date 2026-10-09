@@ -116,7 +116,7 @@
         <!-- Google Map Section -->
         <div class="relative min-h-[400px] h-full">
             <div class="absolute inset-0 rounded-card border border-secondary bg-surface p-3 shadow-md">
-                <iframe class="h-full w-full rounded-box grayscale hover:grayscale-0 transition-all duration-500" 
+                <iframe title="Mapa con la ubicación de la clínica" class="h-full w-full rounded-box grayscale hover:grayscale-0 transition-all duration-500" 
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3762.6617260592963!2d-99.1722352850934!3d19.367568986922432!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1ff38bb6a27e7%3A0xe96bf0ff4ea50eb0!2sAv.%20Universidad%201200%2C%20Xoco%2C%20Benito%20Ju%C3%A1rez%2C%2003330%20Ciudad%20de%20M%C3%A9xico%2C%20CDMX!5e0!3m2!1ses-419!2smx!4v1688647000000!5m2!1ses-419!2smx" 
                     style="border:0;" 
                     allowfullscreen="" 

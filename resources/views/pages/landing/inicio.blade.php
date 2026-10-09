@@ -49,7 +49,7 @@
                                 <svg class="mx-auto h-16 w-16 text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M7 3c-1.7 0-3 1.4-3 3.1 0 1.2.6 2.4 1.2 3.5.7 1.2 1.4 2.8 1.4 5.7 0 3 1.4 6.7 2.8 6.7 1.3 0 1.8-1.9 2.6-4.5.4-1.3.8-2.7 2-2.7s1.6 1.4 2 2.7c.8 2.6 1.3 4.5 2.6 4.5 1.4 0 2.8-3.7 2.8-6.7 0-2.9.7-4.5 1.4-5.7.6-1.1 1.2-2.3 1.2-3.5C20 4.4 18.7 3 17 3c-1.3 0-2.1.5-2.9 1.2-.8.7-1.5 1.3-2.1 1.3s-1.3-.6-2.1-1.3C9.1 3.5 8.3 3 7 3z" />
                                 </svg>
-                                <h3 class="text-xl font-bold text-ink">Dentissa Premium Care</h3>
+                                <p class="text-xl font-bold text-ink">Dentissa Premium Care</p>
                                 <p class="text-sm text-ink max-w-xs mx-auto">Equipamiento moderno y especialistas certificados listos para cuidar de ti.</p>
                             </div>
                         </div>
@@ -288,7 +288,7 @@
                 @forelse ($testimonials as $testimonial)
                     <div class="rounded-card border border-secondary bg-surface p-6 flex flex-col justify-between shadow-sm hover:-translate-y-1 hover:shadow-md transition duration-300">
                         <div>
-                            <div class="mb-4 flex items-center gap-1 text-warning">
+                            <div class="mb-4 flex items-center gap-1 text-warning" role="img" aria-label="5 de 5 estrellas">
                                 <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.3l-6.18 3.25 1.18-6.88L2 8.9l6.91-1L12 1.6l3.09 6.3 6.91 1-5 4.77 1.18 6.88z" /></svg>
                                 <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.3l-6.18 3.25 1.18-6.88L2 8.9l6.91-1L12 1.6l3.09 6.3 6.91 1-5 4.77 1.18 6.88z" /></svg>
                                 <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.3l-6.18 3.25 1.18-6.88L2 8.9l6.91-1L12 1.6l3.09 6.3 6.91 1-5 4.77 1.18 6.88z" /></svg>
@@ -324,11 +324,11 @@
         <div class="space-y-4">
             <!-- FAQ 1 -->
             <div class="faq-item rounded-box border border-line bg-surface overflow-hidden transition-all duration-200">
-                <button type="button" data-pressable class="faq-trigger flex min-h-control w-full items-center justify-between rounded-box px-6 py-5 text-left font-semibold text-ink">
+                <button type="button" data-pressable aria-expanded="false" class="faq-trigger flex min-h-control w-full items-center justify-between rounded-box px-6 py-5 text-left font-semibold text-ink">
                     <span>¿Cada cuánto tiempo debo ir al dentista para una limpieza?</span>
-                    <span class="faq-icon text-muted shrink-0 ml-4 font-bold text-lg transition-transform duration-200">&plus;</span>
+                    <span aria-hidden="true" class="faq-icon text-muted shrink-0 ml-4 font-bold text-lg transition-transform duration-200">&plus;</span>
                 </button>
-                <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                <div inert class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
                     <p class="px-6 pb-5 text-sm text-muted leading-relaxed border-t border-line pt-3">
                         Se recomienda realizar una limpieza dental profesional cada 6 meses. Esto ayuda a prevenir la acumulación de sarro, diagnosticar a tiempo posibles caries y mantener las encías en óptimo estado.
                     </p>
@@ -337,11 +337,11 @@
 
             <!-- FAQ 2 -->
             <div class="faq-item rounded-box border border-line bg-surface overflow-hidden transition-all duration-200">
-                <button type="button" data-pressable class="faq-trigger flex min-h-control w-full items-center justify-between rounded-box px-6 py-5 text-left font-semibold text-ink">
+                <button type="button" data-pressable aria-expanded="false" class="faq-trigger flex min-h-control w-full items-center justify-between rounded-box px-6 py-5 text-left font-semibold text-ink">
                     <span>¿Qué tratamientos de ortodoncia ofrecen?</span>
-                    <span class="faq-icon text-muted shrink-0 ml-4 font-bold text-lg transition-transform duration-200">&plus;</span>
+                    <span aria-hidden="true" class="faq-icon text-muted shrink-0 ml-4 font-bold text-lg transition-transform duration-200">&plus;</span>
                 </button>
-                <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                <div inert class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
                     <p class="px-6 pb-5 text-sm text-muted leading-relaxed border-t border-line pt-3">
                         Contamos con brackets metálicos tradicionales, estéticos (de zafiro/cerámica) y sistemas modernos de alineadores invisibles (ortodoncia transparente), ideales para una estética discreta durante el tratamiento.
                     </p>
@@ -350,11 +350,11 @@
 
             <!-- FAQ 3 -->
             <div class="faq-item rounded-box border border-line bg-surface overflow-hidden transition-all duration-200">
-                <button type="button" data-pressable class="faq-trigger flex min-h-control w-full items-center justify-between rounded-box px-6 py-5 text-left font-semibold text-ink">
+                <button type="button" data-pressable aria-expanded="false" class="faq-trigger flex min-h-control w-full items-center justify-between rounded-box px-6 py-5 text-left font-semibold text-ink">
                     <span>¿Los implantes dentales causan dolor?</span>
-                    <span class="faq-icon text-muted shrink-0 ml-4 font-bold text-lg transition-transform duration-200">&plus;</span>
+                    <span aria-hidden="true" class="faq-icon text-muted shrink-0 ml-4 font-bold text-lg transition-transform duration-200">&plus;</span>
                 </button>
-                <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                <div inert class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
                     <p class="px-6 pb-5 text-sm text-muted leading-relaxed border-t border-line pt-3">
                         El procedimiento se realiza bajo anestesia local, por lo que el paciente no siente dolor. En el postoperatorio, las molestias son mínimas y perfectamente controlables con analgésicos comunes recetados por el especialista.
                     </p>
@@ -363,11 +363,11 @@
 
             <!-- FAQ 4 -->
             <div class="faq-item rounded-box border border-line bg-surface overflow-hidden transition-all duration-200">
-                <button type="button" data-pressable class="faq-trigger flex min-h-control w-full items-center justify-between rounded-box px-6 py-5 text-left font-semibold text-ink">
+                <button type="button" data-pressable aria-expanded="false" class="faq-trigger flex min-h-control w-full items-center justify-between rounded-box px-6 py-5 text-left font-semibold text-ink">
                     <span>¿Aceptan seguros de gastos médicos?</span>
-                    <span class="faq-icon text-muted shrink-0 ml-4 font-bold text-lg transition-transform duration-200">&plus;</span>
+                    <span aria-hidden="true" class="faq-icon text-muted shrink-0 ml-4 font-bold text-lg transition-transform duration-200">&plus;</span>
                 </button>
-                <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                <div inert class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
                     <p class="px-6 pb-5 text-sm text-muted leading-relaxed border-t border-line pt-3">
                         Trabajamos bajo la modalidad de reembolso para la mayoría de las aseguradoras de gastos médicos mayores. Te proporcionamos toda la documentación necesaria, facturas detalladas e informe médico oficial para tu trámite.
                     </p>

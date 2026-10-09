@@ -54,7 +54,8 @@ function skeletonInPage(rootSelector) {
         const box = element.getBoundingClientRect();
         const style = getComputedStyle(element);
 
-        return box.width > 0 && box.height > 0 && style.visibility !== 'hidden' && style.display !== 'none' && Number(style.opacity) > 0;
+        // Over 1 px: what is only there for a screen reader (a skip link) is not part of the layout.
+        return box.width > 1 && box.height > 1 && style.visibility !== 'hidden' && style.display !== 'none' && Number(style.opacity) > 0;
     };
 
     const actionKind = (element) => {
