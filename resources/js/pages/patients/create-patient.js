@@ -1,3 +1,6 @@
+import { closeDialog, openDialog } from '../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__patientsCreateInit) {
         return;
@@ -30,7 +33,7 @@
     var passwordInput = modal.querySelector('[data-create-patient-password]');
     var cancelButtons = modal.querySelectorAll('[data-create-patient-cancel]');
     var submitButton = modal.querySelector('[data-create-patient-submit]');
-    var errorBox = modal.querySelector('[data-create-patient-error]');
+    var errorBox = modal.querySelector('[data-create-patient-error]') || document.createElement('p');
 
     if (!form || !firstNameInput || !lastNameInput || !emailInput || !passwordInput || !cancelButtons.length || !submitButton || !errorBox) {
         return;
@@ -41,6 +44,7 @@
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -93,8 +97,7 @@
         resetPasswordField();
         updateSubmitState();
 
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -106,8 +109,7 @@
         resetPasswordField();
         hideModalError();
         updateSubmitState();
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
     }
 
     async function createPatient(payload) {
@@ -130,7 +132,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo crear el paciente.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -168,6 +170,7 @@
             await createPatient(payload);
             setSubmittingState(false);
             closeModal();
+            announce('Paciente creado.');
 
             if (window.patientsPage && typeof window.patientsPage.hideError === 'function') {
                 window.patientsPage.hideError();
@@ -177,7 +180,7 @@
                 await window.patientsPage.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo crear el paciente.');
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             if (isSubmitting) {
                 setSubmittingState(false);

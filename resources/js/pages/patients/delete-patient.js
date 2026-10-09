@@ -1,3 +1,6 @@
+import { closeDialog, openDialog } from '../../ui/dialog';
+import { announce, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__patientsDeleteInit) {
         return;
@@ -37,14 +40,12 @@
             confirmTarget.textContent = patientLabel || 'este registro';
         }
 
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        openDialog(modal);
     }
 
     function closeModal() {
         currentPatientId = null;
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
     }
 
     async function deletePatientById(patientId) {
@@ -65,7 +66,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(payload.error || payload.message || 'No se pudo eliminar el paciente.');
+            throw new Error(failureMessage(response.status, payload));
         }
     }
 
@@ -102,6 +103,7 @@
             try {
                 await deletePatientById(currentPatientId);
                 closeModal();
+                announce('Paciente eliminado.');
 
                 if (window.patientsPage && typeof window.patientsPage.hideError === 'function') {
                     window.patientsPage.hideError();
@@ -114,7 +116,7 @@
                 closeModal();
 
                 if (window.patientsPage && typeof window.patientsPage.showError === 'function') {
-                    window.patientsPage.showError(error.message || 'No se pudo eliminar el paciente.');
+                    window.patientsPage.showError(error instanceof TypeError ? failureMessage(0) : error.message);
                 }
             } finally {
                 isDeleting = false;

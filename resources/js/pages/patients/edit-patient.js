@@ -1,3 +1,6 @@
+import { closeDialog, openDialog } from '../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__patientsEditInit) {
         return;
@@ -47,7 +50,7 @@
     var statusSelect = modal.querySelector('[data-edit-patient-status]');
     var cancelButtons = modal.querySelectorAll('[data-edit-patient-cancel]');
     var submitButton = modal.querySelector('[data-edit-patient-submit]');
-    var errorBox = modal.querySelector('[data-edit-patient-error]');
+    var errorBox = modal.querySelector('[data-edit-patient-error]') || document.createElement('p');
 
     if (!form || !patientIdInput || !firstNameInput || !lastNameInput || !newPasswordInput || !statusSelect || !cancelButtons.length || !submitButton || !errorBox) {
         return;
@@ -64,6 +67,7 @@
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -114,8 +118,7 @@
         statusSelect.value = originalPatient.status;
         resetPasswordField();
 
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -127,8 +130,7 @@
         patientIdInput.value = '';
         resetPasswordField();
         hideModalError();
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
     }
 
     function buildPayload() {
@@ -176,7 +178,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo actualizar el paciente.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -209,7 +211,7 @@
         var patientId = patientIdInput.value.trim();
 
         if (!patientId) {
-            showModalError('No se encontro el ID del paciente a editar.');
+            showModalError('No pudimos identificar al paciente. Cierra el diálogo e inténtalo de nuevo.');
             return;
         }
 
@@ -227,6 +229,7 @@
             await updatePatient(patientId, payload);
             setSubmittingState(false);
             closeModal();
+            announce('Cambios guardados.');
 
             if (window.patientsPage && typeof window.patientsPage.hideError === 'function') {
                 window.patientsPage.hideError();
@@ -239,7 +242,7 @@
             closeModal();
 
             if (window.patientsPage && typeof window.patientsPage.showError === 'function') {
-                window.patientsPage.showError(error.message || 'No se pudo actualizar el paciente.');
+                window.patientsPage.showError(error instanceof TypeError ? failureMessage(0) : error.message);
             }
         } finally {
             if (isSubmitting) {
