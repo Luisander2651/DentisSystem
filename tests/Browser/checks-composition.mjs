@@ -31,6 +31,9 @@ const POSITION_TOLERANCE = 2;
 
 /** Runs inside the page: the tree of cards, headings and actions under a root. */
 function skeletonInPage(rootSelector) {
+    // Always from the top: a step may have scrolled, and a sticky menu changes place with it.
+    window.scrollTo(0, 0);
+
     const viewport = document.documentElement.clientWidth;
     const percent = (pixels) => Math.round((pixels / viewport) * 100);
     const alpha = (color) => {
