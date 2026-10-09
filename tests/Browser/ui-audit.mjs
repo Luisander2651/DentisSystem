@@ -692,9 +692,9 @@ async function auditPage(page, entry, width, options, checks, baseline) {
  * The baseline is taken once, before any view changes. Afterwards --baseline only writes an
  * entry that has none yet, or one whose difference an acceptance criterion admits.
  */
-function writeBaseline(file, baseline, admitted) {
+function writeBaseline(file, baseline, admitted, dialogs) {
     const screens = { ...(baseline.stored?.screens ?? {}) };
-    const open = new Set(admitted.flatMap((difference) => difference.entries));
+    const open = new Set([...admitted.flatMap((difference) => difference.entries), ...dialogs]);
     const written = [];
     const frozen = [];
 
@@ -791,7 +791,7 @@ async function main() {
     const visited = visits.length;
 
     if (options.baseline) {
-        writeBaseline(baselineFile, baseline, checks.find((check) => check.capture)?.ADMITTED ?? []);
+        writeBaseline(baselineFile, baseline, checks.find((check) => check.capture)?.ADMITTED ?? [], config.entries.filter((entry) => entry.dialog !== undefined).map((entry) => entry.id));
     }
 
     console.log(`\n${visited} visitas (${entries.length} entradas), ${failed} con fallos. Módulos: ${checks.map((check) => check.name).join(', ') || 'ninguno'}.`);

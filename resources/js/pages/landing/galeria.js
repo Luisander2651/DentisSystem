@@ -1,3 +1,6 @@
+import { openDialog } from '../../ui/dialog';
+import { announceError, announceFailure } from '../../ui/status';
+
 function escapeHtml(value) {
     return String(value ?? '')
         .replace(/&/g, '&amp;')
@@ -10,7 +13,6 @@ function escapeHtml(value) {
 async function loadGallery() {
     var list = document.querySelector('[data-gallery-list]');
     var loading = document.querySelector('[data-gallery-loading]');
-    var error = document.querySelector('[data-gallery-error]');
     var empty = document.querySelector('[data-gallery-empty]');
 
     if (!list) return;
@@ -22,10 +24,7 @@ async function loadGallery() {
         if (loading) loading.classList.add('hidden');
 
         if (!response.ok) {
-            if (error) {
-                error.textContent = 'Error al cargar las imágenes de la galería.';
-                error.classList.remove('hidden');
-            }
+            announceError('No pudimos cargar las imágenes de la galería. Inténtalo de nuevo en un momento.');
             return;
         }
 
@@ -39,14 +38,14 @@ async function loadGallery() {
             var description = record.description ?? 'Imagen de Dentissa';
 
             return [
-                '<div class="gallery-card group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-2 shadow-xs cursor-pointer hover:shadow-md hover:border-[#F5C2D6]/40 transition-all duration-300" data-img-url="', escapeHtml(url), '" data-img-desc="', escapeHtml(description), '">',
-                    '<div class="aspect-square w-full overflow-hidden rounded-2xl bg-slate-50 relative">',
-                        '<img src="', escapeHtml(url), '" alt="', escapeHtml(description), '" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />',
-                        '<div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">',
-                            '<p class="text-xs text-white font-medium line-clamp-2">', escapeHtml(description), '</p>',
-                        '</div>',
-                    '</div>',
-                '</div>'
+                '<button type="button" data-pressable class="gallery-card group relative overflow-hidden rounded-card border border-field bg-surface p-2 text-left shadow-xs transition-shadow hover:shadow-md" data-img-url="', escapeHtml(url), '" data-img-desc="', escapeHtml(description), '" aria-label="Ampliar imagen: ', escapeHtml(description), '">',
+                    '<span class="relative block aspect-square w-full overflow-hidden rounded-box bg-canvas">',
+                        '<img src="', escapeHtml(url), '" alt="" class="h-full w-full object-cover" loading="lazy" />',
+                        '<span class="absolute inset-x-0 bottom-0 hidden bg-ink p-3 group-hover:block group-focus-visible:block">',
+                            '<span class="line-clamp-2 text-sm font-medium text-on-dark">', escapeHtml(description), '</span>',
+                        '</span>',
+                    '</span>',
+                '</button>'
             ].join('');
         }).join('');
 
@@ -54,10 +53,7 @@ async function loadGallery() {
 
     } catch (err) {
         if (loading) loading.classList.add('hidden');
-        if (error) {
-            error.textContent = 'No se pudo establecer conexión con el servidor.';
-            error.classList.remove('hidden');
-        }
+        announceFailure(0);
     }
 }
 
@@ -66,45 +62,26 @@ function initLightboxEvents() {
     var lightbox = document.getElementById('gallery-lightbox');
     var lightboxImg = document.getElementById('lightbox-img');
     var lightboxDesc = document.getElementById('lightbox-desc');
-    var closeBtn = document.getElementById('lightbox-close');
 
     if (!lightbox || !lightboxImg) return;
 
     cards.forEach(function (card) {
         card.addEventListener('click', function () {
-            var url = card.getAttribute('data-img-url');
-            var desc = card.getAttribute('data-img-desc');
+            var desc = card.getAttribute('data-img-desc') || '';
 
-            lightboxImg.setAttribute('src', url);
+            lightboxImg.setAttribute('src', card.getAttribute('data-img-url'));
+            lightboxImg.setAttribute('alt', desc);
             if (lightboxDesc) {
-                lightboxDesc.textContent = desc || '';
+                lightboxDesc.textContent = desc;
             }
-            lightbox.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden'); // Disable background scrolling
+
+            openDialog(lightbox, card);
         });
     });
 
-    function closeLightbox() {
-        lightbox.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
+    lightbox.addEventListener('close', function () {
         lightboxImg.setAttribute('src', '');
-    }
-
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeLightbox);
-    }
-
-    lightbox.addEventListener('click', function (e) {
-        if (e.target === lightbox) {
-            closeLightbox();
-        }
-    });
-
-    // Close on Escape key
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && !lightbox.classList.contains('hidden')) {
-            closeLightbox();
-        }
+        lightboxImg.setAttribute('alt', '');
     });
 }
 

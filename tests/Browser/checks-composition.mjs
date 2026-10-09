@@ -11,7 +11,10 @@
  * with the same tag and the same hooks) only the first element counts.
  *
  * The baseline is frozen: `--baseline` only writes an entry that has none yet or one that
- * `ADMITTED` names, with the acceptance criterion that allows its difference.
+ * `ADMITTED` names, with the acceptance criterion that allows its difference. The entries of
+ * a dialog are also open: CA12 and CA13 move every dialog to the base dialog, with its title
+ * and its close button in a header and its actions in a fixed footer; what must stay is the
+ * screen behind it.
  */
 
 export const ADMITTED = [
