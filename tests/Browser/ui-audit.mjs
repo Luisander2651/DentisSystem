@@ -151,6 +151,10 @@ class Page {
                         body: Buffer.from(JSON.stringify(answer.body)).toString('base64'),
                     }).catch(() => {});
                 }
+            } else if (method === 'Page.frameNavigated' && !params.frame.parentId) {
+                // A page that leaves on its own (cerrar sesión) takes its unfinished requests with it.
+                this.#inflight.clear();
+                this.#lastActivity = Date.now();
             } else if (method === 'Page.javascriptDialogOpening') {
                 this.send('Page.handleJavaScriptDialog', { accept: true }).catch(() => {});
             } else if (method === 'Runtime.exceptionThrown') {
@@ -567,6 +571,10 @@ async function openEntry(browser, entry, width, options, session, config) {
     await page.send('Network.enable');
     await page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 768 });
     await page.send('Emulation.setTouchEmulationEnabled', { enabled: width < 768 });
+    // The same pointer on every machine: a runner without a mouse reports that it cannot hover.
+    await page.send('Emulation.setEmulatedMedia', { features: width < 768
+        ? [{ name: 'hover', value: 'none' }, { name: 'pointer', value: 'coarse' }]
+        : [{ name: 'hover', value: 'hover' }, { name: 'pointer', value: 'fine' }] });
     await page.send('Emulation.setTimezoneOverride', { timezoneId: config.timezone });
     await page.send('Emulation.setLocaleOverride', { locale: config.locale });
     await page.send('Page.addScriptToEvaluateOnNewDocument', { source: IN_PAGE_LIBRARY });

@@ -35,7 +35,9 @@ export const ADMITTED = [
     },
 ];
 
-const POSITION_TOLERANCE = 2;
+// In points of the window width. The runner of CI and a local machine draw the same text with
+// different fonts, and a link is as wide as its text: 3 points apart on the first CI run.
+const POSITION_TOLERANCE = 4;
 
 /** Runs inside the page: the tree of cards, headings and actions under a root. */
 function skeletonInPage(rootSelector) {
