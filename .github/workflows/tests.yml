@@ -103,3 +103,42 @@ jobs:
           SESSION_DRIVER: array
           MAIL_MAILER: array
         run: ./vendor/bin/pest --parallel
+
+      # Spec 016 (A67): the browser checks run here without blocking while the screens are
+      # being migrated; T075 makes the step decide the build and keeps the captures.
+      - name: Run browser checks (ui-audit, not blocking yet)
+        continue-on-error: true
+        env:
+          APP_ENV: testing
+          APP_URL: http://127.0.0.1:8000
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: dentissa_testing
+          DB_USERNAME: admin
+          DB_PASSWORD: example
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+          QUEUE_CONNECTION: sync
+          CACHE_STORE: array
+          SESSION_DRIVER: file
+          MAIL_MAILER: array
+          FILESYSTEM_DISK: public
+          PHP_CLI_SERVER_WORKERS: 4
+        run: |
+          php artisan storage:link
+          php artisan ui:audit-data
+          php artisan serve --host=127.0.0.1 --port=8000 > storage/logs/serve.log 2>&1 &
+          for attempt in $(seq 1 30); do curl -fsS -o /dev/null http://127.0.0.1:8000/login && break; sleep 1; done
+          set -o pipefail
+          npm run test:ui -- --base-url http://127.0.0.1:8000 --artisan "php artisan" --screenshots | tee ui-audit.txt
+
+      - name: Keep the ui-audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-audit
+          path: |
+            ui-audit.txt
+            tests/Browser/screenshots
+          if-no-files-found: ignore
