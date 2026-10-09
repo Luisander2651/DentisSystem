@@ -49,7 +49,7 @@
                                 <svg class="mx-auto h-16 w-16 text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M7 3c-1.7 0-3 1.4-3 3.1 0 1.2.6 2.4 1.2 3.5.7 1.2 1.4 2.8 1.4 5.7 0 3 1.4 6.7 2.8 6.7 1.3 0 1.8-1.9 2.6-4.5.4-1.3.8-2.7 2-2.7s1.6 1.4 2 2.7c.8 2.6 1.3 4.5 2.6 4.5 1.4 0 2.8-3.7 2.8-6.7 0-2.9.7-4.5 1.4-5.7.6-1.1 1.2-2.3 1.2-3.5C20 4.4 18.7 3 17 3c-1.3 0-2.1.5-2.9 1.2-.8.7-1.5 1.3-2.1 1.3s-1.3-.6-2.1-1.3C9.1 3.5 8.3 3 7 3z" />
                                 </svg>
-                                <p class="text-xl font-bold text-ink">Dentissa Premium Care</p>
+                                <p class="text-xl font-bold text-ink">Atención dental de calidad</p>
                                 <p class="text-sm text-ink max-w-xs mx-auto">Equipamiento moderno y especialistas certificados listos para cuidar de ti.</p>
                             </div>
                         </div>

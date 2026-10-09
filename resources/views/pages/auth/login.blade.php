@@ -17,7 +17,7 @@
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M12 3l1.8 5.4L19 10.2l-5.2 1.8L12 17.4l-1.8-5.4L5 10.2l5.2-1.8L12 3z" />
                     </svg>
-                    <span>Dentissa Premium Access</span>
+                    <span>Acceso a Dentissa</span>
                 </div>
                 <div class="space-y-4">
                     <h2 class="text-4xl font-black tracking-tight">Bienvenido de vuelta</h2>
