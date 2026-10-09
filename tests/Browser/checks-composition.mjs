@@ -16,6 +16,11 @@
 
 export const ADMITTED = [
     {
+        criterion: 'CA28, CA29',
+        entries: ['inicio'],
+        difference: 'Las dos insignias de la imagen principal del inicio público crecen al pasar su letra de 10 a 12 px y cuentan como caja propia; siguen en su sitio.',
+    },
+    {
         criterion: 'CA34',
         entries: ['contenido-galeria', 'contenido-promociones', 'contenido-certificaciones', 'contenido-testimonios'],
         difference: 'Gestión de contenido pierde el encabezado propio de cada pestaña: queda un solo título de página y el nombre de la pestaña pasa a subtítulo junto a su acción.',

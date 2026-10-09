@@ -364,6 +364,11 @@ export async function run(page, entry) {
             action.lightText.push(`${rest.what} con texto ${hex(rest.color)}`);
         }
 
+        // A touch screen has no hover: Tailwind only paints it where the device can hover.
+        if (page.width < 768) {
+            continue;
+        }
+
         const hovered = await page.withPseudoState(handle, ['hover'], paintedColors);
 
         if (!same(hovered.background, tokens['--color-primary-hover']) || contrastOf(hovered.color, hovered.background) < 4.5) {

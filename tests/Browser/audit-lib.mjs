@@ -128,6 +128,13 @@ export const IN_PAGE_LIBRARY = `(() => {
     // The root a check looks at: the open dialog of a dialog entry, or the whole page.
     const scope = (selector) => (selector ? [...document.querySelectorAll(selector)].find(visible) ?? null : document.body);
 
+    // A colour read in the middle of a transition is neither the old one nor the new one.
+    document.addEventListener('DOMContentLoaded', () => {
+        const still = document.createElement('style');
+        still.textContent = '*, *::before, *::after { transition: none !important; animation: none !important; }';
+        document.head.append(still);
+    });
+
     window.__audit = { rgba, over, luminance, contrast, visible, backdrop, worstContrast, describe, isControl, scope, lastClicked: null };
 })();`;
 
