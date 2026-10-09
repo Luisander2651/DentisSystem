@@ -235,4 +235,4 @@ it('keeps every colour a pending file uses alive in the stylesheet', function ()
     }
 
     expect(array_keys($lost))->toBe([]);
-})->skip('016: pendiente de T025');
+});

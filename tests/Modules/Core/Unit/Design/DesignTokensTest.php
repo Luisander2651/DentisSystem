@@ -158,7 +158,7 @@ it('declares every documented token with its documented value', function (string
     foreach ($documented as $name => $value) {
         expect($declared[$name] ?? 'sin declarar')->toBe($value, $name);
     }
-})->with(['color', 'radius', 'spacing', 'text'])->skip('016: pendiente de T025');
+})->with(['color', 'radius', 'spacing', 'text']);
 
 it('declares no colour the design system does not document', function () {
     $declared = array_filter(
@@ -167,13 +167,13 @@ it('declares no colour the design system does not document', function () {
     );
 
     expect(array_values(array_diff($declared, array_keys(tokensDocumented('color')))))->toBe([]);
-})->skip('016: pendiente de T025');
+});
 
 it('reaches the contrast every pair of the system needs', function (string $foreground, string $background, float $minimum) {
     $declared = tokensDeclared(tokensStylesheet());
 
     expect(tokenContrast($declared['--color-'.$foreground], $declared['--color-'.$background]))->toBeGreaterThanOrEqual($minimum);
-})->with(TOKEN_PAIRS)->skip('016: pendiente de T025');
+})->with(TOKEN_PAIRS);
 
 it('documents the contrast each token really has', function () {
     $declared = tokensDeclared(tokensStylesheet());
@@ -200,14 +200,14 @@ it('documents the contrast each token really has', function () {
     }
 
     expect($wrong)->toBe([]);
-})->skip('016: pendiente de T025');
+});
 
 it('removes the default palette of Tailwind', function () {
     $declared = tokensDeclared(tokensStylesheet());
 
     expect($declared['--color-*'] ?? null)->toBe('initial')
         ->and(array_key_exists('--color-white', tokensDeclared(tokensWithoutTransitional(tokensStylesheet()))))->toBeFalse();
-})->skip('016: pendiente de T025');
+});
 
 it('lets no two tokens share a utility', function () {
     expect(tokenCollisions(tokensDeclared(tokensStylesheet())))->toBe([]);
