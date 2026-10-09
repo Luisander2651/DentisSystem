@@ -61,8 +61,6 @@ const PAGE_STRUCTURE_PENDING = [
         'expediente' => 'T048',
     ],
     'brand' => [
-        'login' => 'T036',
-        'register' => 'T036',
         'forgot-password' => 'T037',
         'reset-password' => 'T037',
         'logout' => 'T037',
@@ -81,8 +79,6 @@ const PAGE_STRUCTURE_PENDING = [
         'expediente' => 'T040',
     ],
     'icons' => [
-        'login' => 'T036',
-        'register' => 'T036',
         'forgot-password' => 'T037',
         'reset-password' => 'T037',
         'logout' => 'T037',
@@ -101,8 +97,6 @@ const PAGE_STRUCTURE_PENDING = [
         'expediente' => 'T039',
     ],
     'access-image' => [
-        'login' => 'T036',
-        'register' => 'T036',
         'forgot-password' => 'T037',
         'reset-password' => 'T037',
     ],
@@ -118,8 +112,6 @@ const PAGE_STRUCTURE_PENDING = [
         'expediente' => 'T050',
     ],
     'autocomplete' => [
-        'login' => 'T036',
-        'register' => 'T036',
     ],
 ];
 
@@ -192,7 +184,8 @@ it('has exactly one main title', function (string $screen) {
 
 it('shows the brand with its alternative text', function (string $screen) {
     $page = openStructureScreen($this, 'brand', $screen);
-    $images = $page->query('//img[contains(@src, "/images/brand/")]');
+    // The access photo lives next to the brand files but is a decorative picture.
+    $images = $page->query('//img[contains(@src, "/images/brand/") and not(contains(@src, "/images/brand/access"))]');
 
     expect($images->length)->toBeGreaterThan(0);
 
@@ -264,6 +257,6 @@ it('declares the purpose of the fields of the access screens', function (string 
         'last_name' => 'family-name',
         'email' => 'email',
         'password' => 'new-password',
-        'password_confirmation' => 'new-password',
+        'confirm_password' => 'new-password',
     ]],
 ]);

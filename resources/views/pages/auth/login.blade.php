@@ -1,18 +1,19 @@
 @extends('layouts.app')
 
-@section('title', 'Iniciar Sesion')
+@section('title', 'Iniciar sesión')
 
 @section('content')
 <div class="min-h-screen px-4 py-8 sm:px-6 lg:px-8 flex items-center justify-center">
-    <div class="grid w-full max-w-6xl overflow-hidden rounded-[2rem] border border-[#F5C2D6] bg-white/90 shadow-[0_30px_100px_-40px_rgba(181,17,74,0.35)] backdrop-blur md:grid-cols-2">
-        <div class="relative hidden overflow-hidden bg-gradient-to-br from-[#B5114A] via-[#D61B5B] to-[#7D0D33] p-10 text-white md:flex md:flex-col md:justify-between">
-            <div class="absolute inset-0 opacity-20">
-                <div class="absolute -left-12 top-10 h-48 w-48 rounded-full bg-white/20 blur-3xl"></div>
-                <div class="absolute -right-8 bottom-8 h-56 w-56 rounded-full bg-[#F5C2D6]/30 blur-3xl"></div>
+    <div class="grid w-full max-w-6xl overflow-hidden rounded-card border border-line bg-surface shadow-xl shadow-primary/10 md:grid-cols-2">
+        <div class="relative hidden overflow-hidden bg-primary-soft p-10 text-ink md:flex md:flex-col md:justify-between">
+            <div class="absolute inset-0" aria-hidden="true">
+                <div class="absolute -left-12 top-10 h-48 w-48 rounded-full bg-surface/60 blur-3xl"></div>
+                <div class="absolute -right-8 bottom-8 h-56 w-56 rounded-full bg-secondary/40 blur-3xl"></div>
             </div>
 
             <div class="relative z-10 space-y-6">
-                <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white/90">
+                <x-ui.brand variant="logo" class="w-56" />
+                <div class="inline-flex items-center gap-2 rounded-full border border-secondary bg-surface px-4 py-2 text-sm font-semibold text-ink">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M12 3l1.8 5.4L19 10.2l-5.2 1.8L12 17.4l-1.8-5.4L5 10.2l5.2-1.8L12 3z" />
                     </svg>
@@ -20,23 +21,23 @@
                 </div>
                 <div class="space-y-4">
                     <h2 class="text-4xl font-black tracking-tight">Bienvenido de vuelta</h2>
-                    <p class="max-w-md text-base leading-7 text-white/80">Accede al panel con una experiencia visual más limpia, moderna y alineada al resto de la clínica.</p>
+                    <p class="max-w-md text-base leading-7 text-ink">Accede al panel con una experiencia visual más limpia, moderna y alineada al resto de la clínica.</p>
                 </div>
 
                 <div class="grid gap-3 sm:grid-cols-2">
-                    <div class="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
-                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Acceso</p>
-                        <p class="mt-2 text-sm text-white/90">Ingreso rápido y seguro</p>
+                    <div class="rounded-box border border-secondary bg-surface p-4">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Acceso</p>
+                        <p class="mt-2 text-sm text-ink">Ingreso rápido y seguro</p>
                     </div>
-                    <div class="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
-                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Soporte</p>
-                        <p class="mt-2 text-sm text-white/90">Flujo claro y sin fricción</p>
+                    <div class="rounded-box border border-secondary bg-surface p-4">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Soporte</p>
+                        <p class="mt-2 text-sm text-ink">Flujo claro y sin fricción</p>
                     </div>
                 </div>
             </div>
 
-            <div class="relative z-10 mt-8 overflow-hidden rounded-[1.75rem] border border-white/15 bg-white/10 p-2 shadow-2xl">
-                <img src="{{ asset('storage/login.jpg') }}" alt="Dentissa" class="h-[20rem] w-full rounded-[1.25rem] object-cover opacity-90" />
+            <div class="relative z-10 mt-8 overflow-hidden rounded-card border border-secondary bg-surface p-2 shadow-lg shadow-primary/10">
+                <img src="{{ asset('images/brand/access.jpg') }}" alt="" class="h-80 w-full rounded-box object-cover" />
             </div>
         </div>
 
@@ -44,23 +45,21 @@
             @csrf
 
             @if ($errors->any())
-                <div class="rounded-2xl border border-[#F5C2D6] bg-[#FFF7FA] px-4 py-3 text-sm text-[#9D174D] shadow-sm">
+                <div role="alert" class="rounded-box border border-danger bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">
                     {{ $errors->first() }}
                 </div>
             @endif
 
-            <div id="login-error" class="hidden rounded-2xl border border-[#F5C2D6] bg-[#FFF7FA] px-4 py-3 text-sm text-[#9D174D] shadow-sm"></div>
-
             <div class="space-y-3">
-                <div class="inline-flex items-center gap-2 rounded-full bg-[#FDF1F6] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#B5114A]">
+                <div class="inline-flex items-center gap-2 rounded-full border border-secondary bg-primary-soft px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-ink">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M4 19.5A4.5 4.5 0 0 1 8.5 15h7a4.5 4.5 0 0 1 4.5 4.5" />
                         <circle cx="12" cy="8" r="3.2" />
                     </svg>
                     <span>Acceso al panel</span>
                 </div>
-                <x-ui.h1 class="text-left text-3xl! sm:text-4xl!">Iniciar Sesion</x-ui.h1>
-                <p class="max-w-md text-sm leading-6 text-slate-500">Ingresa tus credenciales para continuar en el panel administrativo o de paciente.</p>
+                <x-ui.h1 class="text-left">Iniciar sesión</x-ui.h1>
+                <p class="max-w-md text-sm leading-6 text-muted">Ingresa tus credenciales para continuar en el panel administrativo o de paciente.</p>
             </div>
             <div class="flex flex-col justify-between h-auto gap-y-4">
                 <x-ui.input
@@ -68,26 +67,27 @@
                 label="Correo"
                 variant="email"
                 placeholder="usuario@correo.com"
-                class=""
+                autocomplete="email"
+                required
                 />
                 <x-ui.input
                 name="password"
-                label="Password"
+                label="Contraseña"
                 variant="password"
-                placeholder="********"
-                class=""
+                autocomplete="current-password"
+                required
                 />
-                <div class="flex justify-between items-center gap-4 text-sm flex-wrap">
-                    <a href="{{ route('register') }}" class="font-semibold text-[#B5114A] hover:underline">
+                <div class="flex flex-wrap items-center justify-between gap-x-4 text-sm">
+                    <a href="{{ route('register') }}" class="inline-flex min-h-control items-center font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4">
                         ¿No tienes cuenta? Regístrate
                     </a>
-                    <a href="{{ route('password.request') }}" class="font-semibold text-[#B5114A] hover:underline">
+                    <a href="{{ route('password.request') }}" class="inline-flex min-h-control items-center font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4">
                         ¿Olvidaste tu contraseña?
                     </a>
                 </div>
                 <div class="w-full">
-                    <x-ui.button id="login-submit" variant="primary" type="submit" class="w-full sm:w-full cursor-pointer shadow-lg shadow-[#B5114A]/20">
-                        Iniciar Sesion
+                    <x-ui.button id="login-submit" variant="primary" type="submit" class="w-full">
+                        Iniciar sesión
                     </x-ui.button>
                 </div>
             </div>
@@ -98,7 +98,6 @@
 <script nonce="{{ Vite::cspNonce() }}">
     (function () {
         const form = document.getElementById('login-form');
-        const errorBox = document.getElementById('login-error');
         const submitButton = document.getElementById('login-submit');
 
         function getCookie(name) {
@@ -125,10 +124,7 @@
             const email = emailInput ? emailInput.value.trim() : '';
             const password = passwordInput ? passwordInput.value : '';
 
-            if (errorBox) {
-                errorBox.classList.add('hidden');
-                errorBox.textContent = '';
-            }
+            window.uiStatus.clearAnnouncements();
 
             if (submitButton) {
                 submitButton.disabled = true;
@@ -142,7 +138,7 @@
                 });
 
                 if (!csrfResponse.ok) {
-                    throw new Error('No se pudo inicializar la cookie CSRF.');
+                    throw new Error('csrf');
                 }
 
                 const xsrfToken = getCookie('XSRF-TOKEN');
@@ -163,11 +159,10 @@
                 });
 
                 if (!response.ok) {
-                    const message = payload.error || payload.message || 'No se pudo iniciar sesion.';
-
-                    if (errorBox) {
-                        errorBox.textContent = message;
-                        errorBox.classList.remove('hidden');
+                    if (response.status === 401 || response.status === 422) {
+                        window.uiStatus.announceError('El correo o la contraseña no son correctos.');
+                    } else {
+                        window.uiStatus.announceFailure(response.status, payload);
                     }
 
                     return;
@@ -175,10 +170,7 @@
 
                 window.location.href = '{{ url('/dashboard') }}';
             } catch (error) {
-                if (errorBox) {
-                    errorBox.textContent = 'Error de conexion. Intentalo de nuevo.';
-                    errorBox.classList.remove('hidden');
-                }
+                window.uiStatus.announceFailure(0);
             } finally {
                 if (submitButton) {
                     submitButton.disabled = false;
