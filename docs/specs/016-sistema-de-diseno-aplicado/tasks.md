@@ -173,7 +173,8 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: la vista `x-ui.status` se creó en T030 (A69). La región queda siempre montada y sin `display: none`: se pinta solo cuando tiene texto. Los avisos se retiran a los 6 s y los errores a los 12 s.
 - [x] T085 Crear el filtro, la insignia de estado y su gemela para los estados que pinta el navegador — `resources/views/components/ui/chip.blade.php`, `resources/views/components/ui/badge.blade.php`, `resources/js/ui/badge.js` — hecho cuando: T011 pasa para los tres y la insignia muestra siempre texto además de color — cubre: CA9, CA10, CA38 — depende: T025
   - nota: T011 pasa para los tres. La insignia siempre lleva texto: `ui/badge.js` traduce los estados conocidos (cita, cuenta y contenido) y uno desconocido se pinta neutro con su propio texto.
-- [ ] T086 Crear el registro de etiqueta y valor y el subtítulo con acción (`h2`) — `resources/views/components/ui/record.blade.php`, `resources/views/components/ui/section-title.blade.php` — hecho cuando: T011 pasa para ambos — cubre: CA14, CA27 — depende: T025
+- [x] T086 Crear el registro de etiqueta y valor y el subtítulo con acción (`h2`) — `resources/views/components/ui/record.blade.php`, `resources/views/components/ui/section-title.blade.php` — hecho cuando: T011 pasa para ambos — cubre: CA14, CA27 — depende: T025
+  - nota: T011 pasa para ambos.
 
 ### Fase 4 · Sitio público y acceso
 - [ ] T032 Migrar el marco del sitio público: `x-ui.brand` en la barra, logo completo en el pie, etiquetas de icono y una región de estado — `resources/views/layouts/landing.blade.php`, `resources/views/components/landing/nav.blade.php`, `resources/views/components/landing/footer.blade.php` — hecho cuando: T011, T012 y T018 pasan para esas vistas — cubre: CA1, CA5, CA15, CA37 — depende: T026, T029, T082
