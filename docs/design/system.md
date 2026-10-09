@@ -1,5 +1,5 @@
 ---
-status: draft            # draft | approved (solo el usuario aprueba) — 2.0.0 pendiente de aprobación del usuario (spec 016, T001)
+status: approved         # draft | approved (solo el usuario aprueba) — 2.0.0 aprobado por el usuario, 2026-10-08 (spec 016, T001)
 source: chosen           # chosen: elegido entre opciones · extracted: documentado del código
 version: 2.0.0
 extracted_with: 1.11.2   # versión del plugin que extrajo el sistema 1.0.0 (archivado en history/)
@@ -361,3 +361,5 @@ lo nuevo a partir del último.
 | 2026-10-06 | diseño | ¿Cómo se usa el logo? | El consultorio se llama Dentissa; en las barras, el icono junto a "Dentissa"; el logo completo de la doctora en el pie del sitio, el acceso y las páginas de error | usuario |
 | 2026-10-07 | diseño | ¿Cómo queda el panel lateral de las pantallas de acceso? | En rosa suave con texto en tinta, el logo completo y la foto | usuario |
 | 2026-10-08 | diseño | Paso del sistema extraído (1.0.0) al elegido (2.0.0) | Hecho en la spec 016 (T001): tokens, componentes y reglas de "Cambios a incorporar al sistema" del plan; el sistema 1.0.0 queda en `history/` | docs/specs/016-sistema-de-diseno-aplicado/plan.md |
+| 2026-10-08 | diseño | ¿Se aprueba el sistema 2.0.0 (variante B)? | Aprobado, tras ver la pantalla de pacientes migrada a 390 y 1440 px en una rama de vista previa | usuario |
+| 2026-10-08 | diseño | ¿La spec 016 aplica el sistema al sitio público, que tendrá un rediseño completo en otra spec? | Sí: se queda en la 016 con su pase de paleta, marca, tamaños y accesibilidad; el rediseño futuro partirá de los tokens | usuario |
