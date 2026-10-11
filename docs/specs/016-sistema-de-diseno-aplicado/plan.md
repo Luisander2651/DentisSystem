@@ -335,7 +335,7 @@ Casos de abuso de la spec: CA18 → TM1 y TM2; CA20 → TM2 y TM3.
 | CA40: todo se usa con teclado | calendario, galería pública, componentes | `ui-audit` `checks-a11y` (sin elementos con clic que no sean controles) |
 | CA39: sin vulnerabilidades altas ni críticas | `package-lock.json`; estado de RS16.a en `docs/security.md` | lint: `npm audit --audit-level=high` y `composer audit --locked` (verificación final y CI) |
 | RNF: WCAG 2.1 AA | Todo | los de CA6–CA9, CA12–CA14, CA29, CA35–CA38 y CA40; verificación manual: `design:accessibility-review` por grupo |
-| RNF: sin desplazamiento horizontal a 390 y 1440 px | Todo | `ui-audit` `checks-global` |
+| RNF: sin desplazamiento horizontal a 390, 768 y 1440 px | Todo | `ui-audit` `checks-global` |
 | RNF: sin regresiones | Todo | suite Pest completa en CI |
 | RNF: logo, icono e imagen de acceso propios | `public/images/brand` | `PageStructureTest` |
 | TM1 | middlewares | `WebAccessDeniedPagesTest` |

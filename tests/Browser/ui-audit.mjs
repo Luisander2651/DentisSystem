@@ -8,7 +8,7 @@
  *   npm run test:ui -- --only pacientes               one screen (without its dialogs)
  *   npm run test:ui -- --only crear-paciente          one dialog, on every screen that mounts it
  *   npm run test:ui -- --checks global,a11y           only some check modules
- *   npm run test:ui -- --width 390                    only one width (390, 768, 1024 or 1440; 390 and 1440 by default)
+ *   npm run test:ui -- --width 390                    only one width (390, 768, 1024 or 1440; all but 1024 by default)
  *   npm run test:ui -- --baseline                     rewrite tests/Browser/baseline-1440.json
  *   npm run test:ui -- --screenshots [dir]            save a capture of every entry
  *   npm run test:ui -- --jobs 1                       tabs open at once (4 by default)
@@ -31,7 +31,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const CHECK_MODULES = ['composition', 'global', 'screens', 'a11y', 'dialogs'];
 const ROLES = ['administrador', 'asistente', 'doctor', 'paciente'];
 const VIEWPORTS = { 390: 844, 768: 1024, 1024: 768, 1440: 900 };
-const DEFAULT_WIDTHS = [390, 1440];
+const DEFAULT_WIDTHS = [390, 768, 1440];
 const SETTLE_TIMEOUT = 15000;
 
 class Cdp {

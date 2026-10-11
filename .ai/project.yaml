@@ -67,7 +67,7 @@ design:                        # solo proyectos con interfaz (frontend, fullstac
   system: docs/design/system.md
   html: docs/design/system.html
   canvas: null
-  widths: [390, 1440]          # anchos de comprobación
+  widths: [390, 768, 1440]     # anchos de comprobación
 paths:
   constitution: docs/constitution.md
   architecture: docs/architecture.md

@@ -5,9 +5,9 @@ version: 2.0.0
 extracted_with: 1.11.2   # versión del plugin que extrajo el sistema 1.0.0 (archivado en history/)
 html: docs/design/system.html
 canvas: null
-widths: [390, 1440]
+widths: [390, 768, 1440]
 created: 2026-10-04
-updated: 2026-10-08
+updated: 2026-10-11
 ---
 
 # Sistema de diseño de Dentissa

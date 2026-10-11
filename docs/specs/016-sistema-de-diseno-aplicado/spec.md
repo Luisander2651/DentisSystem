@@ -186,7 +186,7 @@ Deuda de diseño que cierra:
 
 ## Requisitos no funcionales
 - Accesibilidad: todas las pantallas cumplen WCAG 2.1 AA (constitución, "Restricciones"): lo comprueban CA6–CA9, CA12–CA14, CA29, CA35–CA38 y CA40, más una revisión de accesibilidad por grupo de pantallas.
-- Anchos de comprobación: 390 y 1440 px, sin desplazamiento horizontal de página en ninguna pantalla.
+- Anchos de comprobación: 390, 768 y 1440 px, sin desplazamiento horizontal de página ni contenido fuera de su caja en ninguna pantalla. La composición solo se compara con su línea base a 1440 px.
 - Sin regresiones: todo lo que el staff y los visitantes pueden hacer hoy sigue funcionando igual (CA22); la suite de tests existente pasa sin cambios en su comportamiento esperado.
 - El logo, el icono de pestaña y la imagen de las pantallas de acceso forman parte de la aplicación: no se sirven desde terceros ni dependen de un archivo suelto en el servidor.
 
@@ -209,6 +209,7 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 | 2026-10-06 | brecha | ¿Qué ve quien entra con sesión a una pantalla que su rol no puede ver? | Una página "Sin permiso" propia con botón para volver a su inicio, no una redirección (CA18). | usuario |
 | 2026-10-06 | contradicción | La spec 015 y el roadmap reservaban el número 016 para el monitoreo, y 016 es el siguiente libre. | Esta spec es la 016; el monitoreo pasa a ser la 017 y se corrige solo esa referencia en la spec 015 y en el roadmap. | usuario |
 | 2026-10-06 | implícita | ¿En qué anchos se comprueba? | 390 y 1440 px. | `.ai/project.yaml` → `design.widths` |
+| 2026-10-11 | brecha | A 768 px el panel y el menú del sitio público se desbordaban: ese ancho no se comprobaba. ¿Se añade? | Sí: 768 px pasa a ser ancho obligatorio. La barra lateral del panel y el menú del sitio público se despliegan desde 1024 px; por debajo se usa el menú plegable. Las capturas de CA23 siguen a 390 y 1440 px. | usuario |
 | 2026-10-06 | implícita | ¿Quién registra los accesos denegados? | La spec del objetivo 5 del roadmap; esta no emite eventos de auditoría. | `docs/roadmap.md` objetivo 5; spec 014 → "Auditoría" |
 | 2026-10-06 | implícita | ¿Cuál es el tamaño táctil mínimo? | 44 × 44 px a 390 px. | `docs/roadmap.md` objetivo 6; `docs/design/system.md` DS4 |
 | 2026-10-06 | supuesto | ¿A dónde vuelve el enlace de "No encontrada"? | A su inicio si tiene sesión; al inicio del sitio público si no (CA19). | /specify |
