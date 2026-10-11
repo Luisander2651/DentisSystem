@@ -1,3 +1,6 @@
+import { closeDialog, openDialog } from '../../ui/dialog';
+import { announce, announceError, clearAnnouncements, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__treatmentsIndexInit) {
         return;
@@ -22,7 +25,6 @@
     var createName = createModal ? createModal.querySelector('[data-treatments-create-name]') : null;
     var createDescription = createModal ? createModal.querySelector('[data-treatments-create-description]') : null;
     var createTime = createModal ? createModal.querySelector('[data-treatments-create-time]') : null;
-    var createError = createModal ? createModal.querySelector('[data-treatments-create-error]') : null;
     var createSubmit = createModal ? createModal.querySelector('[data-treatments-create-submit]') : null;
     var createCloseButtons = createModal ? createModal.querySelectorAll('[data-treatments-create-close]') : [];
 
@@ -30,7 +32,6 @@
     var viewName = viewModal ? viewModal.querySelector('[data-treatments-view-name]') : null;
     var viewDescription = viewModal ? viewModal.querySelector('[data-treatments-view-description]') : null;
     var viewTime = viewModal ? viewModal.querySelector('[data-treatments-view-time]') : null;
-    var viewId = viewModal ? viewModal.querySelector('[data-treatments-view-id]') : null;
     var viewCloseButtons = viewModal ? viewModal.querySelectorAll('[data-treatments-view-close]') : [];
 
     var editModal = document.getElementById('treatments-edit-modal');
@@ -39,7 +40,6 @@
     var editName = editModal ? editModal.querySelector('[data-treatments-edit-name]') : null;
     var editDescription = editModal ? editModal.querySelector('[data-treatments-edit-description]') : null;
     var editTime = editModal ? editModal.querySelector('[data-treatments-edit-time]') : null;
-    var editError = editModal ? editModal.querySelector('[data-treatments-edit-error]') : null;
     var editSubmit = editModal ? editModal.querySelector('[data-treatments-edit-submit]') : null;
     var editCloseButtons = editModal ? editModal.querySelectorAll('[data-treatments-edit-close]') : [];
 
@@ -47,7 +47,6 @@
     var deleteForm = deleteModal ? deleteModal.querySelector('[data-treatments-delete-form]') : null;
     var deleteId = deleteModal ? deleteModal.querySelector('[data-treatments-delete-id]') : null;
     var deleteTarget = deleteModal ? deleteModal.querySelector('[data-treatments-delete-target]') : null;
-    var deleteError = deleteModal ? deleteModal.querySelector('[data-treatments-delete-error]') : null;
     var deleteSubmit = deleteModal ? deleteModal.querySelector('[data-treatments-delete-submit]') : null;
     var deleteCloseButtons = deleteModal ? deleteModal.querySelectorAll('[data-treatments-delete-close]') : [];
 
@@ -125,7 +124,7 @@
         var numericValue = Number(value);
 
         if (!Number.isFinite(numericValue) || numericValue < 0) {
-            return 'Sin duracion';
+            return 'Sin duración';
         }
 
         return numericValue + ' min';
@@ -136,8 +135,15 @@
             return;
         }
 
-        modal.classList.toggle('hidden', !isVisible);
-        document.body.style.overflow = isVisible ? 'hidden' : '';
+        if (isVisible) {
+            openDialog(modal);
+        } else {
+            closeDialog(modal);
+        }
+    }
+
+    function messageOf(error) {
+        return error instanceof TypeError ? failureMessage(0) : error.message;
     }
 
     function setButtonState(button, submitting) {
@@ -146,24 +152,6 @@
         }
 
         button.disabled = submitting;
-    }
-
-    function showModalError(node, message) {
-        if (!node) {
-            return;
-        }
-
-        node.textContent = message;
-        node.classList.remove('hidden');
-    }
-
-    function hideModalError(node) {
-        if (!node) {
-            return;
-        }
-
-        node.textContent = '';
-        node.classList.add('hidden');
     }
 
     function closeAllModals() {
@@ -178,7 +166,7 @@
             return;
         }
 
-        hideModalError(createError);
+        clearAnnouncements();
 
         if (createForm) {
             createForm.reset();
@@ -208,10 +196,6 @@
             viewTime.textContent = formatTime(treatment.time);
         }
 
-        if (viewId) {
-            viewId.textContent = treatment.id ? String(treatment.id) : '-';
-        }
-
         setModalVisibility(viewModal, true);
     }
 
@@ -220,7 +204,7 @@
             return;
         }
 
-        hideModalError(editError);
+        clearAnnouncements();
 
         if (editId) {
             editId.value = String(treatment.id ?? '');
@@ -250,7 +234,7 @@
             return;
         }
 
-        hideModalError(deleteError);
+        clearAnnouncements();
 
         if (deleteId) {
             deleteId.value = String(treatment.id ?? '');
@@ -330,36 +314,24 @@
             var treatment = normalizeTreatment(record);
             var id = treatment.id;
             var name = treatment.name || 'Sin nombre';
-            var description = treatment.description || 'Sin descripcion';
+            var description = treatment.description || 'Sin descripción';
             var durationLabel = formatTime(treatment.time);
-            var initial = (name.charAt(0) || 'T').toUpperCase();
-            var colorClasses = ['bg-[#FDF1F6] text-[#B5114A]', 'bg-sky-50 text-sky-700', 'bg-emerald-50 text-emerald-700', 'bg-amber-50 text-amber-700'];
-            var colorIndex = (name.length + description.length) % colorClasses.length;
-            var avatarClasses = colorClasses[colorIndex];
 
             return [
-                '<article class="group rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-[#F5C2D6] hover:shadow-md">',
-                    '<div class="flex items-start justify-between gap-4">',
-                        '<div class="flex items-center gap-3">',
-                            '<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ' + avatarClasses + ' text-sm font-bold transition-transform group-hover:scale-110">', escapeHtml(initial), '</div>',
-                            '<div class="min-w-0">',
-                                '<p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Tratamiento</p>',
-                                '<h3 class="mt-1 wrap-break-word text-base font-semibold text-slate-900 transition-colors group-hover:text-[#B5114A]">', escapeHtml(name), '</h3>',
-                            '</div>',
-                        '</div>',
-                        '<span class="inline-flex shrink-0 rounded-full bg-[#FDF1F6] px-3 py-1 text-xs font-semibold text-[#B5114A]">', escapeHtml(durationLabel), '</span>',
+                '<article class="flex flex-col rounded-card border border-line bg-surface p-4 shadow-sm md:p-5">',
+                    '<div class="flex items-start justify-between gap-3">',
+                        '<h2 class="min-w-0 wrap-break-word text-base font-semibold text-ink">', escapeHtml(name), '</h2>',
+                        '<span class="shrink-0 rounded-full bg-canvas px-2.5 py-0.5 text-min font-bold text-muted">', escapeHtml(durationLabel), '</span>',
                     '</div>',
 
-                    '<p class="mt-4 line-clamp-3 wrap-break-word text-sm leading-6 text-slate-600">', escapeHtml(description), '</p>',
+                    '<p class="mt-2 line-clamp-3 wrap-break-word text-sm leading-6 text-muted">', escapeHtml(description), '</p>',
 
-                    '<div class="mt-4 flex flex-wrap items-center justify-between gap-3">',
-                        '<button type="button" data-treatments-view data-treatment-id="', escapeHtml(id), '" class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">',
-                            'Ver detalle',
+                    '<div class="mt-4 flex items-center gap-2">',
+                        '<button type="button" data-treatments-view data-treatment-id="', escapeHtml(id), '" class="inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-canvas">Ver detalle</button>',
+                        '<button type="button" data-treatments-edit data-treatment-id="', escapeHtml(id), '" class="inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-canvas">Editar</button>',
+                        '<button type="button" data-treatments-delete data-treatment-id="', escapeHtml(id), '" data-treatment-name="', escapeHtml(name), '" aria-label="Eliminar ', escapeHtml(name), '" class="inline-flex size-control shrink-0 items-center justify-center rounded-control border border-field bg-surface text-ink transition-colors hover:bg-danger-soft hover:text-danger">',
+                            '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
                         '</button>',
-                        '<div class="flex flex-wrap gap-2">',
-                            '<button type="button" data-treatments-edit data-treatment-id="', escapeHtml(id), '" class="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">Editar</button>',
-                            '<button type="button" data-treatments-delete data-treatment-id="', escapeHtml(id), '" data-treatment-name="', escapeHtml(name), '" class="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50">Eliminar</button>',
-                        '</div>',
                     '</div>',
                 '</article>',
             ].join('');
@@ -386,7 +358,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(payload.error || payload.message || 'Operacion fallida.');
+            throw new Error(failureMessage(response.status, payload));
         }
 
         return payload;
@@ -401,7 +373,7 @@
             allTreatments = normalizeTreatmentsPayload(payload).map(normalizeTreatment);
             applyFilters();
         } catch (error) {
-            showError(error.message || 'No se pudieron cargar los tratamientos.');
+            showError(messageOf(error));
             allTreatments = [];
             renderTreatments([]);
         } finally {
@@ -451,7 +423,7 @@
             }
 
             setModalVisibility(createModal, false);
-            hideModalError(createError);
+            clearAnnouncements();
         });
     });
 
@@ -468,7 +440,7 @@
             }
 
             setModalVisibility(editModal, false);
-            hideModalError(editError);
+            clearAnnouncements();
         });
     });
 
@@ -479,7 +451,7 @@
             }
 
             setModalVisibility(deleteModal, false);
-            hideModalError(deleteError);
+            clearAnnouncements();
         });
     });
 
@@ -505,7 +477,7 @@
                     var viewTreatment = await fetchTreatmentById(viewIdValue);
                     openViewModal(viewTreatment);
                 } catch (error) {
-                    showError(error.message || 'No se pudo cargar el tratamiento.');
+                    showError(messageOf(error));
                 }
 
                 return;
@@ -523,7 +495,7 @@
                     var editTreatment = await fetchTreatmentById(editIdValue);
                     openEditModal(editTreatment);
                 } catch (error) {
-                    showError(error.message || 'No se pudo cargar el tratamiento.');
+                    showError(messageOf(error));
                 }
 
                 return;
@@ -559,16 +531,17 @@
                 time: createTime ? createTime.value.trim() : '',
             };
 
-            hideModalError(createError);
+            clearAnnouncements();
             isCreateSubmitting = true;
             setButtonState(createSubmit, true);
 
             try {
                 await createTreatment(payload);
                 closeAllModals();
+                announce('Tratamiento creado.');
                 await loadTreatments();
             } catch (error) {
-                showModalError(createError, error.message || 'No se pudo crear el tratamiento.');
+                announceError(messageOf(error));
             } finally {
                 isCreateSubmitting = false;
                 setButtonState(createSubmit, false);
@@ -587,7 +560,7 @@
             var treatmentId = editId ? editId.value.trim() : '';
 
             if (!treatmentId) {
-                showModalError(editError, 'No se pudo identificar el tratamiento.');
+                announceError('No pudimos identificar el tratamiento. Cierra el diálogo e inténtalo de nuevo.');
                 return;
             }
 
@@ -597,16 +570,17 @@
                 time: editTime ? editTime.value.trim() : '',
             };
 
-            hideModalError(editError);
+            clearAnnouncements();
             isEditSubmitting = true;
             setButtonState(editSubmit, true);
 
             try {
                 await updateTreatment(treatmentId, payload);
                 closeAllModals();
+                announce('Cambios guardados.');
                 await loadTreatments();
             } catch (error) {
-                showModalError(editError, error.message || 'No se pudo actualizar el tratamiento.');
+                announceError(messageOf(error));
             } finally {
                 isEditSubmitting = false;
                 setButtonState(editSubmit, false);
@@ -625,34 +599,27 @@
             var treatmentId = deleteId ? deleteId.value.trim() : '';
 
             if (!treatmentId) {
-                showModalError(deleteError, 'No se pudo identificar el tratamiento.');
+                announceError('No pudimos identificar el tratamiento. Cierra el diálogo e inténtalo de nuevo.');
                 return;
             }
 
-            hideModalError(deleteError);
+            clearAnnouncements();
             isDeleteSubmitting = true;
             setButtonState(deleteSubmit, true);
 
             try {
                 await deleteTreatment(treatmentId);
                 closeAllModals();
+                announce('Tratamiento eliminado.');
                 await loadTreatments();
             } catch (error) {
-                showModalError(deleteError, error.message || 'No se pudo eliminar el tratamiento.');
+                announceError(messageOf(error));
             } finally {
                 isDeleteSubmitting = false;
                 setButtonState(deleteSubmit, false);
             }
         });
     }
-
-    document.addEventListener('keydown', function (event) {
-        if (event.key !== 'Escape') {
-            return;
-        }
-
-        closeAllModals();
-    });
 
     window.treatmentsPage = {
         reload: loadTreatments,
