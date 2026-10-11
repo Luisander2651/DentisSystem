@@ -1,3 +1,5 @@
+import { closeDialog, openDialog } from '../../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../../ui/status';
 export function initPromotionsEditModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -14,7 +16,9 @@ export function initPromotionsEditModal(context) {
     var submitButton = modal ? modal.querySelector('[data-promotions-edit-submit]') : null;
     var errorBox = modal ? modal.querySelector('[data-promotions-edit-error]') : null;
 
-    if (!modal || !form || !idInput || !nameInput || !descriptionInput || !statusInput || !startDateInput || !endDateInput || !cancelButtons.length || !submitButton || !errorBox || !api) {
+    errorBox = errorBox || document.createElement('p');
+
+    if (!modal || !form || !idInput || !nameInput || !descriptionInput || !statusInput || !startDateInput || !endDateInput || !cancelButtons.length || !submitButton || !api) {
         return;
     }
 
@@ -27,6 +31,7 @@ export function initPromotionsEditModal(context) {
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -58,8 +63,7 @@ export function initPromotionsEditModal(context) {
         startDateInput.value = data.startDate || '';
         endDateInput.value = data.endDate || '';
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -69,8 +73,7 @@ export function initPromotionsEditModal(context) {
 
         form.reset();
         hideModalError();
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        closeDialog(modal);
     }
 
     async function updatePromotion(id, payload) {
@@ -93,7 +96,7 @@ export function initPromotionsEditModal(context) {
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo actualizar la promocion.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -116,11 +119,6 @@ export function initPromotionsEditModal(context) {
         button.addEventListener('click', closeModal);
     });
 
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
 
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -138,7 +136,7 @@ export function initPromotionsEditModal(context) {
         var endDate = endDateInput.value;
 
         if (!id || !name || !description || !startDate || !endDate) {
-            showModalError('Todos los campos obligatorios deben estar llenos.');
+            showModalError('Completa todos los campos obligatorios.');
             return;
         }
 
@@ -154,8 +152,11 @@ export function initPromotionsEditModal(context) {
         hideModalError();
         setSubmittingState(true);
 
+        var saved = false;
+
         try {
             await updatePromotion(id, payload);
+            saved = true;
 
             if (typeof api.hideError === 'function') {
                 api.hideError();
@@ -165,14 +166,13 @@ export function initPromotionsEditModal(context) {
                 await api.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo actualizar la promocion.');
-
-            if (typeof api.showError === 'function') {
-                api.showError(error.message || 'No se pudo actualizar la promocion.');
-            }
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             setSubmittingState(false);
-            closeModal();
+            if (saved) {
+                closeModal();
+                announce('Cambios guardados.');
+            }
         }
     });
 }

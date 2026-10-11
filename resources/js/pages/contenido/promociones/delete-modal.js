@@ -1,3 +1,5 @@
+import { closeDialog, openDialog } from '../../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../../ui/status';
 export function initPromotionsDeleteModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -9,7 +11,9 @@ export function initPromotionsDeleteModal(context) {
     var submitButton = modal ? modal.querySelector('[data-promotions-delete-submit]') : null;
     var errorBox = modal ? modal.querySelector('[data-promotions-delete-error]') : null;
 
-    if (!modal || !form || !idInput || !targetLabel || !cancelButtons.length || !submitButton || !errorBox || !api) {
+    errorBox = errorBox || document.createElement('p');
+
+    if (!modal || !form || !idInput || !targetLabel || !cancelButtons.length || !submitButton || !api) {
         return;
     }
 
@@ -22,6 +26,7 @@ export function initPromotionsDeleteModal(context) {
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -40,9 +45,8 @@ export function initPromotionsDeleteModal(context) {
     function openModal(data) {
         hideModalError();
         idInput.value = data.id || '';
-        targetLabel.textContent = data.name || 'esta promocion';
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        targetLabel.textContent = data.name || 'esta promoción';
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -52,8 +56,7 @@ export function initPromotionsDeleteModal(context) {
 
         form.reset();
         hideModalError();
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        closeDialog(modal);
     }
 
     async function deletePromotion(id) {
@@ -74,7 +77,7 @@ export function initPromotionsDeleteModal(context) {
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo eliminar la promocion.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -92,11 +95,6 @@ export function initPromotionsDeleteModal(context) {
         button.addEventListener('click', closeModal);
     });
 
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
 
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -108,15 +106,18 @@ export function initPromotionsDeleteModal(context) {
         var id = idInput.value;
 
         if (!id) {
-            showModalError('No se pudo identificar el registro a eliminar.');
+            showModalError('No pudimos identificar la promoción. Cierra el diálogo e inténtalo de nuevo.');
             return;
         }
 
         hideModalError();
         setSubmittingState(true);
 
+        var saved = false;
+
         try {
             await deletePromotion(id);
+            saved = true;
 
             if (typeof api.hideError === 'function') {
                 api.hideError();
@@ -126,14 +127,13 @@ export function initPromotionsDeleteModal(context) {
                 await api.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo eliminar la promocion.');
-
-            if (typeof api.showError === 'function') {
-                api.showError(error.message || 'No se pudo eliminar la promocion.');
-            }
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             setSubmittingState(false);
-            closeModal();
+            if (saved) {
+                closeModal();
+                announce('Promoción eliminada.');
+            }
         }
     });
 }
