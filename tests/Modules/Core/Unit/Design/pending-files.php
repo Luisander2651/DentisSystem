@@ -69,6 +69,5 @@ return [
     'resources/views/pages/contenido/testimonios/index.blade.php',
     'resources/views/pages/records/index.blade.php',
     'resources/views/pages/tratamientos/index.blade.php',
-    'resources/views/pages/usuarios/index.blade.php',
     'resources/views/welcome.blade.php',
 ];
