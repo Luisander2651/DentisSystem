@@ -105,7 +105,7 @@ it('shows the "Sin permiso" page to an actor without permission (abuse)', functi
     $response->assertSee('href="'.route('dashboard').'"', false);
     $response->assertSee('lang="es"', false);
     expectNoAccessDeniedDetails($response, $screen);
-})->with(deniedScreensByActor())->skip('016: pendiente de T070');
+})->with(deniedScreensByActor());
 
 it('answers a fixed Spanish body when an actor without permission asks for JSON (abuse)', function (string $actor, string $screen) {
     config(['app.debug' => false]);

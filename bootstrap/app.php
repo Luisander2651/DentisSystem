@@ -11,10 +11,13 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Exceptions\RegisterErrorViewPaths;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\ViewErrorBag;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -77,6 +80,18 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*')) {
                 return response()->json(['error' => $e->getMessage()], 403);
             }
+        });
+
+        // Spec 016: the web screens answer 403, 404, 405 and 419 with our own pages. They are
+        // rendered here, and not by the default handler, so the response keeps its view.
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request): ?Response {
+            if ($request->is('api/*') || $request->expectsJson() || ! in_array($e->getStatusCode(), [403, 404, 405, 419], true)) {
+                return null;
+            }
+
+            (new RegisterErrorViewPaths)();
+
+            return rescue(fn (): Response => response()->view('errors::'.$e->getStatusCode(), ['errors' => new ViewErrorBag], $e->getStatusCode(), $e->getHeaders()), null, false);
         });
 
         $exceptions->render(function (Throwable $e, Request $request) use ($isUnexpected): ?JsonResponse {

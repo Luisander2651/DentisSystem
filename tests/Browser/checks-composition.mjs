@@ -44,6 +44,11 @@ export const ADMITTED = [
         difference: 'La tarjeta de cita pierde la rama de botones "ver y editar", que no llegaba a pintarse para el administrador.',
     },
     {
+        criterion: 'CA18, CA19',
+        entries: ['error-403-admin', 'error-403-staff', 'error-404', 'error-404-con-sesion'],
+        difference: 'Las páginas "Sin permiso" y "No encontrada" son nuevas: sustituyen al JSON en crudo y a las páginas por defecto de Laravel que había en la línea base.',
+    },
+    {
         criterion: 'CA40, CA34',
         entries: ['agenda', 'agenda-con-citas', 'agenda-hoy-sin-citas', 'agenda-dia'],
         difference: 'Cada día del calendario pasa a ser un botón (antes, una caja con clic que el teclado no alcanzaba), se retira el botón "Mes", que no hacía nada, y la tarjeta "Citas para hoy" pierde su alto mínimo; el calendario y la tarjeta siguen en su sitio.',

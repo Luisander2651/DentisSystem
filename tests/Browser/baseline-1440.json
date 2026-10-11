@@ -48,6 +48,16 @@
             "difference": "La tarjeta de cita pierde la rama de botones \"ver y editar\", que no llegaba a pintarse para el administrador."
         },
         {
+            "criterion": "CA18, CA19",
+            "entries": [
+                "error-403-admin",
+                "error-403-staff",
+                "error-404",
+                "error-404-con-sesion"
+            ],
+            "difference": "Las páginas \"Sin permiso\" y \"No encontrada\" son nuevas: sustituyen al JSON en crudo y a las páginas por defecto de Laravel que había en la línea base."
+        },
+        {
             "criterion": "CA40, CA34",
             "entries": [
                 "agenda",
@@ -120,12 +130,12 @@
         "contenido-testimonios-editar": [{"k":"card","x":30,"w":40,"c":[{"k":"heading","x":32,"w":19},{"k":"press","x":65,"w":3},{"k":"select","x":32,"w":37},{"k":"press","x":52,"w":6},{"k":"press","x":58,"w":10}]}],
         "usuarios": [{"k":"card","x":0,"w":100,"c":[{"k":"card","x":2,"w":22,"c":[{"k":"link","x":3,"w":19},{"k":"link","x":3,"w":19}]},{"k":"card","x":26,"w":73,"c":[{"k":"heading","x":28,"w":26},{"k":"press","x":85,"w":11}]},{"k":"card","x":26,"w":18,"c":[]},{"k":"card","x":44,"w":18,"c":[]},{"k":"card","x":62,"w":18,"c":[]},{"k":"card","x":81,"w":18,"c":[]},{"k":"card","x":26,"w":73,"c":[]},{"k":"card","x":26,"w":24,"c":[{"k":"heading","x":32,"w":6},{"k":"card","x":27,"w":20,"c":[]},{"k":"press","x":27,"w":17},{"k":"press","x":45,"w":3}]},{"k":"card","x":0,"w":100,"c":[]}]}],
         "usuarios-crear": [{"k":"card","x":32,"w":36,"c":[{"k":"card","x":32,"w":36,"c":[{"k":"heading","x":34,"w":16},{"k":"press","x":63,"w":3},{"k":"field","x":34,"w":15},{"k":"field","x":51,"w":15},{"k":"field","x":34,"w":31},{"k":"field","x":34,"w":31},{"k":"press","x":63,"w":3},{"k":"select","x":34,"w":31},{"k":"press","x":47,"w":7},{"k":"press","x":55,"w":10}]}]}],
-        "error-404": [{"k":"card","x":0,"w":100,"c":[{"k":"heading","x":43,"w":5}]}],
+        "error-404": [{"k":"card","x":0,"w":100,"c":[{"k":"card","x":33,"w":33,"c":[{"k":"heading","x":36,"w":28},{"k":"link","x":45,"w":10}]}]}],
         "usuarios-editar": [{"k":"card","x":32,"w":36,"c":[{"k":"card","x":32,"w":36,"c":[{"k":"heading","x":34,"w":21},{"k":"press","x":63,"w":3},{"k":"field","x":34,"w":15},{"k":"field","x":51,"w":15},{"k":"field","x":34,"w":31},{"k":"press","x":63,"w":3},{"k":"select","x":34,"w":15},{"k":"select","x":51,"w":15},{"k":"press","x":45,"w":7},{"k":"press","x":53,"w":12}]}]}],
         "usuarios-eliminar": [{"k":"card","x":34,"w":31,"c":[{"k":"heading","x":36,"w":8},{"k":"press","x":61,"w":3},{"k":"press","x":50,"w":6},{"k":"press","x":57,"w":7}]}],
-        "error-404-con-sesion": [{"k":"card","x":0,"w":100,"c":[{"k":"heading","x":43,"w":5}]}],
-        "error-403-staff": [{"k":"card","x":0,"w":100,"c":[{"k":"heading","x":34,"w":5}]}],
-        "error-403-admin": [],
+        "error-404-con-sesion": [{"k":"card","x":0,"w":100,"c":[{"k":"card","x":33,"w":33,"c":[{"k":"heading","x":36,"w":28},{"k":"link","x":45,"w":10}]}]}],
+        "error-403-staff": [{"k":"card","x":0,"w":100,"c":[{"k":"card","x":33,"w":33,"c":[{"k":"heading","x":36,"w":28},{"k":"link","x":45,"w":10}]}]}],
+        "error-403-admin": [{"k":"card","x":0,"w":100,"c":[{"k":"card","x":33,"w":33,"c":[{"k":"heading","x":36,"w":28},{"k":"link","x":45,"w":10}]}]}],
         "agenda-hoy-sin-citas": [{"k":"card","x":0,"w":100,"c":[{"k":"card","x":2,"w":22,"c":[{"k":"link","x":3,"w":19},{"k":"link","x":3,"w":19}]},{"k":"card","x":26,"w":73,"c":[{"k":"heading","x":28,"w":20}]},{"k":"card","x":26,"w":18,"c":[]},{"k":"card","x":44,"w":18,"c":[]},{"k":"card","x":62,"w":18,"c":[]},{"k":"card","x":81,"w":18,"c":[]},{"k":"press","x":26,"w":5},{"k":"card","x":26,"w":48,"c":[{"k":"heading","x":27,"w":7},{"k":"press","x":65,"w":3},{"k":"press","x":69,"w":3},{"k":"press","x":27,"w":6}]},{"k":"card","x":75,"w":23,"c":[{"k":"heading","x":77,"w":20},{"k":"press","x":77,"w":20}]},{"k":"card","x":0,"w":100,"c":[]}]}],
         "agenda-con-citas": [{"k":"card","x":0,"w":100,"c":[{"k":"card","x":2,"w":22,"c":[{"k":"link","x":3,"w":19},{"k":"link","x":3,"w":19}]},{"k":"card","x":26,"w":73,"c":[{"k":"heading","x":28,"w":20}]},{"k":"card","x":26,"w":18,"c":[]},{"k":"card","x":44,"w":18,"c":[]},{"k":"card","x":62,"w":18,"c":[]},{"k":"card","x":81,"w":18,"c":[]},{"k":"press","x":26,"w":5},{"k":"card","x":26,"w":48,"c":[{"k":"heading","x":27,"w":6},{"k":"press","x":65,"w":3},{"k":"press","x":69,"w":3},{"k":"press","x":27,"w":6}]},{"k":"card","x":75,"w":23,"c":[{"k":"heading","x":77,"w":20},{"k":"card","x":77,"w":20,"c":[{"k":"heading","x":81,"w":9},{"k":"press","x":78,"w":9},{"k":"press","x":87,"w":9}]},{"k":"press","x":77,"w":20}]},{"k":"card","x":0,"w":100,"c":[]}]}],
         "agenda": [{"k":"card","x":0,"w":100,"c":[{"k":"card","x":2,"w":22,"c":[{"k":"link","x":3,"w":19},{"k":"link","x":3,"w":19}]},{"k":"card","x":26,"w":73,"c":[{"k":"heading","x":28,"w":20}]},{"k":"card","x":26,"w":18,"c":[]},{"k":"card","x":44,"w":18,"c":[]},{"k":"card","x":62,"w":18,"c":[]},{"k":"card","x":81,"w":18,"c":[]},{"k":"press","x":26,"w":5},{"k":"card","x":26,"w":48,"c":[{"k":"heading","x":27,"w":7},{"k":"press","x":65,"w":3},{"k":"press","x":69,"w":3},{"k":"press","x":27,"w":6}]},{"k":"card","x":75,"w":23,"c":[{"k":"heading","x":77,"w":20},{"k":"card","x":77,"w":20,"c":[{"k":"heading","x":81,"w":9},{"k":"press","x":78,"w":9},{"k":"press","x":87,"w":9}]},{"k":"press","x":77,"w":20}]},{"k":"card","x":0,"w":100,"c":[]}]}],
