@@ -39,7 +39,7 @@ it('shows its own page when a screen does not admit the method', function (bool 
     $response->assertSee('lang="es"', false);
     expect($response->getContent())->not->toContain('method is not supported')
         ->and($response->getContent())->not->toContain('Method Not Allowed');
-})->with(['visitor' => [false], 'signed in' => [true]])->skip('016: pendiente de T088');
+})->with(['visitor' => [false], 'signed in' => [true]]);
 
 it('shows its own page when a form expired', function (bool $signedIn) {
     if ($signedIn) {
@@ -55,7 +55,7 @@ it('shows its own page when a form expired', function (bool $signedIn) {
     $response->assertSee('lang="es"', false);
     expect($response->getContent())->not->toContain('CSRF')
         ->and($response->getContent())->not->toContain('Page Expired');
-})->with(['visitor' => [false], 'signed in' => [true]])->skip('016: pendiente de T088');
+})->with(['visitor' => [false], 'signed in' => [true]]);
 
 it('answers a fixed Spanish body when JSON is asked for', function (string $path, int $status, string $message) {
     $response = $this->postJson($path);
