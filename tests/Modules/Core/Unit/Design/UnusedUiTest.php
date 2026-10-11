@@ -34,12 +34,12 @@ it('finds the files that contain a text (positive control)', function () {
 it('has no x-ui.table component, which no view used', function () {
     expect(is_file(UNUSED_UI_ROOT.'/resources/views/components/ui/table.blade.php'))->toBeFalse()
         ->and(unusedUiFilesContaining('<x-ui.table'))->toBe([]);
-})->skip('016: pendiente de T072');
+});
 
 it('has no welcome view, which no route served', function () {
     expect(is_file(UNUSED_UI_ROOT.'/resources/views/welcome.blade.php'))->toBeFalse()
         ->and(unusedUiFilesContaining("view('welcome')"))->toBe([]);
-})->skip('016: pendiente de T072');
+});
 
 it('has no "view and edit" branch in the appointment card, which was never painted', function () {
     expect(unusedUiFilesContaining('data-edit-appointment-trigger'))->toBe([]);
