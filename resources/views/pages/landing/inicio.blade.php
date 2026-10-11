@@ -206,11 +206,11 @@
                     <div class="mt-6 border-t border-line pt-4 flex flex-col gap-2">
                         <div class="flex items-center justify-between text-xs text-muted">
                             <span>Válido del:</span>
-                            <span class="font-semibold text-muted">{{ \Illuminate\Support\Carbon::parse($promotion['start_date'])->translatedFormat('d M Y') }}</span>
+                            <span class="font-semibold text-muted">{{ \Illuminate\Support\Carbon::parse($promotion['start_date'])->locale('es')->translatedFormat('d M Y') }}</span>
                         </div>
                         <div class="flex items-center justify-between text-xs text-muted">
                             <span>Al:</span>
-                            <span class="font-semibold text-muted">{{ \Illuminate\Support\Carbon::parse($promotion['end_date'])->translatedFormat('d M Y') }}</span>
+                            <span class="font-semibold text-muted">{{ \Illuminate\Support\Carbon::parse($promotion['end_date'])->locale('es')->translatedFormat('d M Y') }}</span>
                         </div>
                     </div>
                 </article>
@@ -258,7 +258,7 @@
                         <p class="mt-3 text-sm leading-6 text-muted wrap-break-word line-clamp-3">{{ $certification['description'] }}</p>
                         <div class="mt-5 flex items-center justify-between border-t border-line pt-4 text-xs text-muted">
                             <span class="font-semibold uppercase tracking-wider text-ink">Fecha</span>
-                            <span class="font-medium text-muted">{{ \Illuminate\Support\Carbon::parse($certification['date'])->translatedFormat('d M Y') }}</span>
+                            <span class="font-medium text-muted">{{ \Illuminate\Support\Carbon::parse($certification['date'])->locale('es')->translatedFormat('d M Y') }}</span>
                         </div>
                     </div>
                 </article>
@@ -299,7 +299,7 @@
                         </div>
                         <div class="mt-6 border-t border-line pt-4 flex items-center justify-between">
                             <span class="text-sm font-bold text-ink">{{ $testimonial['author'] }}</span>
-                            <span class="text-min text-muted uppercase font-semibold">{{ \Illuminate\Support\Carbon::parse($testimonial['created_at'])->translatedFormat('d M Y') }}</span>
+                            <span class="text-min text-muted uppercase font-semibold">{{ \Illuminate\Support\Carbon::parse($testimonial['created_at'])->locale('es')->translatedFormat('d M Y') }}</span>
                         </div>
                     </div>
                 @empty

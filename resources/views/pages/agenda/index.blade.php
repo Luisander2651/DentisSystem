@@ -40,7 +40,7 @@
         <div class="min-w-0 lg:col-span-4">
             <section class="rounded-card border border-secondary bg-primary-soft p-4 shadow-sm md:p-6" aria-labelledby="agenda-today-title">
                 <h2 id="agenda-today-title" class="text-lg font-bold text-ink">Citas para hoy</h2>
-                <p class="mt-1 text-sm text-ink">{{ ucfirst(now()->translatedFormat('l d \d\e F')) }}</p>
+                <p class="mt-1 text-sm text-ink">{{ ucfirst(now()->locale('es')->translatedFormat('l d \d\e F')) }}</p>
 
                 <div id="today-appointments-container" class="mt-4 space-y-3"></div>
 
