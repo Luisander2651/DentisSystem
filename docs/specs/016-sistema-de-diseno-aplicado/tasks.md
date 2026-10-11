@@ -397,7 +397,8 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 - [ ] T079 Verificación final: Pint sobre lo tocado, suite Pest completa sin ninguna marca `016: pendiente`, `npm run build`, `ui-audit` dos veces seguidas, `npm audit --audit-level=high`, `composer audit --locked` y `aidd.py validate` — sin archivos — hecho cuando: todo pasa y las dos ejecuciones de `ui-audit` dan el mismo resultado — cubre: CA23, CA39, TM6 — depende: T002, T007, T073, T074, T075, T076, T078
 
 ## Integración y documentación
-- [ ] T090 Actualizar `docs/architecture.md` si cambió la estructura: Frontend (tokens en `@theme` sin paleta por defecto, componentes `x-ui.*`, `resources/js/ui/`, vistas de error), Backend (middlewares con vista en web, ruta de respaldo, JSON fijo de los rechazos web) y "Deuda técnica y riesgos observados"
+- [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: Frontend (tokens en `@theme` sin paleta por defecto, componentes `x-ui.*`, `resources/js/ui/`, vistas de error), Backend (middlewares con vista en web, ruta de respaldo, JSON fijo de los rechazos web) y "Deuda técnica y riesgos observados"
+  - nota: actualizado el 2026-10-11: Frontend (layout de error, componentes `x-ui.*`, `resources/js/ui/`, tokens en `@theme` con la paleta por defecto desactivada, `npm run test:ui`, menús desde 1024 px, vistas de error y estado de la accesibilidad), Backend (respuesta de los 403, 404, 405 y 419 de las rutas web y ruta de respaldo) y "Deuda técnica y riesgos observados" (lo que la spec deja abierto en la interfaz)
 - [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: paso `ui-audit` en el pipeline y purga de caché de Cloudflare para `favicon.ico` y `public/images/brand/`; `observability.md` sin cambios
 - [ ] T092 Marcar spec como `implemented`
 
