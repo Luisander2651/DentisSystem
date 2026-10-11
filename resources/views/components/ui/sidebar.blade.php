@@ -86,8 +86,8 @@
     }
 @endphp
 
-<aside id="{{ $sidebarId }}" data-sidebar-root {{ $attributes->merge(['class' => 'w-full md:w-72 lg:w-80 rounded-card border border-line bg-surface p-3 md:p-6 shadow-sm']) }}>
-    <div class="px-1 md:mb-6 md:border-b md:border-line md:px-2 md:pb-6">
+<aside id="{{ $sidebarId }}" data-sidebar-root {{ $attributes->merge(['class' => 'w-full lg:w-72 xl:w-80 rounded-card border border-line bg-surface p-3 lg:p-6 shadow-sm']) }}>
+    <div class="px-1 lg:mb-6 lg:border-b lg:border-line lg:px-2 lg:pb-6">
         <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
                 <x-ui.brand><span data-role-label="menu">{{ $roleLabel }}</span></x-ui.brand>
@@ -95,7 +95,7 @@
 
             <button
                 type="button"
-                class="inline-flex size-control items-center justify-center rounded-control border border-field bg-surface text-ink transition hover:bg-canvas md:hidden cursor-pointer"
+                class="inline-flex size-control items-center justify-center rounded-control border border-field bg-surface text-ink transition hover:bg-canvas lg:hidden cursor-pointer"
                 data-sidebar-toggle
                 aria-expanded="false"
                 aria-controls="{{ $sidebarId }}-menu"
@@ -114,7 +114,7 @@
         </div>
     </div>
 
-    <nav id="{{ $sidebarId }}-menu" data-sidebar-menu class="hidden pt-3 md:block md:pt-0" aria-label="Menú principal">
+    <nav id="{{ $sidebarId }}-menu" data-sidebar-menu class="hidden pt-3 lg:block lg:pt-0" aria-label="Menú principal">
         <ul class="flex flex-col gap-1">
             @foreach ($menuItems as $item)
                 @php

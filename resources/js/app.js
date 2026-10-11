@@ -7,7 +7,7 @@ function syncSidebarMenu(sidebar, menu, toggleButton, openIcon, closeIcon) {
 		return;
 	}
 
-	const isDesktop = window.innerWidth >= 768;
+	const isDesktop = window.innerWidth >= 1024;
 
 	if (isDesktop) {
 		menu.classList.remove('hidden');

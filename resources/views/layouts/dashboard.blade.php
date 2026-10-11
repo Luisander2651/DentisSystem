@@ -16,14 +16,14 @@
 
     <div class="flex gap-6 p-4 md:p-6">
         <!-- Sidebar -->
-        <div class="hidden md:block md:sticky md:top-6 md:h-fit">
+        <div class="hidden lg:block lg:sticky lg:top-6 lg:h-fit">
             <x-ui.sidebar role="{{ $sidebarRole ?? 'usuario' }}" />
         </div>
 
         <!-- Main Content -->
-        <main id="contenido" tabindex="-1" class="w-full flex-1">
+        <main id="contenido" tabindex="-1" class="w-full min-w-0 flex-1">
             <!-- Mobile Sidebar Toggle (optional) -->
-            <div class="mb-6 md:hidden">
+            <div class="mb-6 lg:hidden">
                 <x-ui.sidebar role="{{ $sidebarRole ?? 'usuario' }}" />
             </div>
 
