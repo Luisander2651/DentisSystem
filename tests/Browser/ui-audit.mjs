@@ -439,6 +439,9 @@ async function launchChrome() {
         '--no-default-browser-check',
         '--disable-gpu',
         '--force-color-profile=srgb',
+        // A CI runner has no mouse, and without one the browser says no device can hover: the
+        // 768 and 1440 px visits are a desktop with a mouse on every machine.
+        '--blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4',
         ...(process.env.CI ? ['--no-sandbox'] : []),
         'about:blank',
     ], { stdio: 'ignore' });
