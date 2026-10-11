@@ -104,10 +104,10 @@ jobs:
           MAIL_MAILER: array
         run: ./vendor/bin/pest --parallel
 
-      # Spec 016 (A67): the browser checks run here without blocking while the screens are
-      # being migrated; T075 makes the step decide the build and keeps the captures.
-      - name: Run browser checks (ui-audit, not blocking yet)
-        continue-on-error: true
+      # Spec 016: the browser checks (npm run test:ui) decide the build. They run against the
+      # freshly migrated database with the data of ui:audit-data, at 390, 768 and 1440 px, and
+      # the step below keeps the report and the screenshots as an artifact.
+      - name: Run browser checks (ui-audit)
         env:
           APP_ENV: testing
           APP_URL: http://127.0.0.1:8000
