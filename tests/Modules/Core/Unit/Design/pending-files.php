@@ -41,7 +41,6 @@ return [
     'resources/views/components/records/appointments-history-table.blade.php',
     'resources/views/components/records/contact-info-table.blade.php',
     'resources/views/components/records/medical-data-table.blade.php',
-    'resources/views/components/ui/confirm-delete-modal.blade.php',
     'resources/views/components/ui/table.blade.php',
     'resources/views/pages/agenda/index.blade.php',
     'resources/views/pages/contenido/certificaciones/create-modal.blade.php',
