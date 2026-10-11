@@ -12,7 +12,6 @@ return [
     'resources/js/bootstrap.js',
     'resources/js/pages/agenda/complete-appointment.js',
     'resources/js/pages/agenda/create-appointment.js',
-    'resources/js/pages/agenda/index.js',
     'resources/js/pages/agenda/view-appointment.js',
     'resources/views/components/calendar/complete-appointment-modal.blade.php',
     'resources/views/components/calendar/create-appointment-modal.blade.php',

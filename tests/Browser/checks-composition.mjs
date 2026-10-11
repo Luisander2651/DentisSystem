@@ -43,6 +43,11 @@ export const ADMITTED = [
         entries: ['agenda', 'agenda-con-citas', 'agenda-dia'],
         difference: 'La tarjeta de cita pierde la rama de botones "ver y editar", que no llegaba a pintarse para el administrador.',
     },
+    {
+        criterion: 'CA40, CA34',
+        entries: ['agenda', 'agenda-con-citas', 'agenda-hoy-sin-citas', 'agenda-dia'],
+        difference: 'Cada día del calendario pasa a ser un botón (antes, una caja con clic que el teclado no alcanzaba), se retira el botón "Mes", que no hacía nada, y la tarjeta "Citas para hoy" pierde su alto mínimo; el calendario y la tarjeta siguen en su sitio.',
+    },
 ];
 
 // In points of the window width. The runner of CI and a local machine draw the same text with

@@ -43,7 +43,7 @@ it('has no welcome view, which no route served', function () {
 
 it('has no "view and edit" branch in the appointment card, which was never painted', function () {
     expect(unusedUiFilesContaining('data-edit-appointment-trigger'))->toBe([]);
-})->skip('016: pendiente de T065');
+});
 
 it('has no old-markup branch left in the dialog module', function () {
     $module = UNUSED_UI_ROOT.'/resources/js/ui/dialog.js';
