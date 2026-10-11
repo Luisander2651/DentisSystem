@@ -1,3 +1,7 @@
+import { stateBadge } from '../../ui/badge';
+import { closeDialog, openDialog } from '../../ui/dialog';
+import { announce, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__recordsIndexInit) {
         return;
@@ -88,13 +92,35 @@
             return '';
         }
 
-        return '<td class="px-4 py-3 align-top text-slate-700">' + deleteButtonHtml(attribute) + '</td>';
+        return '<td class="px-4 py-3 align-top text-ink">' + deleteButtonHtml(attribute) + '</td>';
+    }
+
+    function messageOf(error) {
+        return error instanceof TypeError ? failureMessage(0) : error.message;
+    }
+
+    // Lo que una sección pinta fuera de su tabla: cada `data-record-field="seccion.campo"`
+    // recibe su valor, y `data-record-when` / `data-record-when-empty` se muestran según
+    // la sección tenga datos o no.
+    function fillSection(section, values) {
+        document.querySelectorAll('[data-record-field^="' + section + '."]').forEach(function (node) {
+            var key = node.getAttribute('data-record-field').slice(section.length + 1);
+            node.textContent = values ? values[key] : '-';
+        });
+
+        document.querySelectorAll('[data-record-when="' + section + '"]').forEach(function (node) {
+            node.classList.toggle('hidden', !values);
+        });
+
+        document.querySelectorAll('[data-record-when-empty="' + section + '"]').forEach(function (node) {
+            node.classList.toggle('hidden', !!values);
+        });
     }
 
     function emptyRowHtml(columnsWithActions, message) {
         var columns = canEditRecords ? columnsWithActions : columnsWithActions - 1;
 
-        return '<tr class="border-t border-slate-200"><td colspan="' + columns + '" class="px-4 py-6 text-center text-sm text-slate-500">' + message + '</td></tr>';
+        return '<tr class="border-t border-line"><td colspan="' + columns + '" class="px-4 py-6 text-center text-sm text-muted">' + message + '</td></tr>';
     }
 
 
@@ -107,12 +133,6 @@
             .replaceAll("'", '&#39;');
     }
 
-    function normalizeStatus(status) {
-        if (status === 'active') return 'Activo';
-        if (status === 'inactive') return 'Inactivo';
-        return '-';
-    }
-
     function setActiveStatusButton(value) {
         if (!statusFilter) {
             return;
@@ -120,9 +140,7 @@
 
         statusFilter.querySelectorAll('[data-status-value]').forEach(function (button) {
             var isActive = String(button.getAttribute('data-status-value') || '') === String(value || '');
-            button.classList.toggle('bg-[#FDF1F6]', isActive);
-            button.classList.toggle('text-[#B5114A]', isActive);
-            button.classList.toggle('text-slate-600', !isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
     }
 
@@ -182,8 +200,7 @@
             deleteConfirmTarget.textContent = pendingDeleteLabel;
         }
 
-        deleteModal.classList.remove('hidden');
-        deleteModal.classList.add('flex');
+        openDialog(deleteModal);
     }
 
     function closeDeleteModal() {
@@ -194,8 +211,7 @@
             return;
         }
 
-        deleteModal.classList.add('hidden');
-        deleteModal.classList.remove('flex');
+        closeDialog(deleteModal);
     }
 
     function closeAllForms() {
@@ -236,12 +252,12 @@
 
     function syncEntityActions() {
         setButtonLabel(openContactFormButton, hasContactInfo, 'Agregar contacto', 'Actualizar contacto');
-        setButtonLabel(openAddressFormButton, hasAddress, 'Agregar direccion', 'Actualizar direccion');
-        setButtonLabel(openMedicalFormButton, hasMedicalData, 'Agregar datos medicos', 'Actualizar datos medicos');
+        setButtonLabel(openAddressFormButton, hasAddress, 'Agregar dirección', 'Actualizar dirección');
+        setButtonLabel(openMedicalFormButton, hasMedicalData, 'Agregar datos médicos', 'Actualizar datos médicos');
 
         setSubmitLabel(contactForm, hasContactInfo, 'Guardar contacto', 'Actualizar contacto');
-        setSubmitLabel(addressForm, hasAddress, 'Guardar direccion', 'Actualizar direccion');
-        setSubmitLabel(medicalForm, hasMedicalData, 'Guardar datos medicos', 'Actualizar datos medicos');
+        setSubmitLabel(addressForm, hasAddress, 'Guardar dirección', 'Actualizar dirección');
+        setSubmitLabel(medicalForm, hasMedicalData, 'Guardar datos médicos', 'Actualizar datos médicos');
     }
 
     function openForm(formElement) {
@@ -250,7 +266,7 @@
         }
 
         if (!selectedPatientId) {
-            showError('Seleccione un paciente para gestionar informacion del expediente.');
+            showError('Selecciona un paciente para gestionar su expediente.');
             return;
         }
 
@@ -278,7 +294,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No fue posible guardar la informacion.');
+            throw new Error(failureMessage(response.status, data));
         }
 
         return data;
@@ -301,7 +317,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No fue posible eliminar la informacion.');
+            throw new Error(failureMessage(response.status, data));
         }
 
         return data;
@@ -357,40 +373,28 @@
             var fullName = (firstName + ' ' + lastName).trim() || 'Paciente sin nombre';
             var email = patient && patient.email ? String(patient.email).trim() : 'Sin correo';
             var status = patient && patient.status ? patient.status : '';
-            var statusLabel = normalizeStatus(status);
             var href = '/expedientes-clinicos/' + encodeURIComponent(id);
-
-            var statusClasses = status === 'active'
-                ? 'bg-emerald-50 text-emerald-700'
-                : 'bg-red-50 text-red-700';
 
             var initial = (firstName.charAt(0) || lastName.charAt(0) || 'P').toUpperCase();
 
             return [
-                '<article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">',
-                    '<div class="flex items-start justify-between gap-4">',
-                        '<div class="flex items-center gap-3">',
-                            '<div class="flex h-12 w-12 items-center justify-center rounded-full bg-[#FDF1F6] text-sm font-semibold text-[#B5114A]">', escapeHtml(initial), '</div>',
-                            '<div>',
-                                '<h3 class="text-base font-semibold text-slate-900 wrap-break-word">', escapeHtml(fullName), '</h3>',
-                                '<p class="text-xs text-slate-500">Expediente Clinico</p>',
-                            '</div>',
+                '<article class="rounded-card border border-line bg-surface p-4 shadow-sm md:p-5">',
+                    '<div class="flex items-start justify-between gap-3">',
+                        '<div class="flex min-w-0 items-center gap-3">',
+                            '<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-box bg-canvas text-sm font-bold text-ink" aria-hidden="true">', escapeHtml(initial), '</div>',
+                            '<h2 class="min-w-0 text-base font-semibold text-ink wrap-break-word">', escapeHtml(fullName), '</h2>',
                         '</div>',
-                        '<span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold ' + statusClasses + '">', escapeHtml(statusLabel), '</span>',
-                    '</div>',
-                    
-                    '<div class="mt-4 grid gap-2">',
-                        '<div class="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-600">',
-                            '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
-                            '<span class="break-all">', escapeHtml(email), '</span>',
-                        '</div>',
+                        stateBadge(status),
                     '</div>',
 
-                    '<div class="mt-4 flex flex-wrap gap-2">',
-                        id !== ''
-                            ? '<a href="' + escapeHtml(href) + '" class="rounded-full bg-[#B5114A] px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-[#960d3d]">Consultar Expediente</a>'
-                            : '',
+                    '<div class="mt-4 flex items-center gap-2 rounded-box bg-canvas px-4 py-3 text-sm text-muted">',
+                        '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+                        '<span class="break-all font-medium">', escapeHtml(email), '</span>',
                     '</div>',
+
+                    id !== ''
+                        ? '<a href="' + escapeHtml(href) + '" class="mt-4 inline-flex min-h-control w-full items-center justify-center rounded-control bg-primary px-4 text-sm font-semibold text-ink transition-colors hover:bg-primary-hover sm:w-auto">Consultar expediente<span class="sr-only"> de ' + escapeHtml(fullName) + '</span></a>'
+                        : '',
                 '</article>'
             ].join('');
         }).join('');
@@ -403,16 +407,22 @@
         hasContactInfo = !!contactInfo;
         syncEntityActions();
 
+        fillSection('contact', contactInfo ? {
+            phone_number: toDisplay(contactInfo.phone_number),
+            contact_email: toDisplay(contactInfo.contact_email),
+            emergency_contact: toDisplay(contactInfo.emergency_contact),
+        } : null);
+
         if (!contactInfo) {
-            tbody.innerHTML = emptyRowHtml(4, 'Sin informacion de contacto.');
+            tbody.innerHTML = emptyRowHtml(4, 'Este paciente aún no tiene datos de contacto.');
             return;
         }
 
         tbody.innerHTML = [
-            '<tr class="border-t border-slate-200">',
-            '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(contactInfo.phone_number)) + '</td>',
-            '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(contactInfo.contact_email)) + '</td>',
-            '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(contactInfo.emergency_contact)) + '</td>',
+            '<tr class="border-t border-line">',
+            '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(contactInfo.phone_number)) + '</td>',
+            '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(contactInfo.contact_email)) + '</td>',
+            '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(contactInfo.emergency_contact)) + '</td>',
             actionsCellHtml('data-record-delete-contact'),
             '</tr>'
         ].join('');
@@ -425,17 +435,24 @@
         hasAddress = !!address;
         syncEntityActions();
 
+        fillSection('address', address ? {
+            street: toDisplay(address.street),
+            city: toDisplay(address.city),
+            state: toDisplay(address.state),
+            postal_code: toDisplay(address.postal_code),
+        } : null);
+
         if (!address) {
-            tbody.innerHTML = emptyRowHtml(5, 'Sin informacion de direccion.');
+            tbody.innerHTML = emptyRowHtml(5, 'Este paciente aún no tiene una dirección registrada.');
             return;
         }
 
         tbody.innerHTML = [
-            '<tr class="border-t border-slate-200">',
-            '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(address.street)) + '</td>',
-            '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(address.city)) + '</td>',
-            '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(address.state)) + '</td>',
-            '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(address.postal_code)) + '</td>',
+            '<tr class="border-t border-line">',
+            '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(address.street)) + '</td>',
+            '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(address.city)) + '</td>',
+            '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(address.state)) + '</td>',
+            '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(address.postal_code)) + '</td>',
             actionsCellHtml('data-record-delete-address'),
             '</tr>'
         ].join('');
@@ -448,17 +465,24 @@
         hasMedicalData = !!medicalData;
         syncEntityActions();
 
+        fillSection('medical', medicalData ? {
+            blood_type: toDisplay(medicalData.blood_type),
+            allergies: arrayToDisplay(medicalData.allergies),
+            medications: arrayToDisplay(medicalData.medications),
+            last_dentist_visit: arrayToDisplay(medicalData.last_dentist_visit),
+        } : null);
+
         if (!medicalData) {
-            tbody.innerHTML = emptyRowHtml(5, 'Sin informacion medica.');
+            tbody.innerHTML = emptyRowHtml(5, 'Este paciente aún no tiene datos médicos registrados.');
             return;
         }
 
         tbody.innerHTML = [
-            '<tr class="border-t border-slate-200">',
-            '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(medicalData.blood_type)) + '</td>',
-            '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(arrayToDisplay(medicalData.allergies)) + '</td>',
-            '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(arrayToDisplay(medicalData.medications)) + '</td>',
-            '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(arrayToDisplay(medicalData.last_dentist_visit)) + '</td>',
+            '<tr class="border-t border-line">',
+            '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(medicalData.blood_type)) + '</td>',
+            '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(arrayToDisplay(medicalData.allergies)) + '</td>',
+            '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(arrayToDisplay(medicalData.medications)) + '</td>',
+            '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(arrayToDisplay(medicalData.last_dentist_visit)) + '</td>',
             actionsCellHtml('data-record-delete-medical'),
             '</tr>'
         ].join('');
@@ -495,10 +519,14 @@
         var tbody = document.getElementById('record-appointments-body');
         if (!tbody) return;
 
+        var cards = document.getElementById('record-appointments-list');
         var list = Array.isArray(appointments) ? appointments.slice() : [];
 
+        fillSection('appointments', list.length ? {} : null);
+
         if (!list.length) {
-            tbody.innerHTML = '<tr class="border-t border-slate-200"><td colspan="6" class="px-4 py-6 text-center text-sm text-slate-500">Sin citas registradas.</td></tr>';
+            if (cards) cards.innerHTML = '';
+            tbody.innerHTML = '<tr class="border-t border-line"><td colspan="6" class="px-4 py-6 text-center text-sm text-muted">Este paciente aún no tiene citas registradas.</td></tr>';
             return;
         }
 
@@ -508,36 +536,35 @@
             return bKey.localeCompare(aKey);
         });
 
-        var statusColors = {
-            asignada: 'bg-amber-50 text-amber-700',
-            completada: 'bg-emerald-50 text-emerald-700',
-            cancelada: 'bg-red-50 text-red-700',
-            reprogramada: 'bg-blue-50 text-blue-700'
+        var viewButtonHtml = function (appointment) {
+            return '<button type="button" data-record-view-appointment data-appointment-id="' + escapeHtml(appointment.id) + '" class="inline-flex min-h-control items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-canvas">Ver<span class="sr-only"> la cita del ' + escapeHtml(toDisplay(appointment.date)) + '</span></button>';
         };
-        var statusLabel = {
-            asignada: 'Asignada',
-            completada: 'Completada',
-            cancelada: 'Cancelada',
-            reprogramada: 'Reprogramada'
-        };
+
+        if (cards) {
+            cards.innerHTML = list.map(function (appointment) {
+                return [
+                    '<li class="rounded-box border border-line bg-surface p-3">',
+                    '<div class="flex items-start justify-between gap-3">',
+                    '<p class="text-sm font-semibold text-ink">' + escapeHtml(toDisplay(appointment.date)) + ' · ' + escapeHtml(formatAppointmentTime(appointment.time)) + '</p>',
+                    stateBadge(normalizeAppointmentStatus(appointment.status)),
+                    '</div>',
+                    '<p class="mt-1 text-sm text-ink wrap-anywhere">' + escapeHtml(toDisplay(appointment.treatment_name)) + '</p>',
+                    '<p class="text-sm text-muted wrap-anywhere">' + escapeHtml(toDisplay(appointment.user_name)) + '</p>',
+                    '<div class="mt-3">' + viewButtonHtml(appointment) + '</div>',
+                    '</li>'
+                ].join('');
+            }).join('');
+        }
 
         tbody.innerHTML = list.map(function (appointment) {
-            var normalizedStatus = normalizeAppointmentStatus(appointment.status);
-            var badgeClass = statusColors[normalizedStatus] || 'bg-slate-50 text-slate-500';
-            var badgeLabel = statusLabel[normalizedStatus] || toDisplay(appointment.status);
-
             return [
-                '<tr class="border-t border-slate-200">',
-                '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(appointment.date)) + '</td>',
-                '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(formatAppointmentTime(appointment.time)) + '</td>',
-                '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(appointment.treatment_name)) + '</td>',
-                '<td class="px-4 py-3 align-top text-slate-700">' + escapeHtml(toDisplay(appointment.user_name)) + '</td>',
-                '<td class="px-4 py-3 align-top">',
-                '  <span class="rounded-full ' + badgeClass + ' px-2 py-0.5 text-[10px] font-bold">' + escapeHtml(badgeLabel) + '</span>',
-                '</td>',
-                '<td class="px-4 py-3 align-top text-slate-700">',
-                '  <button type="button" data-record-view-appointment data-appointment-id="' + escapeHtml(appointment.id) + '" class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#B5114A] hover:text-[#B5114A]">Ver</button>',
-                '</td>',
+                '<tr class="border-t border-line">',
+                '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(appointment.date)) + '</td>',
+                '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(formatAppointmentTime(appointment.time)) + '</td>',
+                '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(appointment.treatment_name)) + '</td>',
+                '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(appointment.user_name)) + '</td>',
+                '<td class="px-4 py-3 align-top">' + stateBadge(normalizeAppointmentStatus(appointment.status)) + '</td>',
+                '<td class="px-4 py-3 align-top text-ink">' + viewButtonHtml(appointment) + '</td>',
                 '</tr>'
             ].join('');
         }).join('');
@@ -627,14 +654,14 @@
 
             if (!response.ok) {
                 if (recordsGrid) recordsGrid.innerHTML = '';
-                showError(payload.error || payload.message || 'No se pudieron cargar los pacientes.');
+                showError(failureMessage(response.status, payload));
                 return;
             }
 
             renderPatientCards(payload);
         } catch (error) {
             if (recordsGrid) recordsGrid.innerHTML = '';
-            showError('Error de conexion al cargar pacientes.');
+            showError(failureMessage(0));
         } finally {
             if (loadingBox) loadingBox.classList.add('hidden');
         }
@@ -684,14 +711,14 @@
                 hasMedicalData = false;
                 syncEntityActions();
                 detailSection.classList.add('hidden');
-                showError(payload.error || payload.message || 'No fue posible cargar el expediente.');
+                showError(failureMessage(response.status, payload));
                 return;
             }
 
             renderRecord(payload);
         } catch (error) {
             detailSection.classList.add('hidden');
-            showError('Error de conexion al cargar el expediente.');
+            showError(failureMessage(0));
         }
     }
 
@@ -730,7 +757,7 @@
             event.preventDefault();
 
             if (!selectedPatientId) {
-                showError('Seleccione un paciente antes de guardar contacto.');
+                showError('Selecciona un paciente antes de guardar el contacto.');
                 return;
             }
 
@@ -746,8 +773,9 @@
                 await upsertEntity(selectedPatientId, 'contact-info', payload, hasContactInfo);
                 await loadRecord(selectedPatientId);
                 closeAllForms();
+                announce('Contacto guardado.');
             } catch (error) {
-                setFormError(contactFormError, error.message || 'No fue posible guardar contacto.');
+                setFormError(contactFormError, messageOf(error));
             }
         });
     }
@@ -757,7 +785,7 @@
             event.preventDefault();
 
             if (!selectedPatientId) {
-                showError('Seleccione un paciente antes de guardar direccion.');
+                showError('Selecciona un paciente antes de guardar la dirección.');
                 return;
             }
 
@@ -774,8 +802,9 @@
                 await upsertEntity(selectedPatientId, 'address', payload, hasAddress);
                 await loadRecord(selectedPatientId);
                 closeAllForms();
+                announce('Dirección guardada.');
             } catch (error) {
-                setFormError(addressFormError, error.message || 'No fue posible guardar direccion.');
+                setFormError(addressFormError, messageOf(error));
             }
         });
     }
@@ -785,7 +814,7 @@
             event.preventDefault();
 
             if (!selectedPatientId) {
-                showError('Seleccione un paciente antes de guardar datos medicos.');
+                showError('Selecciona un paciente antes de guardar los datos médicos.');
                 return;
             }
 
@@ -802,8 +831,9 @@
                 await upsertEntity(selectedPatientId, 'medical-data', payload, hasMedicalData);
                 await loadRecord(selectedPatientId);
                 closeAllForms();
+                announce('Datos médicos guardados.');
             } catch (error) {
-                setFormError(medicalFormError, error.message || 'No fue posible guardar datos medicos.');
+                setFormError(medicalFormError, messageOf(error));
             }
         });
     }
@@ -818,7 +848,7 @@
         }
 
         if (!selectedPatientId) {
-            showError('Seleccione un paciente antes de eliminar informacion.');
+            showError('Selecciona un paciente antes de eliminar información.');
             return;
         }
 
@@ -827,13 +857,13 @@
 
         if (deleteContactButton) {
             endpointSuffix = 'contact-info';
-            label = 'contacto';
+            label = 'el contacto';
         } else if (deleteAddressButton) {
             endpointSuffix = 'address';
-            label = 'direccion';
+            label = 'la dirección';
         } else if (deleteMedicalButton) {
             endpointSuffix = 'medical-data';
-            label = 'datos medicos';
+            label = 'los datos médicos';
         }
 
         if (!endpointSuffix) {
@@ -883,12 +913,14 @@
             closeAllForms();
 
             try {
+                var deletedLabel = pendingDeleteLabel;
                 await deleteEntity(selectedPatientId, pendingDeleteEndpoint);
                 closeDeleteModal();
                 await loadRecord(selectedPatientId);
+                announce('Se eliminó ' + deletedLabel + '.');
             } catch (error) {
                 closeDeleteModal();
-                showError(error.message || 'No fue posible eliminar la informacion.');
+                showError(messageOf(error));
             } finally {
                 isDeleting = false;
                 deleteAcceptButton.disabled = false;

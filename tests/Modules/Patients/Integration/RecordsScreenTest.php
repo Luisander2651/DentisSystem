@@ -73,7 +73,8 @@ it('tells the doctor the records are read-only, without an actions column (spec 
     $this->actingAsNonAdminUser('Doctor');
 
     $html = $this->get('/expedientes-clinicos')->assertOk()
-        ->assertDontSee('gestionar su historia clinica')
+        ->assertSee('consultar su historia clínica')
+        ->assertDontSee('gestionar su historia clínica')
         ->assertDontSee('ver y editar')
         ->getContent();
 
@@ -91,3 +92,31 @@ it('keeps the actions column for staff who may edit the records', function (stri
         expect(recordsTableHeader($html, $bodyId))->toContain('Acciones');
     }
 })->with(['Administrador', 'Asistente']);
+
+it('tells staff who may edit that they manage the records', function (string $role) {
+    $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
+
+    $this->get('/expedientes-clinicos')->assertOk()
+        ->assertSee('gestionar su historia clínica')
+        ->assertSee('ver y editar');
+})->with(['Administrador', 'Asistente']);
+
+/**
+ * Spec 016, CA31: below md the chosen record takes the place of the list, with a link back.
+ */
+it('shows the chosen record instead of the list on a narrow screen, with a link back', function () {
+    $this->actingAsNonAdminUser('Doctor');
+
+    $this->get('/expedientes-clinicos/'.$this->createPatient()->id)->assertOk()
+        ->assertSee('data-records-back', false)
+        ->assertSee('href="'.route('records.index').'"', false)
+        ->assertSee('data-records-browser class="space-y-6 hidden md:block"', false);
+});
+
+it('shows the list, without a link back, while no patient is chosen', function () {
+    $this->actingAsNonAdminUser('Doctor');
+
+    $this->get('/expedientes-clinicos')->assertOk()
+        ->assertDontSee('data-records-back', false)
+        ->assertSee('data-records-browser class="space-y-6"', false);
+});

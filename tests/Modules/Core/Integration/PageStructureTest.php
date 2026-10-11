@@ -48,10 +48,6 @@ const PAGE_STRUCTURE_PENDING = [
     'h1' => [
         'agenda' => 'T064',
         'contenido' => 'T061',
-        'expedientes-administrador' => 'T048',
-        'expedientes-asistente' => 'T048',
-        'expedientes-doctor' => 'T048',
-        'expediente' => 'T048',
     ],
     'brand' => [
     ],

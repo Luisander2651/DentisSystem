@@ -31,7 +31,6 @@ return [
     'resources/js/pages/contenido/testimonios/delete-modal.js',
     'resources/js/pages/contenido/testimonios/edit-modal.js',
     'resources/js/pages/contenido/testimonios/index.js',
-    'resources/js/pages/records/index.js',
     'resources/views/components/calendar/complete-appointment-modal.blade.php',
     'resources/views/components/calendar/create-appointment-modal.blade.php',
     'resources/views/components/calendar/day-details-modal.blade.php',
@@ -61,6 +60,5 @@ return [
     'resources/views/pages/contenido/testimonios/delete-modal.blade.php',
     'resources/views/pages/contenido/testimonios/edit-modal.blade.php',
     'resources/views/pages/contenido/testimonios/index.blade.php',
-    'resources/views/pages/records/index.blade.php',
     'resources/views/welcome.blade.php',
 ];
