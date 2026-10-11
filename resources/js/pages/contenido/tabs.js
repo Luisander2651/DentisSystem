@@ -10,9 +10,6 @@ export function initContentTabs() {
         tabButtons.forEach(function (button) {
             var isActive = button.getAttribute('data-content-tab') === tabKey;
             button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-            button.style.borderColor = isActive ? '#F5C2D6' : '#E2E8F0';
-            button.style.background = isActive ? '#FDF1F6' : '#FFFFFF';
-            button.style.color = isActive ? '#B5114A' : '#475569';
         });
 
         panels.forEach(function (panel) {
