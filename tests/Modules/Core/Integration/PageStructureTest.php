@@ -46,7 +46,6 @@ const PAGE_STRUCTURE_ACCESS_SCREENS = ['login', 'register', 'forgot-password', '
 /** check => screen => task that unblocks the case. */
 const PAGE_STRUCTURE_PENDING = [
     'h1' => [
-        'agenda' => 'T064',
     ],
     'brand' => [
     ],
