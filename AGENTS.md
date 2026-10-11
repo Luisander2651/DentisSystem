@@ -21,8 +21,12 @@ docker compose exec app php artisan migrate && docker compose exec app npm run d
 docker compose exec app ./vendor/bin/pest --parallel                                                             # tests
 docker compose exec app vendor/bin/pint --dirty --format agent                                                   # lint/format
 docker compose exec app npm run build                                                                            # build
+npm run test:ui                                                                                                  # interfaz en el navegador (desde el equipo, con Chrome)
 ```
 Un solo archivo de tests: `docker compose exec app ./vendor/bin/pest tests/Modules/Users/Integration/RegisterUserTest.php`.
+`npm run test:ui` abre cada pantalla y cada diálogo a 390, 768 y 1440 px con los datos de
+`php artisan ui:audit-data` y comprueba desbordes, tamaños, contraste, foco, teclado y composición;
+`-- --only <pantalla> --width 390` lo acota. CI lo ejecuta en cada push y decide el resultado.
 
 ## Flujo de trabajo
 1. `/specify` → spec en `docs/specs/NNN-<slug>/spec.md`
@@ -52,6 +56,7 @@ en el flujo AI-DLC. Sus reglas están en [AIDLC.md](AIDLC.md) y su estado en
 - Endpoints nuevos: FormRequest (reglas en array, mensajes en español), respuestas `{"message"}` / `{"error"}` / `{"data"}` con API Resources, y 500 siempre genérico (P6, P7). Migraciones dentro del módulo, con `down()`.
 - Tests en `tests/Modules/<Módulo>/{Unit,Integration}` (no en `tests/Feature`), solo `it('...')` en inglés, base `<Módulo>IntegrationTestCase` declarada con `uses()`, helpers de `tests/Support` (`ActingAsStaff`, `ActingAsPatient`, `FakesTwilio`, `FakesBrevo`, `UsesEris`); propiedades en `*PropertiesTest.php`.
 - Frontend: vista en `resources/views/pages/<sección>/`, JS en `resources/js/pages/<sección>/<acción>.js` registrado en `vite.config.js`; `fetch('/api/v1/...', { credentials: 'include' })`.
+- Interfaz solo con el sistema de diseño ([docs/design/system.md](docs/design/system.md)): colores, radios y tamaños salen de los tokens de `resources/css/app.css` (nunca un valor suelto ni la paleta por defecto de Tailwind), los controles son componentes `x-ui.*`, los diálogos se abren con `resources/js/ui/dialog.js` y los avisos van por `resources/js/ui/status.js`. Textos en español y sin términos técnicos. Lo verifican `tests/Modules/Core/Unit/Design` y `npm run test:ui`.
 - Commits: Conventional Commits en inglés (`feat(users): …`); ramas `tipo/slug`; merge `--no-ff` a `main`.
 - Las guías de Laravel Boost en `CLAUDE.md` aplican salvo donde esta sección o la constitución digan otra cosa (ubicación de tests, factories, estructura modular).
 

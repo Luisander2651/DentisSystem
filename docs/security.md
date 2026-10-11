@@ -54,7 +54,8 @@ Esta tabla es una guía técnica, no asesoría legal: conviene validarla con un 
 | `/api/v1/{users,treatments,certifications,gallery-images,promotions,testimonials}`, `POST/DELETE /patients`, completar cita y seguimiento | HTTP | sí, solo admin | `only.admin` + `assertCan` |
 | `/api/v1/agenda/*`, `GET/PUT /patients/*`, subrecursos de paciente, expediente, `/appointments/*` | HTTP | sí, staff activo | `staff` + `assertCan` por rol (spec 014); pacientes → 403 |
 | Web `/`, `/contacto`, `/galeria`, `/acerca-de-nosotros`, `/login`, `/register`, `/forgot-password`, `/reset-password` | HTTP público | no | vistas GET |
-| Web `/dashboard`, `/agenda`, `/pacientes`, `/usuarios`, `/tratamientos`, `/contenido`, `/expedientes-clinicos` | HTTP | sí | rol por middleware (`only.admin` o `staff:…`) |
+| Web `/dashboard`, `/agenda`, `/pacientes`, `/usuarios`, `/tratamientos`, `/contenido`, `/expedientes-clinicos` | HTTP | sí | rol por middleware (`only.admin` o `staff:…`); sin sesión redirige a `/login`; con sesión y sin permiso responde 403 con la vista "Sin permiso" (`errors/403`), o un JSON fijo en español si se pide JSON, sin el motivo interno ni datos de la pantalla (spec 016) |
+| Web, cualquier otra dirección que no sea `api/*` | HTTP público | no | ruta de respaldo: 404 con la vista "No encontrada" (`errors/404`) o JSON fijo; no refleja la dirección pedida ni abre sesión, solo lee la cookie del token para elegir el enlace de vuelta. 405 y 419 tienen también vista y JSON propios (spec 016) |
 | `/up` | HTTP público | no | health check |
 | Listeners en cola (WhatsApp, Email) | cola `database` | — | solo salida hacia Twilio y Brevo; sin webhooks entrantes |
 
