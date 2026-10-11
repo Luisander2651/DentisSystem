@@ -1,5 +1,5 @@
 import { closeDialog, openDialog } from '../../ui/dialog';
-import { announce, announceError, failureMessage } from '../../ui/status';
+import { announce, announceError, clearAnnouncements, failureMessage } from '../../ui/status';
 
 (function () {
     if (window.__agendaCompleteAppointmentInit) {
@@ -58,7 +58,7 @@ import { announce, announceError, failureMessage } from '../../ui/status';
     var nextButton = modal.querySelector('[data-complete-appointment-next]');
     var submitButton = modal.querySelector('[data-complete-appointment-submit]');
 
-    var confirmDialog = modal.querySelector('[data-complete-appointment-confirm]');
+    var confirmDialog = document.querySelector('[data-complete-appointment-confirm]');
     var confirmTitle = confirmDialog ? confirmDialog.querySelector('[data-complete-appointment-confirm-title]') : null;
     var confirmMessage = confirmDialog ? confirmDialog.querySelector('[data-complete-appointment-confirm-message]') : null;
     var confirmAcceptButton = confirmDialog ? confirmDialog.querySelector('[data-complete-appointment-confirm-accept]') : null;
@@ -88,6 +88,7 @@ import { announce, announceError, failureMessage } from '../../ui/status';
         if (!errorBox) return;
         errorBox.textContent = '';
         errorBox.classList.add('hidden');
+        clearAnnouncements();
     }
 
     function updatePrescriptionsEmptyState() {
@@ -142,14 +143,13 @@ import { announce, announceError, failureMessage } from '../../ui/status';
         step1El.classList.toggle('hidden', step !== 1);
         step2El.classList.toggle('hidden', step !== 2);
 
-        var cancelButtonOnly = modal.querySelector('form [data-complete-appointment-cancel]');
-        if (cancelButtonOnly) {
-            cancelButtonOnly.classList.toggle('hidden', step !== 1);
-        }
+        cancelButtons.forEach(function (button) {
+            button.hidden = step !== 1;
+        });
 
-        if (backButton) backButton.classList.toggle('hidden', step !== 2);
-        if (nextButton) nextButton.classList.toggle('hidden', step !== 1);
-        if (submitButton) submitButton.classList.toggle('hidden', step !== 2);
+        if (backButton) backButton.hidden = step !== 2;
+        if (nextButton) nextButton.hidden = step !== 1;
+        if (submitButton) submitButton.hidden = step !== 2;
 
         if (stepIndicator) {
             stepIndicator.textContent = step === 1
@@ -160,14 +160,46 @@ import { announce, announceError, failureMessage } from '../../ui/status';
         hideError();
     }
 
+    function clearFieldError(field) {
+        var message = document.getElementById(field.id + '-error');
+
+        field.removeAttribute('aria-invalid');
+        field.removeAttribute('aria-describedby');
+        if (message) message.remove();
+    }
+
+    function setFieldError(field, text) {
+        clearFieldError(field);
+
+        var message = document.createElement('p');
+        message.id = field.id + '-error';
+        message.className = 'mt-1 text-sm font-semibold text-danger';
+        message.textContent = text;
+
+        field.setAttribute('aria-invalid', 'true');
+        field.setAttribute('aria-describedby', message.id);
+        field.insertAdjacentElement('afterend', message);
+    }
+
     function validateStep1() {
-        var errors = [];
+        var required = [
+            [reasonInput, 'El motivo de la consulta es obligatorio.'],
+            [diagnosisInput, 'El diagnóstico es obligatorio.'],
+            [procedureInput, 'El procedimiento realizado es obligatorio.'],
+        ];
+        var invalid = [];
 
-        if (!reasonInput.value.trim()) errors.push('El motivo de la consulta es obligatorio.');
-        if (!diagnosisInput.value.trim()) errors.push('El diagnóstico es obligatorio.');
-        if (!procedureInput.value.trim()) errors.push('El procedimiento realizado es obligatorio.');
+        required.forEach(function (pair) {
+            if (pair[0].value.trim()) {
+                clearFieldError(pair[0]);
+                return;
+            }
 
-        return errors;
+            setFieldError(pair[0], pair[1]);
+            invalid.push(pair);
+        });
+
+        return invalid;
     }
 
     function collectPrescriptions() {
@@ -281,17 +313,18 @@ import { announce, announceError, failureMessage } from '../../ui/status';
         if (confirmAcceptText) confirmAcceptText.textContent = options.acceptText;
         if (confirmCancelText) confirmCancelText.textContent = options.cancelText;
         pendingConfirmAccept = options.onAccept;
-        confirmDialog.classList.remove('hidden');
+        openDialog(confirmDialog);
     }
 
     function closeConfirm() {
-        if (confirmDialog) confirmDialog.classList.add('hidden');
+        if (confirmDialog) closeDialog(confirmDialog);
         pendingConfirmAccept = null;
     }
 
     function resetState() {
         hideError();
         form.reset();
+        [reasonInput, diagnosisInput, procedureInput].forEach(clearFieldError);
         prescriptionsList.innerHTML = '';
         updatePrescriptionsEmptyState();
         isDirty = false;
@@ -374,18 +407,24 @@ import { announce, announceError, failureMessage } from '../../ui/status';
         }
     }
 
-    form.addEventListener('input', function () {
+    form.addEventListener('input', function (event) {
         isDirty = true;
+
+        if (event.target.getAttribute('aria-invalid') === 'true' && event.target.value.trim()) {
+            clearFieldError(event.target);
+        }
     });
 
     form.addEventListener('submit', function (event) {
         event.preventDefault();
     });
 
-    // Escape pasa por la misma pregunta que "Cancelar" cuando hay datos sin guardar.
-    modal.addEventListener('cancel', function (event) {
-        event.preventDefault();
-        requestClose();
+    // El botón de cerrar y el clic fuera del diálogo preguntan, como "Cancelar", si hay datos sin guardar.
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal || event.target.closest('[data-dialog-close]')) {
+            event.stopPropagation();
+            requestClose();
+        }
     });
 
     if (addPrescriptionButton) {
@@ -398,17 +437,20 @@ import { announce, announceError, failureMessage } from '../../ui/status';
             var errors = validateStep1();
 
             if (errors.length) {
-                showError(errors[0]);
+                showError(errors[0][1]);
+                errors[0][0].focus();
                 return;
             }
 
             showStep(2);
+            if (addPrescriptionButton) addPrescriptionButton.focus();
         });
     }
 
     if (backButton) {
         backButton.addEventListener('click', function () {
             showStep(1);
+            reasonInput.focus();
         });
     }
 

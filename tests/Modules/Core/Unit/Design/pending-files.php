@@ -10,8 +10,6 @@ declare(strict_types=1);
 return [
     'resources/js/app.js',
     'resources/js/bootstrap.js',
-    'resources/views/components/calendar/complete-appointment-modal.blade.php',
-    'resources/views/components/calendar/edit-appointment-modal.blade.php',
     'resources/views/components/ui/table.blade.php',
     'resources/views/welcome.blade.php',
 ];

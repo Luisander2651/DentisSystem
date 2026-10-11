@@ -54,7 +54,6 @@ const PAGE_STRUCTURE_PENDING = [
     'access-image' => [
     ],
     'labels' => [
-        'agenda' => 'T068',
     ],
     'autocomplete' => [
     ],

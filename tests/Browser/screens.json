@@ -267,7 +267,7 @@
                     "click": "#calendar-grid > :nth-child(24)"
                 },
                 {
-                    "click": "[data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                    "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
                 }
             ]
         },
@@ -283,13 +283,13 @@
                     "click": "#calendar-grid > :nth-child(24)"
                 },
                 {
-                    "click": "[data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                    "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
                 },
                 {
                     "click": "[data-complete-appointment-next]"
                 },
                 {
-                    "waitFor": "[data-complete-appointment-error]"
+                    "waitFor": "[data-complete-appointment-modal] [data-ui-alert][data-shown]"
                 }
             ]
         },
@@ -305,7 +305,7 @@
                     "click": "#calendar-grid > :nth-child(24)"
                 },
                 {
-                    "click": "[data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                    "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
                 },
                 {
                     "fill": "[data-complete-appointment-reason]",
@@ -343,7 +343,7 @@
                     "click": "#calendar-grid > :nth-child(24)"
                 },
                 {
-                    "click": "[data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                    "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
                 },
                 {
                     "fill": "[data-complete-appointment-reason]",
