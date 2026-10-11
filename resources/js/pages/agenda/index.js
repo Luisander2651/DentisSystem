@@ -1,5 +1,5 @@
 import { stateBadge } from '../../ui/badge';
-import { closeDialog, isDialogOpen, openDialog } from '../../ui/dialog';
+import { isDialogOpen, openDialog } from '../../ui/dialog';
 import { announceError, failureMessage } from '../../ui/status';
 
 (function () {
@@ -43,7 +43,6 @@ import { announceError, failureMessage } from '../../ui/status';
     const dayDetailsModal = document.getElementById('day-details-modal');
     const modalDateDisplay = document.getElementById('modal-date-display');
     const modalAppointmentsList = document.getElementById('modal-appointments-list');
-    const closeModalBtns = document.querySelectorAll('[data-close-modal]');
 
     const isAdminUser = document.querySelector('[data-agenda-is-admin]')?.getAttribute('data-agenda-is-admin') === 'true';
 
@@ -71,6 +70,10 @@ import { announceError, failureMessage } from '../../ui/status';
 
     function longDate(date) {
         return date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function capitalize(text) {
+        return text.charAt(0).toUpperCase() + text.slice(1);
     }
 
     function shortTime(time) {
@@ -222,7 +225,7 @@ import { announceError, failureMessage } from '../../ui/status';
             completeButton.addEventListener('click', function (event) {
                 event.stopPropagation();
                 if (window.agendaCompleteAppointmentModal && typeof window.agendaCompleteAppointmentModal.open === 'function') {
-                    window.agendaCompleteAppointmentModal.open(appt.id);
+                    window.agendaCompleteAppointmentModal.open(appt.id, completeButton);
                 }
             });
         }
@@ -232,7 +235,7 @@ import { announceError, failureMessage } from '../../ui/status';
             viewButton.addEventListener('click', function (event) {
                 event.stopPropagation();
                 if (window.agendaViewAppointmentModal && typeof window.agendaViewAppointmentModal.open === 'function') {
-                    window.agendaViewAppointmentModal.open(appt.id);
+                    window.agendaViewAppointmentModal.open(appt.id, viewButton);
                 }
             });
         }
@@ -346,7 +349,7 @@ import { announceError, failureMessage } from '../../ui/status';
         renderAppointmentList(dayList, dayAppointments, emptyText);
 
         if (dayDetailsModal && isDialogOpen(dayDetailsModal)) {
-            if (modalDateDisplay) modalDateDisplay.textContent = title;
+            if (modalDateDisplay) modalDateDisplay.textContent = capitalize(longDate(fromLocalDateString(selectedDate)));
             renderAppointmentList(modalAppointmentsList, dayAppointments, emptyText);
         }
     }
@@ -360,7 +363,7 @@ import { announceError, failureMessage } from '../../ui/status';
             return;
         }
 
-        if (modalDateDisplay) modalDateDisplay.textContent = `Citas del ${longDate(fromLocalDateString(dateStr))}`;
+        if (modalDateDisplay) modalDateDisplay.textContent = capitalize(longDate(fromLocalDateString(dateStr)));
         renderAppointmentList(modalAppointmentsList, appointmentsByDate.get(dateStr) || [], 'No hay citas para este día.');
         openDialog(dayDetailsModal, opener);
     }
@@ -402,10 +405,6 @@ import { announceError, failureMessage } from '../../ui/status';
             renderCalendar();
         });
     }
-
-    closeModalBtns.forEach(btn => {
-        btn.addEventListener('click', () => closeDialog(dayDetailsModal));
-    });
 
     if (statusFilter) {
         statusFilter.addEventListener('click', handleStatusFilter);

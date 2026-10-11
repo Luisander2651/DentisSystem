@@ -185,15 +185,15 @@ import { announceError, failureMessage } from '../../ui/status';
         return data;
     }
 
-    async function open(appointmentId) {
+    async function open(appointmentId, opener) {
         activeAppointmentId = appointmentId;
         hideError();
         generalContainer.innerHTML = '';
         clinicalSection.classList.add('hidden');
         clinicalBody.innerHTML = '';
-        if (editButton) editButton.classList.add('hidden');
+        if (editButton) editButton.hidden = true;
 
-        openDialog(modal);
+        openDialog(modal, opener || document.activeElement);
 
         try {
             var data = await requestJson('/api/v1/appointments/' + appointmentId);
@@ -209,7 +209,7 @@ import { announceError, failureMessage } from '../../ui/status';
 
             var canEdit = window.agendaAppointmentModal && typeof window.agendaAppointmentModal.openEdit === 'function';
             if ((normalizedStatus === 'asignada' || normalizedStatus === 'reprogramada') && editButton && canEdit) {
-                editButton.classList.remove('hidden');
+                editButton.hidden = false;
             }
 
             if (normalizedStatus === 'completada' && isAdmin) {

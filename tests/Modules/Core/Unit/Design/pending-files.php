@@ -11,10 +11,7 @@ return [
     'resources/js/app.js',
     'resources/js/bootstrap.js',
     'resources/views/components/calendar/complete-appointment-modal.blade.php',
-    'resources/views/components/calendar/create-appointment-modal.blade.php',
-    'resources/views/components/calendar/day-details-modal.blade.php',
     'resources/views/components/calendar/edit-appointment-modal.blade.php',
-    'resources/views/components/calendar/view-appointment-modal.blade.php',
     'resources/views/components/ui/table.blade.php',
     'resources/views/welcome.blade.php',
 ];

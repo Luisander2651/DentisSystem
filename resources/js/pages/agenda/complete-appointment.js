@@ -356,10 +356,10 @@ import { announce, announceError, failureMessage } from '../../ui/status';
         }
     }
 
-    async function open(appointmentId) {
+    async function open(appointmentId, opener) {
         resetState();
         activeAppointmentId = appointmentId;
-        openDialog(modal);
+        openDialog(modal, opener || document.activeElement);
         showStep(1);
 
         try {
