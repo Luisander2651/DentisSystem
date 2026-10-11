@@ -1,3 +1,5 @@
+import { closeDialog, openDialog } from '../../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../../ui/status';
 export function initTestimonialsDeleteModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -9,7 +11,9 @@ export function initTestimonialsDeleteModal(context) {
     var submitButton = modal ? modal.querySelector('[data-testimonials-delete-submit]') : null;
     var errorBox = modal ? modal.querySelector('[data-testimonials-delete-error]') : null;
 
-    if (!modal || !form || !idInput || !targetLabel || !cancelButtons.length || !submitButton || !errorBox || !api) {
+    errorBox = errorBox || document.createElement('p');
+
+    if (!modal || !form || !idInput || !targetLabel || !cancelButtons.length || !submitButton || !api) {
         return;
     }
 
@@ -22,6 +26,7 @@ export function initTestimonialsDeleteModal(context) {
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -40,9 +45,8 @@ export function initTestimonialsDeleteModal(context) {
     function openModal(data) {
         hideModalError();
         idInput.value = data.id || '';
-        targetLabel.textContent = data.author || 'el autor';
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        targetLabel.textContent = data.author || 'este autor';
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -52,8 +56,7 @@ export function initTestimonialsDeleteModal(context) {
 
         form.reset();
         hideModalError();
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        closeDialog(modal);
     }
 
     async function deleteTestimonial(id) {
@@ -74,7 +77,7 @@ export function initTestimonialsDeleteModal(context) {
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo eliminar el testimonio.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -92,11 +95,6 @@ export function initTestimonialsDeleteModal(context) {
         button.addEventListener('click', closeModal);
     });
 
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
 
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -108,15 +106,18 @@ export function initTestimonialsDeleteModal(context) {
         var id = idInput.value;
 
         if (!id) {
-            showModalError('No se pudo identificar el registro a eliminar.');
+            showModalError('No pudimos identificar el testimonio. Cierra el diálogo e inténtalo de nuevo.');
             return;
         }
 
         hideModalError();
         setSubmittingState(true);
 
+        var saved = false;
+
         try {
             await deleteTestimonial(id);
+            saved = true;
 
             if (typeof api.hideError === 'function') {
                 api.hideError();
@@ -126,14 +127,13 @@ export function initTestimonialsDeleteModal(context) {
                 await api.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo eliminar el testimonio.');
-
-            if (typeof api.showError === 'function') {
-                api.showError(error.message || 'No se pudo eliminar el testimonio.');
-            }
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             setSubmittingState(false);
-            closeModal();
+            if (saved) {
+                closeModal();
+                announce('Testimonio eliminado.');
+            }
         }
     });
 }

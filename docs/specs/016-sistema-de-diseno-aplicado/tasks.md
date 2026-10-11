@@ -308,7 +308,9 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: el encabezado de la pestaña es x-ui.section-title (h2 "Testimonios") con una línea que explica que aquí solo se decide cuáles se muestran; contadores x-ui.stat en una fila; tarjeta con autor, insignia de estado del sistema, texto, fecha y dos botones de 44 px con nombre accesible propio (fuera "Paciente verificado", que no se comprobaba)
   - nota: T011 y T012 pasan, T018 pasa para /contenido con un solo h1 (marca T061 quitada; Core 371 pasan) y ui-audit pasa dos veces en la pestaña y en las otras tres (390 y 1440)
   - nota: archivos extra: tests/Browser/baseline-1440.json (recapturada contenido-testimonios, admitida por CA34), PageStructureTest.php y pending-files.php (A71)
-- [ ] T062 Migrar los scripts de los diálogos de testimonios — `resources/js/pages/contenido/testimonios/edit-modal.js`, `resources/js/pages/contenido/testimonios/delete-modal.js` — hecho cuando: T011 pasa y los dos diálogos siguen funcionando — cubre: CA37 — depende: T030, T082
+- [x] T062 Migrar los scripts de los diálogos de testimonios — `resources/js/pages/contenido/testimonios/edit-modal.js`, `resources/js/pages/contenido/testimonios/delete-modal.js` — hecho cuando: T011 pasa y los dos diálogos siguen funcionando — cubre: CA37 — depende: T030, T082
+  - nota: los dos scripts abren y cierran por ui/dialog.js, dan el mensaje propio de cada fallo y anuncian "Cambios guardados." y "Testimonio eliminado."; un fallo deja el diálogo abierto con su mensaje. T011 pasa (Core 371) y ui-audit confirma que los dos abren
+  - nota: archivo extra: pending-files.php (A71)
 - [ ] T063 Migrar al diálogo base los dos diálogos de testimonios — `resources/views/pages/contenido/testimonios/edit-modal.blade.php`, `resources/views/pages/contenido/testimonios/delete-modal.blade.php` — hecho cuando: T011 y T012 pasan y `ui-audit` pasa en los dos diálogos · verificación manual: revisión del grupo en las cuatro pestañas de contenido — cubre: CA12, CA13, CA22, CA26 — depende: T061, T062
 
 ### Fase 7 · Agenda
