@@ -1,3 +1,7 @@
+import { closeDialog, openDialog } from '../../ui/dialog';
+import { stateBadge } from '../../ui/badge';
+import { announceError, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__agendaViewAppointmentInit) {
         return;
@@ -15,7 +19,7 @@
     var generalContainer = modal.querySelector('[data-view-appointment-general]');
     var clinicalSection = modal.querySelector('[data-view-appointment-clinical-section]');
     var clinicalBody = modal.querySelector('[data-view-appointment-clinical-body]');
-    var errorBox = modal.querySelector('[data-view-appointment-error]');
+    var errorBox = modal.querySelector('[data-view-appointment-error]') || document.createElement('p');
     var editButton = modal.querySelector('[data-view-appointment-edit]');
     var cancelButtons = modal.querySelectorAll('[data-view-appointment-cancel]');
 
@@ -25,12 +29,6 @@
 
     var activeAppointmentId = null;
 
-    var statusLabel = {
-        asignada: 'Asignada',
-        completada: 'Completada',
-        cancelada: 'Cancelada',
-        reprogramada: 'Reprogramada',
-    };
 
     function normalizeAppointmentStatus(status) {
         var normalized = String(status || '').trim().toLowerCase();
@@ -72,6 +70,7 @@
         if (!errorBox) return;
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideError() {
@@ -80,17 +79,22 @@
         errorBox.classList.add('hidden');
     }
 
-    function addRow(container, label, value) {
+    function addRow(container, label, value, html) {
         var row = document.createElement('div');
-        row.className = 'flex items-start justify-between gap-4 py-3 text-sm';
+        row.className = 'border-b border-line py-2';
 
-        var dt = document.createElement('span');
-        dt.className = 'font-bold text-slate-500';
+        var dt = document.createElement('dt');
+        dt.className = 'text-min font-bold uppercase tracking-wide text-muted';
         dt.textContent = label;
 
-        var dd = document.createElement('span');
-        dd.className = 'text-right font-medium text-slate-900';
-        dd.textContent = value;
+        var dd = document.createElement('dd');
+        dd.className = 'text-sm text-ink wrap-anywhere';
+
+        if (html) {
+            dd.innerHTML = value;
+        } else {
+            dd.textContent = value;
+        }
 
         row.appendChild(dt);
         row.appendChild(dd);
@@ -102,7 +106,7 @@
 
         if (!prescriptions.length) {
             var empty = document.createElement('p');
-            empty.className = 'rounded-2xl border border-dashed border-slate-200 py-6 text-center text-xs font-semibold text-slate-400';
+            empty.className = 'text-sm text-muted';
             empty.textContent = 'No se registraron prescripciones para esta cita.';
             container.appendChild(empty);
             return;
@@ -110,21 +114,21 @@
 
         prescriptions.forEach(function (prescription) {
             var card = document.createElement('div');
-            card.className = 'rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm';
+            card.className = 'rounded-box border border-line bg-canvas p-3 text-sm';
 
             var title = document.createElement('p');
-            title.className = 'font-bold text-slate-900';
+            title.className = 'font-bold text-ink wrap-anywhere';
             title.textContent = prescription.medication + ' — ' + prescription.dosage;
             card.appendChild(title);
 
             var meta = document.createElement('p');
-            meta.className = 'mt-1 text-xs font-semibold text-slate-500';
+            meta.className = 'mt-1 text-sm text-muted';
             meta.textContent = prescription.duration_days + ' días · ' + prescription.daily_frequency + ' veces al día';
             card.appendChild(meta);
 
             if (prescription.instructions) {
                 var instructions = document.createElement('p');
-                instructions.className = 'mt-2 text-xs text-slate-600';
+                instructions.className = 'mt-1 text-sm text-ink wrap-anywhere';
                 instructions.textContent = prescription.instructions;
                 card.appendChild(instructions);
             }
@@ -140,8 +144,7 @@
         var prescriptions = record.prescriptions || [];
         var symptoms = Array.isArray(tracking.symptoms) && tracking.symptoms.length ? tracking.symptoms.join(', ') : '—';
 
-        var fieldsWrapper = document.createElement('div');
-        fieldsWrapper.className = 'divide-y divide-slate-50 rounded-2xl border border-slate-200 bg-white px-4';
+        var fieldsWrapper = document.createElement('dl');
         addRow(fieldsWrapper, 'Motivo', tracking.reason || '—');
         addRow(fieldsWrapper, 'Síntomas', symptoms);
         addRow(fieldsWrapper, 'Diagnóstico', tracking.diagnosis || '—');
@@ -150,8 +153,8 @@
         if (tracking.recommendations) addRow(fieldsWrapper, 'Recomendaciones', tracking.recommendations);
         clinicalBody.appendChild(fieldsWrapper);
 
-        var prescriptionsTitle = document.createElement('p');
-        prescriptionsTitle.className = 'mt-4 text-xs font-bold uppercase tracking-wider text-slate-400';
+        var prescriptionsTitle = document.createElement('h3');
+        prescriptionsTitle.className = 'mt-4 text-sm font-bold text-ink';
         prescriptionsTitle.textContent = 'Prescripciones';
         clinicalBody.appendChild(prescriptionsTitle);
 
@@ -176,7 +179,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo completar la solicitud.');
+            throw new Error(failureMessage(response.status, data));
         }
 
         return data;
@@ -190,8 +193,7 @@
         clinicalBody.innerHTML = '';
         if (editButton) editButton.classList.add('hidden');
 
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        openDialog(modal);
 
         try {
             var data = await requestJson('/api/v1/appointments/' + appointmentId);
@@ -203,7 +205,7 @@
             addRow(generalContainer, 'Doctor', appointment.user_name || '—');
             addRow(generalContainer, 'Fecha', formatDate(appointment.date));
             addRow(generalContainer, 'Hora', formatTime(appointment.time));
-            addRow(generalContainer, 'Estado', statusLabel[normalizedStatus] || appointment.status);
+            addRow(generalContainer, 'Estado', stateBadge(normalizedStatus), true);
 
             var canEdit = window.agendaAppointmentModal && typeof window.agendaAppointmentModal.openEdit === 'function';
             if ((normalizedStatus === 'asignada' || normalizedStatus === 'reprogramada') && editButton && canEdit) {
@@ -214,7 +216,7 @@
                 clinicalSection.classList.remove('hidden');
 
                 var loading = document.createElement('p');
-                loading.className = 'text-xs font-semibold text-slate-400';
+                loading.className = 'text-sm text-muted';
                 loading.textContent = 'Cargando registro clínico...';
                 clinicalBody.appendChild(loading);
 
@@ -224,19 +226,19 @@
                 } catch (trackingError) {
                     clinicalBody.innerHTML = '';
                     var trackingErrorEl = document.createElement('p');
-                    trackingErrorEl.className = 'rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-700';
-                    trackingErrorEl.textContent = trackingError.message || 'No se pudo cargar el registro clínico.';
+                    trackingErrorEl.className = 'rounded-box border border-danger bg-danger-soft px-4 py-3 text-sm font-semibold text-danger';
+                    trackingErrorEl.setAttribute('role', 'alert');
+                    trackingErrorEl.textContent = trackingError instanceof TypeError ? failureMessage(0) : trackingError.message;
                     clinicalBody.appendChild(trackingErrorEl);
                 }
             }
         } catch (error) {
-            showError(error.message || 'No se pudo cargar la información de la cita.');
+            showError(error instanceof TypeError ? failureMessage(0) : error.message);
         }
     }
 
     function closeModal() {
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
         activeAppointmentId = null;
     }
 

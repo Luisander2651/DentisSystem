@@ -1,3 +1,6 @@
+import { closeDialog, openDialog } from '../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__agendaCreateAppointmentInit) {
         return;
@@ -68,7 +71,7 @@
     var userHidden = modal.querySelector('[data-create-appointment-user-hidden]');
     var cancelButtons = modal.querySelectorAll('[data-create-appointment-cancel]');
     var submitButton = modal.querySelector('[data-create-appointment-submit]');
-    var errorBox = modal.querySelector('[data-create-appointment-error]');
+    var errorBox = modal.querySelector('[data-create-appointment-error]') || document.createElement('p');
 
     var editForm = editModal ? editModal.querySelector('[data-edit-appointment-form]') : null;
     var editDateInput = editModal ? editModal.querySelector('[data-edit-appointment-date]') : null;
@@ -118,6 +121,7 @@
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -130,6 +134,8 @@
             editErrorBox.textContent = message;
             editErrorBox.classList.remove('hidden');
         }
+
+        announceError(message);
     }
 
     function hideEditModalError() {
@@ -330,13 +336,12 @@
 
     async function openModal() {
         resetFormState();
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        openDialog(modal);
 
         try {
             await ensureModalData();
         } catch (error) {
-            showModalError(error.message || 'No se pudieron cargar los datos de la cita.');
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         }
     }
 
@@ -346,8 +351,7 @@
         }
 
         resetFormState();
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
     }
 
     async function requestJson(url) {
@@ -364,7 +368,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo completar la solicitud.');
+            throw new Error(failureMessage(response.status, data));
         }
 
         return data;
@@ -390,7 +394,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo crear la cita.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -418,7 +422,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo actualizar la cita.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -539,13 +543,12 @@
                 editSummary.textContent = patientName + ' • ' + treatmentName;
             }
         } catch (error) {
-            showEditModalError(error.message || 'No se pudo cargar la cita para editar.');
+            showEditModalError(error instanceof TypeError ? failureMessage(0) : error.message);
             return;
         }
 
         if (editModal) {
-            editModal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+            openDialog(editModal);
         }
     }
 
@@ -556,8 +559,7 @@
 
         resetEditFormState();
         if (editModal) {
-            editModal.classList.add('hidden');
-            document.body.style.overflow = '';
+            closeDialog(editModal);
         }
     }
 
@@ -588,13 +590,14 @@
         try {
             await createAppointment(buildPayload());
         } catch (error) {
-            showModalError(error.message || 'No se pudo crear la cita.');
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
             return;
         } finally {
             setSubmittingState(false);
         }
 
         closeModal(true);
+        announce('Cita agendada.');
 
         if (window.agendaPage && typeof window.agendaPage.reload === 'function') {
             window.agendaPage.reload().catch(function (reloadError) {
@@ -625,13 +628,14 @@
             try {
                 await updateAppointment(buildEditPayload());
             } catch (error) {
-                showEditModalError(error.message || 'No se pudo actualizar la cita.');
+                showEditModalError(error instanceof TypeError ? failureMessage(0) : error.message);
                 return;
             } finally {
                 setEditSubmittingState(false);
             }
 
             closeEditModal(true);
+            announce('Cita actualizada.');
 
             if (window.agendaPage && typeof window.agendaPage.reload === 'function') {
                 window.agendaPage.reload().catch(function (reloadError) {

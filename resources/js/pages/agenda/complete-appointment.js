@@ -1,3 +1,6 @@
+import { closeDialog, openDialog } from '../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__agendaCompleteAppointmentInit) {
         return;
@@ -49,7 +52,7 @@
     var addPrescriptionButton = modal.querySelector('[data-complete-appointment-add-prescription]');
     var prescriptionsEmpty = modal.querySelector('[data-complete-appointment-prescriptions-empty]');
     var prescriptionsList = modal.querySelector('[data-complete-appointment-prescriptions-list]');
-    var errorBox = modal.querySelector('[data-complete-appointment-error]');
+    var errorBox = modal.querySelector('[data-complete-appointment-error]') || document.createElement('p');
     var cancelButtons = modal.querySelectorAll('[data-complete-appointment-cancel]');
     var backButton = modal.querySelector('[data-complete-appointment-back]');
     var nextButton = modal.querySelector('[data-complete-appointment-next]');
@@ -72,11 +75,13 @@
     var isDirty = false;
     var isSubmitting = false;
     var pendingConfirmAccept = null;
+    var prescriptionCount = 0;
 
     function showError(message) {
         if (!errorBox) return;
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideError() {
@@ -92,40 +97,30 @@
     }
 
     function createPrescriptionRow() {
-        var row = document.createElement('div');
-        row.className = 'rounded-2xl border border-slate-200 bg-white p-4';
+        prescriptionCount += 1;
+
+        var id = 'prescription-' + prescriptionCount;
+        var input = function (name, text, attributes, required) {
+            return '<div' + (name === 'instructions' ? ' class="sm:col-span-2"' : '') + '>'
+                + '<label for="' + id + '-' + name + '" class="mb-1.5 block text-sm font-semibold text-ink">' + text + (required ? ' <span class="text-danger" title="Obligatorio">*</span>' : '') + '</label>'
+                + '<input id="' + id + '-' + name + '" data-prescription-' + name + ' class="block h-control w-full rounded-control border border-field bg-surface px-3 text-control text-ink" ' + attributes + (required ? ' required' : '') + '>'
+                + '</div>';
+        };
+
+        var row = document.createElement('fieldset');
+        row.className = 'rounded-box border border-line bg-surface p-3';
         row.setAttribute('data-prescription-row', '');
 
         row.innerHTML = ''
-            + '<div class="flex items-start justify-between gap-3">'
-            + '  <div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2">'
-            + '    <div>'
-            + '      <label class="mb-1 block text-xs font-bold text-slate-600">Medicamento</label>'
-            + '      <input type="text" data-prescription-medication class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10" placeholder="Ej. Amoxicilina 500mg">'
-            + '    </div>'
-            + '    <div>'
-            + '      <label class="mb-1 block text-xs font-bold text-slate-600">Dosis</label>'
-            + '      <input type="text" data-prescription-dosage class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10" placeholder="Ej. 1 tableta">'
-            + '    </div>'
-            + '    <div>'
-            + '      <label class="mb-1 block text-xs font-bold text-slate-600">Duración (días)</label>'
-            + '      <input type="number" min="1" max="365" data-prescription-duration class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10" placeholder="Ej. 7">'
-            + '    </div>'
-            + '    <div>'
-            + '      <label class="mb-1 block text-xs font-bold text-slate-600">Frecuencia (veces/día)</label>'
-            + '      <input type="number" min="1" max="24" data-prescription-frequency class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10" placeholder="Ej. 3">'
-            + '    </div>'
-            + '    <div class="sm:col-span-2">'
-            + '      <label class="mb-1 block text-xs font-bold text-slate-600">Instrucciones <span class="font-normal text-slate-400">(opcional)</span></label>'
-            + '      <input type="text" data-prescription-instructions class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10" placeholder="Ej. Tomar despues de alimentos">'
-            + '    </div>'
-            + '  </div>'
-            + '  <button type="button" data-prescription-remove class="cursor-pointer rounded-xl p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600" aria-label="Quitar prescripcion">'
-            + '    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">'
-            + '      <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V7h12z" />'
-            + '    </svg>'
-            + '  </button>'
-            + '</div>';
+            + '<legend class="px-1 text-sm font-bold text-ink">Prescripción</legend>'
+            + '<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">'
+            + input('medication', 'Medicamento', 'type="text" autocomplete="off"', true)
+            + input('dosage', 'Dosis', 'type="text" autocomplete="off"', true)
+            + input('duration', 'Duración en días', 'type="number" min="1" max="365" inputmode="numeric"', true)
+            + input('frequency', 'Veces al día', 'type="number" min="1" max="24" inputmode="numeric"', true)
+            + input('instructions', 'Instrucciones (opcional)', 'type="text" autocomplete="off"', false)
+            + '</div>'
+            + '<button type="button" data-prescription-remove class="mt-3 inline-flex min-h-control items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-danger-soft hover:text-danger">Quitar esta prescripción</button>';
 
         var removeButton = row.querySelector('[data-prescription-remove]');
         removeButton.addEventListener('click', function () {
@@ -245,7 +240,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo completar la solicitud.');
+            throw new Error(failureMessage(response.status, data));
         }
 
         return data;
@@ -271,7 +266,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo completar la cita.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -307,8 +302,7 @@
 
     function closeModal(force) {
         if (isSubmitting && !force) return;
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
         closeConfirm();
     }
 
@@ -346,13 +340,14 @@
         try {
             await completeAppointment(activeAppointmentId, buildPayload());
         } catch (error) {
-            showError(error.message || 'No se pudo completar la cita.');
+            showError(error instanceof TypeError ? failureMessage(0) : error.message);
             setSubmittingState(false);
             return;
         }
 
         setSubmittingState(false);
         closeModal(true);
+        announce('Cita completada.');
 
         if (window.agendaPage && typeof window.agendaPage.reload === 'function') {
             window.agendaPage.reload().catch(function (reloadError) {
@@ -364,8 +359,7 @@
     async function open(appointmentId) {
         resetState();
         activeAppointmentId = appointmentId;
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        openDialog(modal);
         showStep(1);
 
         try {
@@ -376,7 +370,7 @@
                 summaryEl.textContent = (appointment.patient_name || 'Paciente') + ' • ' + (appointment.treatment_name || 'Consulta');
             }
         } catch (error) {
-            showError(error.message || 'No se pudo cargar la información de la cita.');
+            showError(error instanceof TypeError ? failureMessage(0) : error.message);
         }
     }
 
@@ -386,6 +380,12 @@
 
     form.addEventListener('submit', function (event) {
         event.preventDefault();
+    });
+
+    // Escape pasa por la misma pregunta que "Cancelar" cuando hay datos sin guardar.
+    modal.addEventListener('cancel', function (event) {
+        event.preventDefault();
+        requestClose();
     });
 
     if (addPrescriptionButton) {
