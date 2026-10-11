@@ -18,7 +18,7 @@
         </a>
 
         <!-- Desktop Navigation -->
-        <nav class="hidden items-center gap-8 md:flex" aria-label="Secciones del sitio">
+        <nav class="hidden items-center gap-8 lg:flex" aria-label="Secciones del sitio">
             @foreach ($links as $route => $label)
                 <a
                     href="{{ route($route) }}"
@@ -29,7 +29,7 @@
         </nav>
 
         <!-- CTAs -->
-        <div class="hidden items-center gap-4 md:flex">
+        <div class="hidden items-center gap-4 lg:flex">
             @auth
                 <a href="{{ url('/dashboard') }}" class="inline-flex min-h-control items-center text-sm font-semibold text-ink underline-offset-4 hover:underline">Mi panel</a>
             @else
@@ -45,7 +45,7 @@
         </div>
 
         <!-- Mobile Menu Toggle -->
-        <x-ui.button variant="icon" id="mobile-menu-btn" label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu" class="md:hidden">
+        <x-ui.button variant="icon" id="mobile-menu-btn" label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu" class="lg:hidden">
             <svg id="menu-icon-open" aria-hidden="true" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -56,7 +56,7 @@
     </div>
 
     <!-- Mobile Menu -->
-    <div id="mobile-menu" class="hidden border-t border-line bg-surface md:hidden">
+    <div id="mobile-menu" class="hidden border-t border-line bg-surface lg:hidden">
         <nav class="flex flex-col gap-1 px-4 py-3" aria-label="Secciones del sitio">
             @foreach ($links as $route => $label)
                 <a

@@ -68,7 +68,7 @@
                         </div>
                     </div>
 
-                    <div class="absolute right-2 bottom-8 sm:-right-6 rounded-box bg-surface p-4 shadow-md border border-line flex items-center gap-3">
+                    <div class="absolute right-2 bottom-8 sm:-right-6 sm:max-lg:-bottom-6 rounded-box bg-surface p-4 shadow-md border border-line flex items-center gap-3">
                         <div class="flex h-10 w-10 items-center justify-center rounded-control bg-primary-soft text-ink font-bold">
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                 <path d="M12 17.3l-6.18 3.25 1.18-6.88L2 8.9l6.91-1L12 1.6l3.09 6.3 6.91 1-5 4.77 1.18 6.88z" />
