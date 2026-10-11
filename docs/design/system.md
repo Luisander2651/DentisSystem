@@ -220,14 +220,17 @@ Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
 | Inicio (sitio público) | [capturas/inicio-390.png](capturas/inicio-390.png) | [capturas/inicio-1440.png](capturas/inicio-1440.png) | barra, tarjetas, preguntas frecuentes, pie |
 | Inicio del panel | [capturas/dashboard-administrador-390.png](capturas/dashboard-administrador-390.png) | [capturas/dashboard-administrador-1440.png](capturas/dashboard-administrador-1440.png) | menú lateral, encabezado, contadores |
 | Agenda | [capturas/agenda-con-citas-390.png](capturas/agenda-con-citas-390.png) | [capturas/agenda-con-citas-1440.png](capturas/agenda-con-citas-1440.png) | calendario, filtros, diálogos |
+| Agenda, un día sin citas para hoy | `/agenda` | Administrador | [390](capturas/agenda-hoy-sin-citas-390.png) · [1440](capturas/agenda-hoy-sin-citas-1440.png) | capturada |
 | Pacientes | [capturas/pacientes-390.png](capturas/pacientes-390.png) | [capturas/pacientes-1440.png](capturas/pacientes-1440.png) | búsqueda, tarjetas, diálogos |
 | Expediente | [capturas/expediente-390.png](capturas/expediente-390.png) | [capturas/expediente-1440.png](capturas/expediente-1440.png) | tarjetas, tablas, estado vacío |
 
 ## Inventario de vistas
 
 **Todas** las vistas de la app, con capturas de la app real hechas con datos de prueba. Nada se
-dibuja a mano. Las capturas son las del sistema 1.0.0 (2026-10-04): muestran el aspecto anterior y
-se rehacen al cerrar la spec 016 (T076), junto con las de las pantallas nuevas de error. **65 de 66 capturadas** (128 imágenes); la única sin captura es `welcome.blade.php`, que no tiene ruta.
+dibuja a mano. Las capturas son las del sistema 2.0.0: las generó el paso `ui-audit` de CI el
+2026-10-11 (corrida del commit `e871ff1`) sobre una base recién migrada que solo contiene los datos
+de `UiAuditSeeder`. **75 de 75 capturadas** (147 imágenes, a 390 y 1440 px). CI comprueba además
+cada pantalla a 768 px; esas capturas quedan en el artefacto `ui-audit` de cada corrida.
 
 | Vista | Ruta / plantilla | Rol | Capturas | Estado |
 |---|---|---|---|---|
@@ -237,7 +240,6 @@ se rehacen al cerrar la spec 016 (T076), junto con las de las pantallas nuevas d
 | Galería | `/galeria` · `pages/landing/galeria.blade.php` | público | [390](capturas/galeria-390.png) · [1440](capturas/galeria-1440.png) | capturada |
 | Galería, visor de imagen | `/galeria` (visor) | público | [390](capturas/galeria-visor-390.png) · [1440](capturas/galeria-visor-1440.png) | capturada |
 | Contacto | `/contacto` · `pages/landing/contacto.blade.php` | público | [390](capturas/contacto-390.png) · [1440](capturas/contacto-1440.png) | capturada |
-| Bienvenida de Laravel | `welcome.blade.php` | — | — | no accesible (plantilla sin ruta) |
 | Iniciar sesión | `/login` · `pages/auth/login.blade.php` | público | [390](capturas/login-390.png) · [1440](capturas/login-1440.png) | capturada |
 | Registrarse | `/register` · `pages/auth/register.blade.php` | público | [390](capturas/register-390.png) · [1440](capturas/register-1440.png) | capturada |
 | Recuperar contraseña | `/forgot-password` · `pages/auth/forgot-password.blade.php` | público | [390](capturas/forgot-password-390.png) · [1440](capturas/forgot-password-1440.png) | capturada |
@@ -248,10 +250,12 @@ se rehacen al cerrar la spec 016 (T076), junto con las de las pantallas nuevas d
 | Inicio del panel | `/dashboard` | Asistente | [390](capturas/dashboard-asistente-390.png) · [1440](capturas/dashboard-asistente-1440.png) | capturada |
 | Inicio del panel | `/dashboard` | Doctor | [390](capturas/dashboard-doctor-390.png) · [1440](capturas/dashboard-doctor-1440.png) | capturada |
 | Inicio del panel | `/dashboard` | Paciente | [390](capturas/dashboard-paciente-390.png) · [1440](capturas/dashboard-paciente-1440.png) | capturada |
+| Inicio del panel, nuevo paciente | `components/ui/create-patient-modal.blade.php` | Administrador | [390](capturas/dashboard-crear-paciente-390.png) · [1440](capturas/dashboard-crear-paciente-1440.png) | capturada |
+| Inicio del panel, nuevo usuario | `components/ui/create-user-modal.blade.php` | Administrador | [390](capturas/dashboard-crear-usuario-390.png) · [1440](capturas/dashboard-crear-usuario-1440.png) | capturada |
 | Menú lateral abierto en móvil | `/dashboard` · `components/ui/sidebar.blade.php` | Administrador | [390](capturas/dashboard-menu-390.png) | capturada (solo existe a 390 px) |
 | Agenda, mes actual sin citas | `/agenda` · `pages/agenda/index.blade.php` | Administrador | [390](capturas/agenda-390.png) · [1440](capturas/agenda-1440.png) | capturada |
 | Agenda, mes con citas | `/agenda` (julio de 2026) | Administrador | [390](capturas/agenda-con-citas-390.png) · [1440](capturas/agenda-con-citas-1440.png) | capturada |
-| Agenda, citas del día | `components/calendar/day-details-modal.blade.php` | Administrador | [390](capturas/agenda-dia-390.png) · [1440](capturas/agenda-dia-1440.png) | capturada |
+| Agenda, citas del día | `components/calendar/day-details-modal.blade.php` | Administrador | [1440](capturas/agenda-dia-1440.png) | capturada (el diálogo solo existe desde 768 px; en el móvil es una lista bajo el calendario) |
 | Agenda, detalle de cita | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-390.png) · [1440](capturas/agenda-cita-detalle-1440.png) | capturada |
 | Agenda, detalle de cita asignada (con "Editar cita") | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-pendiente-390.png) · [1440](capturas/agenda-cita-detalle-pendiente-1440.png) | capturada |
 | Agenda, editar cita | `components/calendar/edit-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-editar-390.png) · [1440](capturas/agenda-cita-editar-1440.png) | capturada |
@@ -270,6 +274,12 @@ se rehacen al cerrar la spec 016 (T076), junto con las de las pantallas nuevas d
 | Expediente, formulario de dirección | `components/records/address-table.blade.php` | Administrador | [390](capturas/expediente-direccion-form-390.png) · [1440](capturas/expediente-direccion-form-1440.png) | capturada |
 | Expediente, formulario de datos médicos | `components/records/medical-data-table.blade.php` | Administrador | [390](capturas/expediente-medicos-form-390.png) · [1440](capturas/expediente-medicos-form-1440.png) | capturada |
 | Expediente de un paciente | `/expedientes-clinicos/{patientId}` | Doctor | [390](capturas/expediente-doctor-390.png) · [1440](capturas/expediente-doctor-1440.png) | capturada |
+| Expediente de un paciente | `/expedientes-clinicos/{patientId}` | Asistente | [390](capturas/expediente-asistente-390.png) · [1440](capturas/expediente-asistente-1440.png) | capturada |
+| Expediente, confirmar eliminación | `components/ui/confirm-delete-modal.blade.php` | Administrador | [390](capturas/expediente-administrador-eliminar-390.png) · [1440](capturas/expediente-administrador-eliminar-1440.png) | capturada |
+| Expediente, confirmar eliminación | `components/ui/confirm-delete-modal.blade.php` | Asistente | [390](capturas/expediente-asistente-eliminar-390.png) · [1440](capturas/expediente-asistente-eliminar-1440.png) | capturada |
+| Expediente, detalle de una cita | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/expediente-administrador-cita-detalle-390.png) · [1440](capturas/expediente-administrador-cita-detalle-1440.png) | capturada |
+| Expediente, detalle de una cita | `components/calendar/view-appointment-modal.blade.php` | Asistente | [390](capturas/expediente-asistente-cita-detalle-390.png) · [1440](capturas/expediente-asistente-cita-detalle-1440.png) | capturada |
+| Expediente, detalle de una cita | `components/calendar/view-appointment-modal.blade.php` | Doctor | [390](capturas/expediente-doctor-cita-detalle-390.png) · [1440](capturas/expediente-doctor-cita-detalle-1440.png) | capturada |
 | Tratamientos | `/tratamientos` · `pages/tratamientos/index.blade.php` | Administrador | [390](capturas/tratamientos-390.png) · [1440](capturas/tratamientos-1440.png) | capturada |
 | Tratamientos, detalle | `pages/tratamientos/index.blade.php` (modal) | Administrador | [390](capturas/tratamientos-ver-390.png) · [1440](capturas/tratamientos-ver-1440.png) | capturada |
 | Tratamientos, nuevo | `pages/tratamientos/index.blade.php` (modal) | Administrador | [390](capturas/tratamientos-crear-390.png) · [1440](capturas/tratamientos-crear-1440.png) | capturada |
@@ -294,13 +304,13 @@ se rehacen al cerrar la spec 016 (T076), junto con las de las pantallas nuevas d
 | Usuarios, nuevo usuario | `components/ui/create-user-modal.blade.php` | Administrador | [390](capturas/usuarios-crear-390.png) · [1440](capturas/usuarios-crear-1440.png) | capturada |
 | Usuarios, editar | `components/ui/edit-user-modal.blade.php` | Administrador | [390](capturas/usuarios-editar-390.png) · [1440](capturas/usuarios-editar-1440.png) | capturada |
 | Usuarios, confirmar eliminación | `components/ui/confirm-delete-modal.blade.php` | Administrador | [390](capturas/usuarios-eliminar-390.png) · [1440](capturas/usuarios-eliminar-1440.png) | capturada |
-| Página no encontrada | ruta inexistente · página por defecto de Laravel | público | [390](capturas/error-404-390.png) · [1440](capturas/error-404-1440.png) | capturada |
-| Acceso denegado (paciente en ruta de staff) | `/expedientes-clinicos` · página por defecto de Laravel | Paciente | [390](capturas/error-403-staff-390.png) · [1440](capturas/error-403-staff-1440.png) | capturada |
-| Acceso denegado (asistente en ruta de administrador) | `/agenda` · respuesta JSON del middleware `only.admin` | Asistente | [390](capturas/error-403-admin-390.png) · [1440](capturas/error-403-admin-1440.png) | capturada |
+| Página no encontrada | ruta inexistente · `errors/404.blade.php` | público | [390](capturas/error-404-390.png) · [1440](capturas/error-404-1440.png) | capturada |
+| Página no encontrada, con sesión | ruta inexistente · `errors/404.blade.php` | Asistente | [390](capturas/error-404-con-sesion-390.png) · [1440](capturas/error-404-con-sesion-1440.png) | capturada |
+| Acceso denegado (paciente en ruta de staff) | `/expedientes-clinicos` · `errors/403.blade.php` | Paciente | [390](capturas/error-403-staff-390.png) · [1440](capturas/error-403-staff-1440.png) | capturada |
+| Acceso denegado (asistente en ruta de administrador) | `/agenda` · `errors/403.blade.php` | Asistente | [390](capturas/error-403-admin-390.png) · [1440](capturas/error-403-admin-1440.png) | capturada |
 
 Estados: `capturada` · `sin captura (motivo)` · `no accesible (motivo)`. Los diálogos se capturan
-al tamaño de la ventana; los más altos que la ventana (agendar y completar cita) salen cortados
-porque así se ven. Solo se provocó un error de validación (completar cita sin motivo); "completar
+al tamaño de la ventana y caben en ella. Solo se provocó un error de validación (completar cita sin motivo); "completar
 cita" se recorrió hasta el paso 2 sin enviarlo, así que no escribió nada.
 
 ## Reglas de uso
@@ -314,8 +324,11 @@ cita" se recorrió hasta el paso 2 sin enviarlo, así que no escribió nada.
 - Todo lo que hace algo al pulsarlo es un control nativo (`button`, `a`, campo) o tiene rol, foco y
   activación con Intro y barra espaciadora.
 - Un solo `h1` por pantalla.
-- La composición a 1440 px no cambia respecto al sistema 1.0.0, salvo el encabezado único de
-  gestión de contenido.
+- La composición a 1440 px no cambia respecto al sistema 1.0.0, salvo las diferencias admitidas
+  una a una, con su criterio, en `tests/Browser/checks-composition.mjs`.
+- Tres anchos de comprobación: 390, 768 y 1440 px. El menú lateral del panel y el menú del sitio
+  público se despliegan desde 1024 px; por debajo se usa el menú plegable, y el contenido ocupa
+  todo el ancho.
 
 ## Deuda de diseño
 
@@ -324,20 +337,20 @@ resuelve toda la deuda salvo DS12; cada fila pasa a "resuelta por 016" al cerrar
 
 | ID | Problema | Dónde (evidencia) | Corrección propuesta | Estado |
 |---|---|---|---|---|
-| DS1 | No hay tokens de diseño: los colores de marca son valores arbitrarios repetidos (unas 620 apariciones de 8 rosas) y el único token es `--font-sans` | `resources/css/app.css` (`@theme`); vistas y JS de `resources/` | Declarar los colores en `@theme` y sustituir los valores arbitrarios | la resuelve 016 |
-| DS2 | Dos rosas para la misma función de acción principal (`#E91E63` y `#B5114A`) y dos hover del mismo botón (`#d61b5b`, `#D81B60`) | `capturas/pacientes-1440.png` ("Nuevo paciente") frente a `capturas/expedientes-1440.png` ("Consultar Expediente") | Elegir uno como principal y documentar el uso del otro | la resuelve 016 |
-| DS3 | Contraste insuficiente: texto blanco sobre `#E91E63` 4.35:1; `slate-400` sobre blanco 2.63:1; blanco sobre el verde de WhatsApp 2.47:1; `red-600` sobre `red-50` 4.36:1; bordes de campo 1.23–1.49:1 | `system.html` → Color (pares en rojo); `capturas/pacientes-1440.png`, `capturas/inicio-menu-390.png` | Oscurecer el rosa principal o usar `#B5114A`; subir etiquetas a `slate-500`; borde de campo ≥ 3:1 | la resuelve 016 |
-| DS4 | Objetivos de toque menores de 44 px a 390 px: "Eliminar" 70×30, "Editar" 58×30, menú 36×36, iconos 28×28 y 32×32, "Consultar Expediente" 147×28, filtros de 32 px de alto, "Cancelar" 38 px | medidas de `capturas/*-390.png` (p. ej. `capturas/expediente-390.png`, `capturas/pacientes-390.png`) | Alto mínimo de 44 px en controles táctiles | la resuelve 016 |
-| DS5 | Sin escala de tamaños: 10 alturas de botón (24–48 px), 4 de campo (38–48 px) y radios de 6, 8, 12, 16, 24, 32 px y píldora para el mismo tipo de control; `x-ui.button` casi no se usa | `resources/views/components/ui/button.blade.php`; medidas de todas las capturas | Tamaños y radios fijos en el componente y usarlo en las pantallas | la resuelve 016 |
-| DS6 | Tres estilos de foco distintos y `focus:outline-none` 62 veces; el anillo `#F8BBD0` da 1.61:1 y el de `#B5114A` al 10 % es casi invisible | `resources/views/components/ui/input.blade.php`, modales de `pages/contenido/` y `components/calendar/` | Un solo estilo de foco visible (≥ 3:1) | la resuelve 016 |
-| DS7 | Desbordamiento horizontal en la agenda a 390 px (el contenido mide 480 px) | `capturas/agenda-390.png`; `resources/views/components/calendar/grid.blade.php` | Calendario adaptado al ancho móvil | la resuelve 016 |
-| DS8 | No hay componente base de diálogo: unos 20 diálogos repiten marcado y estilos; `aria-labelledby="modal-title"` apunta a un id que no existe; los de agendar y completar cita son más altos que una ventana de 900 px | `resources/views/components/ui/*-modal.blade.php`, `components/calendar/*-modal.blade.php`, `pages/contenido/**`; `capturas/agenda-cita-completar-1440.png` | Componente de diálogo único con título enlazado, foco atrapado y alto máximo | la resuelve 016 |
-| DS9 | Marca sin recursos: no hay archivo de logo (dos SVG en línea distintos, anillo en el sitio público y escudo en el panel) y `public/favicon.ico` pesa 0 bytes | `components/landing/nav.blade.php:10`, `components/ui/sidebar.blade.php:93`, `public/favicon.ico` | Un logo en archivo y un favicon real | la resuelve 016 |
-| DS10 | Los rechazos de acceso no tienen pantalla propia: `/agenda` con un rol no administrador muestra JSON crudo y en inglés; 403 y 404 usan la página por defecto de Laravel, sin marca ni camino de vuelta | `capturas/error-403-admin-1440.png`, `capturas/error-403-staff-1440.png`, `capturas/error-404-1440.png` | Vistas de error con la marca y un enlace de regreso; el middleware responde con vista en rutas web | la resuelve 016 |
-| DS11 | Textos del panel sin acentos ("Gestion de contenido", "Expedientes clinicos", "Iniciar Sesion", "Esta accion eliminara la promocion") frente al sitio público, que sí los lleva | `capturas/contenido-promociones-eliminar-1440.png`, `capturas/expediente-1440.png`, `capturas/login-1440.png` | Corregir la ortografía de los textos del panel | la resuelve 016 |
+| DS1 | No hay tokens de diseño: los colores de marca son valores arbitrarios repetidos (unas 620 apariciones de 8 rosas) y el único token es `--font-sans` | `resources/css/app.css` (`@theme`); vistas y JS de `resources/` | Declarar los colores en `@theme` y sustituir los valores arbitrarios | resuelta por 016 |
+| DS2 | Dos rosas para la misma función de acción principal (`#E91E63` y `#B5114A`) y dos hover del mismo botón (`#d61b5b`, `#D81B60`) | `capturas/pacientes-1440.png` ("Nuevo paciente") frente a `capturas/expedientes-1440.png` ("Consultar Expediente") | Elegir uno como principal y documentar el uso del otro | resuelta por 016 |
+| DS3 | Contraste insuficiente: texto blanco sobre `#E91E63` 4.35:1; `slate-400` sobre blanco 2.63:1; blanco sobre el verde de WhatsApp 2.47:1; `red-600` sobre `red-50` 4.36:1; bordes de campo 1.23–1.49:1 | `system.html` → Color (pares en rojo); `capturas/pacientes-1440.png`, `capturas/inicio-menu-390.png` | Oscurecer el rosa principal o usar `#B5114A`; subir etiquetas a `slate-500`; borde de campo ≥ 3:1 | resuelta por 016 |
+| DS4 | Objetivos de toque menores de 44 px a 390 px: "Eliminar" 70×30, "Editar" 58×30, menú 36×36, iconos 28×28 y 32×32, "Consultar Expediente" 147×28, filtros de 32 px de alto, "Cancelar" 38 px | medidas de `capturas/*-390.png` (p. ej. `capturas/expediente-390.png`, `capturas/pacientes-390.png`) | Alto mínimo de 44 px en controles táctiles | resuelta por 016 |
+| DS5 | Sin escala de tamaños: 10 alturas de botón (24–48 px), 4 de campo (38–48 px) y radios de 6, 8, 12, 16, 24, 32 px y píldora para el mismo tipo de control; `x-ui.button` casi no se usa | `resources/views/components/ui/button.blade.php`; medidas de todas las capturas | Tamaños y radios fijos en el componente y usarlo en las pantallas | resuelta por 016 |
+| DS6 | Tres estilos de foco distintos y `focus:outline-none` 62 veces; el anillo `#F8BBD0` da 1.61:1 y el de `#B5114A` al 10 % es casi invisible | `resources/views/components/ui/input.blade.php`, modales de `pages/contenido/` y `components/calendar/` | Un solo estilo de foco visible (≥ 3:1) | resuelta por 016 |
+| DS7 | Desbordamiento horizontal en la agenda a 390 px (el contenido mide 480 px) | `capturas/agenda-390.png`; `resources/views/components/calendar/grid.blade.php` | Calendario adaptado al ancho móvil | resuelta por 016 |
+| DS8 | No hay componente base de diálogo: unos 20 diálogos repiten marcado y estilos; `aria-labelledby="modal-title"` apunta a un id que no existe; los de agendar y completar cita son más altos que una ventana de 900 px | `resources/views/components/ui/*-modal.blade.php`, `components/calendar/*-modal.blade.php`, `pages/contenido/**`; `capturas/agenda-cita-completar-1440.png` | Componente de diálogo único con título enlazado, foco atrapado y alto máximo | resuelta por 016 |
+| DS9 | Marca sin recursos: no hay archivo de logo (dos SVG en línea distintos, anillo en el sitio público y escudo en el panel) y `public/favicon.ico` pesa 0 bytes | `components/landing/nav.blade.php:10`, `components/ui/sidebar.blade.php:93`, `public/favicon.ico` | Un logo en archivo y un favicon real | resuelta por 016 |
+| DS10 | Los rechazos de acceso no tienen pantalla propia: `/agenda` con un rol no administrador muestra JSON crudo y en inglés; 403 y 404 usan la página por defecto de Laravel, sin marca ni camino de vuelta | `capturas/error-403-admin-1440.png`, `capturas/error-403-staff-1440.png`, `capturas/error-404-1440.png` | Vistas de error con la marca y un enlace de regreso; el middleware responde con vista en rutas web | resuelta por 016 |
+| DS11 | Textos del panel sin acentos ("Gestion de contenido", "Expedientes clinicos", "Iniciar Sesion", "Esta accion eliminara la promocion") frente al sitio público, que sí los lleva | `capturas/contenido-promociones-eliminar-1440.png`, `capturas/expediente-1440.png`, `capturas/login-1440.png` | Corregir la ortografía de los textos del panel | resuelta por 016 |
 | DS12 | Movimiento sin alternativa: ninguna regla `prefers-reduced-motion` ni `motion-reduce:` en `resources/`; `transition-all` 94 veces; clases `animate-in…` sin CSS que las defina | `resources/views/**`, `resources/js/pages/**` | Versión sin movimiento y animar solo `transform` y `opacity` | pendiente |
-| DS13 | Interfaz sin uso o inalcanzable: `x-ui.table` sin usos, `welcome.blade.php` sin ruta y la rama de botones "ver y editar" de la tarjeta de cita, que solo se pinta para quien no es administrador en una pantalla solo para administradores (editar sí es accesible desde el detalle de la cita) | `resources/views/components/ui/table.blade.php`, `resources/views/welcome.blade.php`, `resources/js/pages/agenda/index.js:202` | Decidir por pieza: usarla o retirarla | la resuelve 016 |
-| DS14 | La mayoría de las pantallas del panel no tienen `h1`: el título de página es un `h2` (hay `h1` en 14 de 58 capturas a 390 px) | `resources/views/components/ui/page-hero.blade.php`; medidas de las capturas | Título de página como `h1` | la resuelve 016 |
+| DS13 | Interfaz sin uso o inalcanzable: `x-ui.table` sin usos, `welcome.blade.php` sin ruta y la rama de botones "ver y editar" de la tarjeta de cita, que solo se pinta para quien no es administrador en una pantalla solo para administradores (editar sí es accesible desde el detalle de la cita) | `resources/views/components/ui/table.blade.php`, `resources/views/welcome.blade.php`, `resources/js/pages/agenda/index.js:202` | Decidir por pieza: usarla o retirarla | resuelta por 016 |
+| DS14 | La mayoría de las pantallas del panel no tienen `h1`: el título de página es un `h2` (hay `h1` en 14 de 58 capturas a 390 px) | `resources/views/components/ui/page-hero.blade.php`; medidas de las capturas | Título de página como `h1` | resuelta por 016 |
 
 Estados: `pendiente` · `la resuelve NNN` · `resuelta por NNN` · `no se confirma (re-extracción
 AAAA-MM-DD: evidencia)`. Un ID nunca se reutiliza: una re-extracción conserva los vigentes y numera
@@ -363,3 +376,4 @@ lo nuevo a partir del último.
 | 2026-10-08 | diseño | Paso del sistema extraído (1.0.0) al elegido (2.0.0) | Hecho en la spec 016 (T001): tokens, componentes y reglas de "Cambios a incorporar al sistema" del plan; el sistema 1.0.0 queda en `history/` | docs/specs/016-sistema-de-diseno-aplicado/plan.md |
 | 2026-10-08 | diseño | ¿Se aprueba el sistema 2.0.0 (variante B)? | Aprobado, tras ver la pantalla de pacientes migrada a 390 y 1440 px en una rama de vista previa | usuario |
 | 2026-10-08 | diseño | ¿La spec 016 aplica el sistema al sitio público, que tendrá un rediseño completo en otra spec? | Sí: se queda en la 016 con su pase de paleta, marca, tamaños y accesibilidad; el rediseño futuro partirá de los tokens | usuario |
+| 2026-10-11 | diseño | A 768 px el panel y el menú del sitio público se desbordaban. ¿Qué anchos se comprueban? | 390, 768 y 1440 px; los menús se despliegan desde 1024 px | usuario |
