@@ -1,3 +1,5 @@
+import { closeDialog, openDialog } from '../../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../../ui/status';
 export function initGalleryDeleteModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -9,7 +11,9 @@ export function initGalleryDeleteModal(context) {
     var acceptButton = modal ? modal.querySelector('[data-gallery-delete-submit]') : null;
     var errorBox = modal ? modal.querySelector('[data-gallery-delete-error]') : null;
 
-    if (!modal || !form || !idInput || !cancelButtons.length || !acceptButton || !errorBox || !api) {
+    errorBox = errorBox || document.createElement('p');
+
+    if (!modal || !form || !idInput || !cancelButtons.length || !acceptButton || !api) {
         return;
     }
 
@@ -22,6 +26,7 @@ export function initGalleryDeleteModal(context) {
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -37,8 +42,7 @@ export function initGalleryDeleteModal(context) {
             labelTarget.textContent = record.label || 'este registro';
         }
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -54,8 +58,7 @@ export function initGalleryDeleteModal(context) {
         }
 
         hideModalError();
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        closeDialog(modal);
     }
 
     async function deleteGalleryImage(id) {
@@ -76,7 +79,7 @@ export function initGalleryDeleteModal(context) {
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo eliminar la imagen de galeria.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -97,11 +100,6 @@ export function initGalleryDeleteModal(context) {
         button.addEventListener('click', closeModal);
     });
 
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
 
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -113,7 +111,7 @@ export function initGalleryDeleteModal(context) {
         var id = idInput.value.trim();
 
         if (!id) {
-            showModalError('No se encontro el ID de la imagen a eliminar.');
+            showModalError('No pudimos identificar la imagen. Cierra el diálogo e inténtalo de nuevo.');
             return;
         }
 
@@ -124,8 +122,11 @@ export function initGalleryDeleteModal(context) {
             button.disabled = true;
         });
 
+        var saved = false;
+
         try {
             await deleteGalleryImage(id);
+            saved = true;
             if (typeof api.hideError === 'function') {
                 api.hideError();
             }
@@ -134,19 +135,16 @@ export function initGalleryDeleteModal(context) {
                 await api.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo eliminar la imagen de galeria.');
-
-            if (typeof api.showError === 'function') {
-                api.showError(error.message || 'No se pudo eliminar la imagen de galeria.');
-            }
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             isDeleting = false;
             acceptButton.disabled = false;
             cancelButtons.forEach(function (button) {
                 button.disabled = false;
             });
-            if (!errorBox.textContent) {
+            if (saved) {
                 closeModal();
+                announce('Imagen eliminada.');
             }
         }
     });

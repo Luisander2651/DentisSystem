@@ -1,3 +1,5 @@
+import { closeDialog, openDialog } from '../../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../../ui/status';
 export function initGalleryEditModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -14,7 +16,9 @@ export function initGalleryEditModal(context) {
     var submitButton = modal ? modal.querySelector('[data-gallery-edit-submit]') : null;
     var errorBox = modal ? modal.querySelector('[data-gallery-edit-error]') : null;
 
-    if (!modal || !form || !idInput || !descriptionInput || !statusSelect || !imageInput || !cancelButtons.length || !submitButton || !errorBox || !api) {
+    errorBox = errorBox || document.createElement('p');
+
+    if (!modal || !form || !idInput || !descriptionInput || !statusSelect || !imageInput || !cancelButtons.length || !submitButton || !api) {
         return;
     }
 
@@ -27,6 +31,7 @@ export function initGalleryEditModal(context) {
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -72,8 +77,7 @@ export function initGalleryEditModal(context) {
         imageInput.value = '';
         togglePreview(record.url || '', record.label || 'Imagen actual');
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -88,8 +92,7 @@ export function initGalleryEditModal(context) {
         }
         togglePreview('', 'Imagen actual');
         hideModalError();
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        closeDialog(modal);
     }
 
     async function updateGalleryImage(id, payload) {
@@ -111,7 +114,7 @@ export function initGalleryEditModal(context) {
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo actualizar la imagen de galeria.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -135,11 +138,6 @@ export function initGalleryEditModal(context) {
         button.addEventListener('click', closeModal);
     });
 
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
 
     imageInput.addEventListener('change', function () {
         var file = imageInput.files && imageInput.files[0] ? imageInput.files[0] : null;
@@ -165,7 +163,7 @@ export function initGalleryEditModal(context) {
         var id = idInput.value.trim();
 
         if (!id) {
-            showModalError('No se encontro el ID de la imagen a editar.');
+            showModalError('No pudimos identificar la imagen. Cierra el diálogo e inténtalo de nuevo.');
             return;
         }
 
@@ -174,7 +172,7 @@ export function initGalleryEditModal(context) {
         var status = String(statusSelect.value || 'visible').trim();
 
         if (!description && !imageFile && !status) {
-            showModalError('Debe cambiar la descripcion, la imagen o el estado.');
+            showModalError('Cambia la descripción, la imagen o el estado.');
             return;
         }
 
@@ -190,8 +188,11 @@ export function initGalleryEditModal(context) {
         hideModalError();
         setSubmittingState(true);
 
+        var saved = false;
+
         try {
             await updateGalleryImage(id, payload);
+            saved = true;
             if (typeof api.hideError === 'function') {
                 api.hideError();
             }
@@ -200,15 +201,12 @@ export function initGalleryEditModal(context) {
                 await api.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo actualizar la imagen de galeria.');
-
-            if (typeof api.showError === 'function') {
-                api.showError(error.message || 'No se pudo actualizar la imagen de galeria.');
-            }
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             setSubmittingState(false);
-            if (!errorBox.textContent) {
+            if (saved) {
                 closeModal();
+                announce('Cambios guardados.');
             }
         }
     });
