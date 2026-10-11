@@ -22,7 +22,5 @@ return [
     'resources/views/components/calendar/view-appointment-modal.blade.php',
     'resources/views/components/ui/table.blade.php',
     'resources/views/pages/agenda/index.blade.php',
-    'resources/views/pages/contenido/testimonios/delete-modal.blade.php',
-    'resources/views/pages/contenido/testimonios/edit-modal.blade.php',
     'resources/views/welcome.blade.php',
 ];
