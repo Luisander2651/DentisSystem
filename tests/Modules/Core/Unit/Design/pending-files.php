@@ -8,6 +8,4 @@ declare(strict_types=1);
  * listed here. Migrating a file means taking it off this list; T073 leaves it empty.
  */
 return [
-    'resources/js/app.js',
-    'resources/js/bootstrap.js',
 ];

@@ -50,4 +50,4 @@ it('has no old-markup branch left in the dialog module', function () {
 
     expect(is_file($module))->toBeTrue()
         ->and(stripos((string) file_get_contents($module), 'legacy'))->toBeFalse();
-})->skip('016: pendiente de T073');
+});

@@ -22,7 +22,7 @@ const timers = new WeakMap();
 
 function region(kind) {
     const selector = kind === 'error' ? '[data-ui-alert]' : '[data-ui-status]';
-    const open = [...document.querySelectorAll('dialog[open], [data-ui-dialog-open]')].at(-1);
+    const open = [...document.querySelectorAll('dialog[open]')].at(-1);
 
     return open?.querySelector(selector) ?? document.querySelector('[data-ui-status-region]:not(dialog *) ' + selector) ?? document.querySelector(selector);
 }
