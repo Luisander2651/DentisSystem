@@ -579,6 +579,15 @@ async function openEntry(browser, entry, width, options, session, config) {
     await page.send('Emulation.setTimezoneOverride', { timezoneId: config.timezone });
     await page.send('Emulation.setLocaleOverride', { locale: config.locale });
     await page.send('Page.addScriptToEvaluateOnNewDocument', { source: IN_PAGE_LIBRARY });
+    // Every check measures a final state: without transitions a hover colour is the colour the
+    // control ends in, however fast the machine reads it.
+    await page.send('Page.addScriptToEvaluateOnNewDocument', {
+        source: `document.addEventListener('DOMContentLoaded', () => {
+            const style = document.createElement('style');
+            style.textContent = '*, *::before, *::after { transition: none !important; animation: none !important; }';
+            document.head.appendChild(style);
+        });`,
+    });
     await page.send('Page.addScriptToEvaluateOnNewDocument', {
         source: `(() => {
             const offset = new Date(${JSON.stringify(entry.now ?? config.now)}).getTime() - Date.now();

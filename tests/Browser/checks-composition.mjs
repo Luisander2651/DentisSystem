@@ -245,10 +245,12 @@ const describe = (region) => (region
     ? `${region.kind} en x=${region.x} % con ancho ${region.w} %${region.actions ? ` y acciones [${region.actions}]` : ''}`
     : 'nada');
 
+// A heading outside a card is as wide as its text, and its text is as wide as the font of the
+// machine draws it: only where it starts belongs to the composition.
 const sameRegion = (a, b) => a.kind === b.kind
     && a.actions === b.actions
     && Math.abs(a.x - b.x) <= POSITION_TOLERANCE
-    && Math.abs(a.w - b.w) <= POSITION_TOLERANCE;
+    && (a.kind === 'heading' || Math.abs(a.w - b.w) <= POSITION_TOLERANCE);
 
 export function capture(page, entry) {
     return page.evaluate(skeletonInPage, entry.dialogSelector ?? null);
