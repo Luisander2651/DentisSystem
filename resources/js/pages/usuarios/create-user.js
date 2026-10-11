@@ -167,9 +167,9 @@ import { announce, announceError, failureMessage } from '../../ui/status';
 
         try {
             await createUser(payload);
-            announce('Usuario creado.');
             setSubmittingState(false);
             closeModal();
+            announce('Usuario creado.');
 
             if (window.usersPage && typeof window.usersPage.hideError === 'function') {
                 window.usersPage.hideError();

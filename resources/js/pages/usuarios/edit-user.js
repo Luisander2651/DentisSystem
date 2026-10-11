@@ -228,9 +228,9 @@ import { announce, announceError, failureMessage } from '../../ui/status';
 
         try {
             await updateUser(userId, payload);
-            announce('Cambios guardados.');
             setSubmittingState(false);
             closeModal();
+            announce('Cambios guardados.');
 
             if (window.usersPage && typeof window.usersPage.hideError === 'function') {
                 window.usersPage.hideError();

@@ -123,8 +123,8 @@ import { announce, failureMessage } from '../../ui/status';
 
             try {
                 await deleteUserById(currentUserId);
-                announce('Usuario eliminado.');
                 closeModal();
+                announce('Usuario eliminado.');
 
                 if (window.usersPage && typeof window.usersPage.hideError === 'function') {
                     window.usersPage.hideError();
