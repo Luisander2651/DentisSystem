@@ -30,7 +30,7 @@ it('shows the "No encontrada" page to a visitor, with the way to the public site
     'unknown address' => ['/pagina-que-no-existe'],
     'under a protected screen' => ['/usuarios/no-existe'],
     'nested' => ['/a/b/c/d'],
-])->skip('016: pendiente de T071');
+]);
 
 it('shows the way to the panel to someone signed in', function (string $actor) {
     $actor === 'paciente' ? $this->actingAsPatient() : $this->actingAsNonAdminUser($actor);
@@ -40,7 +40,7 @@ it('shows the way to the panel to someone signed in', function (string $actor) {
     $response->assertNotFound();
     $response->assertViewIs('errors::404');
     $response->assertSee('href="'.route('dashboard').'"', false);
-})->with(['Asistente', 'Doctor', 'paciente'])->skip('016: pendiente de T071');
+})->with(['Asistente', 'Doctor', 'paciente']);
 
 it('recognises the session from the token cookie alone', function () {
     $token = $this->createUserWithRole('Asistente')->createToken('user-auth')->plainTextToken;
@@ -49,7 +49,7 @@ it('recognises the session from the token cookie alone', function () {
 
     $response->assertNotFound();
     $response->assertSee('href="'.route('dashboard').'"', false);
-})->skip('016: pendiente de T071');
+});
 
 it('never echoes the requested address (abuse)', function (string $path, string $needle) {
     $response = $this->get($path);
@@ -78,4 +78,4 @@ it('answers a fixed Spanish body, without the address, when JSON is asked for (a
 
     $response->assertNotFound();
     $response->assertExactJson(['message' => 'No encontramos esta página.']);
-})->skip('016: pendiente de T071');
+});

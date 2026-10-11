@@ -115,7 +115,7 @@ it('answers a fixed Spanish body when an actor without permission asks for JSON 
 
     $response->assertForbidden();
     $response->assertExactJson(['message' => 'No tienes permiso para ver esta pantalla.']);
-})->with(deniedScreensByActor())->skip('016: pendiente de T071');
+})->with(deniedScreensByActor());
 
 it('still lets each role into the screens it may see', function (string $role, array $screens) {
     $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);

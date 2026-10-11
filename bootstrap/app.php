@@ -32,6 +32,14 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         api: __DIR__.'/../routes/api.php',
         health: '/up',
+        then: function (): void {
+            // Spec 016: any other web address answers our "No encontrada" page. The route stays
+            // out of the `web` group, so a visitor opens no session; it only reads the token
+            // cookie to know where the way back leads. It never takes an `api/*` address.
+            Route::fallback(fn () => abort(404))
+                ->middleware('sanctum.cookie')
+                ->where('fallbackPlaceholder', '^(?!api(/|$)).*');
+        },
     )
     ->withEvents(
         discover: $eventPaths
@@ -82,11 +90,23 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Spec 016: the web screens answer 403, 404, 405 and 419 with our own pages. They are
-        // rendered here, and not by the default handler, so the response keeps its view.
-        $exceptions->render(function (HttpExceptionInterface $e, Request $request): ?Response {
-            if ($request->is('api/*') || $request->expectsJson() || ! in_array($e->getStatusCode(), [403, 404, 405, 419], true)) {
+        // Spec 016: the web screens answer 403, 404, 405 and 419 with our own pages, or with a
+        // fixed Spanish body when JSON is asked for. The pages are rendered here, and not by
+        // the default handler, so the response keeps its view.
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request): Response|JsonResponse|null {
+            $messages = [
+                403 => 'No tienes permiso para ver esta pantalla.',
+                404 => 'No encontramos esta página.',
+                405 => 'Esta acción no está disponible.',
+                419 => 'La página caducó. Vuelve a cargarla e inténtalo de nuevo.',
+            ];
+
+            if ($request->is('api/*') || ! isset($messages[$e->getStatusCode()])) {
                 return null;
+            }
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $messages[$e->getStatusCode()]], $e->getStatusCode(), $e->getHeaders());
             }
 
             (new RegisterErrorViewPaths)();

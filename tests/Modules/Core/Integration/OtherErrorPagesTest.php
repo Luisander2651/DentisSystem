@@ -65,4 +65,4 @@ it('answers a fixed Spanish body when JSON is asked for', function (string $path
 })->with([
     'method not allowed' => ['/login', 405, 'Esta acción no está disponible.'],
     'expired form' => ['/_test/formulario', 419, 'La página caducó. Vuelve a cargarla e inténtalo de nuevo.'],
-])->skip('016: pendiente de T071');
+]);
