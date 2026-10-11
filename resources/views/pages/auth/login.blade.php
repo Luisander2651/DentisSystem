@@ -41,7 +41,7 @@
                 autocomplete="current-password"
                 required
                 />
-                <div class="flex flex-wrap items-center justify-between gap-x-4 text-sm">
+                <div class="-my-2.5 flex flex-wrap items-center justify-between gap-x-4 text-sm">
                     <a href="{{ route('register') }}" class="inline-flex min-h-control items-center font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4">
                         ¿No tienes cuenta? Regístrate
                     </a>
