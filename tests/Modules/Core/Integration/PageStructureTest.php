@@ -47,7 +47,6 @@ const PAGE_STRUCTURE_ACCESS_SCREENS = ['login', 'register', 'forgot-password', '
 const PAGE_STRUCTURE_PENDING = [
     'h1' => [
         'agenda' => 'T064',
-        'contenido' => 'T061',
     ],
     'brand' => [
     ],
