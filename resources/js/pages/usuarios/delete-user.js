@@ -1,3 +1,6 @@
+import { closeDialog, openDialog } from '../../ui/dialog';
+import { announce, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__usersDeleteInit) {
         return;
@@ -52,14 +55,12 @@
             confirmTarget.textContent = userLabel || 'este usuario';
         }
 
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        openDialog(modal);
     }
 
     function closeModal() {
         currentUserId = null;
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
     }
 
     async function deleteUserById(userId) {
@@ -86,7 +87,7 @@
                 throw new Error('El usuario ya no existe. Actualiza la lista.');
             }
 
-            throw new Error(extractErrorMessage(payload, 'No se pudo eliminar el usuario.'));
+            throw new Error(failureMessage(response.status, payload));
         }
     }
 
@@ -122,6 +123,7 @@
 
             try {
                 await deleteUserById(currentUserId);
+                announce('Usuario eliminado.');
                 closeModal();
 
                 if (window.usersPage && typeof window.usersPage.hideError === 'function') {
@@ -135,7 +137,7 @@
                 closeModal();
 
                 if (window.usersPage && typeof window.usersPage.showError === 'function') {
-                    window.usersPage.showError(error.message || 'No se pudo eliminar el usuario.');
+                    window.usersPage.showError(error instanceof TypeError ? failureMessage(0) : error.message);
                 }
             } finally {
                 isDeleting = false;

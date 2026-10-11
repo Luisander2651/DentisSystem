@@ -1,3 +1,6 @@
+import { closeDialog, openDialog } from '../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__usersEditInit) {
         return;
@@ -70,7 +73,7 @@
     var statusSelect = modal.querySelector('[data-edit-user-status]');
     var cancelButtons = modal.querySelectorAll('[data-edit-user-cancel]');
     var submitButton = modal.querySelector('[data-edit-user-submit]');
-    var errorBox = modal.querySelector('[data-edit-user-error]');
+    var errorBox = modal.querySelector('[data-edit-user-error]') || document.createElement('p');
 
     if (!form || !userIdInput || !firstNameInput || !lastNameInput || !newPasswordInput || !roleSelect || !statusSelect || !cancelButtons.length || !submitButton || !errorBox) {
         return;
@@ -81,6 +84,7 @@
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -128,13 +132,12 @@
             roleSelect.value = userData.roleId;
         } else {
             roleSelect.selectedIndex = -1;
-            showModalError('El rol "' + (userData.roleId || 'desconocido') + '" no es valido. Selecciona uno antes de guardar.');
+            showModalError('El rol de este usuario no es válido. Elige uno antes de guardar.');
         }
 
         statusSelect.value = normalizeStatus(userData.status || 'active');
 
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -146,8 +149,7 @@
         userIdInput.value = '';
         resetPasswordField();
         hideModalError();
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
     }
 
     async function updateUser(userId, payload) {
@@ -175,7 +177,7 @@
                 throw new Error('El usuario ya no existe. Actualiza la lista.');
             }
 
-            throw new Error(extractErrorMessage(data, 'No se pudo actualizar el usuario.'));
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -209,7 +211,7 @@
         var userId = userIdInput.value.trim();
 
         if (!userId) {
-            showModalError('No se encontro el ID del usuario a editar.');
+            showModalError('No pudimos identificar al usuario. Cierra el diálogo e inténtalo de nuevo.');
             return;
         }
 
@@ -226,6 +228,7 @@
 
         try {
             await updateUser(userId, payload);
+            announce('Cambios guardados.');
             setSubmittingState(false);
             closeModal();
 
@@ -237,10 +240,10 @@
                 await window.usersPage.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo actualizar el usuario.');
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
 
             if (window.usersPage && typeof window.usersPage.showError === 'function') {
-                window.usersPage.showError(error.message || 'No se pudo actualizar el usuario.');
+                window.usersPage.showError(error instanceof TypeError ? failureMessage(0) : error.message);
             }
         } finally {
             if (isSubmitting) {
