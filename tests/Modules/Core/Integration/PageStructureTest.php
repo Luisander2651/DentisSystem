@@ -57,10 +57,6 @@ const PAGE_STRUCTURE_PENDING = [
     ],
     'labels' => [
         'agenda' => 'T068',
-        'expedientes-administrador' => 'T050',
-        'expedientes-asistente' => 'T050',
-        'expedientes-doctor' => 'T050',
-        'expediente' => 'T050',
     ],
     'autocomplete' => [
     ],

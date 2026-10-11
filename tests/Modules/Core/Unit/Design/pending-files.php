@@ -37,8 +37,6 @@ return [
     'resources/views/components/calendar/edit-appointment-modal.blade.php',
     'resources/views/components/calendar/grid.blade.php',
     'resources/views/components/calendar/view-appointment-modal.blade.php',
-    'resources/views/components/records/appointments-history-table.blade.php',
-    'resources/views/components/records/medical-data-table.blade.php',
     'resources/views/components/ui/table.blade.php',
     'resources/views/pages/agenda/index.blade.php',
     'resources/views/pages/contenido/certificaciones/create-modal.blade.php',
