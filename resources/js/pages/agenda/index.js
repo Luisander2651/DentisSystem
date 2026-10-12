@@ -206,15 +206,13 @@ import { announceError, failureMessage } from '../../ui/status';
         const suffix = `<span class="sr-only"> la cita de ${escapeHtml(patient)} de las ${escapeHtml(shortTime(appt.time))}</span>`;
 
         article.innerHTML = `
-            <div class="flex items-start gap-3">
-                <p class="shrink-0 text-sm font-bold text-ink">${escapeHtml(shortTime(appt.time))}</p>
-                <div class="min-w-0 flex-1">
-                    <h3 class="text-sm font-semibold text-ink wrap-anywhere">${escapeHtml(patient)}</h3>
-                    <p class="text-sm text-muted wrap-anywhere">${escapeHtml(appt.treatment_name || 'Consulta')}</p>
-                </div>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-sm font-bold text-ink">${escapeHtml(shortTime(appt.time))}</p>
                 ${stateBadge(normalizedStatus)}
             </div>
-            <div class="mt-3 flex gap-2">
+            <h3 class="mt-2 text-sm font-semibold text-ink wrap-break-word">${escapeHtml(patient)}</h3>
+            <p class="text-sm text-muted wrap-break-word">${escapeHtml(appt.treatment_name || 'Consulta')}</p>
+            <div class="mt-3 flex flex-wrap gap-2">
                 ${isActionable && isAdminUser ? `<button type="button" class="${primaryButton}" data-complete-appointment-trigger data-appointment-id="${escapeHtml(appt.id)}">Completar${suffix}</button>` : ''}
                 <button type="button" class="${secondaryButton}" data-view-appointment-trigger data-appointment-id="${escapeHtml(appt.id)}">Ver${suffix}</button>
             </div>
@@ -312,10 +310,16 @@ import { announceError, failureMessage } from '../../ui/status';
             dayAppointments.slice(0, 3).forEach(appt => {
                 const done = normalizeAppointmentStatus(appt.status) === 'completada';
                 const label = document.createElement('span');
-                label.className = `hidden rounded-control border-l-2 px-1.5 py-1 text-min font-semibold text-ink wrap-anywhere xl:block ${
+                label.className = `hidden rounded-control border-l-2 px-1.5 py-1 text-min font-semibold text-ink wrap-break-word xl:block ${
                     done ? 'border-success bg-success-soft' : 'border-info bg-info-soft'
                 }`;
-                label.textContent = `${shortTime(appt.time)} ${appt.patient_name || 'Paciente'}`;
+                label.textContent = shortTime(appt.time);
+
+                // El nombre cabe entero a partir de 1440 px; antes, la etiqueta dice solo la hora.
+                const name = document.createElement('span');
+                name.className = 'hidden min-[1440px]:inline';
+                name.textContent = ` ${appt.patient_name || 'Paciente'}`;
+                label.appendChild(name);
                 button.appendChild(label);
             });
 

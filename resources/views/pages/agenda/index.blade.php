@@ -25,8 +25,8 @@
         <x-ui.chip data-status-value="cancelada">Canceladas</x-ui.chip>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-12">
-        <div class="min-w-0 space-y-4 lg:col-span-8">
+    <div class="grid gap-6 xl:grid-cols-12">
+        <div class="min-w-0 space-y-4 xl:col-span-8">
             <x-calendar.grid />
 
             <section class="rounded-card border border-line bg-surface p-4 shadow-sm md:hidden" aria-labelledby="agenda-day-title" data-agenda-day>
@@ -37,7 +37,7 @@
             </section>
         </div>
 
-        <div class="min-w-0 lg:col-span-4">
+        <div class="min-w-0 xl:col-span-4">
             <section class="rounded-card border border-secondary bg-primary-soft p-4 shadow-sm md:p-6" aria-labelledby="agenda-today-title">
                 <h2 id="agenda-today-title" class="text-lg font-bold text-ink">Citas para hoy</h2>
                 <p class="mt-1 text-sm text-ink">{{ ucfirst(now()->locale('es')->translatedFormat('l d \d\e F')) }}</p>
