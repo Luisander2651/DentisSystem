@@ -7,7 +7,7 @@ html: docs/design/system.html
 canvas: null
 widths: [390, 768, 1440]
 created: 2026-10-04
-updated: 2026-10-11
+updated: 2026-10-12
 ---
 
 # Sistema de diseño de Dentissa
@@ -228,7 +228,7 @@ Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
 
 **Todas** las vistas de la app, con capturas de la app real hechas con datos de prueba. Nada se
 dibuja a mano. Las capturas son las del sistema 2.0.0: las generó el paso `ui-audit` de CI el
-2026-10-11 (corrida del commit `e871ff1`) sobre una base recién migrada que solo contiene los datos
+2026-10-12 (corrida del commit `871ee45`) sobre una base recién migrada que solo contiene los datos
 de `UiAuditSeeder`. **75 de 75 capturadas** (147 imágenes, a 390 y 1440 px). CI comprueba además
 cada pantalla a 768 px; esas capturas quedan en el artefacto `ui-audit` de cada corrida.
 

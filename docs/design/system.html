@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- Sistema de diseño ELEGIDO de Dentissa, versión 2.0.0 (spec 016, variante B · Neutra de
      docs/specs/016-sistema-de-diseno-aplicado/design/propuesta.html). Los componentes están dibujados con los
-     tokens de este archivo; las pantallas son las capturas del sistema 1.0.0 y se rehacen al cerrar la spec 016. -->
+     tokens de este archivo; las pantallas son capturas de la app real, hechas por el paso ui-audit de CI. -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -249,7 +249,7 @@
       <div class="v-logo"><img data-img="logo" alt="Melissa López N., odontología integral" width="220"><small>logo completo: pie del sitio, acceso y páginas de error</small></div>
     </div>
     <p class="v-why">Variante B · Neutra de la propuesta de la spec 016, elegida por el usuario el 2026-10-06: tinta pizarra y grises fríos, con el rosa <code>#d75078</code> reservado para la acción principal y los acentos. Los tokens se declaran una sola vez en <code>resources/css/app.css</code> y la paleta por defecto de Tailwind queda retirada. El sistema anterior (1.0.0, extraído del código) está en <a href="history/system.1.0.0.html">history/system.1.0.0.html</a>.</p>
-    <p class="v-risk">Todos los pares de color cumplen su mínimo. Las pantallas del final son capturas del sistema 1.0.0: muestran el aspecto anterior y se rehacen al cerrar la spec 016.</p>
+    <p class="v-risk">Todos los pares de color cumplen su mínimo. Las pantallas del final son capturas de la app real con este sistema ya aplicado.</p>
     <div class="v-controls">
       <button type="button" class="v-toggle" id="toggle-scheme" aria-pressed="false">Modo oscuro</button>
       <button type="button" class="v-toggle" id="toggle-motion" aria-pressed="false" hidden>Sin movimiento</button>
@@ -313,7 +313,7 @@
 
   <section class="v-section" id="componentes">
     <h2>Componentes</h2>
-    <p class="v-note">Dibujados con los tokens de esta página, tal como los fija la variante B de la propuesta. Cada marco de teléfono mide 390 px. Componentes Blade: <code>x-ui.button</code>, <code>x-ui.input</code>, <code>x-ui.brand</code>, <code>x-ui.dialog</code>, <code>x-ui.status</code>, <code>x-ui.stat</code>, <code>x-ui.chip</code>, <code>x-ui.badge</code>, <code>x-ui.record</code> y <code>x-ui.section-title</code>.</p>
+    <p class="v-note">Dibujados con los tokens de esta página, tal como los fija la variante B de la propuesta. Cómo quedan en cada pantalla se ve en las capturas de "Pantallas". Componentes Blade: <code>x-ui.button</code>, <code>x-ui.input</code>, <code>x-ui.brand</code>, <code>x-ui.dialog</code>, <code>x-ui.status</code>, <code>x-ui.stat</code>, <code>x-ui.chip</code>, <code>x-ui.badge</code>, <code>x-ui.record</code> y <code>x-ui.section-title</code>.</p>
     <h3 class="v-group">Botones, enlaces y menú</h3>
     <p class="v-note">Una sola acción principal y un solo aspecto al pasar el cursor (CA3). Texto oscuro sobre el rosa (CA4). Enlaces y elemento activo en tinta, con el rosa como acento (CA5). Todos miden 44 px de alto (CA9, CA10).</p>
     <div class="v-stage"><div class="opt">
@@ -362,73 +362,11 @@
             </div>
         </div>
     </div></div>
-    <h3 class="v-group">El móvil a 390 px</h3>
-    <p class="v-note">Lo que cambia de disposición en el teléfono (CA11, CA25–CA34). Cada marco mide 390 px de ancho.</p>
-    <div class="v-stage"><div class="opt">
-        <div class="row">
-            <div class="phone"><div class="cap">Pacientes · el listado empieza en la primera pantalla (CA33, CA34)</div><div class="screen">
-                <div class="topbar"><div class="brand"><img data-img="icon" alt=""><div>Dentissa<small>Administrador</small></div></div><button class="btn btn-icon" type="button" aria-label="Abrir menú">☰</button></div>
-                <div class="hero"><span class="pill brand">Panel de administración</span><h1>Pacientes</h1><p>Gestiona la base de datos de pacientes de la clínica.</p><button class="btn btn-primary" type="button" style="width:100%">+ Nuevo paciente</button></div>
-                <div class="stats"><div><small>Total</small><b>5</b></div><div><small>Activos</small><b>4</b></div><div><small>Inactivos</small><b>1</b></div></div>
-                <label class="field"><span>Buscar</span><input type="search" placeholder="Nombre o correo"></label>
-                <div class="scroller"><button class="chip" type="button" aria-pressed="true">Todos</button><button class="chip" type="button" aria-pressed="false">Activos</button><button class="chip" type="button" aria-pressed="false">Inactivos</button></div>
-                <div class="item"><div class="head"><span class="name">Juan Pérez</span><span class="pill success">Activo</span></div><div class="meta">jua.perez@example.com</div><div class="actions"><a class="btn btn-secondary" href="#componentes" style="flex:1">Ver expediente</a><button class="btn btn-icon" type="button" aria-label="Editar a Juan Pérez">✎</button><button class="btn btn-icon" type="button" aria-label="Eliminar a Juan Pérez">🗑</button></div></div>
-                <div class="item"><div class="head"><span class="name">Juanito Pérez</span><span class="pill success">Activo</span></div><div class="meta">juaaaa.perez@example.com</div><div class="actions"><a class="btn btn-secondary" href="#componentes" style="flex:1">Ver expediente</a><button class="btn btn-icon" type="button" aria-label="Editar a Juanito Pérez">✎</button><button class="btn btn-icon" type="button" aria-label="Eliminar a Juanito Pérez">🗑</button></div></div>
-            </div></div>
-
-            <div class="phone"><div class="cap">Agenda · sin desborde y con citas legibles (CA11, CA25)</div><div class="screen">
-                <div class="topbar"><div class="brand"><img data-img="icon" alt=""><div>Dentissa<small>Administrador</small></div></div><button class="btn btn-icon" type="button" aria-label="Abrir menú">☰</button></div>
-                <div class="scroller"><button class="chip" type="button" aria-pressed="true">Todas</button><button class="chip" type="button" aria-pressed="false">Asignadas</button><button class="chip" type="button" aria-pressed="false">Reprogramadas</button><button class="chip" type="button" aria-pressed="false">Completadas</button><button class="chip" type="button" aria-pressed="false">Canceladas</button></div>
-                <div class="cal"><div class="month"><button class="btn btn-icon" type="button" aria-label="Mes anterior">‹</button><span>Julio 2026</span><button class="btn btn-icon" type="button" aria-label="Mes siguiente">›</button></div>
-                    <div class="days" id="cal"></div></div>
-                <div class="item daylist" style="margin-top:12px"><div class="head"><span class="name">Miércoles 22 de julio</span><span class="pill brand">1 cita</span></div>
-                    <div class="slot"><span><time>10:15</time> · Juan Pérez<br><span class="meta">Limpieza</span></span><span class="pill success">Completada</span></div>
-                    <button class="btn btn-primary" type="button" style="width:100%;margin-top:12px">+ Agendar nueva cita</button></div>
-            </div></div>
-
-            <div class="phone"><div class="cap">Expediente · registros sin tablas cortadas (CA27, CA31)</div><div class="screen">
-                <div class="topbar"><div class="brand"><img data-img="icon" alt=""><div>Dentissa<small>Doctor</small></div></div><button class="btn btn-icon" type="button" aria-label="Abrir menú">☰</button></div>
-                <a class="link" href="#componentes" style="display:inline-flex;min-height:44px;align-items:center">‹ Volver a la lista de pacientes</a>
-                <div class="hero"><span class="pill brand">Expediente clínico</span><h1>Juan Pérez</h1><p>juan.perez@example.com</p></div>
-                <div class="item record"><div class="head"><span class="name">Contacto</span><button class="btn btn-secondary" type="button">Actualizar</button></div><dl>
-                    <div><dt>Teléfono</dt><dd>+52 742 122 5028</dd></div><div><dt>Correo</dt><dd>nuevo@correo.com</dd></div><div><dt>Contacto de emergencia</dt><dd>Juan Pérez</dd></div></dl></div>
-                <div class="item record"><div class="head"><span class="name">Dirección</span><button class="btn btn-secondary" type="button">Actualizar</button></div><dl>
-                    <div><dt>Calle</dt><dd>Tulipanes S/N</dd></div><div><dt>Ciudad y estado</dt><dd>Tecpan de Galeana, Gro.</dd></div><div><dt>Código postal</dt><dd>40900</dd></div></dl></div>
-                <div class="item"><div class="head"><span class="name">Datos médicos</span><button class="btn btn-secondary" type="button">Agregar</button></div><p class="meta" style="margin:8px 0 0">Sin información médica.</p></div>
-            </div></div>
-
-            <div class="phone"><div class="cap">Galería del panel · la tarjeta cabe en una pantalla (CA32)</div><div class="screen">
-                <div class="topbar"><div class="brand"><img data-img="icon" alt=""><div>Dentissa<small>Administrador</small></div></div><button class="btn btn-icon" type="button" aria-label="Abrir menú">☰</button></div>
-                <div class="hero"><span class="pill brand">Gestión de contenido</span><h1>Galería</h1><div class="scroller" style="margin:8px 0 12px"><button class="chip" type="button" aria-pressed="true">Galería</button><button class="chip" type="button" aria-pressed="false">Promociones</button><button class="chip" type="button" aria-pressed="false">Certificaciones</button><button class="chip" type="button" aria-pressed="false">Testimonios</button></div><button class="btn btn-primary" type="button" style="width:100%">+ Agregar imagen</button></div>
-                <div class="item"><div class="head"><span class="name">Sala de espera renovada</span><span class="pill success">Visible</span></div><div class="thumb">Imagen de prueba</div><div class="meta">Creada el 6 jul 2026</div><div class="actions"><button class="btn btn-secondary" type="button" style="flex:1">Editar</button><button class="btn btn-icon" type="button" aria-label="Eliminar la imagen Sala de espera renovada">🗑</button></div></div>
-                <div class="item"><div class="head"><span class="name">Consultorio 2</span><span class="pill danger">Oculta</span></div><div class="thumb">Imagen de prueba</div><div class="meta">Creada el 6 jul 2026</div><div class="actions"><button class="btn btn-secondary" type="button" style="flex:1">Editar</button><button class="btn btn-icon" type="button" aria-label="Eliminar la imagen Consultorio 2">🗑</button></div></div>
-            </div></div>
-
-            <div class="phone"><div class="cap">Diálogo · dentro del ancho y del alto, acciones a la vista (CA12, CA13, CA26)</div><div class="sheet-dialog">
-                <div class="dialog" role="dialog" aria-labelledby="dlg-t"><header><h3 id="dlg-t">Completar cita</h3><button class="btn btn-icon" type="button" aria-label="Cerrar">✕</button></header>
-                    <div class="body"><p class="meta" style="margin-top:0">Paso 2 de 2 · Prescripciones · Juan Pérez, Limpieza</p>
-                        <label class="field"><span>Medicamento</span><input type="text" placeholder="Ej. Amoxicilina 500 mg"></label>
-                        <label class="field"><span>Dosis</span><input type="text" placeholder="Ej. 1 tableta"></label>
-                        <label class="field"><span>Duración (días)</span><input type="text" inputmode="numeric" placeholder="Ej. 7"></label>
-                        <label class="field"><span>Frecuencia (veces al día)</span><input type="text" inputmode="numeric" placeholder="Ej. 3"></label>
-                        <button class="btn btn-secondary" type="button" style="width:100%">+ Agregar otra prescripción</button></div>
-                    <footer><button class="btn btn-secondary" type="button">Atrás</button><button class="btn btn-primary" type="button">Completar cita</button></footer></div>
-            </div></div>
-        </div>
-    </div></div>
-    <h3 class="v-group">Páginas "Sin permiso" y "No encontrada"</h3>
-    <p class="v-note">Con la marca, en español y con un camino de vuelta (CA18, CA19). Sustituyen al mensaje en crudo y a las páginas genéricas en inglés.</p>
-    <div class="v-stage"><div class="opt">
-        <div class="row">
-            <div class="phone"><div class="cap">Sin permiso (403)</div><div class="errorpage"><div><img data-img="logo" alt="Melissa López N., odontología integral"><p class="code">ERROR 403</p><h1>No tienes permiso para ver esta pantalla</h1><p>Tu cuenta no tiene acceso a esta sección. Si crees que es un error, avisa a la administración de la clínica.</p><a class="btn btn-primary" href="#componentes">Volver a mi inicio</a></div></div></div>
-            <div class="phone"><div class="cap">No encontrada (404)</div><div class="errorpage"><div><img data-img="logo" alt="Melissa López N., odontología integral"><p class="code">ERROR 404</p><h1>No encontramos esta página</h1><p>Puede que la dirección esté mal escrita o que la página ya no exista.</p><a class="btn btn-primary" href="#componentes">Ir al inicio</a></div></div></div>
-        </div>
-    </div></div>
   </section>
 
   <section class="v-section" id="pantallas">
     <h2>Pantallas</h2>
-    <p class="v-note"><strong>Capturas del sistema 1.0.0 (2026-10-04): muestran el aspecto anterior.</strong> Se rehacen al cerrar la spec 016, junto con las pantallas nuevas de error. Todas las vistas del inventario a 390 y 1440 px, con datos de prueba. Cada imagen enlaza a la captura completa; las altas se desplazan dentro de su marco. Una vista sin captura es un hueco con su motivo.</p>
+    <p class="v-note"><strong>Capturas de la app real con el sistema 2.0.0</strong>, hechas por el paso <code>ui-audit</code> de CI sobre una base que solo contiene datos de prueba. Todas las vistas del inventario a 390 y 1440 px. Cada imagen enlaza a la captura completa; las altas se desplazan dentro de su marco. Una vista sin captura es un hueco con su motivo.</p>
     
       <h3 class="v-group" id="g-publico">Sitio público</h3>
         <figure class="v-shot"><figcaption><strong>Inicio</strong> · público<br><span>/ · pages/landing/inicio.blade.php</span></figcaption>
