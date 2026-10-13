@@ -1,7 +1,7 @@
 ---
 id: 016
 slug: sistema-de-diseno-aplicado
-status: approved
+status: implemented
 created: 2026-10-06
 extends: [014]   # cambia cómo se presenta un acceso denegado en las pantallas web
 ---
@@ -34,65 +34,65 @@ y cierra la deuda `DS1`–`DS11`, `DS13` y `DS14` de [docs/design/system.md](../
 ## Criterios de aceptación
 
 ### Paleta y sistema de diseño
-- [ ] CA1 · Dado cualquier pantalla del sitio público, de acceso o del panel, cuando se revisa, entonces sus colores de marca son los de la paleta nueva (principal y secundario, ver "Decisiones") y no queda ningún uso de los rosas anteriores.
-- [ ] CA2 · Dado el sistema de diseño, cuando se revisa la interfaz, entonces cada color sale de un valor con nombre declarado una sola vez en el sistema, y ninguna pantalla escribe un color suelto.
-- [ ] CA3 · Dado cualquier pantalla, cuando muestra una acción principal, entonces usa el mismo color que las demás acciones principales y un único aspecto al pasar el cursor.
-- [ ] CA4 · Dado un botón con fondo del color principal, cuando se muestra, entonces su texto es oscuro, no blanco.
-- [ ] CA5 · Dado un enlace, el elemento activo del menú o un título que hoy va en rosa sobre fondo claro, cuando se muestra, entonces su texto es oscuro y el rosa aparece solo como acento (subrayado, borde, icono o fondo suave).
+- [x] CA1 · Dado cualquier pantalla del sitio público, de acceso o del panel, cuando se revisa, entonces sus colores de marca son los de la paleta nueva (principal y secundario, ver "Decisiones") y no queda ningún uso de los rosas anteriores.
+- [x] CA2 · Dado el sistema de diseño, cuando se revisa la interfaz, entonces cada color sale de un valor con nombre declarado una sola vez en el sistema, y ninguna pantalla escribe un color suelto.
+- [x] CA3 · Dado cualquier pantalla, cuando muestra una acción principal, entonces usa el mismo color que las demás acciones principales y un único aspecto al pasar el cursor.
+- [x] CA4 · Dado un botón con fondo del color principal, cuando se muestra, entonces su texto es oscuro, no blanco.
+- [x] CA5 · Dado un enlace, el elemento activo del menú o un título que hoy va en rosa sobre fondo claro, cuando se muestra, entonces su texto es oscuro y el rosa aparece solo como acento (subrayado, borde, icono o fondo suave).
 
 ### Contraste y foco
-- [ ] CA6 · Dado cualquier texto de cualquier pantalla (incluidos etiquetas, textos de ayuda, mensajes de error, estados de cita y el botón de WhatsApp), cuando se mide contra su fondo, entonces su contraste es de al menos 4.5:1, o de 3:1 si es texto grande.
-- [ ] CA7 · Dado cualquier campo de formulario, cuando se mide su borde contra el fondo, entonces el contraste es de al menos 3:1.
-- [ ] CA8 · Dado cualquier control interactivo, cuando recibe el foco con el teclado, entonces muestra el mismo indicador de foco que los demás controles, con contraste de al menos 3:1; ningún control queda sin indicador visible.
+- [x] CA6 · Dado cualquier texto de cualquier pantalla (incluidos etiquetas, textos de ayuda, mensajes de error, estados de cita y el botón de WhatsApp), cuando se mide contra su fondo, entonces su contraste es de al menos 4.5:1, o de 3:1 si es texto grande.
+- [x] CA7 · Dado cualquier campo de formulario, cuando se mide su borde contra el fondo, entonces el contraste es de al menos 3:1.
+- [x] CA8 · Dado cualquier control interactivo, cuando recibe el foco con el teclado, entonces muestra el mismo indicador de foco que los demás controles, con contraste de al menos 3:1; ningún control queda sin indicador visible.
 
 ### Tamaños y móvil
-- [ ] CA9 · Dado un ancho de 390 px, cuando se mide cualquier control táctil (botones, enlaces de acción, iconos, filtros, elementos de menú), entonces mide al menos 44 × 44 px.
-- [ ] CA10 · Dado dos controles del mismo tipo (botón o campo) en pantallas distintas, cuando se comparan, entonces tienen la misma altura y el mismo radio, tomados del conjunto cerrado de tamaños que define el sistema de diseño.
-- [ ] CA11 · Dado un ancho de 390 px, cuando se abre la agenda con o sin citas, entonces la página no se desplaza de lado y se pueden ver y abrir las citas de cualquier día del mes.
+- [x] CA9 · Dado un ancho de 390 px, cuando se mide cualquier control táctil (botones, enlaces de acción, iconos, filtros, elementos de menú), entonces mide al menos 44 × 44 px.
+- [x] CA10 · Dado dos controles del mismo tipo (botón o campo) en pantallas distintas, cuando se comparan, entonces tienen la misma altura y el mismo radio, tomados del conjunto cerrado de tamaños que define el sistema de diseño.
+- [x] CA11 · Dado un ancho de 390 px, cuando se abre la agenda con o sin citas, entonces la página no se desplaza de lado y se pueden ver y abrir las citas de cualquier día del mes.
 
 ### Diálogos y estructura
-- [ ] CA12 · Dado cualquier diálogo, cuando se abre, entonces un lector de pantalla anuncia su título, el foco queda dentro del diálogo mientras está abierto y, al cerrarlo, vuelve al control que lo abrió.
-- [ ] CA13 · Dado un diálogo con más contenido que el alto de la ventana (a 390 × 844 y 1440 × 900 px), cuando se abre, entonces no supera el alto de la ventana: su contenido se desplaza dentro y sus acciones siguen alcanzables.
-- [ ] CA14 · Dado cualquier pantalla, cuando se revisa su estructura, entonces tiene exactamente un título principal de página.
+- [x] CA12 · Dado cualquier diálogo, cuando se abre, entonces un lector de pantalla anuncia su título, el foco queda dentro del diálogo mientras está abierto y, al cerrarlo, vuelve al control que lo abrió.
+- [x] CA13 · Dado un diálogo con más contenido que el alto de la ventana (a 390 × 844 y 1440 × 900 px), cuando se abre, entonces no supera el alto de la ventana: su contenido se desplaza dentro y sus acciones siguen alcanzables.
+- [x] CA14 · Dado cualquier pantalla, cuando se revisa su estructura, entonces tiene exactamente un título principal de página.
 
 ### Marca y textos
-- [ ] CA15 · Dado el sitio público, las pantallas de acceso y el panel, cuando se muestran, entonces usan el mismo logo de la clínica, con un texto alternativo que la nombra, y la pestaña del navegador muestra un icono derivado de ese logo.
-- [ ] CA16 · Dado cualquier texto del panel y de las pantallas de acceso, cuando se lee, entonces está escrito con la ortografía del español (acentos, eñes y signos de apertura), como ya lo está el sitio público.
-- [ ] CA17 · Dado el inventario de interfaz sin uso o inalcanzable del sistema de diseño, cuando se revisa, entonces cada pieza está en uso o se retiró, y ninguna queda sin uso.
+- [x] CA15 · Dado el sitio público, las pantallas de acceso y el panel, cuando se muestran, entonces usan el mismo logo de la clínica, con un texto alternativo que la nombra, y la pestaña del navegador muestra un icono derivado de ese logo.
+- [x] CA16 · Dado cualquier texto del panel y de las pantallas de acceso, cuando se lee, entonces está escrito con la ortografía del español (acentos, eñes y signos de apertura), como ya lo está el sitio público.
+- [x] CA17 · Dado el inventario de interfaz sin uso o inalcanzable del sistema de diseño, cuando se revisa, entonces cada pieza está en uso o se retiró, y ninguna queda sin uso.
 
 ### Pantallas de error
-- [ ] CA18 · (abuso) Como usuario con sesión, entro a una pantalla que mi rol no puede ver → veo una página "Sin permiso" con la marca, un mensaje en español y un botón que me lleva a mi inicio; la página no muestra ningún dato de la pantalla pedida y el acceso sigue rechazado como denegado. Sustituye a lo que se ve hoy: una página en negro con un mensaje en crudo (p. ej. un asistente que abre la agenda) o la página genérica en inglés (p. ej. un paciente que abre expedientes).
-- [ ] CA19 · Dado cualquier persona, cuando entra a una dirección que no existe, entonces ve una página "No encontrada" con la marca y un enlace de vuelta: a su inicio si tiene sesión, al inicio del sitio público si no la tiene.
-- [ ] CA20 · (abuso) Como usuario curioso, provoco un acceso denegado o una dirección inexistente en cualquier pantalla web → nunca recibo datos en crudo, texto en inglés ni detalles técnicos (nombres internos, trazas, rutas del servidor).
-- [ ] CA41 · Dado cualquier persona, cuando la aplicación rechaza una petición a una pantalla web porque el método no está permitido o porque el formulario caducó, entonces ve una página propia con la marca, un mensaje en español que dice qué pasó y un enlace de vuelta, igual que en CA19.
-- [ ] CA21 · Dado un visitante sin sesión, cuando entra a una pantalla protegida, entonces se le lleva a iniciar sesión, como hoy.
+- [x] CA18 · (abuso) Como usuario con sesión, entro a una pantalla que mi rol no puede ver → veo una página "Sin permiso" con la marca, un mensaje en español y un botón que me lleva a mi inicio; la página no muestra ningún dato de la pantalla pedida y el acceso sigue rechazado como denegado. Sustituye a lo que se ve hoy: una página en negro con un mensaje en crudo (p. ej. un asistente que abre la agenda) o la página genérica en inglés (p. ej. un paciente que abre expedientes).
+- [x] CA19 · Dado cualquier persona, cuando entra a una dirección que no existe, entonces ve una página "No encontrada" con la marca y un enlace de vuelta: a su inicio si tiene sesión, al inicio del sitio público si no la tiene.
+- [x] CA20 · (abuso) Como usuario curioso, provoco un acceso denegado o una dirección inexistente en cualquier pantalla web → nunca recibo datos en crudo, texto en inglés ni detalles técnicos (nombres internos, trazas, rutas del servidor).
+- [x] CA41 · Dado cualquier persona, cuando la aplicación rechaza una petición a una pantalla web porque el método no está permitido o porque el formulario caducó, entonces ve una página propia con la marca, un mensaje en español que dice qué pasó y un enlace de vuelta, igual que en CA19.
+- [x] CA21 · Dado un visitante sin sesión, cuando entra a una pantalla protegida, entonces se le lleva a iniciar sesión, como hoy.
 
 ### Móvil (390 px)
 Hallazgos `M01`–`M16` de la revisión de las 65 pantallas a 390 px (ver "Diseño").
-- [ ] CA25 · Dado un mes con citas a 390 px, cuando se mira el calendario, entonces cada día con citas muestra un texto completo y legible (como mínimo la hora de cada cita o el número de citas del día), nunca texto cortado a media palabra.
-- [ ] CA26 · Dado cualquier diálogo a 390 px, cuando se abre, entonces todo su contenido y sus acciones quedan dentro del ancho de la pantalla, sin nada cortado por los lados.
-- [ ] CA27 · Dado el expediente de un paciente a 390 px, cuando se consultan contacto, dirección, datos médicos e historial de citas, entonces todos los datos de cada registro se leen sin desplazar la tabla de lado y sin columnas ni mensajes cortados.
-- [ ] CA28 · Dado cualquier pantalla a 390 px, cuando se revisa, entonces ningún elemento con información queda recortado por el borde de la pantalla ni truncado (incluidas las insignias de la imagen principal del inicio público y el selector de archivo de los formularios); los recortes de fondos decorativos no cuentan.
-- [ ] CA29 · Dado cualquier campo de formulario a 390 px, cuando se mide su letra, entonces es de al menos 16 px; y ningún texto de ninguna pantalla mide menos de 12 px.
-- [ ] CA30 · Dado un usuario de cualquier rol, cuando ve el panel, entonces los textos corresponden a su rol y están en español y sin términos técnicos: la insignia del encabezado no dice "administradores" a quien no lo es, el rol del paciente no se muestra en inglés, la etiqueta de la contraseña está en español y ningún texto menciona la API, el backend ni rutas internas.
-- [ ] CA31 · Dado un miembro del staff a 390 px, cuando elige un paciente en expedientes clínicos, entonces el expediente de ese paciente queda a la vista sin tener que recorrer la lista de pacientes.
-- [ ] CA32 · Dada la galería de gestión de contenido a 390 px, cuando se listan las imágenes, entonces cada tarjeta cabe en una pantalla (844 px de alto), se identifica por su descripción y no por el nombre interno del archivo, no muestra la dirección interna de la imagen y todo texto sobre una imagen cumple el contraste de CA6.
-- [ ] CA33 · Dado cualquier listado del panel (pacientes, expedientes, tratamientos, contenido, usuarios) a 390 px, cuando se abre la pantalla, entonces el primer elemento del listado empieza dentro de la primera pantalla (844 px).
-- [ ] CA34 · Dado cualquier pantalla del panel a 390 px, cuando se revisa, entonces no hay espacio vacío sin función: gestión de contenido tiene un solo encabezado de página (también a 1440 px; cada pestaña muestra su nombre como subtítulo junto a su acción de agregar), una tarjeta sin datos (como "Citas para hoy" sin citas) no mide más de 320 px de alto y la cabecera del panel no tiene hueco bajo su contenido.
+- [x] CA25 · Dado un mes con citas a 390 px, cuando se mira el calendario, entonces cada día con citas muestra un texto completo y legible (como mínimo la hora de cada cita o el número de citas del día), nunca texto cortado a media palabra.
+- [x] CA26 · Dado cualquier diálogo a 390 px, cuando se abre, entonces todo su contenido y sus acciones quedan dentro del ancho de la pantalla, sin nada cortado por los lados.
+- [x] CA27 · Dado el expediente de un paciente a 390 px, cuando se consultan contacto, dirección, datos médicos e historial de citas, entonces todos los datos de cada registro se leen sin desplazar la tabla de lado y sin columnas ni mensajes cortados.
+- [x] CA28 · Dado cualquier pantalla a 390 px, cuando se revisa, entonces ningún elemento con información queda recortado por el borde de la pantalla ni truncado (incluidas las insignias de la imagen principal del inicio público y el selector de archivo de los formularios); los recortes de fondos decorativos no cuentan.
+- [x] CA29 · Dado cualquier campo de formulario a 390 px, cuando se mide su letra, entonces es de al menos 16 px; y ningún texto de ninguna pantalla mide menos de 12 px.
+- [x] CA30 · Dado un usuario de cualquier rol, cuando ve el panel, entonces los textos corresponden a su rol y están en español y sin términos técnicos: la insignia del encabezado no dice "administradores" a quien no lo es, el rol del paciente no se muestra en inglés, la etiqueta de la contraseña está en español y ningún texto menciona la API, el backend ni rutas internas.
+- [x] CA31 · Dado un miembro del staff a 390 px, cuando elige un paciente en expedientes clínicos, entonces el expediente de ese paciente queda a la vista sin tener que recorrer la lista de pacientes.
+- [x] CA32 · Dada la galería de gestión de contenido a 390 px, cuando se listan las imágenes, entonces cada tarjeta cabe en una pantalla (844 px de alto), se identifica por su descripción y no por el nombre interno del archivo, no muestra la dirección interna de la imagen y todo texto sobre una imagen cumple el contraste de CA6.
+- [x] CA33 · Dado cualquier listado del panel (pacientes, expedientes, tratamientos, contenido, usuarios) a 390 px, cuando se abre la pantalla, entonces el primer elemento del listado empieza dentro de la primera pantalla (844 px).
+- [x] CA34 · Dado cualquier pantalla del panel a 390 px, cuando se revisa, entonces no hay espacio vacío sin función: gestión de contenido tiene un solo encabezado de página (también a 1440 px; cada pestaña muestra su nombre como subtítulo junto a su acción de agregar), una tarjeta sin datos (como "Citas para hoy" sin citas) no mide más de 320 px de alto y la cabecera del panel no tiene hueco bajo su contenido.
 
 ### Accesibilidad completa (WCAG 2.1 AA)
-- [ ] CA35 · Dado cualquier control interactivo (incluidos los botones que solo muestran un icono) y cualquier imagen con información, cuando lo lee un lector de pantalla, entonces tiene un nombre que dice qué hace o qué es; las imágenes decorativas no se anuncian.
-- [ ] CA36 · Dado cualquier campo de formulario, cuando se muestra, entonces tiene una etiqueta visible asociada a él, y los campos obligatorios se distinguen de los opcionales.
-- [ ] CA37 · Dado un formulario o una acción, cuando ocurre un error de validación, un error al guardar o termina bien, entonces el mensaje se anuncia al lector de pantalla sin mover el foco, y el error de un campo queda asociado a ese campo.
-- [ ] CA38 · Dado cualquier icono de acción, borde de control o indicador que transmite información sin texto, cuando se mide contra su fondo, entonces su contraste es de al menos 3:1; y ningún estado se distingue solo por el color.
+- [x] CA35 · Dado cualquier control interactivo (incluidos los botones que solo muestran un icono) y cualquier imagen con información, cuando lo lee un lector de pantalla, entonces tiene un nombre que dice qué hace o qué es; las imágenes decorativas no se anuncian.
+- [x] CA36 · Dado cualquier campo de formulario, cuando se muestra, entonces tiene una etiqueta visible asociada a él, y los campos obligatorios se distinguen de los opcionales.
+- [x] CA37 · Dado un formulario o una acción, cuando ocurre un error de validación, un error al guardar o termina bien, entonces el mensaje se anuncia al lector de pantalla sin mover el foco, y el error de un campo queda asociado a ese campo.
+- [x] CA38 · Dado cualquier icono de acción, borde de control o indicador que transmite información sin texto, cuando se mide contra su fondo, entonces su contraste es de al menos 3:1; y ningún estado se distingue solo por el color.
 
-- [ ] CA40 · Dado cualquier elemento que hace algo al pulsarlo con el ratón o con el dedo (incluidos los días del calendario y las tarjetas de la galería), cuando se usa solo el teclado, entonces se puede llegar a él con el tabulador y activarlo con Intro o con la barra espaciadora.
+- [x] CA40 · Dado cualquier elemento que hace algo al pulsarlo con el ratón o con el dedo (incluidos los días del calendario y las tarjetas de la galería), cuando se usa solo el teclado, entonces se puede llegar a él con el tabulador y activarlo con Intro o con la barra espaciadora.
 
 ### Lo que no cambia y lo que queda escrito
-- [ ] CA22 · Dado cualquier pantalla a 1440 px, cuando se compara con su captura anterior, entonces conserva su composición: las mismas secciones en la misma disposición, las mismas acciones, la misma tipografía y los mismos flujos; solo cambian colores, tamaños, radios, foco, diálogos, logo y textos corregidos. A 390 px se conserva igual, salvo los cambios de disposición que piden CA11 y CA25–CA34. Única excepción a 1440 px: gestión de contenido pasa a un solo encabezado (CA34).
-- [ ] CA23 · Dado el sistema de diseño, cuando termina esta spec, entonces su documento y su vista describen la interfaz nueva, con capturas de todas las pantallas a 390 y 1440 px, y la deuda `DS1`–`DS11`, `DS13` y `DS14` figura como resuelta por esta spec.
-- [ ] CA39 · Dado el análisis de dependencias del proyecto, cuando termina esta spec, entonces no reporta ninguna vulnerabilidad alta ni crítica, o la que quede tiene una excepción aprobada por el usuario con fecha de vencimiento.
-- [ ] CA24 · Dada la constitución, cuando termina esta spec, entonces incluye el principio "La interfaz usa solo el sistema de diseño", con su forma de verificación, y su principio de pruebas admite la prueba en navegador para lo que solo existe en un navegador; ambos cambios aprobados por el usuario como una misma enmienda.
+- [x] CA22 · Dado cualquier pantalla a 1440 px, cuando se compara con su captura anterior, entonces conserva su composición: las mismas secciones en la misma disposición, las mismas acciones, la misma tipografía y los mismos flujos; solo cambian colores, tamaños, radios, foco, diálogos, logo y textos corregidos. A 390 px se conserva igual, salvo los cambios de disposición que piden CA11 y CA25–CA34. Única excepción a 1440 px: gestión de contenido pasa a un solo encabezado (CA34).
+- [x] CA23 · Dado el sistema de diseño, cuando termina esta spec, entonces su documento y su vista describen la interfaz nueva, con capturas de todas las pantallas a 390 y 1440 px, y la deuda `DS1`–`DS11`, `DS13` y `DS14` figura como resuelta por esta spec.
+- [x] CA39 · Dado el análisis de dependencias del proyecto, cuando termina esta spec, entonces no reporta ninguna vulnerabilidad alta ni crítica, o la que quede tiene una excepción aprobada por el usuario con fecha de vencimiento.
+- [x] CA24 · Dada la constitución, cuando termina esta spec, entonces incluye el principio "La interfaz usa solo el sistema de diseño", con su forma de verificación, y su principio de pruebas admite la prueba en navegador para lo que solo existe en un navegador; ambos cambios aprobados por el usuario como una misma enmienda.
 
 ## Fuera de alcance
 - Rediseño: no cambian la tipografía, la navegación ni los flujos, ni la disposición de las pantallas a 1440 px (salvo el encabezado único de gestión de contenido). A 390 px la disposición cambia solo donde lo piden CA11 y CA25–CA34 (decisión del usuario, 2026-10-06).
