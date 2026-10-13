@@ -179,7 +179,9 @@ import { announceError, failureMessage } from '../../ui/status';
         });
 
         if (!response.ok) {
-            throw new Error(failureMessage(response.status, data));
+            var failure = new Error(failureMessage(response.status, data));
+            failure.status = response.status;
+            throw failure;
         }
 
         return data;
@@ -225,6 +227,16 @@ import { announceError, failureMessage } from '../../ui/status';
                     renderClinicalRecord(trackingData.data || {});
                 } catch (trackingError) {
                     clinicalBody.innerHTML = '';
+
+                    // Una cita completada puede no tener registro clínico guardado: no es un error.
+                    if (trackingError.status === 404) {
+                        var noRecord = document.createElement('p');
+                        noRecord.className = 'text-sm text-muted';
+                        noRecord.textContent = 'Esta cita no tiene registro clínico.';
+                        clinicalBody.appendChild(noRecord);
+                        return;
+                    }
+
                     var trackingErrorEl = document.createElement('p');
                     trackingErrorEl.className = 'rounded-box border border-danger bg-danger-soft px-4 py-3 text-sm font-semibold text-danger';
                     trackingErrorEl.setAttribute('role', 'alert');
