@@ -419,7 +419,14 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
         event.preventDefault();
     });
 
-    // El botón de cerrar y el clic fuera del diálogo preguntan, como "Cancelar", si hay datos sin guardar.
+    // Escape, el botón de cerrar y el clic fuera del diálogo preguntan, como "Cancelar", si hay
+    // datos sin guardar: un descuido no borra lo capturado.
+    modal.addEventListener('cancel', function (event) {
+        event.preventDefault();
+        requestClose();
+    });
+
+    // El botón de cerrar y el clic fuera del diálogo.
     modal.addEventListener('click', function (event) {
         if (event.target === modal || event.target.closest('[data-dialog-close]')) {
             event.stopPropagation();

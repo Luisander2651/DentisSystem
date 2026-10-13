@@ -329,7 +329,11 @@
                 {
                     "waitFor": "[data-complete-appointment-step=\"2\"]"
                 }
-            ]
+            ],
+            "confirmOnEscape": {
+                "dialog": "[data-complete-appointment-confirm]",
+                "accept": "[data-complete-appointment-confirm-accept]"
+            }
         },
         {
             "id": "agenda-cita-completar-receta",
@@ -373,7 +377,11 @@
                 {
                     "waitFor": "[data-prescription-medication]"
                 }
-            ]
+            ],
+            "confirmOnEscape": {
+                "dialog": "[data-complete-appointment-confirm]",
+                "accept": "[data-complete-appointment-confirm-accept]"
+            }
         },
         {
             "id": "pacientes",

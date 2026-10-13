@@ -3,7 +3,8 @@
  *
  *   título            CA12  the dialog takes its title as its accessible name
  *   foco al abrir     CA12  the focus is inside the dialog once it opens
- *   Escape            CA12  Escape closes it
+ *   Escape            CA12  Escape closes it; with data typed in, it may first ask (the entry's
+ *                           `confirmOnEscape`), and accepting closes it
  *   foco al cerrar    CA12  and the focus goes back to the control that opened it
  *   ancho             CA26  it fits in the width of the window (M03)
  *   alto              CA13  it fits in its height, with its actions in reach (M09)
@@ -103,6 +104,18 @@ export async function run(page, entry) {
     }
 
     await page.press('Escape');
+
+    if (entry.confirmOnEscape) {
+        try {
+            await page.waitFor(`(${isOpenInPage})(${JSON.stringify(entry.confirmOnEscape.dialog)})`, { timeout: 1500, what: 'la pregunta al pulsar Escape' });
+        } catch {
+            failures.push({ rule: 'Escape no pregunta antes de descartar', message: `${entry.confirmOnEscape.dialog} no se abre` });
+
+            return failures;
+        }
+
+        await page.click(entry.confirmOnEscape.accept);
+    }
 
     try {
         await page.waitFor(`!(${isOpenInPage})(${JSON.stringify(entry.dialogSelector)})`, { timeout: 1500, what: 'el cierre con Escape' });
