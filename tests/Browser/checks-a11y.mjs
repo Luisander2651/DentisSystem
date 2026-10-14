@@ -597,6 +597,17 @@ function warningInOpenDialogInPage() {
     return dialog ? [...dialog.querySelectorAll('[role=status], [role=alert], [aria-live]')].map((region) => region.textContent.trim()).join(' ') : null;
 }
 
+/** What was announced after sending, waiting a moment: a repeated message is rewritten after a pause. */
+async function newAnnouncement(page) {
+    try {
+        await page.waitFor(`(${announcedNewInPage})() !== ''`, { timeout: 1000, what: 'un anuncio nuevo' });
+    } catch {
+        return '';
+    }
+
+    return page.evaluate(announcedNewInPage);
+}
+
 /** R11, R12 · fields that check themselves as they are typed in and left. */
 async function checkOwnFields(page, selector) {
     const failures = [];
@@ -911,7 +922,7 @@ export async function runFresh(page, entry, { baseUrl }) {
         }
 
         // R18 · only what was announced after sending counts
-        const failed = await page.evaluate(announcedNewInPage);
+        const failed = await newAnnouncement(page);
 
         if (failed === '') {
             failures.push({ rule: 'no se anuncia el error', message: 'tras enviar el formulario sin éxito ninguna región de estado dice nada nuevo' });
@@ -958,7 +969,7 @@ export async function runFresh(page, entry, { baseUrl }) {
             await page.evaluate(confirmInPage);
             await page.settle();
 
-            if ((await page.evaluate(announcedNewInPage)) === '') {
+            if ((await newAnnouncement(page)) === '') {
                 failures.push({ rule: 'no se anuncia el guardado', message: 'tras guardar ninguna región de estado dice nada nuevo' });
             }
         }
