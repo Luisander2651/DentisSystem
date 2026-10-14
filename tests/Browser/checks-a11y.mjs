@@ -11,9 +11,15 @@
  *   teclado              CA40  whatever is pressed is a control, or behaves like one
  *   anuncio              CA37  saving and failing to save announce a message, in our own
  *                              Spanish and not in the words of the API (A63)
+ *   envío                CA37  sending a form or an action announces "Enviando…"; a form the
+ *                              page stops before sending (two different passwords) does not,
+ *                              and ties its error to the field (A82, A83, A91)
+ *   otra pestaña         CA43  a link that opens another tab says so in its name
+ *   menú plegable        CA42  every option of an open folding menu is reached with Tab, and
+ *                              Escape closes it and gives the focus back to its button (A92)
  *
- * The last one sends the form of a dialog, so it runs on a visit of its own (`runFresh`) with
- * the API answered from here: nothing reaches the database.
+ * Sending a form and closing a menu use the screen up, so they run on a visit of their own
+ * (`runFresh`) with the API answered from here: nothing reaches the database.
  */
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -37,7 +43,7 @@ function forbiddenWords() {
 function measureInPage(dialogSelector, entryId, needsRegion) {
     const A = window.__audit;
     const root = A.scope(dialogSelector);
-    const found = { etiqueta: [], obligatorio: [], error: [], region: [], borde: [], icono: [], color: [] };
+    const found = { etiqueta: [], obligatorio: [], error: [], region: [], borde: [], icono: [], color: [], pestana: [] };
 
     if (!root) {
         return found;
@@ -115,6 +121,15 @@ function measureInPage(dialogSelector, entryId, needsRegion) {
 
         if (outside.length !== 1) {
             found.region.push(`la pantalla tiene ${outside.length} regiones de estado fuera de los diálogos (debe tener una)`);
+        }
+    }
+
+    // CA43 · a link that opens another tab says so
+    for (const link of visible.filter((element) => element.matches('a[href][target=_blank]'))) {
+        const name = link.getAttribute('aria-label') ?? link.textContent;
+
+        if (!/pestaña|ventana/i.test(name)) {
+            found.pestana.push(`${A.describe(link)} "${name.replace(/\s+/g, ' ').trim().slice(0, 40)}"`);
         }
     }
 
@@ -197,8 +212,8 @@ function describeInPage() {
     return window.__audit.describe(this);
 }
 
-/** Fills what the form of a dialog asks for and presses the button that sends it. */
-function fillAndSendInPage(dialogSelector) {
+/** Fills what the form of a dialog asks for and, unless told not to, presses the button that sends it. */
+function fillAndSendInPage(dialogSelector, press = true) {
     const A = window.__audit;
     const root = A.scope(dialogSelector);
 
@@ -227,6 +242,10 @@ function fillAndSendInPage(dialogSelector) {
         field.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
+    if (!press) {
+        return 'filled';
+    }
+
     const buttons = [...root.querySelectorAll('button')].filter((button) => A.visible(button) && !button.disabled);
     const sends = (button) => button.type === 'submit' || [...button.attributes].some((attribute) => /^data-.*-(submit|accept|confirm-accept)$/.test(attribute.name));
     const send = buttons.find(sends);
@@ -245,6 +264,213 @@ function confirmInPage() {
     const accept = [...document.querySelectorAll('button')].find((button) => A.visible(button) && [...button.attributes].some((attribute) => /-confirm-accept$/.test(attribute.name)));
 
     accept?.click();
+}
+
+/** From now on, keeps every text written to a status region (an "Enviando…" lasts a moment). */
+function recordAnnouncementsInPage() {
+    const said = [];
+    const note = () => {
+        for (const region of document.querySelectorAll('[role=status], [role=alert], [aria-live]')) {
+            const text = region.textContent.replace(/\s+/g, ' ').trim();
+
+            if (text !== '' && said.at(-1) !== text) {
+                said.push(text);
+            }
+        }
+    };
+
+    new MutationObserver(note).observe(document.body, { subtree: true, childList: true, characterData: true });
+    window.__announcedHistory = said;
+}
+
+function announcedHistoryInPage() {
+    return (window.__announcedHistory ?? []).join(' · ');
+}
+
+/** The one form of a screen that sends something, marked so the calls below can reach it. */
+function markScreenFormInPage() {
+    const A = window.__audit;
+    const forms = [...document.querySelectorAll('form')].filter((form) => A.visible(form)
+        && form.closest('dialog, [role=dialog], [role=search]') === null
+        && form.querySelector('button[type=submit], button:not([type])') !== null
+        && [...form.querySelectorAll('input:not([type=hidden]):not([type=search]), textarea, select')].some(A.visible));
+
+    if (forms.length !== 1) {
+        return false;
+    }
+
+    forms[0].setAttribute('data-ui-audit-form', '');
+
+    return true;
+}
+
+/** Two different passwords in a form that asks for one and its confirmation. */
+function mismatchPasswordsInPage(selector) {
+    const A = window.__audit;
+    const form = document.querySelector(selector);
+    const passwords = [...form.querySelectorAll('input[type=password]')].filter(A.visible);
+
+    if (passwords.length !== 2) {
+        return null;
+    }
+
+    passwords[0].value = 'Prueba-segura-123';
+    passwords[1].value = 'Otra-distinta-456';
+
+    for (const field of passwords) {
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    return A.describe(passwords[1]);
+}
+
+function confirmationErrorInPage(selector) {
+    const A = window.__audit;
+    const confirmation = [...(document.querySelector(selector)?.querySelectorAll('input[type=password]') ?? [])].filter(A.visible)[1];
+
+    if (!confirmation) {
+        return null;
+    }
+
+    const described = (confirmation.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean).map((id) => document.getElementById(id));
+
+    return confirmation.getAttribute('aria-invalid') === 'true' && described.some((node) => node && A.visible(node) && node.textContent.trim() !== '');
+}
+
+/** The open folding menu of the screen: its button gets the focus; returns the options inside. */
+function openMenuInPage() {
+    const A = window.__audit;
+    const toggle = [...document.querySelectorAll('button[aria-expanded="true"][aria-controls]')]
+        .find((button) => A.visible(button) && button.closest('dialog, [role=dialog]') === null);
+    const panel = toggle ? document.getElementById(toggle.getAttribute('aria-controls')) : null;
+
+    if (!panel || !A.visible(panel)) {
+        return null;
+    }
+
+    toggle.setAttribute('data-ui-audit-toggle', '');
+    panel.setAttribute('data-ui-audit-menu', '');
+    toggle.focus();
+
+    return [...panel.querySelectorAll('a[href], button:not([disabled]), input:not([type=hidden]), select, textarea')].filter(A.visible).map((option) => A.describe(option));
+}
+
+function focusedInMenuInPage() {
+    const focused = document.activeElement;
+
+    return focused?.closest('[data-ui-audit-menu]') ? window.__audit.describe(focused) : null;
+}
+
+function menuAfterEscapeInPage() {
+    const toggle = document.querySelector('[data-ui-audit-toggle]');
+    const panel = document.querySelector('[data-ui-audit-menu]');
+
+    return {
+        closed: !window.__audit.visible(panel) && toggle.getAttribute('aria-expanded') === 'false',
+        focusBack: document.activeElement === toggle,
+    };
+}
+
+/** CA42 · an open folding menu, with the keyboard only. */
+async function checkMenu(page) {
+    const options = await page.evaluate(openMenuInPage);
+
+    if (options === null) {
+        return [];
+    }
+
+    const failures = [];
+    const reached = new Set();
+
+    for (let step = 0; step < options.length + 2; step++) {
+        await page.press('Tab');
+        const focused = await page.evaluate(focusedInMenuInPage);
+
+        if (focused === null) {
+            break;
+        }
+
+        reached.add(focused);
+    }
+
+    const missed = options.filter((option) => !reached.has(option));
+
+    if (missed.length > 0) {
+        failures.push({ rule: 'opción del menú que no se alcanza con el tabulador', message: summary(missed) });
+    }
+
+    await page.press('Escape');
+    const after = await page.evaluate(menuAfterEscapeInPage);
+
+    if (!after.closed) {
+        failures.push({ rule: 'el menú plegable no se cierra con Escape', message: 'tras pulsar Escape el menú sigue abierto' });
+    } else if (!after.focusBack) {
+        failures.push({ rule: 'el foco no vuelve al botón del menú', message: 'tras cerrar con Escape el foco no está en el botón que lo abrió' });
+    }
+
+    return failures;
+}
+
+/** CA37 · the form of a screen: "Enviando…" when it sends, and none when the page stops it first. */
+async function checkScreenForm(page, entry, baseUrl) {
+    const failures = [];
+    const selector = '[data-ui-audit-form]';
+    let requests = 0;
+    const stop = await page.intercept((request) => {
+        if (request.method === 'GET') {
+            return null;
+        }
+
+        requests++;
+
+        return { status: 500, body: { error: 'SQLSTATE[HY000]: General error' } };
+    });
+
+    try {
+        if (!(await page.evaluate(markScreenFormInPage))) {
+            return [];
+        }
+
+        // A82, A91 · two different passwords: when the page stops them, the error is on the field
+        const confirmation = (entry.steps ?? []).length === 0 && await page.evaluate(fillAndSendInPage, selector, false) === 'filled'
+            ? await page.evaluate(mismatchPasswordsInPage, selector)
+            : null;
+
+        if (confirmation !== null) {
+            await page.evaluate(recordAnnouncementsInPage);
+            await page.evaluate((target) => document.querySelector(target).requestSubmit(), selector);
+            await page.settle();
+
+            if (requests === 0) {
+                if (await page.evaluate(confirmationErrorInPage, selector) === false) {
+                    failures.push({ rule: 'error sin asociar a su campo', message: `contraseñas distintas: ${confirmation} no queda marcado con el error` });
+                }
+
+                if (/enviando/i.test(await page.evaluate(announcedHistoryInPage))) {
+                    failures.push({ rule: 'anuncia un envío que no ocurre', message: 'con las contraseñas distintas se anuncia "Enviando…" sin enviar nada' });
+                }
+            }
+
+            await page.goto(baseUrl + entry.path);
+            await page.evaluate(markScreenFormInPage);
+            requests = 0;
+        }
+
+        await page.evaluate(recordAnnouncementsInPage);
+        const sent = await page.evaluate(fillAndSendInPage, selector);
+
+        if (sent === 'sent') {
+            await page.settle();
+
+            if (requests > 0 && !/enviando/i.test(await page.evaluate(announcedHistoryInPage))) {
+                failures.push({ rule: 'no se anuncia el envío', message: 'al enviar el formulario ninguna región de estado dice "Enviando…"' });
+            }
+        }
+    } finally {
+        await stop();
+    }
+
+    return failures;
 }
 
 /** What the status regions say right now, wherever they are. */
@@ -308,14 +534,15 @@ export async function run(page, entry) {
         ['contraste del borde de un control', found.borde],
         ['contraste de un icono de acción', found.icono],
         ['estado solo por color', found.color],
+        ['enlace a otra pestaña sin aviso', found.pestana],
         ['se pulsa pero no se alcanza con el teclado', keyboard],
     ].filter(([, items]) => items.length > 0).map(([rule, items]) => ({ rule, message: summary(items) }));
 }
 
-/** CA37 and A63 · what a dialog announces when saving fails, and when it works. */
-export async function runFresh(page, entry) {
+/** CA37 and A63 · what a dialog announces when sending, when saving fails and when it works. */
+export async function runFresh(page, entry, { baseUrl }) {
     if (!entry.dialogSelector) {
-        return [];
+        return [...await checkMenu(page), ...await checkScreenForm(page, entry, baseUrl)];
     }
 
     const failures = [];
@@ -333,6 +560,7 @@ export async function runFresh(page, entry) {
     });
 
     try {
+        await page.evaluate(recordAnnouncementsInPage);
         const sent = await page.evaluate(fillAndSendInPage, entry.dialogSelector);
 
         if (sent !== 'sent') {
@@ -347,6 +575,10 @@ export async function runFresh(page, entry) {
         }
 
         const failed = await page.evaluate(announcedInPage);
+
+        if (requests > 0 && !/enviando/i.test(await page.evaluate(announcedHistoryInPage))) {
+            failures.push({ rule: 'no se anuncia el envío', message: 'al enviar ninguna región de estado dice "Enviando…"' });
+        }
 
         if (failed === '') {
             failures.push({ rule: 'no se anuncia el error', message: 'tras enviar el formulario sin éxito ninguna región de estado dice nada' });
