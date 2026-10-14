@@ -1,5 +1,5 @@
 {
-    "$comment": "Inventario de ui-audit (spec 016). screen: pantalla para --only (sin sus diálogos). dialog: nombre del diálogo para --only, en cada pantalla que lo monta. Las fechas son las de UiAuditSeeder (julio de 2026).",
+    "$comment": "Inventario de ui-audit (spec 016). screen: pantalla para --only (sin sus diálogos). dialog: nombre del diálogo para --only, en cada pantalla que lo monta. Las fechas son las de UiAuditSeeder (julio de 2026). widths: anchos propios de la entrada (por defecto 390, 768 y 1440). navigation: a 1024 px o más, lo que debe verse desplegado (shown) y el botón del menú plegable que no debe verse (toggle).",
     "now": "2026-07-22T10:00:00-06:00",
     "timezone": "America/Mexico_City",
     "locale": "es-MX",
@@ -14,7 +14,8 @@
             "screen": "inicio",
             "path": "/",
             "widths": [
-                390
+                390,
+                768
             ],
             "steps": [
                 {
@@ -24,6 +25,18 @@
                     "waitFor": "#mobile-menu"
                 }
             ]
+        },
+        {
+            "id": "inicio-ancho",
+            "screen": "inicio",
+            "path": "/",
+            "widths": [
+                1024
+            ],
+            "navigation": {
+                "shown": "nav[aria-label=\"Secciones del sitio\"]",
+                "toggle": "#mobile-menu-btn"
+            }
         },
         {
             "id": "acerca",
@@ -114,7 +127,8 @@
             "path": "/dashboard",
             "role": "administrador",
             "widths": [
-                390
+                390,
+                768
             ],
             "steps": [
                 {
@@ -124,6 +138,19 @@
                     "waitFor": "[data-sidebar-menu]"
                 }
             ]
+        },
+        {
+            "id": "dashboard-ancho",
+            "screen": "dashboard",
+            "path": "/dashboard",
+            "role": "administrador",
+            "widths": [
+                1024
+            ],
+            "navigation": {
+                "shown": "[data-sidebar-menu]",
+                "toggle": "[data-sidebar-toggle]"
+            }
         },
         {
             "id": "dashboard-crear-paciente",
@@ -188,6 +215,7 @@
                 }
             ],
             "widths": [
+                768,
                 1440
             ]
         },

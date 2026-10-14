@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /*
  * ui-audit (spec 016): opens every screen and dialog of tests/Browser/screens.json in a
- * headless Chrome, at 390 × 844 and 1440 × 900, and runs the check modules on each one.
+ * headless Chrome, at 390 × 844, 768 × 1024 and 1440 × 900 (an entry may name its own widths,
+ * such as 1024 × 768 for the navigation), and runs the check modules on each one.
  * Node and Chrome only, over the DevTools protocol: no dependencies.
  *
  *   npm run test:ui                                   every entry, against the local Docker app
@@ -362,7 +363,7 @@ function parseArguments(argv) {
         artisan: 'docker compose exec -T app php artisan',
         only: [],
         checks: null,
-        widths: DEFAULT_WIDTHS,
+        widths: null,
         baseline: false,
         screenshots: null,
         jobs: 4,
@@ -399,7 +400,7 @@ function parseArguments(argv) {
         }
     }
 
-    for (const width of options.widths) {
+    for (const width of options.widths ?? []) {
         if (!VIEWPORTS[width]) {
             throw new Error(`Ancho no admitido: ${width} (390, 768, 1024, 1280 o 1440)`);
         }
@@ -768,8 +769,10 @@ async function main() {
 
     const session = sessionSource(options.artisan);
     const browser = await launchChrome();
-    const visits = entries.flatMap((entry) => options.widths
-        .filter((width) => !entry.widths || entry.widths.includes(width))
+    // Without --width every entry is visited at its own widths, or at the default ones.
+    const visits = entries.flatMap((entry) => (options.widths === null
+        ? entry.widths ?? DEFAULT_WIDTHS
+        : options.widths.filter((width) => !entry.widths || entry.widths.includes(width)))
         .map((width) => ({ entry, width })));
     const results = new Array(visits.length);
     let next = 0;

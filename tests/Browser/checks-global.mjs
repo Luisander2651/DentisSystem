@@ -2,7 +2,8 @@
  * ui-audit · what every screen and every dialog must respect (spec 016).
  *
  *   desborde                 CA28, RNF  the page does not scroll sideways
- *   control táctil           CA9        at 390 px, every control measures 44 × 44 px or more
+ *   control táctil           CA9        at 390 and 768 px, every control measures 44 × 44 px or more
+ *   navegación               CA42       from 1024 px the side bar and the site menu show without opening anything
  *   tamaño de control        CA10       buttons and fields share one height and the radii of the scale
  *   letra                    CA29       fields from 16 px at 390 px, no text under 12 px
  *   contraste                CA6, CA7   text and placeholders 4.5:1 (3:1 when large), field borders 3:1
@@ -40,7 +41,7 @@ const FALLBACK_TOKENS = {
 const FOCUS = { width: 3, offset: 2 };
 
 /** Runs inside the page: everything that can be measured without touching it. */
-function measureInPage(dialogSelector, phone, fallback) {
+function measureInPage(dialogSelector, phone, touch, fallback) {
     const A = window.__audit;
     const root = A.scope(dialogSelector);
 
@@ -85,8 +86,8 @@ function measureInPage(dialogSelector, phone, fallback) {
         const disabled = element.closest(':disabled, [aria-disabled="true"]') !== null;
         const insideControl = element.parentElement?.closest('a[href], button, [role=button], summary, label') ?? null;
 
-        // CA9 · touch targets
-        if (phone && !disabled) {
+        // CA9 · touch targets, wherever the navigation is the folding menu of a touch screen
+        if (touch && !disabled) {
             const loneLink = tag === 'A' && element.hasAttribute('href')
                 && (style.display !== 'inline' || element.closest('nav, ul, ol, menu') !== null || element.parentElement.textContent.trim() === element.textContent.trim());
             const pressed = !A.isControl(element) && !insideControl && style.cursor === 'pointer' && getComputedStyle(element.parentElement).cursor !== 'pointer';
@@ -299,7 +300,7 @@ const summary = (items) => `${items.length}: ${items.slice(0, 4).join('; ')}${it
 
 export async function run(page, entry) {
     const selector = entry.dialogSelector ?? null;
-    const found = await page.evaluate(measureInPage, selector, page.width < 768, FALLBACK_TOKENS);
+    const found = await page.evaluate(measureInPage, selector, page.width < 768, page.width < 1024, FALLBACK_TOKENS);
 
     if (found === null) {
         return [];
@@ -325,6 +326,22 @@ export async function run(page, entry) {
     }
 
     await page.evaluate(() => document.getElementById('ui-audit-no-text')?.remove());
+
+    // CA42 · from 1024 px the navigation is laid out, not folded behind a button
+    const navigation = [];
+
+    if (entry.navigation && page.width >= 1024) {
+        const shown = await page.isVisible(entry.navigation.shown);
+        const toggle = await page.isVisible(entry.navigation.toggle);
+
+        if (!shown) {
+            navigation.push(`${entry.navigation.shown} no se ve a ${page.width} px`);
+        }
+
+        if (toggle) {
+            navigation.push(`el botón del menú plegable ${entry.navigation.toggle} sigue a la vista a ${page.width} px`);
+        }
+    }
 
     // CA8 · focus
     const focus = { missing: [], off: [], faint: [] };
@@ -378,6 +395,7 @@ export async function run(page, entry) {
 
     return [
         ['desborde', found.desborde],
+        ['navegación no desplegada', navigation],
         ['control táctil menor de 44 × 44 px', found.tactil],
         ['tamaño de control fuera de la escala', found.tamano],
         ['letra de campo menor de 16 px', found.letraCampo],
