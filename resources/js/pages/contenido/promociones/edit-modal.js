@@ -1,5 +1,5 @@
 import { closeDialog, openDialog } from '../../../ui/dialog';
-import { announce, announceError, failureMessage } from '../../../ui/status';
+import { announce, announceError, failureMessage, markFieldErrors } from '../../../ui/status';
 export function initPromotionsEditModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -120,6 +120,24 @@ export function initPromotionsEditModal(context) {
     });
 
 
+    // Cada campo obligatorio vacío queda marcado con su error, ligado a él, además del aviso
+    // general (spec 016, CA37).
+    function markMissing(fields) {
+        var missing = {};
+
+        fields.forEach(function (field) {
+            var empty = field.type === 'file' ? !(field.files && field.files[0]) : String(field.value).trim() === '';
+
+            if (empty) {
+                missing[field.name] = ['Este campo es obligatorio.'];
+            }
+        });
+
+        markFieldErrors(form, missing);
+
+        return Object.keys(missing).length > 0;
+    }
+
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
@@ -135,7 +153,7 @@ export function initPromotionsEditModal(context) {
         var startDate = startDateInput.value;
         var endDate = endDateInput.value;
 
-        if (!id || !name || !description || !startDate || !endDate) {
+        if (markMissing([nameInput, descriptionInput, startDateInput, endDateInput]) || !id) {
             showModalError('Completa todos los campos obligatorios.');
             return;
         }
