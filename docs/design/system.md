@@ -119,7 +119,7 @@ menos de 16 px.
 - Bordes: 1 px (2 px en el campo con error y en el día de hoy del calendario). Sombras: `shadow-sm`
   en tarjetas; las sombras teñidas usan un token con opacidad (`shadow-primary/20`), nunca un valor
   arbitrario.
-- Objetivo de toque mínimo: **44 × 44 px** a 390 px en botones, campos, selectores, filtros,
+- Objetivo de toque mínimo: **44 × 44 px** a 390 y 768 px en botones, campos, selectores, filtros,
   elementos de menú, iconos de acción y enlaces solos en su línea o en una lista de navegación. Los
   enlaces dentro de un párrafo quedan fuera, como permite WCAG.
 - Dos tokens de espacios distintos nunca producen la misma utilidad (por eso la letra de campo es
@@ -230,12 +230,13 @@ Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
 dibuja a mano. Las capturas son las del sistema 2.0.0: las generó el paso `ui-audit` de CI el
 2026-10-12 (corrida del commit `871ee45`) sobre una base recién migrada que solo contiene los datos
 de `UiAuditSeeder`. **75 de 75 capturadas** (147 imágenes, a 390 y 1440 px). CI comprueba además
-cada pantalla a 768 px; esas capturas quedan en el artefacto `ui-audit` de cada corrida.
+cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas quedan en el artefacto
+`ui-audit` de cada corrida.
 
 | Vista | Ruta / plantilla | Rol | Capturas | Estado |
 |---|---|---|---|---|
 | Inicio | `/` · `pages/landing/inicio.blade.php` | público | [390](capturas/inicio-390.png) · [1440](capturas/inicio-1440.png) | capturada |
-| Inicio, menú móvil abierto | `/` · `components/landing/nav.blade.php` | público | [390](capturas/inicio-menu-390.png) | capturada (solo existe a 390 px) |
+| Inicio, menú móvil abierto | `/` · `components/landing/nav.blade.php` | público | [390](capturas/inicio-menu-390.png) | capturada a 390 px (existe por debajo de 1024 px; CI lo revisa también a 768 px) |
 | Acerca de Nosotros | `/acerca-de-nosotros` · `pages/landing/acerca.blade.php` | público | [390](capturas/acerca-390.png) · [1440](capturas/acerca-1440.png) | capturada |
 | Galería | `/galeria` · `pages/landing/galeria.blade.php` | público | [390](capturas/galeria-390.png) · [1440](capturas/galeria-1440.png) | capturada |
 | Galería, visor de imagen | `/galeria` (visor) | público | [390](capturas/galeria-visor-390.png) · [1440](capturas/galeria-visor-1440.png) | capturada |
@@ -252,10 +253,10 @@ cada pantalla a 768 px; esas capturas quedan en el artefacto `ui-audit` de cada 
 | Inicio del panel | `/dashboard` | Paciente | [390](capturas/dashboard-paciente-390.png) · [1440](capturas/dashboard-paciente-1440.png) | capturada |
 | Inicio del panel, nuevo paciente | `components/ui/create-patient-modal.blade.php` | Administrador | [390](capturas/dashboard-crear-paciente-390.png) · [1440](capturas/dashboard-crear-paciente-1440.png) | capturada |
 | Inicio del panel, nuevo usuario | `components/ui/create-user-modal.blade.php` | Administrador | [390](capturas/dashboard-crear-usuario-390.png) · [1440](capturas/dashboard-crear-usuario-1440.png) | capturada |
-| Menú lateral abierto en móvil | `/dashboard` · `components/ui/sidebar.blade.php` | Administrador | [390](capturas/dashboard-menu-390.png) | capturada (solo existe a 390 px) |
+| Menú lateral abierto en móvil | `/dashboard` · `components/ui/sidebar.blade.php` | Administrador | [390](capturas/dashboard-menu-390.png) | capturada a 390 px (existe por debajo de 1024 px; CI lo revisa también a 768 px) |
 | Agenda, mes actual sin citas | `/agenda` · `pages/agenda/index.blade.php` | Administrador | [390](capturas/agenda-390.png) · [1440](capturas/agenda-1440.png) | capturada |
 | Agenda, mes con citas | `/agenda` (julio de 2026) | Administrador | [390](capturas/agenda-con-citas-390.png) · [1440](capturas/agenda-con-citas-1440.png) | capturada |
-| Agenda, citas del día | `components/calendar/day-details-modal.blade.php` | Administrador | [1440](capturas/agenda-dia-1440.png) | capturada (el diálogo solo existe desde 768 px; en el móvil es una lista bajo el calendario) |
+| Agenda, citas del día | `components/calendar/day-details-modal.blade.php` | Administrador | [1440](capturas/agenda-dia-1440.png) | capturada a 1440 px (el diálogo existe desde 768 px y CI lo revisa también a ese ancho; en el móvil es una lista bajo el calendario) |
 | Agenda, detalle de cita | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-390.png) · [1440](capturas/agenda-cita-detalle-1440.png) | capturada |
 | Agenda, detalle de cita asignada (con "Editar cita") | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-pendiente-390.png) · [1440](capturas/agenda-cita-detalle-pendiente-1440.png) | capturada |
 | Agenda, editar cita | `components/calendar/edit-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-editar-390.png) · [1440](capturas/agenda-cita-editar-1440.png) | capturada |
