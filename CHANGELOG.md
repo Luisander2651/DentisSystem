@@ -15,7 +15,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ### Changed
 - Agenda: los días del calendario son botones que se usan con teclado y muestran su número de citas; en el móvil, las citas del día elegido aparecen bajo el calendario. Los expedientes muestran pares de etiqueta y valor en el móvil en lugar de tablas.
-- El menú lateral del panel y el menú del sitio público se despliegan desde 1024 px; por debajo se usa el menú plegable.
+- El menú lateral del panel y el menú del sitio público se despliegan desde 1024 px; por debajo se usa el menú plegable, que se cierra con Escape y devuelve el foco a su botón. Los controles táctiles miden al menos 44 px también a 768 px.
+- Al enviar un formulario o una acción (como eliminar), se anuncia "Enviando…" a los lectores de pantalla; los enlaces que abren otra pestaña lo avisan; y en restablecer contraseña, el error de contraseñas que no coinciden queda en su campo.
 - Textos del panel con acentos y sin términos técnicos; las fechas se muestran en español sea cual sea el idioma del servidor.
 - En los diálogos de gestión de contenido y de citas, un guardado que falla deja el diálogo abierto con su mensaje.
 - Flujo AI-DD actualizado a 1.11.2: validador y plantillas nuevas, herramientas de seguridad con su estado (se ejecutan con sus imágenes de Docker) y tabla "Decisiones" en la spec 013.
