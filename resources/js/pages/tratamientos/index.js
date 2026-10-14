@@ -1,5 +1,5 @@
 import { closeDialog, openDialog } from '../../ui/dialog';
-import { announce, announceError, clearAnnouncements, failureMessage } from '../../ui/status';
+import { announce, announceError, clearAnnouncements, failureMessage, markFieldErrors } from '../../ui/status';
 
 (function () {
     if (window.__treatmentsIndexInit) {
@@ -516,6 +516,19 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
             }
         });
     }
+
+    // El navegador frena el envío de un campo obligatorio vacío sin decir nada a un lector de
+    // pantalla: cada campo que rechaza queda marcado con su error (spec 016, CA37).
+    [createForm, editForm].forEach(function (form) {
+        if (!form) {
+            return;
+        }
+
+        form.addEventListener('invalid', function (event) {
+            var field = event.target;
+            markFieldErrors(form, { [field.name]: [field.validity.valueMissing ? 'Este campo es obligatorio.' : field.validationMessage] });
+        }, true);
+    });
 
     if (createForm) {
         createForm.addEventListener('submit', async function (event) {

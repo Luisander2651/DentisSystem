@@ -101,7 +101,7 @@
     <x-ui.dialog id="treatments-create-modal" title="Crear tratamiento">
         <form id="treatments-create-form" data-treatments-create-form class="flex flex-col gap-4">
             <x-ui.input
-                variant="string"
+                variant="text"
                 id="treatments-create-name"
                 name="name"
                 label="Nombre del tratamiento"
@@ -151,7 +151,7 @@
             <input type="hidden" data-treatments-edit-id name="id" />
 
             <x-ui.input
-                variant="string"
+                variant="text"
                 id="treatments-edit-name"
                 name="name"
                 label="Nombre del tratamiento"
