@@ -213,7 +213,7 @@ function describeInPage() {
 }
 
 /** Fills what the form of a dialog asks for and, unless told not to, presses the button that sends it. */
-function fillAndSendInPage(dialogSelector, press = true) {
+export function fillAndSendInPage(dialogSelector, press = true) {
     const A = window.__audit;
     const root = A.scope(dialogSelector);
 
@@ -259,7 +259,7 @@ function fillAndSendInPage(dialogSelector, press = true) {
     return 'sent';
 }
 
-function confirmInPage() {
+export function confirmInPage() {
     const A = window.__audit;
     const accept = [...document.querySelectorAll('button')].find((button) => A.visible(button) && [...button.attributes].some((attribute) => /-confirm-accept$/.test(attribute.name)));
 
