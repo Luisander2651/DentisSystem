@@ -19,6 +19,7 @@ const FAILURES = {
 };
 
 const timers = new WeakMap();
+const rewrites = new WeakMap();
 
 function region(kind) {
     const selector = kind === 'error' ? '[data-ui-alert]' : '[data-ui-status]';
@@ -29,6 +30,20 @@ function region(kind) {
 
 function show(target, message) {
     clearTimeout(timers.get(target));
+    clearTimeout(rewrites.get(target));
+
+    // El mismo mensaje dos veces seguidas no cambia el texto de la región y un lector de pantalla
+    // no lo repetiría: se vacía un momento antes de volver a escribirlo.
+    if (message !== '' && target.textContent === message) {
+        target.textContent = '';
+        rewrites.set(target, setTimeout(() => {
+            target.textContent = message;
+            target.toggleAttribute('data-shown', true);
+        }, 50));
+
+        return;
+    }
+
     target.textContent = message;
     target.toggleAttribute('data-shown', message !== '');
 }
