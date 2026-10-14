@@ -1,7 +1,7 @@
 ---
 version: 1.2.0
 ratified: 2026-09-23
-last_amended: 2026-09-24
+last_amended: 2026-10-08
 status: approved
 ---
 
@@ -118,7 +118,7 @@ Los principios se exigen a todo código **nuevo o modificado**.
 |---|---|---|---|
 | 1.0.0 | 2026-09-22 | Versión inicial | /init |
 | 1.0.0 | 2026-09-23 | Ratificada por el usuario, sin cambios de contenido | Aprobación explícita |
-| 1.2.0 | 2026-10-08 | Añade P15 (la interfaz usa solo el sistema de diseño) y aclara P2: lo que solo existe en un navegador se prueba con `npm run test:ui` | Spec 016 (CA24); textos aprobados por el usuario el 2026-10-06 |
 | 1.1.0 | 2026-09-24 | Añade P14 (trazabilidad: correlación y auditoría) | Propuesta de `/init --upgrade` a 1.5.3, aprobada por el usuario |
-| 1.1.2 | 2026-09-24 | Aclara el alcance de P5 (aplica cuando cambia la autorización del endpoint), con el mismo criterio que P6 | `/analyze 014` (B2); aprobado por el usuario |
 | 1.1.1 | 2026-09-24 | Aclara el alcance de P6 (solo cuando cambia la entrada del endpoint) y de P7 (aplica a errores inesperados; los mensajes de negocio no llevan datos personales ni de salud) | `/analyze 014` (A2, A13); aprobado por el usuario |
+| 1.1.2 | 2026-09-24 | Aclara el alcance de P5 (aplica cuando cambia la autorización del endpoint), con el mismo criterio que P6 | `/analyze 014` (B2); aprobado por el usuario |
+| 1.2.0 | 2026-10-08 | Añade P15 (la interfaz usa solo el sistema de diseño) y aclara P2: lo que solo existe en un navegador se prueba con `npm run test:ui` | Spec 016 (CA24); textos aprobados por el usuario el 2026-10-06 |

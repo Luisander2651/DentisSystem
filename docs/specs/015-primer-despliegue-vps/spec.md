@@ -178,3 +178,4 @@ Ninguna.
 | 2026-09-29 | Reaprobada tras la edición de la ronda 3 | Aprobación del usuario |
 | 2026-09-29 | Aclarada la redacción de CA18: trazas del sistema en segundo plano solo sin argumentos ni datos personales (decisión del usuario, 2026-09-29) | `/analyze` ronda 4: A61 |
 | 2026-10-06 | Referencia corregida: la spec de monitoreo (alertas y retención de logs) pasa de 016 a 017, porque el número 016 lo toma la spec del sistema de diseño. Sin cambios de alcance ni de criterios | `/specify --edit`; decisión del usuario |
+| 2026-10-14 | Referencia corregida también en su plan: las métricas, las alertas y la retención de Loki van en la spec 017, no en la 016. Sin cambios de alcance ni de criterios | `/analyze 016` ronda 4 (A85) |
