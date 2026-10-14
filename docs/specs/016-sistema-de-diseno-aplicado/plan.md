@@ -1,7 +1,7 @@
 ---
 spec: 016-sistema-de-diseno-aplicado
 status: approved
-constitution_version: 1.1.2
+constitution_version: 1.2.0
 created: 2026-10-06
 ---
 
@@ -21,23 +21,24 @@ JS se migran por grupos de pantallas a esos tokens y a los componentes Blade com
 `x-ui.button`, `x-ui.input`, `x-ui.brand` (nuevo), `x-ui.dialog` (nuevo, sobre el elemento nativo
 `<dialog>`), `x-ui.status` (nuevo, región que anuncia mensajes) y cinco piezas pequeñas nuevas
 (`stat`, `chip`, `badge`, `record`, `section-title`). Los rechazos
-de acceso de las pantallas web pasan a vistas propias (`errors/403`, `errors/404`) sin tocar las
-respuestas de `/api/v1`. Los arreglos del móvil usan las utilidades responsivas de Tailwind, sin
-cambiar la disposición a 1440 px salvo el encabezado único de gestión de contenido. No hay
+de acceso de las pantallas web pasan a vistas propias (`errors/403`, `errors/404`, `errors/405`,
+`errors/419`) sin tocar las respuestas de `/api/v1`. Los arreglos del móvil usan las utilidades responsivas de Tailwind, sin
+cambiar la disposición a 1440 px salvo el encabezado único de gestión de contenido. La barra lateral
+del panel y el menú del sitio público se despliegan desde 1024 px; por debajo, menú plegable (CA42). No hay
 migraciones, endpoints nuevos ni dependencias nuevas.
 
 La verificación tiene dos mitades: lo que se comprueba leyendo el código o la respuesta HTML va en
 Pest; lo que solo existe en un navegador (contraste pintado, tamaños, desborde, foco, diálogos,
 nombres accesibles) lo mide `ui-audit`, un script propio con Node y Chrome sin interfaz.
 
-La spec es grande (41 criterios, 60 vistas). Se mantiene en una sola por decisión del usuario
+La spec es grande (43 criterios, 60 vistas). Se mantiene en una sola por decisión del usuario
 (2026-10-04) y se planea en ocho fases dentro de la misma rama (ver "Rollout").
 
 ## Constitution Check
 | Principio | Resultado | Justificación / ajuste | Cómo se verifica |
 |---|---|---|---|
-| P1 Spec antes que código | ✅ | Spec 016 `approved` (reaprobada con CA35–CA41); todo cambio traza a un criterio. | manual: `python .ai/bin/aidd.py status`; `/analyze` antes de implementar |
-| P2 Test que falla antes y pasa después | ❌ aceptado: CA9–CA13, CA22, CA25–CA29, CA31–CA38 y CA40 solo se pueden probar en un navegador y su test es `npm run test:ui`, fuera de Pest — aprobado por el usuario el 2026-10-06 | La enmienda 1.2.0 de esta misma spec aclara P2 para admitirlo (CA24; A7). Todo lo que sí se puede comprobar en Pest va en Pest: páginas de error, contratos, textos, estructura, tokens, comando y seeder. No hay value objects nuevos ni modificados. | — |
+| P1 Spec antes que código | ✅ | Spec 016 `approved` (reaprobada con CA35–CA41 y, el 2026-10-13, con CA42 y CA43); todo cambio traza a un criterio. | manual: `python .ai/bin/aidd.py status`; `/analyze` antes de implementar |
+| P2 Test que falla antes y pasa después | ✅ | Con la 1.2.0, lo que solo existe en un navegador (CA9–CA13, CA22, CA25–CA29, CA31–CA38, CA40, CA42 y CA43) se prueba con `npm run test:ui`, que debe fallar sin el cambio y pasar con él; antes de la enmienda fue una desviación aceptada por el usuario el 2026-10-06 (A7). Todo lo que sí se puede comprobar en Pest va en Pest: páginas de error, contratos, textos, estructura, tokens, comando y seeder. No hay value objects nuevos ni modificados. | test: suite Pest; `npm run test:ui` bloqueante en CI (A81) |
 | P3 Capas del módulo | ✅ | Solo cambia presentación (`resources/`), dos middlewares y un comando de `app/Core`, y `bootstrap/app.php`. Ningún `Domain/` se toca ni se añaden dependencias entre módulos. | manual: `/review` del diff; `grep` de `Infrastructure` en `Domain/` sin resultados nuevos |
 | P4 Contrato de API primero | ✅ | Ningún endpoint de `/api/v1` cambia: ni el 403 de `only.admin` ni el 404 y el 405 de rutas inexistentes (A1). | test: `OnlyAdminApiContractTest`, `ApiNotFoundContractTest` |
 | P5 Autorización en el servidor | ✅ | No cambia quién puede qué. Cambia la respuesta de `OnlyAdmin` en rutas web, así que cada ruta web protegida lleva su test de acceso denegado por actor. | test: `WebAccessDeniedPagesTest` (dataset ruta × actor) |
@@ -45,15 +46,18 @@ La spec es grande (41 criterios, 60 vistas). Se mantiene en una sola por decisi�
 | P7 Errores sin detalles internos | ✅ | Las respuestas 403 y 404 de rutas web llevan un texto fijo en español, en HTML y en JSON; nunca el mensaje de la excepción, la ruta pedida ni trazas (A5). Los 500 no cambian. | test: `WebAccessDeniedPagesTest`, `NotFoundPageTest` (con y sin `Accept: application/json`) |
 | P8 Secretos fuera del repositorio | ✅ | Sin variables nuevas ni `env()`: el comando de sesión se registra en `routes/console.php` con `app()->environment()` (A15). No guarda credenciales. | lint: `gitleaks` en CI; test: `UiAuditSessionCommandTest` |
 | P9 Migraciones reversibles | ➖ | Sin migraciones. | — |
-| P10 Dependencias nuevas con ADR | ✅ | Ninguna dependencia nueva. Se actualizan dos transitivas de desarrollo vulnerables; `package.json` solo gana scripts, sin cambios en dependencias (A26). | manual: diff de dependencias de `package.json` (ninguno) y de `package-lock.json` en `/review`; lint: `npm audit --audit-level=high` en CI |
+| P10 Dependencias nuevas con ADR | ✅ | Ninguna dependencia nueva. Se actualizan dos transitivas de desarrollo vulnerables; `package.json` gana scripts y un `overrides` de `shell-quote` (aprobado por el usuario; nota de T002), sin cambios en `dependencies` ni `devDependencies` (A26, A86). | manual: diff de dependencias de `package.json` (ninguno) y de `package-lock.json` en `/review`; lint: `npm audit --audit-level=high` en CI |
 | P11 Datos sensibles y modelo de amenazas | ✅ | Las pantallas con datos personales y de salud cambian de aspecto, no de contenido. Las capturas versionadas se hacen solo con datos de `UiAuditSeeder` (A6). Sin logs nuevos. Modelo de amenazas incluido. | manual: `aidd.py validate`; `/review` de `Log::` (ninguno nuevo) |
 | P12 Producción con aprobación y rollback | ✅ | Rollback por tag, sin migraciones. Las vulnerabilidades previas se corrigen en la primera fase; si no hubiera versión elegible, excepción con vencimiento (A18). | manual: `/release` exige la confirmación; lint: SCA en CI |
 | P13 Lógica de negocio en el backend | ✅ | Los cambios de JS son de presentación. El texto por rol se decide en Blade con el rol del servidor. | manual: `/review` del JS y Blade tocados |
 | P14 Trazabilidad | ❌ aceptado: la página "Sin permiso" no emite el evento de auditoría de acceso denegado porque el registro de auditoría aún no existe (objetivo 5 del roadmap) — aprobado por el usuario el 2026-10-06 | Misma desviación aceptada en la spec 014. Los puntos únicos de rechazo web no cambian de lugar. | — |
+| P15 La interfaz usa solo el sistema de diseño | ✅ | Colores, radios y tamaños solo desde los tokens de `@theme`, con la paleta por defecto retirada; controles con componentes `x-ui.*`. La lista de archivos pendientes queda vacía al cerrar (A81). | test: `DesignTokensTest`, `OnlyDesignTokensTest`; `npm run test:ui` en CI |
 
 Restricción "WCAG 2.1 AA en pantallas nuevas o modificadas": completa, no acotada (A8). La cubren
-CA6–CA9, CA12–CA14, CA29, CA35–CA38 y CA40 con `ui-audit` y Pest, más una revisión con
-`design:accessibility-review` al cerrar cada grupo de pantallas.
+CA6–CA9, CA12–CA14, CA29, CA35–CA38, CA40, CA42 y CA43 con `ui-audit` y Pest, más una revisión con
+`design:accessibility-review` al cerrar cada grupo de pantallas. Lo que anuncia un lector de pantalla
+se comprueba en el árbol de accesibilidad con `ui-audit`, sin prueba manual con lector (decisión del
+usuario, 2026-10-13; A84).
 
 Enmienda 1.2.0 que esta spec aplica (CA24), aprobada por el usuario el 2026-10-06: P15 nuevo y
 aclaración de P2 (ver "Contratos y datos" → "Enmienda de la constitución").
@@ -63,7 +67,7 @@ Todas las rutas existen salvo las marcadas (nuevo).
 
 | Módulo | Cambio | Riesgo |
 |---|---|---|
-| Dependencias · `package-lock.json`, `docs/security.md` | `npm audit fix` para `shell-quote` y `source-map-js`; estado de RS16.a (A18). | bajo |
+| Dependencias · `package-lock.json`, `package.json` (`overrides`), `docs/security.md`, `docs/roadmap.md` | `npm audit fix` para `shell-quote` y `source-map-js`; estado de RS16.a (A18). El `overrides` de `shell-quote` se retira cuando `concurrently` publique una versión que lo corrija: queda como pendiente en `docs/security.md` y en el roadmap (A86). | bajo |
 | Sistema de diseño · `docs/design/system.md`, `docs/design/system.html`, `.ai/project.yaml` | Tokens y componentes nuevos, `source: chosen`, versión 2.0.0, deuda `DS` → "la resuelve 016". El sistema extraído se archiva en `docs/design/history/`. | bajo |
 | Constitución · `docs/constitution.md`, `.ai/project.yaml` | P15 nuevo y P2 aclarado, versión 1.2.0, entrada en "Enmiendas"; `constitution_version` de `project.yaml` (A19). | bajo |
 | Tokens · `resources/css/app.css` | `@theme` con la tabla "Tokens", `--color-*: initial` y foco único en `@layer base`. | alto: al retirar la paleta por defecto, toda vista sin migrar perdería sus colores (ver Rollout) |
@@ -78,9 +82,11 @@ Todas las rutas existen salvo las marcadas (nuevo).
 | Tratamientos · `pages/tratamientos/index.blade.php`, `resources/js/pages/tratamientos/index.js` | Tokens, cuatro diálogos, textos sin jerga técnica. | bajo |
 | Contenido · `pages/contenido/**` (16 vistas), `resources/js/pages/contenido/**` (17 archivos) | Tokens; un solo encabezado de página también a 1440 px, con el nombre de cada pestaña como `h2` junto a su acción (A10); 11 diálogos sobre `x-ui.dialog`; tarjeta de galería que cabe en una pantalla. | alto |
 | Agenda · `pages/agenda/index.blade.php`, `components/calendar/*.blade.php` (6), `resources/js/pages/agenda/*.js` (4) | Tokens, filtros en una fila desplazable, calendario con días que son botones, número de citas por día y lista del día bajo el calendario en el móvil; el diálogo "Citas del día" solo se abre desde `md` (decisión del usuario; A48); 5 diálogos sobre `x-ui.dialog`, tarjeta "Citas para hoy" sin hueco; se retira la rama "ver y editar". `view-appointment-modal` y su JS también los usa expedientes (A9). | alto |
-| Errores web · `app/Core/Middlewares/OnlyAdmin.php`, `app/Core/Middlewares/EnsureActiveStaff.php`, `bootstrap/app.php`, `routes/web.php`, `resources/views/errors/{403,404,405,419}.blade.php` (nuevos), `resources/views/layouts/error.blade.php` (nuevo) | Los dos middlewares responden `abort(403)` sin mensaje fuera de `api/*`. `bootstrap/app.php` da a los 403, 404, 405 y 419 de rutas web un cuerpo JSON fijo en español cuando se pide JSON (A49). Ruta de respaldo para el 404 web, que excluye `api/*` y no pasa por el grupo `web`. | medio |
+| Errores web · `app/Core/Middlewares/OnlyAdmin.php`, `app/Core/Middlewares/EnsureActiveStaff.php`, `bootstrap/app.php`, `resources/views/errors/{403,404,405,419}.blade.php` (nuevos), `resources/views/layouts/error.blade.php` (nuevo) | Los dos middlewares responden `abort(403)` sin mensaje fuera de `api/*`. `bootstrap/app.php` da a los 403, 404, 405 y 419 de rutas web un cuerpo JSON fijo en español cuando se pide JSON (A49). Ruta de respaldo para el 404 web, registrada en `bootstrap/app.php` (`then:` de `withRouting`), después de las demás rutas; excluye `api/*` y no pasa por el grupo `web` (A87). `routes/web.php` no cambia. | medio |
+| Navegación según el ancho · `components/ui/sidebar.blade.php`, `layouts/dashboard.blade.php`, `components/landing/nav.blade.php`, `resources/js/app.js` | Desde 1024 px, barra lateral del panel y menú del sitio desplegados; por debajo, menú plegable cuyas opciones caben en la pantalla, se recorren con teclado y se cierra con Escape devolviendo el foco al botón que lo abrió (CA42; A75, A83). | medio |
+| Accesibilidad pendiente · `resources/js/pages/auth/reset-password.js`, `pages/auth/reset-password.blade.php`, enlaces que abren otra pestaña (`components/landing/{nav,footer}.blade.php`, `pages/landing/{inicio,contacto}.blade.php`), `resources/js/ui/status.js` y los scripts de página que envían formularios | El error de contraseñas que no coinciden queda ligado al campo de confirmación como los errores del servidor (CA37; A82). Cada enlace a otra pestaña lo dice en su nombre accesible (CA43). Al enviar un formulario se anuncia "Enviando…" en la región de estado sin mover el foco (CA37; A83). | bajo |
 | Limpieza · `resources/views/components/ui/table.blade.php`, `resources/views/welcome.blade.php` | Se eliminan (decisión del usuario, 2026-10-06). | bajo |
-| Pruebas · `tests/Modules/Core/Unit/Design/*` (nuevo), `tests/Modules/Core/Integration/*` (nuevos), `tests/Browser/` (nuevo), `database/seeders/UiAuditSeeder.php` (nuevo), `app/Core/Console/UiAuditSessionCommand.php` y `UiAuditDataCommand.php` (nuevos), `routes/console.php`, `package.json` (scripts), `.github/workflows/tests.yml` | Tests del sistema, de errores y de estructura; `ui-audit` con sus datos sembrados; paso nuevo en CI. | medio |
+| Pruebas · `tests/Modules/Core/Unit/Design/*` (nuevo), `tests/Modules/Core/Integration/*` (nuevos), `tests/Browser/` (nuevo), `database/seeders/UiAuditSeeder.php` (nuevo), `app/Core/Console/UiAuditSessionCommand.php` y `UiAuditDataCommand.php` (nuevos), `routes/console.php`, `package.json` (scripts), `.github/workflows/tests.yml` | Tests del sistema, de errores y de estructura; `ui-audit` con sus datos sembrados; paso nuevo en CI. Tras la ronda 4: anchos y entradas de `screens.json` y `ui-audit.mjs` según "Navegador" (A75, A76, A77, A90). | medio |
 
 ## Contratos y datos
 
@@ -148,7 +154,7 @@ opciones (A29).
 - **Componentes:** botón (4 variantes, un tamaño), campo, marca, diálogo base, contador, región de estado y página de error; y como componentes Blade propios (A47): filtro (`x-ui.chip`), insignia de estado (`x-ui.badge`, con su gemela `resources/js/ui/badge.js` para los estados que pinta el navegador), registro de etiqueta y valor (`x-ui.record`) y subtítulo con acción (`x-ui.section-title`, un `h2`).
 - **Reglas de uso:** una acción principal por pantalla; texto nunca en rosa; ningún color fuera de los tokens.
 - **Frontmatter:** `source: chosen`, `version: 2.0.0`, `status: draft` hasta que el usuario apruebe el sistema 2.0.0; entonces `approved` aquí y en `.ai/project.yaml` (A29). Deuda `DS1`–`DS11`, `DS13`, `DS14` → "la resuelve 016".
-- **Capturas:** al cerrar, el paso de CI ejecuta `ui-audit --screenshots` sobre su base recién migrada, que solo contiene datos de `UiAuditSeeder`, y publica las capturas de las 65 pantallas y las 4 nuevas a 390 y 1440 px como artefacto; de ahí se copian al repositorio, sin re-extraer el sistema (A6, A37).
+- **Capturas:** al cerrar, el paso de CI ejecuta `ui-audit --screenshots` sobre su base recién migrada, que solo contiene datos de `UiAuditSeeder`, y publica las capturas de las 65 pantallas y de las 2 páginas de error nuevas que se recorren en el navegador (403 y 404; A58) a 390 y 1440 px como artefacto; de ahí se copian al repositorio, sin re-extraer el sistema (A6, A37).
 
 ### Pantallas y estados
 
@@ -158,7 +164,9 @@ opciones (A29).
 | No encontrada (nueva) | página de error, logo, botón principal | con sesión → `/dashboard`; sin sesión → `/` | un `h1` |
 | Método no permitido y formulario caducado (nuevas) | página de error, logo, botón principal | únicos | un `h1`; enlace de vuelta como en "No encontrada" |
 | Diálogos (unos 25, en cada pantalla que los monta) | `x-ui.dialog` | abierto, con error de validación, enviando | `<dialog>` con `aria-labelledby`; foco dentro; Escape cierra; el foco vuelve al control que lo abrió; ancho y alto ≤ pantalla con cuerpo desplazable y pie fijo |
-| Formularios | `x-ui.input`, `x-ui.status` | vacío, con error, enviando, guardado | etiqueta visible asociada; obligatorios marcados; error asociado al campo; resultado anunciado en la región de estado |
+| Formularios | `x-ui.input`, `x-ui.status` | vacío, con error, enviando, guardado | etiqueta visible asociada; obligatorios marcados; error asociado al campo, también el detectado antes de enviar; "Enviando…" y el resultado anunciados en la región de estado |
+| Navegación (panel y sitio público) | barra lateral o menú, botón del menú plegable | desplegada (≥ 1024 px); plegada y abierta (< 1024 px) | menú abierto dentro de la pantalla a 390 y 768 px; Escape cierra y devuelve el foco al botón; opciones ≥ 44 × 44 px |
+| Enlaces a otra pestaña | enlace | único | su nombre accesible avisa que abre otra pestaña |
 | Listados | encabezado, contadores, buscador, filtros, tarjetas | con datos, vacío, cargando, error | primer elemento a ≤ 844 px a 390 px; controles ≥ 44 × 44 px; botones de icono con nombre |
 | Expediente | encabezado, registros | con datos, vacío por sección, formulario abierto | a 390 px sin desplazamiento lateral; el expediente elegido queda a la vista |
 | Agenda | filtros, calendario, lista del día, diálogos | mes sin citas, con citas, día elegido | a 390 px la página mide 390 px; cada día es un botón, muestra su número de citas y lo incluye en su nombre accesible; "Citas del día" es lista en el móvil y diálogo desde `md` |
@@ -177,7 +185,7 @@ y, si no, en la del marco (A34). Marcos que la montan: sitio público, acceso, c
 campo) o tiene rol, foco y activación con Intro y barra espaciadora. Los días del calendario y las
 tarjetas de la galería pública pasan a ser botones.
 
-**Control táctil (CA9):** `ui-audit` mide botones, campos, selectores, filtros, elementos de menú,
+**Control táctil (CA9):** a 390 y a 768 px (A90), `ui-audit` mide botones, campos, selectores, filtros, elementos de menú,
 iconos de acción y enlaces que están solos en su línea o en una lista de navegación. Los enlaces
 dentro de un párrafo quedan fuera, como permite WCAG para objetivos en línea (A30).
 
@@ -243,11 +251,16 @@ final falla si queda alguna marca.
 **Navegador (`tests/Browser/ui-audit.mjs`, `npm run test:ui`):** Node y Chrome sin interfaz por el
 protocolo DevTools, sin dependencias. Recorre `screens.json`: las 65 pantallas y diálogos del
 inventario más cada diálogo en **cada pantalla que lo monta** (expediente como administrador,
-asistente y doctor; inicio del panel) (A9), a 390 × 844 y 1440 × 900. Módulos:
+asistente y doctor; inicio del panel) (A9), a 390 × 844, 768 × 1024 y 1440 × 900 (A76). Excepciones,
+declaradas en `screens.json`: los menús abiertos (`inicio-menu`, `dashboard-menu`) solo existen por
+debajo de 1024 px y se recorren a 390 y 768; "Citas del día" como diálogo solo existe desde `md` y se
+recorre a 768 y 1440 (A77). Una visita adicional a 1024 × 768 comprueba que la barra lateral y el
+menú del sitio se ven desplegados sin desborde (CA42; A75). A 390 y 768 px se miden los controles
+táctiles (A90); el aspecto al pasar el cursor se mide con ratón. Módulos:
 - `checks-global`: desborde, controles táctiles, alturas y radios, letra, contraste del texto, del texto de ejemplo y de los bordes pintados, foco (también sobre superficies oscuras), hover del botón principal y su contraste, recortes.
 - `checks-dialogs`: nombre accesible, foco al abrir y al cerrar, Escape, ancho y alto.
 - `checks-screens`: agenda, expediente, listados, encabezados, tarjetas vacías, cabecera, y la tarjeta de galería **pintada**: su alto, que se identifica por su descripción y que no muestra el nombre ni la dirección internos (A42).
-- `checks-a11y`: nombre accesible de todo control e imagen con información, etiqueta visible por campo y marca de obligatorio, error asociado a su campo, región de estado que recibe el mensaje, contraste ≥ 3:1 de iconos de acción y bordes de control, estados con texto además de color (CA35–CA38); que la región que recibe un mensaje esté en el árbol de accesibilidad también con un diálogo abierto (A34); y que no haya ningún elemento con manejador de clic que no sea un control nativo ni tenga rol, foco y activación por teclado (CA40; A35), con control positivo sobre el calendario actual.
+- `checks-a11y`: nombre accesible de todo control e imagen con información, etiqueta visible por campo y marca de obligatorio, error asociado a su campo, región de estado que recibe el mensaje, contraste ≥ 3:1 de iconos de acción y bordes de control, estados con texto además de color (CA35–CA38); que la región que recibe un mensaje esté en el árbol de accesibilidad también con un diálogo abierto (A34); y que no haya ningún elemento con manejador de clic que no sea un control nativo ni tenga rol, foco y activación por teclado (CA40; A35), con control positivo sobre el calendario actual. Tras la ronda 4: el error de contraseñas que no coinciden queda ligado a su campo (A82); "Enviando…" llega a la región de estado al enviar (A83); todo enlace a otra pestaña lo avisa en su nombre (CA43); y el menú plegable se cierra con Escape y devuelve el foco (CA42). Cada caso con un control que falla sin la corrección.
 - `checks-composition`: línea base a 1440 px.
 
 **Dónde corre (A16, A46):** el script recibe dos parámetros: `--base-url` y `--artisan`, el prefijo
@@ -269,9 +282,11 @@ niveles de encabezado ni totales, así que da lo mismo en local y en CI. Diferen
 declaradas en el propio archivo con su criterio: gestión de contenido pierde un encabezado (CA34) y
 la tarjeta de cita pierde la rama retirada (CA17). Cualquier otra diferencia falla.
 
-**Manual:** lector de pantalla en un diálogo y en una página de error; `design:accessibility-review`
+**Manual:** `design:accessibility-review`
 y aspecto de cada grupo contra `design/propuesta.html` a 390 px y contra las capturas actuales de
-`docs/design/capturas/` a 1440 px, porque la propuesta no dibuja el escritorio (A27).
+`docs/design/capturas/` a 1440 px, porque la propuesta no dibuja el escritorio (A27). Sin prueba
+manual con lector de pantalla: lo que anuncia se comprueba en el árbol de accesibilidad con
+`checks-a11y` y `checks-dialogs` (decisión del usuario, 2026-10-13; A84).
 
 ## Modelo de amenazas
 La spec no añade datos, endpoints ni entradas, pero cambia cómo responde el servidor a un acceso
@@ -301,11 +316,11 @@ Casos de abuso de la spec: CA18 → TM1 y TM2; CA20 → TM2 y TM3.
 | CA6: texto ≥ 4.5:1 | Tokens; estados; WhatsApp | `DesignTokensTest`; `ui-audit` `checks-global` |
 | CA7: borde de campo ≥ 3:1 | `x-ui.input`, campos | `DesignTokensTest`; `ui-audit` |
 | CA8: un solo foco visible ≥ 3:1 | `@layer base`; `data-surface="dark"` | `OnlyDesignTokensTest`; `ui-audit` (contorno y su contraste al enfocar cada control, incluido el visor) |
-| CA9: controles táctiles ≥ 44 × 44 px a 390 px | Componentes, filtros, menú, iconos | `ui-audit` `checks-global` |
+| CA9: controles táctiles ≥ 44 × 44 px a 390 y 768 px | Componentes, filtros, menú, iconos | `ui-audit` `checks-global` a 390 y 768 px (A90) |
 | CA10: misma altura y radio por tipo de control | Tokens; componentes | `ui-audit` `checks-global` |
 | CA11: agenda sin desborde a 390 px | `pages/agenda`, `calendar/grid` | `ui-audit` `checks-screens` |
-| CA12: diálogo anuncia título, atrapa y devuelve el foco | `x-ui.dialog`, `ui/dialog.js` | `ui-audit` `checks-dialogs`; verificación manual: lector de pantalla en "Nueva cita" |
-| CA13: diálogo no supera el alto de la ventana | `x-ui.dialog` | `ui-audit` `checks-dialogs` a 390 × 844 y 1440 × 900 |
+| CA12: diálogo anuncia título, atrapa y devuelve el foco | `x-ui.dialog`, `ui/dialog.js` | `ui-audit` `checks-dialogs` (nombre accesible desde el árbol de accesibilidad; A84) |
+| CA13: diálogo no supera el alto de la ventana | `x-ui.dialog` | `ui-audit` `checks-dialogs` a 390 × 844, 768 × 1024 y 1440 × 900, con "Citas del día" a 768 (A77) |
 | CA14: un título principal por pantalla | `page-hero`, marcos, contenido | `PageStructureTest` |
 | CA15: mismo logo, texto alternativo, icono de pestaña | `x-ui.brand`, `public/images/brand`, marcos | `PageStructureTest`; verificación manual: pestaña del navegador |
 | CA16: ortografía del español | Vistas y textos de JS | `UiCopyTest` |
@@ -330,12 +345,14 @@ Casos de abuso de la spec: CA18 → TM1 y TM2; CA20 → TM2 y TM3.
 | CA34: sin espacio vacío sin función | `contenido/index` y pestañas, `agenda`, `sidebar` | `ui-audit` `checks-screens`; `PageStructureTest` (un `h1` en `/contenido`) |
 | CA35: nombre accesible de controles e imágenes | `x-ui.button`, `x-ui.brand`, vistas | `ui-audit` `checks-a11y`; verificación manual: `design:accessibility-review` por grupo |
 | CA36: etiqueta visible y obligatorios | `x-ui.input`, formularios | `PageStructureTest` (etiqueta asociada); `ui-audit` `checks-a11y` |
-| CA37: mensajes anunciados, error asociado al campo | `x-ui.status`, `x-ui.dialog`, `ui/status.js`, `x-ui.input`, scripts de página | `ui-audit` `checks-a11y` (también con un diálogo abierto); verificación manual: lector de pantalla al guardar un paciente con error |
+| CA37: mensajes anunciados, error asociado al campo, "Enviando…" | `x-ui.status`, `x-ui.dialog`, `ui/status.js`, `x-ui.input`, scripts de página, `auth/reset-password.js` | `ui-audit` `checks-a11y` (también con un diálogo abierto; contraseñas que no coinciden ligadas al campo, A82; "Enviando…" anunciado, A83) |
 | CA38: contraste no textual ≥ 3:1; nada solo por color | Tokens (`muted`, `field`), insignias de estado | `DesignTokensTest`; `ui-audit` `checks-a11y` |
 | CA40: todo se usa con teclado | calendario, galería pública, componentes | `ui-audit` `checks-a11y` (sin elementos con clic que no sean controles) |
+| CA42: navegación desplegada desde 1024 px; menú plegable por debajo | `sidebar`, `layouts/dashboard`, `landing/nav`, `app.js` | `ui-audit`: menús abiertos a 390 y 768 (`checks-global`, Escape y foco en `checks-a11y`); visita a 1024 × 768 con la navegación desplegada |
+| CA43: enlaces a otra pestaña lo avisan | `landing/{nav,footer}`, `landing/{inicio,contacto}` | `ui-audit` `checks-a11y` (todo enlace con `target="_blank"` lo dice en su nombre) |
 | CA39: sin vulnerabilidades altas ni críticas | `package-lock.json`; estado de RS16.a en `docs/security.md` | lint: `npm audit --audit-level=high` y `composer audit --locked` (verificación final y CI) |
-| RNF: WCAG 2.1 AA | Todo | los de CA6–CA9, CA12–CA14, CA29, CA35–CA38 y CA40; verificación manual: `design:accessibility-review` por grupo |
-| RNF: sin desplazamiento horizontal a 390, 768 y 1440 px | Todo | `ui-audit` `checks-global` |
+| RNF: WCAG 2.1 AA | Todo | los de CA6–CA9, CA12–CA14, CA29, CA35–CA38, CA40, CA42 y CA43; verificación manual: `design:accessibility-review` por grupo |
+| RNF: sin desplazamiento horizontal ni contenido fuera de su caja a 390, 768 y 1440 px, en pantallas, diálogos y menús | Todo | `ui-audit` `checks-global` en sus tres anchos por defecto, con las excepciones declaradas de "Navegador" (A76) |
 | RNF: sin regresiones | Todo | suite Pest completa en CI |
 | RNF: logo, icono e imagen de acceso propios | `public/images/brand` | `PageStructureTest` |
 | TM1 | middlewares | `WebAccessDeniedPagesTest` |
@@ -355,7 +372,7 @@ Casos de abuso de la spec: CA18 → TM1 y TM2; CA20 → TM2 y TM3.
 
 ## Rollout
 - Feature flag: no aplica. El cambio es de presentación sobre un prototipo sin datos ni usuarios reales.
-- Orden de despliegue: una sola imagen, sin migraciones. Dentro de la rama, ocho fases: (1) dependencias, datos y herramientas de prueba, (2) sistema, constitución y tokens, (3) componentes, (4) sitio público y acceso, (5) marco del panel, pacientes, usuarios y tratamientos, (6) expedientes y contenido, (7) agenda, (8) errores, limpieza, capturas y cierre.
+- Orden de despliegue: una sola imagen, sin migraciones. Dentro de la rama, ocho fases: (1) dependencias, datos y herramientas de prueba, (2) sistema, constitución y tokens, (3) componentes, (4) sitio público y acceso, (5) marco del panel, pacientes, usuarios y tratamientos, (6) expedientes y contenido, (7) agenda, (8) errores, limpieza, capturas y cierre, (9) correcciones de la ronda 4 de `/analyze` (navegación por ancho, 768 px en `ui-audit`, accesibilidad pendiente y documentación).
 - **Convivencia de pantallas migradas y sin migrar:** al retirar la paleta por defecto, una vista sin migrar perdería sus colores. Por eso el `@theme` de la fase 2 declara, en un bloque aparte marcado como transitorio, los nombres antiguos que las vistas pendientes aún usan; la fase 8 lo elimina. `DesignTokensTest` falla si el bloque transitorio existe cuando la lista de pendientes está vacía, y `OnlyDesignTokensTest` falla si un archivo pendiente usa un color que no está ni en los tokens ni en el bloque (A40). Así la app se ve completa al cerrar cada fase.
 - **Diálogos compartidos entre fases (A9, A21):** `resources/js/ui/dialog.js` abre y cierra tanto el marcado antiguo (un `div` que se muestra y se oculta) como el nuevo (`<dialog>`). Primero pasan a usarlo los scripts de cada pantalla, con el marcado antiguo aún en pie; después se migra la vista del diálogo, cuando todos los scripts que lo abren ya lo usan. Ninguna tarea termina con un diálogo que no abre. La fase 8 retira la rama del marcado antiguo.
 - Compatibilidad: convive con la versión anterior durante el deploy; no cambia la API ni los datos.
@@ -364,7 +381,7 @@ Casos de abuso de la spec: CA18 → TM1 y TM2; CA20 → TM2 y TM3.
 - Métricas a vigilar tras el deploy: tasa de 5xx y número de 403 y 404 en Loki; carga de CSS y JS sin 404 de recursos.
 
 ## Decisiones (→ ADR si son arquitectónicas)
-- **Una sola spec** con 41 criterios; no se divide (decisión del usuario, 2026-10-04).
+- **Una sola spec** con 43 criterios; no se divide (decisión del usuario, 2026-10-04).
 - **Variante B · Neutra** de `design/propuesta.html` (decisión del usuario, 2026-10-06; tipo diseño).
 - **Marca:** el consultorio se llama Dentissa y los textos lo conservan; el logo es el de la doctora. En las barras, el icono (blanco sobre rosa) junto a "Dentissa"; el logo completo, en el pie del sitio, el acceso y las páginas de error (decisión del usuario, 2026-10-06).
 - **Imagen de acceso versionada** junto con la marca (decisión del usuario, 2026-10-06; A31).
@@ -376,7 +393,7 @@ Casos de abuso de la spec: CA18 → TM1 y TM2; CA20 → TM2 y TM3.
 - **WCAG 2.1 AA completo**, con CA35–CA38 y revisión por grupo (decisión del usuario, 2026-10-06; A8).
 - **Gestión de contenido con un solo encabezado**, en móvil y en escritorio (decisión del usuario, 2026-10-06; A10).
 - **Sesión para las pruebas de navegador:** comando de consola registrado en `routes/console.php` solo en `local` y `testing` (A15). Alternativa descartada: contraseñas de prueba en el repositorio.
-- **404 web por una ruta de respaldo fuera del grupo `web`:** solo lee el token de la cookie para saber si hay sesión, excluye `api/*` y no abre sesión (A1, A22). La opción conservadora de A22 la tomó `/analyze` sin respuesta del usuario; queda para que la revise al aprobar este plan.
+- **404 web por una ruta de respaldo fuera del grupo `web`**, registrada en `bootstrap/app.php` (`then:`) para quedar detrás de todas las rutas (A87): solo lee el token de la cookie para saber si hay sesión, excluye `api/*` y no abre sesión (A1, A22). La opción conservadora de A22 la tomó `/analyze` sin respuesta del usuario; queda para que la revise al aprobar este plan.
 - **403 y 404 de rutas web con cuerpo fijo también en JSON** (A5).
 - **Expediente en el móvil:** al elegir un paciente se muestra el expediente en lugar de la lista, con un enlace para volver; a 1440 px se conserva la disposición actual.
 - **Tablas del expediente:** por debajo de `md`, pares de etiqueta y valor; desde `md`, la tabla actual.
@@ -391,8 +408,13 @@ Casos de abuso de la spec: CA18 → TM1 y TM2; CA20 → TM2 y TM3.
 - **Datos de prueba por comando** (`ui:audit-data`, con `--clean`), porque `db:seed` no admite opciones propias de un seeder (A36); capturas versionadas solo desde CI (A37).
 - **Piezas repetidas como componentes** (`chip`, `badge`, `record`, `section-title`) para que ninguna tarea invente su marcado (A47).
 - **Vulnerabilidades previas — RS16.a, dentro del alcance (A18):** `docs/security.md` la da por mitigada en v0.1.0, pero `npm audit` reporta de nuevo `shell-quote` (crítica, vía `concurrently`) y `source-map-js` (alta, vía `vite` y `tailwindcss`), ambas herramientas de desarrollo. Se actualizan en la primera fase a la versión corregida con al menos 7 días de publicada, y RS16.a se anota como reabierta y vuelta a mitigar. Si en ese momento no hubiera versión elegible, se registra una excepción en `docs/security.md` con motivo, aprobación del usuario y vencimiento a 14 días, y la tarea queda bloqueada hasta entonces. `composer audit --locked` no reporta nada.
+- **Navegación según el ancho:** barra lateral y menú del sitio desplegados desde 1024 px; menú plegable por debajo (decisión del usuario, 2026-10-11; CA42, A75).
+- **Tamaño táctil también a 768 px**, donde se usa el menú plegable (decisión del usuario, 2026-10-13; A90).
+- **Sin prueba manual con lector de pantalla:** la sustituyen las comprobaciones del árbol de accesibilidad de `ui-audit` (decisión del usuario, 2026-10-13; A84).
+- **Pendientes de accesibilidad de la revisión por grupos** (enlaces a otra pestaña, Escape en el menú plegable, "Enviando…") y el error de contraseñas en el cliente se corrigen en esta spec (decisión del usuario, 2026-10-13; A82, A83).
+- **`overrides` de `shell-quote`** en `package.json`, aprobado por el usuario en T002; su retirada queda como pendiente (A86).
 - **P14:** desviación aceptada por el usuario el 2026-10-06.
-- **P15:** texto aprobado tal cual por el usuario el 2026-10-06.
+- **P15:** texto aprobado tal cual por el usuario el 2026-10-06; el plan se reevaluó con la constitución 1.2.0 el 2026-10-13 (A81).
 - Ninguna decisión requiere ADR: no hay dependencias nuevas ni cambios de arquitectura.
 
 ## Impacto en arquitectura
