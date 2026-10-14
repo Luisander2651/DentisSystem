@@ -60,6 +60,7 @@
             data-variant="{{ $variant }}"
             data-error-target="{{ $inputId }}-error"
             data-error-text="{{ $resolvedErrorText }}"
+            data-announce-target="{{ $inputId }}-announce"
             {{ $attributes->merge(['class' => $base . ($isPassword ? ' pr-12' : '')]) }}
         >
 
@@ -89,6 +90,10 @@
     @if ($hint)
         <p id="{{ $inputId }}-hint" class="mt-1 text-min text-muted">{{ $hint }}</p>
     @endif
+
+    {{-- Anuncia el error del campo al salir de él; se vacía al corregirlo. Es del campo, así que
+         dentro de un diálogo se va con él. --}}
+    <span id="{{ $inputId }}-announce" class="sr-only" aria-live="polite" data-ui-input-announce></span>
 
     <p id="{{ $inputId }}-error" class="mt-1 hidden text-sm font-semibold text-danger">
         {{ $resolvedErrorText }}
@@ -153,8 +158,21 @@
                 var describedBy = (input.getAttribute('aria-describedby') || '').split(/\s+/).filter(function (id) {
                     return id !== '' && id !== errorTarget.id;
                 });
+                var announcer = document.getElementById(input.dataset.announceTarget);
+                var foreignError = input.getAttribute('aria-invalid') === 'true' && !input.hasAttribute('data-ui-own-error');
+
+                // Un error que no puso el campo (el de una respuesta 422 o el de un script) no se
+                // quita solo con pasar por él: se va al volver a escribir (spec 016, CA37).
+                if (valid && leaving && foreignError) {
+                    return;
+                }
 
                 if (valid) {
+                    if (announcer) {
+                        announcer.textContent = '';
+                    }
+
+                    input.removeAttribute('data-ui-own-error');
                     errorTarget.classList.add('hidden');
                     input.classList.remove('border-2', 'border-danger');
                     input.classList.add('border-field');
@@ -174,12 +192,14 @@
                 input.classList.remove('border-field');
                 input.classList.add('border-2', 'border-danger');
                 input.setAttribute('aria-invalid', 'true');
+                input.setAttribute('data-ui-own-error', '');
                 input.setAttribute('aria-describedby', describedBy.concat(errorTarget.id).join(' '));
 
-                // Al salir de un campo inválido, su error se anuncia: el foco ya está en otro sitio y
-                // un lector de pantalla no lo leería (spec 016, CA37).
-                if (leaving && window.uiStatus) {
-                    window.uiStatus.announceError(errorTarget.textContent);
+                // Al salir de un campo inválido, su error se anuncia en la región del propio campo: el
+                // foco ya está en otro sitio y un lector de pantalla no lo leería (spec 016, CA37).
+                if (leaving && announcer) {
+                    announcer.textContent = '';
+                    announcer.textContent = errorTarget.textContent;
                 }
             }
 
