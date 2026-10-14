@@ -33,6 +33,7 @@
                     <span class="mt-4 text-xs font-semibold text-ink inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-200">
                         Escríbenos &rarr;
                     </span>
+                    <span class="sr-only">(se abre en otra pestaña)</span>
                 </a>
 
                 <!-- Instagram Card -->
@@ -51,6 +52,7 @@
                     <span class="mt-4 text-xs font-semibold text-ink inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-200">
                         Síguenos &rarr;
                     </span>
+                    <span class="sr-only">(se abre en otra pestaña)</span>
                 </a>
 
                 <!-- Facebook Card -->
@@ -67,6 +69,7 @@
                     <span class="mt-4 text-xs font-semibold text-ink inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-200">
                         Visítanos &rarr;
                     </span>
+                    <span class="sr-only">(se abre en otra pestaña)</span>
                 </a>
             </div>
 
