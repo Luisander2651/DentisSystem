@@ -1,5 +1,5 @@
 import { stateBadge } from '../../ui/badge';
-import { closeDialog, openDialog } from '../../ui/dialog';
+import { closeDialog, isBackdropClick, openDialog } from '../../ui/dialog';
 import { announce, failureMessage } from '../../ui/status';
 
 (function () {
@@ -891,7 +891,7 @@ import { announce, failureMessage } from '../../ui/status';
 
     if (deleteModal) {
         deleteModal.addEventListener('click', function (event) {
-            if (event.target === deleteModal) {
+            if (isBackdropClick(event, deleteModal)) {
                 closeDeleteModal();
             }
         });
