@@ -61,16 +61,23 @@ import { announce, announceError, announceFailure, clearAnnouncements } from '..
         return passwordInput.value.trim() === confirmPasswordInput.value.trim();
     }
 
-    // El campo vuelve a validarse solo al escribir o salir de él; si aún no coinciden, el error sigue.
-    ['input', 'blur'].forEach((type) => {
-        confirmPasswordInput.addEventListener(type, () => {
-            if (mismatchShown && !passwordsMatch()) {
-                showMismatch();
-            } else {
-                mismatchShown = false;
-            }
-        });
-    });
+    // El componente de campo vuelve a validarlo al escribir y al salir de él, y quitaría este
+    // error. Estos oyentes van en el documento, después de los suyos: si aún no coinciden, el
+    // error vuelve a ponerse.
+    const keepMismatch = (event) => {
+        if (event.target !== confirmPasswordInput && event.target !== passwordInput) {
+            return;
+        }
+
+        if (mismatchShown && !passwordsMatch()) {
+            showMismatch();
+        } else {
+            mismatchShown = false;
+        }
+    };
+
+    document.addEventListener('input', keepMismatch);
+    document.addEventListener('blur', keepMismatch, true);
 
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -146,7 +153,7 @@ import { announce, announceError, announceFailure, clearAnnouncements } from '..
         } catch (error) {
             announceFailure(0);
         } finally {
-            if (submitButton && !successBox.classList.contains('hidden')) {
+            if (submitButton && successBox.classList.contains('hidden')) {
                 submitButton.disabled = false;
             }
         }
