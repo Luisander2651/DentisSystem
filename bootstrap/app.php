@@ -109,6 +109,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json(['message' => $messages[$e->getStatusCode()]], $e->getStatusCode(), $e->getHeaders());
             }
 
+            // A 405 is raised before any route middleware runs: the token is read from its cookie
+            // here too, so whoever has a session gets the way back to their start.
+            (new InjectSanctumTokenFromCookie)->handle($request, fn (): Response => new Response);
             (new RegisterErrorViewPaths)();
 
             return rescue(fn (): Response => response()->view('errors::'.$e->getStatusCode(), ['errors' => new ViewErrorBag], $e->getStatusCode(), $e->getHeaders()), null, false);
