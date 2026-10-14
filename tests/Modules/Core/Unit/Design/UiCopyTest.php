@@ -143,6 +143,7 @@ it('catches a forbidden word wherever a person reads it (positive controls)', fu
     'template literal' => ['a.js', 'label.textContent = `Ultima visita: ${date}`;', 'ultima → última'],
     'jargon in a view' => ['a.blade.php', '<p>Usa esta pantalla con las rutas admin de la API.</p>', 'rutas admin'],
     'backend' => ['a.blade.php', '<p>El backend asigna visible por defecto.</p>', 'backend'],
+    'a field label in English (CA30)' => ['a.blade.php', '<x-ui.input name="password" type="password" label="Password" />', 'Password'],
 ]);
 
 it('ignores what nobody reads (negative controls)', function (string $file, string $content) {

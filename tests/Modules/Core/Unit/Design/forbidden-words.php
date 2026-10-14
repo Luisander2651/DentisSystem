@@ -71,5 +71,6 @@ return [
         'login',
         'logout',
         'token',
+        'Password',
     ],
 ];
