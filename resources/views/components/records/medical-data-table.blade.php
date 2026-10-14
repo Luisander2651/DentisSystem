@@ -10,7 +10,7 @@
     </x-ui.section-title>
 
     <form id="record-medical-form" class="hidden space-y-4 border-b border-line bg-canvas p-4">
-        <x-ui.input variant="string" id="record-medical-blood-type" name="blood_type" label="Tipo de sangre" placeholder="O+" autocomplete="off" />
+        <x-ui.input variant="text" id="record-medical-blood-type" name="blood_type" label="Tipo de sangre" placeholder="O+" autocomplete="off" />
 
         <div>
             <label for="record-medical-allergies" class="mb-1.5 block text-sm font-semibold text-ink">Alergias</label>
