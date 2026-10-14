@@ -24,7 +24,7 @@
                         En Dentissa nos apasiona crear sonrisas hermosas y saludables. Ofrecemos tratamientos dentales integrales de alta calidad en un ambiente cálido, seguro y diseñado para tu comodidad.
                     </p>
                     <div class="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
-                        <a href="https://wa.me/521234567890?text=Hola,%20me%20gustaria%20agendar%20una%20citas" target="_blank" rel="noopener noreferrer">
+                        <a href="https://wa.me/521234567890?text=Hola,%20me%20gustaria%20agendar%20una%20citas" target="_blank" rel="noopener noreferrer" aria-label="Agenda una Cita (se abre en otra pestaña)">
                             <x-ui.button variant="primary" class="w-full sm:w-auto">
                                 Agenda una Cita
                             </x-ui.button>
@@ -179,7 +179,7 @@
                 <h2 class="text-base font-semibold uppercase tracking-wider text-ink">Promociones Especiales</h2>
                 <p class="text-3xl font-bold tracking-tight text-ink mt-1">Aprovecha nuestras ofertas del mes</p>
             </div>
-            <a href="https://wa.me/521234567890" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-control items-center text-sm font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4">Preguntar por otras promociones &rarr;</a>
+            <a href="https://wa.me/521234567890" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-control items-center text-sm font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4">Preguntar por otras promociones &rarr; <span class="sr-only">(se abre en otra pestaña)</span></a>
         </div>
 
         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
