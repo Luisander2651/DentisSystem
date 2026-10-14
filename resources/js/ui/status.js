@@ -116,4 +116,38 @@ export function announceFailure(status, payload = null) {
     return message;
 }
 
+/*
+ * Mientras se envía algo (un formulario o una acción como eliminar), la región dice "Enviando…".
+ * Se anuncia desde la petición misma, así que vale para toda pantalla y todo diálogo; lo que
+ * valida la página antes de enviar no llega a pedir nada y no lo anuncia (spec 016, CA37).
+ */
+const SENDING = 'Enviando…';
+
+function sendsData(method) {
+    return !['GET', 'HEAD'].includes(String(method ?? 'GET').toUpperCase());
+}
+
+function announceSending() {
+    write('error', '');
+    write('status', SENDING);
+}
+
+const nativeFetch = window.fetch.bind(window);
+
+window.fetch = function (input, init = {}) {
+    if (sendsData(init.method ?? (input instanceof Request ? input.method : 'GET'))) {
+        announceSending();
+    }
+
+    return nativeFetch(input, init);
+};
+
+window.axios?.interceptors.request.use((config) => {
+    if (sendsData(config.method)) {
+        announceSending();
+    }
+
+    return config;
+});
+
 window.uiStatus = { announce, announceError, announceFailure, clearAnnouncements, failureMessage };

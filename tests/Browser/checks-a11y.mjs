@@ -308,7 +308,7 @@ function markScreenFormInPage() {
 function mismatchPasswordsInPage(selector) {
     const A = window.__audit;
     const form = document.querySelector(selector);
-    const passwords = [...form.querySelectorAll('input[type=password]')].filter(A.visible);
+    const passwords = [...form.querySelectorAll('input[type=password]')].filter((field) => A.visible(field) && !field.disabled);
 
     if (passwords.length !== 2) {
         return null;
