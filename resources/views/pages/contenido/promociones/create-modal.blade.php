@@ -1,7 +1,7 @@
 <x-ui.dialog id="promotions-create-modal" title="Nueva promoción" data-promotions-create-modal>
     <form id="promotions-create-form" data-promotions-create-form class="flex flex-col gap-4" novalidate>
         <x-ui.input
-            variant="string"
+            variant="text"
             id="promotions-create-name"
             name="name"
             label="Nombre de la promoción"

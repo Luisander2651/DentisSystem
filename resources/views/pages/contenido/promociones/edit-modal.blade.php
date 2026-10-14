@@ -3,7 +3,7 @@
         <input type="hidden" name="id" data-promotions-edit-id />
 
         <x-ui.input
-            variant="string"
+            variant="text"
             id="promotions-edit-name"
             name="name"
             label="Nombre de la promoción"
