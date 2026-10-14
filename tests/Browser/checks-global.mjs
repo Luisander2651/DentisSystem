@@ -9,7 +9,7 @@
  *   contraste                CA6, CA7   text and placeholders 4.5:1 (3:1 when large), field borders 3:1
  *   foco                     CA8        one focus style, 3 px with 2 px of offset, 3:1, also on dark surfaces
  *   acción principal         CA3, CA4   one background, dark text on it and one hover
- *   recorte                  CA28       nothing with information is truncated or cut by the screen edge
+ *   recorte                  CA28, CA42 nothing with information is truncated, or cut by the screen edge below 1024 px
  *
  * The values come from the tokens of the page (`--color-primary`, `--spacing-control`…); while
  * resources/css/app.css does not declare them yet, from the plan.
@@ -222,7 +222,8 @@ function measureInPage(dialogSelector, phone, touch, fallback) {
         const paintedBox = box.width <= viewport && element.textContent.trim() !== '' && element.getAttribute('aria-hidden') !== 'true'
             && (A.rgba(style.backgroundColor)[3] > 0.5 || parseFloat(style.borderTopWidth) > 0);
 
-        if (phone && (hasOwnText(element) || isField || isButton || tag === 'IMG' || paintedBox) && (box.right > viewport + 1 || box.left < -1) && !insideScroller(element) && style.position !== 'fixed') {
+        // Below 1024 px, where the navigation folds: also the options of an open menu at 768 px.
+        if (touch && (hasOwnText(element) || isField || isButton || tag === 'IMG' || paintedBox) && (box.right > viewport + 1 || box.left < -1) && !insideScroller(element) && style.position !== 'fixed') {
             found.recortado.push(`${A.describe(element)} llega a x=${Math.round(box.right)} px`);
         }
     }
