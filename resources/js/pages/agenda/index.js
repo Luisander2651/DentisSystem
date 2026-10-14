@@ -1,6 +1,6 @@
 import { stateBadge } from '../../ui/badge';
 import { isDialogOpen, openDialog } from '../../ui/dialog';
-import { announceError, failureMessage } from '../../ui/status';
+import { announce, announceError, failureMessage } from '../../ui/status';
 
 (function () {
     if (window.__agendaIndexInit) {
@@ -364,6 +364,12 @@ import { announceError, failureMessage } from '../../ui/status';
         renderSelectedDay();
 
         if (!dayDetailsModal || !dialogFromHere.matches) {
+            // On a phone the list sits under the calendar: it is brought into view and its day
+            // is announced, so touching a day never looks like it did nothing (spec 016, CA11).
+            const count = (appointmentsByDate.get(dateStr) || []).length;
+            announce(`${capitalize(longDate(fromLocalDateString(dateStr)))}: ${countLabel(count)}.`);
+            dayTitle?.scrollIntoView({ block: 'start' });
+
             return;
         }
 
