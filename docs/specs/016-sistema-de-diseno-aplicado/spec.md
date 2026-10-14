@@ -1,7 +1,7 @@
 ---
 id: 016
 slug: sistema-de-diseno-aplicado
-status: implemented
+status: approved
 created: 2026-10-06
 extends: [014]   # cambia cómo se presenta un acceso denegado en las pantallas web
 ---
@@ -46,13 +46,13 @@ y cierra la deuda `DS1`–`DS11`, `DS13` y `DS14` de [docs/design/system.md](../
 - [x] CA8 · Dado cualquier control interactivo, cuando recibe el foco con el teclado, entonces muestra el mismo indicador de foco que los demás controles, con contraste de al menos 3:1; ningún control queda sin indicador visible.
 
 ### Tamaños y móvil
-- [x] CA9 · Dado un ancho de 390 px, cuando se mide cualquier control táctil (botones, enlaces de acción, iconos, filtros, elementos de menú), entonces mide al menos 44 × 44 px.
+- [ ] CA9 · Dado un ancho de 390 o de 768 px, cuando se mide cualquier control táctil (botones, enlaces de acción, iconos, filtros, elementos de menú), entonces mide al menos 44 × 44 px.
 - [x] CA10 · Dado dos controles del mismo tipo (botón o campo) en pantallas distintas, cuando se comparan, entonces tienen la misma altura y el mismo radio, tomados del conjunto cerrado de tamaños que define el sistema de diseño.
 - [x] CA11 · Dado un ancho de 390 px, cuando se abre la agenda con o sin citas, entonces la página no se desplaza de lado y se pueden ver y abrir las citas de cualquier día del mes.
 
 ### Diálogos y estructura
 - [x] CA12 · Dado cualquier diálogo, cuando se abre, entonces un lector de pantalla anuncia su título, el foco queda dentro del diálogo mientras está abierto y, al cerrarlo, vuelve al control que lo abrió.
-- [x] CA13 · Dado un diálogo con más contenido que el alto de la ventana (a 390 × 844 y 1440 × 900 px), cuando se abre, entonces no supera el alto de la ventana: su contenido se desplaza dentro y sus acciones siguen alcanzables.
+- [ ] CA13 · Dado un diálogo con más contenido que el alto de la ventana (a 390 × 844, 768 × 1024 y 1440 × 900 px), cuando se abre, entonces no supera el alto de la ventana: su contenido se desplaza dentro y sus acciones siguen alcanzables.
 - [x] CA14 · Dado cualquier pantalla, cuando se revisa su estructura, entonces tiene exactamente un título principal de página.
 
 ### Marca y textos
@@ -83,10 +83,12 @@ Hallazgos `M01`–`M16` de la revisión de las 65 pantallas a 390 px (ver "Dise�
 ### Accesibilidad completa (WCAG 2.1 AA)
 - [x] CA35 · Dado cualquier control interactivo (incluidos los botones que solo muestran un icono) y cualquier imagen con información, cuando lo lee un lector de pantalla, entonces tiene un nombre que dice qué hace o qué es; las imágenes decorativas no se anuncian.
 - [x] CA36 · Dado cualquier campo de formulario, cuando se muestra, entonces tiene una etiqueta visible asociada a él, y los campos obligatorios se distinguen de los opcionales.
-- [x] CA37 · Dado un formulario o una acción, cuando ocurre un error de validación, un error al guardar o termina bien, entonces el mensaje se anuncia al lector de pantalla sin mover el foco, y el error de un campo queda asociado a ese campo.
+- [ ] CA37 · Dado un formulario o una acción, cuando ocurre un error de validación (también el que se detecta antes de enviar, como dos contraseñas que no coinciden), un error al guardar o termina bien, entonces el mensaje se anuncia al lector de pantalla sin mover el foco, y el error de un campo queda asociado a ese campo. Mientras se envía, se anuncia que se está enviando.
 - [x] CA38 · Dado cualquier icono de acción, borde de control o indicador que transmite información sin texto, cuando se mide contra su fondo, entonces su contraste es de al menos 3:1; y ningún estado se distingue solo por el color.
 
 - [x] CA40 · Dado cualquier elemento que hace algo al pulsarlo con el ratón o con el dedo (incluidos los días del calendario y las tarjetas de la galería), cuando se usa solo el teclado, entonces se puede llegar a él con el tabulador y activarlo con Intro o con la barra espaciadora.
+- [ ] CA42 · Dado un ancho de 1024 px o más, cuando se abre cualquier pantalla del panel o del sitio público, entonces su menú de navegación se ve desplegado sin abrir nada y sin desbordar la pantalla. Por debajo de 1024 px (a 390 y 768 px) se llega a él con el menú plegable: al abrirlo, todas sus opciones quedan dentro de la pantalla y se alcanzan con el teclado, y se cierra con Escape devolviendo el foco al botón que lo abrió.
+- [ ] CA43 · Dado un enlace que abre otra pestaña, cuando lo lee un lector de pantalla o se ve su texto, entonces avisa de que se abre en otra pestaña.
 
 ### Lo que no cambia y lo que queda escrito
 - [x] CA22 · Dado cualquier pantalla a 1440 px, cuando se compara con su captura anterior, entonces conserva su composición: las mismas secciones en la misma disposición, las mismas acciones, la misma tipografía y los mismos flujos; solo cambian colores, tamaños, radios, foco, diálogos, logo y textos corregidos. A 390 px se conserva igual, salvo los cambios de disposición que piden CA11 y CA25–CA34. Única excepción a 1440 px: gestión de contenido pasa a un solo encabezado (CA34).
@@ -95,7 +97,7 @@ Hallazgos `M01`–`M16` de la revisión de las 65 pantallas a 390 px (ver "Dise�
 - [x] CA24 · Dada la constitución, cuando termina esta spec, entonces incluye el principio "La interfaz usa solo el sistema de diseño", con su forma de verificación, y su principio de pruebas admite la prueba en navegador para lo que solo existe en un navegador; ambos cambios aprobados por el usuario como una misma enmienda.
 
 ## Fuera de alcance
-- Rediseño: no cambian la tipografía, la navegación ni los flujos, ni la disposición de las pantallas a 1440 px (salvo el encabezado único de gestión de contenido). A 390 px la disposición cambia solo donde lo piden CA11 y CA25–CA34 (decisión del usuario, 2026-10-06).
+- Rediseño: no cambian la tipografía, las opciones de la navegación ni los flujos, ni la disposición de las pantallas a 1440 px (salvo el encabezado único de gestión de contenido). A 390 px la disposición cambia solo donde lo piden CA11 y CA25–CA34 (decisión del usuario, 2026-10-06); por debajo de 1024 px la navegación pasa al menú plegable (CA42; decisión del usuario, 2026-10-11).
 - Paginación o carga progresiva de los listados largos: CA32 y CA33 acortan cada elemento y lo que hay antes del listado, no el número de elementos.
 - `DS12`, movimiento sin alternativa para quien pide menos movimiento: sigue en "Pendientes y deuda" del roadmap (decisión del usuario, 2026-10-04).
 - Modo oscuro.
@@ -133,7 +135,8 @@ justifica en el Constitution Check de `/plan`, igual que en la spec 014.
 Quien usa Dentissa debe sentir una sola aplicación, de la clínica, ordenada y legible: los mismos
 colores, el mismo logo y los mismos controles en el sitio público, el acceso y el panel. Toca
 **todas** las pantallas del inventario de [docs/design/system.md](../../design/system.md) y añade
-dos nuevas: "Sin permiso" y "No encontrada".
+cuatro páginas de error: "Sin permiso" y "No encontrada", que se revisan y se capturan en el
+navegador, y las de método no permitido y formulario caducado (CA41), que comparten su marco.
 
 No es un rediseño: se conserva la composición actual (CA22), salvo en el móvil donde la revisión a
 390 px encontró pantallas rotas o difíciles de usar (CA25–CA34). `/plan` presenta la propuesta de uso
@@ -185,8 +188,8 @@ Deuda de diseño que cierra:
 | DS14 — pantallas del panel sin título principal | dentro | CA14 |
 
 ## Requisitos no funcionales
-- Accesibilidad: todas las pantallas cumplen WCAG 2.1 AA (constitución, "Restricciones"): lo comprueban CA6–CA9, CA12–CA14, CA29, CA35–CA38 y CA40, más una revisión de accesibilidad por grupo de pantallas.
-- Anchos de comprobación: 390, 768 y 1440 px, sin desplazamiento horizontal de página ni contenido fuera de su caja en ninguna pantalla. La composición solo se compara con su línea base a 1440 px.
+- Accesibilidad: todas las pantallas cumplen WCAG 2.1 AA (constitución, "Restricciones"): lo comprueban CA6–CA9, CA12–CA14, CA29, CA35–CA38, CA40, CA42 y CA43, más una revisión de accesibilidad por grupo de pantallas.
+- Anchos de comprobación: 390, 768 y 1440 px, sin desplazamiento horizontal de página ni contenido fuera de su caja en ninguna pantalla ni en ningún diálogo o menú que exista a ese ancho. La composición solo se compara con su línea base a 1440 px. El cambio de navegación de CA42 se comprueba además a 1024 px. Las capturas de CA23 siguen a 390 y 1440 px.
 - Sin regresiones: todo lo que el staff y los visitantes pueden hacer hoy sigue funcionando igual (CA22); la suite de tests existente pasa sin cambios en su comportamiento esperado.
 - El logo, el icono de pestaña y la imagen de las pantallas de acceso forman parte de la aplicación: no se sirven desde terceros ni dependen de un archivo suelto en el servidor.
 
@@ -208,8 +211,13 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 | 2026-10-06 | brecha | La revisión a 390 px encontró 16 problemas (M01–M16); 11 no estaban cubiertos y 6 de ellos piden cambiar la disposición, lo que choca con CA22. ¿Cuáles entran? | Todos, en esta spec, para no dejar deuda. CA22 conserva la composición a 1440 px y admite a 390 px los cambios de CA11 y CA25–CA34. | usuario |
 | 2026-10-06 | brecha | ¿Qué ve quien entra con sesión a una pantalla que su rol no puede ver? | Una página "Sin permiso" propia con botón para volver a su inicio, no una redirección (CA18). | usuario |
 | 2026-10-06 | contradicción | La spec 015 y el roadmap reservaban el número 016 para el monitoreo, y 016 es el siguiente libre. | Esta spec es la 016; el monitoreo pasa a ser la 017 y se corrige solo esa referencia en la spec 015 y en el roadmap. | usuario |
-| 2026-10-06 | implícita | ¿En qué anchos se comprueba? | 390 y 1440 px. | `.ai/project.yaml` → `design.widths` |
+| 2026-10-06 | implícita | ¿En qué anchos se comprueba? | 390 y 1440 px. Sustituida por la decisión del 2026-10-11 (390, 768 y 1440 px). | `.ai/project.yaml` → `design.widths` |
 | 2026-10-11 | brecha | A 768 px el panel y el menú del sitio público se desbordaban: ese ancho no se comprobaba. ¿Se añade? | Sí: 768 px pasa a ser ancho obligatorio. La barra lateral del panel y el menú del sitio público se despliegan desde 1024 px; por debajo se usa el menú plegable. Las capturas de CA23 siguen a 390 y 1440 px. | usuario |
+| 2026-10-13 | brecha | El corte de 1024 px no tenía criterio, y a 768 px no se revisaban el menú plegable abierto ni el diálogo "Citas del día". | Criterio propio para la navegación (CA42); CA13 incluye 768 × 1024 px; los menús y "Citas del día" se revisan a 768 px. | usuario (`/analyze` A75, A77) |
+| 2026-10-13 | brecha | A 768 px se usa el menú plegable, una interfaz táctil, y CA9 solo exigía 44 × 44 px a 390 px. | CA9 se exige también a 768 px. | usuario (`/analyze` A90) |
+| 2026-10-13 | brecha | La revisión de accesibilidad dejó tres pendientes sin decisión: enlaces a otra pestaña sin aviso, menú plegable que no cierra con Escape y envío sin anunciar. | Se corrigen en esta spec: CA43, CA42 y CA37. | usuario (`/analyze` A83) |
+| 2026-10-13 | brecha | El error "las contraseñas no coinciden" de restablecer contraseña no queda asociado a su campo, como pide CA37. | Se corrige en esta spec; CA37 lo nombra. | usuario (`/analyze` A82) |
+| 2026-10-13 | brecha | CA12, CA35 y CA37 hablan de lo que anuncia un lector de pantalla, y no consta una prueba con lector. | Bastan las comprobaciones automáticas en el navegador de nombres, anuncios, foco y diálogos; no se exige prueba manual con lector de pantalla. | usuario (`/analyze` A84) |
 | 2026-10-06 | implícita | ¿Quién registra los accesos denegados? | La spec del objetivo 5 del roadmap; esta no emite eventos de auditoría. | `docs/roadmap.md` objetivo 5; spec 014 → "Auditoría" |
 | 2026-10-06 | implícita | ¿Cuál es el tamaño táctil mínimo? | 44 × 44 px a 390 px. | `docs/roadmap.md` objetivo 6; `docs/design/system.md` DS4 |
 | 2026-10-06 | supuesto | ¿A dónde vuelve el enlace de "No encontrada"? | A su inicio si tiene sesión; al inicio del sitio público si no (CA19). | /specify |
@@ -243,6 +251,7 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 - M01: la fila de filtros de la agenda no hace salto de línea (470 px). M03 es consecuencia de M01. M05: las tablas están en `components/records/*`, dentro de una caja con `overflow-x-auto`. M12: los contadores van uno por fila en móvil.
 - Hallazgos de `/analyze` ronda 1 que afectan al diseño: ver [analysis.md](analysis.md). La imagen de acceso es `storage/login.jpg` (no versionada), usada en iniciar sesión, registrarse y recuperar contraseña.
 - Spec grande (41 criterios): conviene planear por fases entregables (tokens y paleta → componentes y escala → diálogos → agenda móvil → errores → logo y textos).
+- Ronda 4 de `/analyze` (A82, A83): el error de contraseñas que no coinciden está en `resources/js/pages/auth/reset-password.js` y va por la región de estado; los otros pendientes salen de las notas de T035 y T038.
 - Al cerrar (`/release`): anotar en el Historial de la spec 014 que el acceso denegado en pantallas web muestra la página "Sin permiso".
 
 ## Historial
@@ -257,3 +266,6 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 | 2026-10-07 | Reaprobada tras la edición | Aprobación del usuario |
 | 2026-10-07 | Vuelve a `draft`: CA40 (uso con teclado) y CA41 (páginas para método no permitido y formulario caducado) nuevos; fuera de alcance, las páginas de error del servidor web | `/analyze` ronda 2 (A35, A38, A48, A49); decisión del usuario |
 | 2026-10-07 | Reaprobada tras la edición | Aprobación del usuario |
+| 2026-10-11 | Requisitos no funcionales: 768 px pasa a ancho obligatorio; decisión del corte de 1024 px para la navegación. Se aplicó con la spec ya aprobada y en implementación, sin volver a `draft` | Decisión del usuario (desbordes a 768 px); registrado el 2026-10-13 por `/analyze` ronda 4 (A80) |
+| 2026-10-13 | Vuelve a `draft` desde `implemented` (T092 se reabre): CA42 (navegación según el ancho) y CA43 (enlaces a otra pestaña) nuevos; CA9 también a 768 px; CA13 incluye 768 × 1024 px; CA37 nombra la validación antes de enviar y el anuncio de envío; "Fuera de alcance", "Diseño" y la decisión de anchos al día | `/analyze` ronda 4 (A75, A77, A79, A80, A82, A83, A84, A88, A90); decisión del usuario |
+| 2026-10-13 | Reaprobada tras la edición | Aprobación del usuario |

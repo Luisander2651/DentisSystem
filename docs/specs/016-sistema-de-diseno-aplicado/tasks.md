@@ -423,7 +423,7 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: actualizado el 2026-10-11: Frontend (layout de error, componentes `x-ui.*`, `resources/js/ui/`, tokens en `@theme` con la paleta por defecto desactivada, `npm run test:ui`, menús desde 1024 px, vistas de error y estado de la accesibilidad), Backend (respuesta de los 403, 404, 405 y 419 de las rutas web y ruta de respaldo) y "Deuda técnica y riesgos observados" (lo que la spec deja abierto en la interfaz)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: paso `ui-audit` en el pipeline y purga de caché de Cloudflare para `favicon.ico` y `public/images/brand/`; `observability.md` sin cambios
   - nota: actualizado el 2026-10-11: `docs/deployment.md` describe el paso `ui-audit` del pipeline (decide el resultado y deja el artefacto de capturas) y la purga de la caché de Cloudflare para `favicon.ico` y `public/images/brand/` tras desplegar la marca. `docs/observability.md` no cambia: la spec no añade logs, eventos de auditoría ni métricas. Tampoco cambian variables de entorno ni pasos de despliegue: una sola imagen, sin migraciones
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
