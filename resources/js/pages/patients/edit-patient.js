@@ -239,11 +239,9 @@ import { announce, announceError, failureMessage } from '../../ui/status';
                 await window.patientsPage.reload();
             }
         } catch (error) {
-            closeModal();
-
-            if (window.patientsPage && typeof window.patientsPage.showError === 'function') {
-                window.patientsPage.showError(error instanceof TypeError ? failureMessage(0) : error.message);
-            }
+            // El diálogo sigue abierto con su error, como al crear: lo escrito no se pierde y los
+            // campos que rechazó el servidor quedan marcados (spec 016, CA37).
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             if (isSubmitting) {
                 setSubmittingState(false);
