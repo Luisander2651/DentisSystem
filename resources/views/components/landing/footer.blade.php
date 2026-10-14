@@ -16,17 +16,17 @@
                     Cuidando de tu sonrisa con tecnología avanzada, especialistas dedicados y un ambiente cómodo para toda la familia.
                 </p>
                 <div class="flex items-center gap-3">
-                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="{{ $social }}" aria-label="Facebook">
+                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="{{ $social }}" aria-label="Facebook (se abre en otra pestaña)">
                         <svg aria-hidden="true" class="h-5 w-5 fill-current" viewBox="0 0 24 24">
                             <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/>
                         </svg>
                     </a>
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="{{ $social }}" aria-label="Instagram">
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="{{ $social }}" aria-label="Instagram (se abre en otra pestaña)">
                         <svg aria-hidden="true" class="h-5 w-5 fill-current" viewBox="0 0 24 24">
                             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
                         </svg>
                     </a>
-                    <a href="{{ $whatsapp }}" target="_blank" rel="noopener noreferrer" class="{{ $social }}" aria-label="WhatsApp">
+                    <a href="{{ $whatsapp }}" target="_blank" rel="noopener noreferrer" class="{{ $social }}" aria-label="WhatsApp (se abre en otra pestaña)">
                         <svg aria-hidden="true" class="h-5 w-5 fill-current" viewBox="0 0 24 24">
                             <path d="M12.004 2c-5.518 0-9.998 4.48-9.998 9.997 0 2.006.592 3.874 1.614 5.434L2.005 22l4.729-1.554c1.517.952 3.298 1.547 5.27 1.554 5.517 0 9.996-4.479 9.996-9.997S17.52 2 12.004 2zm5.727 14.156c-.23.649-1.127 1.196-1.74 1.258-.57.058-1.282.091-2.079-.166-.497-.161-1.139-.427-1.929-.769-3.373-1.458-5.549-4.887-5.719-5.112-.17-.225-1.385-1.841-1.385-3.511 0-1.67.873-2.492 1.186-2.822.313-.33.684-.412.912-.412.228 0 .456.002.656.012.207.01.488-.037.76.621.284.685.969 2.355 1.054 2.527.085.171.142.371.028.599-.114.228-.171.37-.341.57-.171.199-.356.444-.51.597-.17.17-.35.355-.15.697.199.341.884 1.455 1.897 2.355 1.306 1.161 2.409 1.522 2.752 1.693.342.171.542.142.741-.086.199-.228.855-.997 1.083-1.34.228-.342.456-.285.769-.171.314.114 1.996.941 2.338 1.112.342.171.57.257.656.4.086.143.086.827-.144 1.476z"/>
                         </svg>

@@ -41,6 +41,7 @@
                     <path d="M12.004 2c-5.518 0-9.998 4.48-9.998 9.997 0 2.006.592 3.874 1.614 5.434L2.005 22l4.729-1.554c1.517.952 3.298 1.547 5.27 1.554 5.517 0 9.996-4.479 9.996-9.997S17.52 2 12.004 2zm5.727 14.156c-.23.649-1.127 1.196-1.74 1.258-.57.058-1.282.091-2.079-.166-.497-.161-1.139-.427-1.929-.769-3.373-1.458-5.549-4.887-5.719-5.112-.17-.225-1.385-1.841-1.385-3.511 0-1.67.873-2.492 1.186-2.822.313-.33.684-.412.912-.412.228 0 .456.002.656.012.207.01.488-.037.76.621.284.685.969 2.355 1.054 2.527.085.171.142.371.028.599-.114.228-.171.37-.341.57-.171.199-.356.444-.51.597-.17.17-.35.355-.15.697.199.341.884 1.455 1.897 2.355 1.306 1.161 2.409 1.522 2.752 1.693.342.171.542.142.741-.086.199-.228.855-.997 1.083-1.34.228-.342.456-.285.769-.171.314.114 1.996.941 2.338 1.112.342.171.57.257.656.4.086.143.086.827-.144 1.476z"/>
                 </svg>
                 <span>WhatsApp</span>
+                <span class="sr-only">(se abre en otra pestaña)</span>
             </a>
         </div>
 
@@ -80,6 +81,7 @@
                         <path d="M12.004 2c-5.518 0-9.998 4.48-9.998 9.997 0 2.006.592 3.874 1.614 5.434L2.005 22l4.729-1.554c1.517.952 3.298 1.547 5.27 1.554 5.517 0 9.996-4.479 9.996-9.997S17.52 2 12.004 2zm5.727 14.156c-.23.649-1.127 1.196-1.74 1.258-.57.058-1.282.091-2.079-.166-.497-.161-1.139-.427-1.929-.769-3.373-1.458-5.549-4.887-5.719-5.112-.17-.225-1.385-1.841-1.385-3.511 0-1.67.873-2.492 1.186-2.822.313-.33.684-.412.912-.412.228 0 .456.002.656.012.207.01.488-.037.76.621.284.685.969 2.355 1.054 2.527.085.171.142.371.028.599-.114.228-.171.37-.341.57-.171.199-.356.444-.51.597-.17.17-.35.355-.15.697.199.341.884 1.455 1.897 2.355 1.306 1.161 2.409 1.522 2.752 1.693.342.171.542.142.741-.086.199-.228.855-.997 1.083-1.34.228-.342.456-.285.769-.171.314.114 1.996.941 2.338 1.112.342.171.57.257.656.4.086.143.086.827-.144 1.476z"/>
                     </svg>
                     <span>WhatsApp</span>
+                    <span class="sr-only">(se abre en otra pestaña)</span>
                 </a>
             </div>
         </nav>
@@ -94,14 +96,26 @@
         var closeIcon = document.getElementById('menu-icon-close');
 
         if (menuBtn && mobileMenu) {
-            menuBtn.addEventListener('click', function () {
-                var isHidden = mobileMenu.classList.contains('hidden');
+            var setOpen = function (isOpen) {
+                mobileMenu.classList.toggle('hidden', !isOpen);
+                openIcon.classList.toggle('hidden', isOpen);
+                closeIcon.classList.toggle('hidden', !isOpen);
+                menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                menuBtn.setAttribute('aria-label', isOpen ? 'Cerrar menú' : 'Abrir menú');
+            };
 
-                mobileMenu.classList.toggle('hidden', !isHidden);
-                openIcon.classList.toggle('hidden', isHidden);
-                closeIcon.classList.toggle('hidden', !isHidden);
-                menuBtn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
-                menuBtn.setAttribute('aria-label', isHidden ? 'Cerrar menú' : 'Abrir menú');
+            menuBtn.addEventListener('click', function () {
+                setOpen(mobileMenu.classList.contains('hidden'));
+            });
+
+            // Escape cierra el menú plegable y devuelve el foco a su botón (spec 016, CA42).
+            menuBtn.closest('header').addEventListener('keydown', function (event) {
+                if (event.key !== 'Escape' || mobileMenu.classList.contains('hidden')) {
+                    return;
+                }
+
+                setOpen(false);
+                menuBtn.focus();
             });
         }
     });
