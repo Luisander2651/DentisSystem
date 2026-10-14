@@ -14,6 +14,13 @@
  *   envío                CA37  sending a form or an action announces "Enviando…"; a form the
  *                              page stops before sending (two different passwords) does not,
  *                              and ties its error to the field (A82, A83, A91)
+ *   errores de campo     CA37  sent empty, every required field is marked; a 422 from the server
+ *                              marks the field it names; a field that turns invalid on leaving it
+ *                              says so; typical valid values (a phone, an address) are not marked
+ *   anuncio nuevo        CA37  what counts is what is announced after sending, not what was there;
+ *                              the focus stays where it was, and an error stays while the dialog
+ *                              is open (R13, R18, R19)
+ *   controles anidados   CA40, CA43  no control inside another control
  *   otra pestaña         CA43  a link that opens another tab says so in its name
  *   menú plegable        CA42  every option of an open folding menu is reached with Tab, and
  *                              Escape closes it and gives the focus back to its button (A92)
@@ -43,7 +50,7 @@ function forbiddenWords() {
 function measureInPage(dialogSelector, entryId, needsRegion) {
     const A = window.__audit;
     const root = A.scope(dialogSelector);
-    const found = { etiqueta: [], obligatorio: [], error: [], region: [], borde: [], icono: [], color: [], pestana: [] };
+    const found = { etiqueta: [], obligatorio: [], error: [], region: [], borde: [], icono: [], color: [], pestana: [], anidado: [] };
 
     if (!root) {
         return found;
@@ -124,6 +131,15 @@ function measureInPage(dialogSelector, entryId, needsRegion) {
         }
     }
 
+    // CA40, CA43 · a control inside another control: two tab stops, and the inner one is unnamed
+    for (const inner of visible.filter((element) => element.matches('a[href], button, [role=button], input, select, textarea'))) {
+        const outer = inner.parentElement?.closest('a[href], button, [role=button]');
+
+        if (outer) {
+            found.anidado.push(`${A.describe(inner)} dentro de ${A.describe(outer)}`);
+        }
+    }
+
     // CA43 · a link that opens another tab says so
     for (const link of visible.filter((element) => element.matches('a[href][target=_blank]'))) {
         const name = link.getAttribute('aria-label') ?? link.textContent;
@@ -155,7 +171,10 @@ function measureInPage(dialogSelector, entryId, needsRegion) {
             // CA38 · a control that only shows an icon
             if (element.textContent.trim() === '' && element.querySelector('svg, img')) {
                 const behind = A.backdrop(element);
-                const icon = behind.image ? null : A.worstContrast(A.rgba(style.color), behind.tones);
+                // The icon is painted with its own colour, which may not be the button's (R21).
+                const svg = element.querySelector('svg');
+                const color = A.rgba(svg ? getComputedStyle(svg).color : style.color);
+                const icon = behind.image ? null : A.worstContrast(color, behind.tones);
 
                 if (icon !== null && icon < 3 - 0.005) {
                     found.icono.push(`${A.describe(element)} ${icon.toFixed(2)}:1`);
@@ -254,6 +273,8 @@ export function fillAndSendInPage(dialogSelector, press = true) {
         return 'none';
     }
 
+    send.focus();
+    window.__sentFrom = send;
     send.click();
 
     return 'sent';
@@ -413,60 +434,315 @@ async function checkMenu(page) {
     return failures;
 }
 
+/** What was announced since the recording started, leaving out "Enviando…". */
+function announcedNewInPage() {
+    return (window.__announcedHistory ?? []).filter((text) => !/^enviando/i.test(text)).join(' · ');
+}
+
+const FIELD_SELECTOR = 'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]), textarea, select';
+
+/** Empties what can be typed in and presses the button that sends, without filling anything. */
+function clearAndSendInPage(selector, fieldSelector) {
+    const A = window.__audit;
+    const root = A.scope(selector);
+
+    if (!root) {
+        return { sent: 'closed', fields: 0 };
+    }
+
+    const fields = [...root.querySelectorAll(fieldSelector)].filter((field) => A.visible(field) && !field.disabled && !field.readOnly);
+
+    for (const field of fields) {
+        if (field.tagName === 'SELECT') {
+            if ([...field.options].some((option) => option.value === '')) {
+                field.value = '';
+            }
+        } else {
+            field.value = '';
+        }
+
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    const send = [...root.querySelectorAll('button')].filter((button) => A.visible(button))
+        .find((button) => button.type === 'submit' || [...button.attributes].some((attribute) => /^data-.*-(submit|accept|confirm-accept)$/.test(attribute.name)));
+
+    if (!send || fields.length === 0) {
+        return { sent: 'none', fields: fields.length };
+    }
+
+    if (send.disabled) {
+        return { sent: 'disabled', fields: fields.length };
+    }
+
+    send.click();
+
+    return { sent: 'sent', fields: fields.length };
+}
+
+/** Whether a field is marked with an error a screen reader can reach (repeated in each page function). */
+function fieldsAfterEmptyInPage(selector, fieldSelector) {
+    const A = window.__audit;
+    const isMarked = (field) => {
+        const described = (field.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean).map((id) => document.getElementById(id));
+
+        return field.getAttribute('aria-invalid') === 'true' && described.some((node) => node && A.visible(node) && node.textContent.trim() !== '');
+    };
+    const root = A.scope(selector);
+    const fields = root ? [...root.querySelectorAll(fieldSelector)].filter(A.visible) : [];
+    const required = fields.filter((field) => (field.required || field.getAttribute('aria-required') === 'true') && field.value === '');
+
+    return {
+        unmarked: required.filter((field) => !isMarked(field)).map((field) => A.describe(field)),
+        marked: fields.filter(isMarked).length,
+    };
+}
+
+/** The name of the first field that can be typed in, for the 422 the server would answer. */
+function firstNamedFieldInPage(selector) {
+    const A = window.__audit;
+    const root = A.scope(selector);
+
+    return [...(root?.querySelectorAll('input[name]:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]), textarea[name], select[name]') ?? [])]
+        .find((field) => A.visible(field) && !field.disabled && !field.readOnly)?.name ?? null;
+}
+
+function namedFieldMarkedInPage(selector, name) {
+    const A = window.__audit;
+    const isMarked = (field) => {
+        const described = (field.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean).map((id) => document.getElementById(id));
+
+        return field.getAttribute('aria-invalid') === 'true' && described.some((node) => node && A.visible(node) && node.textContent.trim() !== '');
+    };
+    const field = [...(A.scope(selector)?.querySelectorAll(`[name="${name}"]`) ?? [])].find(A.visible);
+
+    return field ? isMarked(field) : null;
+}
+
+/** Typical valid values of fields that hold more than letters (R12). */
+const TYPICAL = { phone_number: '+52 81 1234 5678', street: 'Av. Juárez 123', postal_code: '64000', blood_type: 'O+', name: 'ISO 9001' };
+
+function typicalValuesInPage(selector, typical) {
+    const A = window.__audit;
+    const root = A.scope(selector);
+    const marked = [];
+
+    for (const [name, value] of Object.entries(typical)) {
+        for (const field of [...(root?.querySelectorAll(`input[name="${name}"]`) ?? [])].filter((candidate) => A.visible(candidate) && !candidate.readOnly)) {
+            field.value = value;
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new FocusEvent('blur'));
+            field.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+
+            if (field.getAttribute('aria-invalid') === 'true') {
+                marked.push(`${name} "${value}"`);
+            }
+        }
+    }
+
+    return marked;
+}
+
+/** A required field left empty on leaving it: returns the text of its error, or null. */
+function leaveEmptyFieldInPage(selector) {
+    const A = window.__audit;
+    const field = [...(A.scope(selector)?.querySelectorAll('[data-ui-input][required]') ?? [])].find((candidate) => A.visible(candidate) && !candidate.readOnly && !candidate.disabled);
+
+    if (!field) {
+        return null;
+    }
+
+    field.focus();
+    field.value = '';
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    field.blur();
+
+    return document.getElementById(field.dataset.errorTarget ?? '')?.textContent.trim() || null;
+}
+
+function focusAfterSendInPage() {
+    const from = window.__sentFrom;
+
+    return { same: Boolean(from) && document.activeElement === from, now: document.activeElement && document.activeElement !== document.body ? window.__audit.describe(document.activeElement) : 'el documento' };
+}
+
+/** R2 · opens "Editar usuario" for a role that is not known: its warning is seen inside the dialog. */
+function openUnknownRoleInPage() {
+    const A = window.__audit;
+    const edit = [...document.querySelectorAll('[data-user-edit]')].find(A.visible);
+
+    if (!edit) {
+        return false;
+    }
+
+    edit.setAttribute('data-user-role-id', 'Rol que no existe');
+    edit.click();
+
+    return true;
+}
+
+function warningInOpenDialogInPage() {
+    const dialog = [...document.querySelectorAll('dialog[open]')].at(-1);
+
+    return dialog ? [...dialog.querySelectorAll('[role=status], [role=alert], [aria-live]')].map((region) => region.textContent.trim()).join(' ') : null;
+}
+
+/** R11, R12 · fields that check themselves as they are typed in and left. */
+async function checkOwnFields(page, selector) {
+    const failures = [];
+    const marked = await page.evaluate(typicalValuesInPage, selector, TYPICAL);
+
+    if (marked.length > 0) {
+        failures.push({ rule: 'valor válido marcado como error', message: summary(marked) });
+    }
+
+    await page.evaluate(recordAnnouncementsInPage);
+    const error = await page.evaluate(leaveEmptyFieldInPage, selector);
+
+    if (error !== null && !(await page.evaluate(announcedHistoryInPage)).includes(error)) {
+        failures.push({ rule: 'el error de un campo no se anuncia', message: `al dejar vacío un campo obligatorio y salir de él no se anuncia "${error}"` });
+    }
+
+    return failures;
+}
+
+/** R3, R4, R5 · sent empty: the page marks the required fields, or the server's 422 marks its field. */
+async function checkEmptySend(page, selector, setAnswer, counter) {
+    const field = await page.evaluate(firstNamedFieldInPage, selector);
+    setAnswer({ status: 422, body: { message: 'Revisa los datos.', errors: field ? { [field]: ['Este dato no es válido.'] } : {} } });
+    counter.requests = 0;
+    await page.evaluate(recordAnnouncementsInPage);
+    const { sent } = await page.evaluate(clearAndSendInPage, selector, FIELD_SELECTOR);
+
+    if (sent !== 'sent') {
+        return [];
+    }
+
+    await page.settle();
+    const failures = [];
+
+    if (counter.requests === 0) {
+        const { unmarked, marked } = await page.evaluate(fieldsAfterEmptyInPage, selector, FIELD_SELECTOR);
+
+        if (unmarked.length > 0) {
+            failures.push({ rule: 'error sin asociar a su campo', message: `enviado vacío, sin marcar: ${summary(unmarked)}` });
+        } else if (marked === 0 && (await page.evaluate(announcedNewInPage)) !== '') {
+            failures.push({ rule: 'error sin asociar a su campo', message: 'enviado vacío, se anuncia un error y ningún campo queda marcado' });
+        }
+
+        if (/enviando/i.test(await page.evaluate(announcedHistoryInPage))) {
+            failures.push({ rule: 'anuncia un envío que no ocurre', message: 'enviado vacío, se anuncia "Enviando…" sin enviar nada' });
+        }
+    } else if (field && (await page.evaluate(namedFieldMarkedInPage, selector, field)) === false) {
+        failures.push({ rule: 'error del servidor sin asociar a su campo', message: `una respuesta 422 sobre "${field}" no marca ese campo` });
+    }
+
+    return failures;
+}
+
 /** CA37 · the form of a screen: "Enviando…" when it sends, and none when the page stops it first. */
 async function checkScreenForm(page, entry, baseUrl) {
     const failures = [];
     const selector = '[data-ui-audit-form]';
-    let requests = 0;
+    const counter = { requests: 0 };
+    let answer = { status: 500, body: { error: 'SQLSTATE[HY000]: General error' } };
     const stop = await page.intercept((request) => {
         if (request.method === 'GET') {
             return null;
         }
 
-        requests++;
+        counter.requests++;
 
-        return { status: 500, body: { error: 'SQLSTATE[HY000]: General error' } };
+        return answer;
     });
 
     try {
         if (!(await page.evaluate(markScreenFormInPage))) {
-            return [];
+            return entry.sends ? [{ rule: 'no llega a enviar', message: 'la entrada envía algo y no hay un único formulario que enviar' }] : [];
         }
 
-        // A82, A91 · two different passwords: when the page stops them, the error is on the field
+        failures.push(...await checkOwnFields(page, selector));
+
+        // A82, A91 · two different passwords: stopped by the page, the error is on the field; sent,
+        // the server's 422 marks it. Either way the field ends marked (R6, R17).
         const confirmation = (entry.steps ?? []).length === 0 && await page.evaluate(fillAndSendInPage, selector, false) === 'filled'
             ? await page.evaluate(mismatchPasswordsInPage, selector)
             : null;
 
         if (confirmation !== null) {
+            const confirmName = await page.evaluate((target) => [...document.querySelector(target).querySelectorAll('input[type=password]')].filter((field) => !field.disabled)[1]?.name ?? null, selector);
+            answer = { status: 422, body: { message: 'Revisa los datos.', errors: confirmName ? { [confirmName]: ['Las contraseñas no coinciden.'] } : {} } };
+            counter.requests = 0;
             await page.evaluate(recordAnnouncementsInPage);
             await page.evaluate((target) => document.querySelector(target).requestSubmit(), selector);
             await page.settle();
 
-            if (requests === 0) {
-                if (await page.evaluate(confirmationErrorInPage, selector) === false) {
-                    failures.push({ rule: 'error sin asociar a su campo', message: `contraseñas distintas: ${confirmation} no queda marcado con el error` });
-                }
+            if (await page.evaluate(confirmationErrorInPage, selector) === false) {
+                failures.push({ rule: 'error sin asociar a su campo', message: `contraseñas distintas: ${confirmation} no queda marcado con el error` });
+            } else if (counter.requests === 0) {
+                // Typing again, still different: the error stays (R6).
+                await page.evaluate((target) => {
+                    const field = [...document.querySelector(target).querySelectorAll('input[type=password]')].filter((candidate) => !candidate.disabled)[1];
+                    field.value += 'x';
+                    field.dispatchEvent(new Event('input', { bubbles: true }));
+                }, selector);
 
-                if (/enviando/i.test(await page.evaluate(announcedHistoryInPage))) {
-                    failures.push({ rule: 'anuncia un envío que no ocurre', message: 'con las contraseñas distintas se anuncia "Enviando…" sin enviar nada' });
+                if (await page.evaluate(confirmationErrorInPage, selector) === false) {
+                    failures.push({ rule: 'el error se borra al escribir', message: `contraseñas aún distintas: ${confirmation} pierde su error al teclear` });
                 }
+            }
+
+            if (counter.requests === 0 && /enviando/i.test(await page.evaluate(announcedHistoryInPage))) {
+                failures.push({ rule: 'anuncia un envío que no ocurre', message: 'con las contraseñas distintas se anuncia "Enviando…" sin enviar nada' });
             }
 
             await page.goto(baseUrl + entry.path);
             await page.evaluate(markScreenFormInPage);
-            requests = 0;
         }
 
+        // R5 · a 422 from the server marks the field it names
+        const field = await page.evaluate(firstNamedFieldInPage, selector);
+
+        if (field) {
+            answer = { status: 422, body: { message: 'Revisa los datos.', errors: { [field]: ['Este dato no es válido.'] } } };
+            counter.requests = 0;
+
+            if (await page.evaluate(fillAndSendInPage, selector) === 'sent') {
+                await page.settle();
+
+                if (counter.requests > 0 && (await page.evaluate(namedFieldMarkedInPage, selector, field)) === false) {
+                    failures.push({ rule: 'error del servidor sin asociar a su campo', message: `una respuesta 422 sobre "${field}" no marca ese campo` });
+                }
+            }
+
+            await page.goto(baseUrl + entry.path);
+
+            for (const step of entry.steps ?? []) {
+                if (step.click) {
+                    await page.click(step.click);
+                }
+            }
+
+            await page.evaluate(markScreenFormInPage);
+        }
+
+        answer = { status: 500, body: { error: 'SQLSTATE[HY000]: General error' } };
+        counter.requests = 0;
         await page.evaluate(recordAnnouncementsInPage);
         const sent = await page.evaluate(fillAndSendInPage, selector);
 
         if (sent === 'sent') {
             await page.settle();
 
-            if (requests > 0 && !/enviando/i.test(await page.evaluate(announcedHistoryInPage))) {
+            if (counter.requests > 0 && !/enviando/i.test(await page.evaluate(announcedHistoryInPage))) {
                 failures.push({ rule: 'no se anuncia el envío', message: 'al enviar el formulario ninguna región de estado dice "Enviando…"' });
             }
+        }
+
+        // R20 · an entry that sends and did not: the check would pass without having run
+        if (entry.sends && (sent !== 'sent' || counter.requests === 0)) {
+            failures.push({ rule: 'no llega a enviar', message: sent === 'sent' ? 'el formulario se envió y no salió ninguna petición' : 'no hay botón que lo envíe' });
         }
     } finally {
         await stop();
@@ -537,6 +813,7 @@ export async function run(page, entry) {
         ['contraste de un icono de acción', found.icono],
         ['estado solo por color', found.color],
         ['enlace a otra pestaña sin aviso', found.pestana],
+        ['control dentro de otro control', found.anidado],
         ['se pulsa pero no se alcanza con el teclado', keyboard],
     ].filter(([, items]) => items.length > 0).map(([rule, items]) => ({ rule, message: summary(items) }));
 }
@@ -549,42 +826,76 @@ export async function runFresh(page, entry, { baseUrl }) {
 
     const failures = [];
     const words = forbiddenWords();
+    const counter = { requests: 0 };
     let answer = { status: 500, body: { error: 'SQLSTATE[HY000]: General error in backend API endpoint' } };
-    let requests = 0;
     const stop = await page.intercept((request) => {
         if (request.method === 'GET') {
             return null;
         }
 
-        requests++;
+        counter.requests++;
 
         return answer;
     });
 
     try {
+        failures.push(...await checkOwnFields(page, entry.dialogSelector));
+        failures.push(...await checkEmptySend(page, entry.dialogSelector, (next) => { answer = next; }, counter));
+
+        if (!(await page.evaluate(isOpenInPage, entry.dialogSelector))) {
+            return failures;
+        }
+
+        // R5 · filled in and refused by the server, the field its 422 names is marked
+        const field = await page.evaluate(firstNamedFieldInPage, entry.dialogSelector);
+
+        if (field) {
+            answer = { status: 422, body: { message: 'Revisa los datos.', errors: { [field]: ['Este dato no es válido.'] } } };
+            counter.requests = 0;
+
+            if (await page.evaluate(fillAndSendInPage, entry.dialogSelector) === 'sent') {
+                await page.settle();
+
+                if (counter.requests > 0 && (await page.evaluate(namedFieldMarkedInPage, entry.dialogSelector, field)) === false) {
+                    failures.push({ rule: 'error del servidor sin asociar a su campo', message: `una respuesta 422 sobre "${field}" no marca ese campo` });
+                }
+            }
+
+            if (!(await page.evaluate(isOpenInPage, entry.dialogSelector))) {
+                return failures;
+            }
+        }
+
+        answer = { status: 500, body: { error: 'SQLSTATE[HY000]: General error in backend API endpoint' } };
+        counter.requests = 0;
         await page.evaluate(recordAnnouncementsInPage);
         const sent = await page.evaluate(fillAndSendInPage, entry.dialogSelector);
 
         if (sent !== 'sent') {
-            return [];
+            return entry.sends ? [...failures, { rule: 'no llega a enviar', message: 'el diálogo envía algo y no tiene un botón que lo envíe' }] : failures;
         }
 
         await page.settle();
 
-        if (requests === 0) {
+        if (counter.requests === 0) {
             await page.evaluate(confirmInPage);
             await page.settle();
         }
 
-        const failed = await page.evaluate(announcedInPage);
+        if (entry.sends && counter.requests === 0) {
+            failures.push({ rule: 'no llega a enviar', message: 'se pulsó enviar y no salió ninguna petición' });
+        }
 
-        if (requests > 0 && !/enviando/i.test(await page.evaluate(announcedHistoryInPage))) {
+        if (counter.requests > 0 && !/enviando/i.test(await page.evaluate(announcedHistoryInPage))) {
             failures.push({ rule: 'no se anuncia el envío', message: 'al enviar ninguna región de estado dice "Enviando…"' });
         }
 
+        // R18 · only what was announced after sending counts
+        const failed = await page.evaluate(announcedNewInPage);
+
         if (failed === '') {
-            failures.push({ rule: 'no se anuncia el error', message: 'tras enviar el formulario sin éxito ninguna región de estado dice nada' });
-        } else if (requests > 0) {
+            failures.push({ rule: 'no se anuncia el error', message: 'tras enviar el formulario sin éxito ninguna región de estado dice nada nuevo' });
+        } else if (counter.requests > 0) {
             const leaked = [
                 ...words.technical.filter((term) => new RegExp(`(?<![\\p{L}\\p{N}])${term}(?![\\p{L}\\p{N}])`, term === term.toUpperCase() ? 'u' : 'iu').test(failed)),
                 ...words.spelling.filter((word) => new RegExp(`(?<![\\p{L}\\p{N}])${word}(?![\\p{L}\\p{N}])`, 'iu').test(failed)),
@@ -596,11 +907,30 @@ export async function runFresh(page, entry, { baseUrl }) {
             }
         }
 
-        if (requests === 0) {
+        // R19 · the message is announced without moving the focus away from where it was
+        if (counter.requests > 0 && await page.evaluate(isOpenInPage, entry.dialogSelector)) {
+            const focus = await page.evaluate(focusAfterSendInPage);
+
+            if (!focus.same) {
+                failures.push({ rule: 'el anuncio mueve el foco', message: `tras el error el foco está en ${focus.now}` });
+            }
+        }
+
+        // R13 · an error of an open dialog stays until it is sent again or closed
+        if (entry.id === 'pacientes-crear' && failed !== '') {
+            await new Promise((done) => setTimeout(done, 12500));
+
+            if (!(await page.evaluate(announcedInPage)).includes(failed.split(' · ').at(-1))) {
+                failures.push({ rule: 'el error desaparece solo', message: 'el error de guardado deja de verse con el diálogo aún abierto' });
+            }
+        }
+
+        if (counter.requests === 0) {
             return failures;
         }
 
         answer = { status: 200, body: { message: 'ok', data: {} } };
+        await page.evaluate(recordAnnouncementsInPage);
         const again = await page.evaluate(fillAndSendInPage, entry.dialogSelector);
 
         if (again === 'sent') {
@@ -608,8 +938,24 @@ export async function runFresh(page, entry, { baseUrl }) {
             await page.evaluate(confirmInPage);
             await page.settle();
 
-            if ((await page.evaluate(announcedInPage)) === '') {
-                failures.push({ rule: 'no se anuncia el guardado', message: 'tras guardar ninguna región de estado dice nada' });
+            if ((await page.evaluate(announcedNewInPage)) === '') {
+                failures.push({ rule: 'no se anuncia el guardado', message: 'tras guardar ninguna región de estado dice nada nuevo' });
+            }
+        }
+
+        // R2 · a role that is not known is warned about inside the dialog, where it is seen
+        if (entry.dialog === 'editar-usuario') {
+            if (await page.evaluate(isOpenInPage, entry.dialogSelector)) {
+                await page.press('Escape');
+                await page.settle();
+            }
+
+            if (await page.evaluate(openUnknownRoleInPage)) {
+                await page.settle();
+
+                if (!/rol/i.test(await page.evaluate(warningInOpenDialogInPage) ?? '')) {
+                    failures.push({ rule: 'aviso fuera del diálogo', message: 'con un rol que no se reconoce, el diálogo abierto no muestra el aviso' });
+                }
             }
         }
     } finally {
@@ -617,4 +963,8 @@ export async function runFresh(page, entry, { baseUrl }) {
     }
 
     return failures;
+}
+
+function isOpenInPage(dialogSelector) {
+    return window.__audit.scope(dialogSelector) !== null;
 }
