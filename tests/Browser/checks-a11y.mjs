@@ -608,6 +608,157 @@ async function newAnnouncement(page) {
     return page.evaluate(announcedNewInPage);
 }
 
+/** R62 · the error a 422 put on a field stays when the field is only passed through. */
+async function checkServerErrorStays(page, selector, name) {
+    await page.evaluate((target, fieldName) => {
+        const field = [...(window.__audit.scope(target)?.querySelectorAll(`[name="${fieldName}"]`) ?? [])].find(window.__audit.visible);
+        field?.focus();
+        field?.blur();
+    }, selector, name);
+
+    return (await page.evaluate(namedFieldMarkedInPage, selector, name)) === false
+        ? [{ rule: 'el error del servidor se borra al salir del campo', message: `"${name}" pierde el error de la 422 sin haberse corregido` }]
+        : [];
+}
+
+/** A valid value for a field of the design system, by its variant. */
+function fixFieldInPage(selector) {
+    const A = window.__audit;
+    const field = [...(A.scope(selector)?.querySelectorAll('[data-ui-input][required]') ?? [])].find((candidate) => A.visible(candidate) && !candidate.readOnly && !candidate.disabled);
+
+    if (!field) {
+        return null;
+    }
+
+    const values = { email: 'prueba@ui-audit.dentissa.test', number: '1', password: 'Prueba-segura-123' };
+    const error = document.getElementById(field.dataset.errorTarget ?? '')?.textContent.trim() ?? '';
+    field.value = values[field.dataset.variant] ?? 'Texto de prueba';
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    field.blur();
+
+    return error;
+}
+
+/** What the regions outside any dialog say now. */
+function pageRegionsInPage() {
+    return [...document.querySelectorAll('[role=status], [role=alert], [aria-live]')]
+        .filter((region) => region.closest('dialog') === null)
+        .map((region) => region.textContent.replace(/\s+/g, ' ').trim())
+        .join(' · ');
+}
+
+/** Opens the entry again, for a check that had to close its dialog. */
+async function reenter(page, entry, baseUrl) {
+    await page.goto(baseUrl + entry.path);
+
+    for (const step of entry.steps ?? []) {
+        if (step.click) {
+            await page.click(step.click);
+        } else if (step.waitFor) {
+            await page.waitFor((target) => [...document.querySelectorAll(target)].some(window.__audit.visible), { args: [step.waitFor], what: step.waitFor });
+        } else if (step.fill) {
+            await page.evaluate((target, text) => {
+                const field = document.querySelector(target);
+                field.value = text;
+                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.dispatchEvent(new Event('change', { bubbles: true }));
+            }, step.fill, step.value ?? '');
+        } else if (step.press) {
+            await page.press(step.press);
+        }
+
+        await page.settle();
+    }
+}
+
+/**
+ * R63 · the announcement of a field error in a dialog goes away once the field is corrected, and
+ * closing the dialog with a field wrong does not leave it on the page.
+ */
+async function checkFieldAnnouncementInDialog(page, entry, baseUrl) {
+    const selector = entry.dialogSelector;
+    const failures = [];
+    const error = await page.evaluate(leaveEmptyFieldInPage, selector);
+
+    if (error === null) {
+        return [];
+    }
+
+    // A repeated message is rewritten after a short pause (ui/status.js): wait it out each time.
+    const pause = () => new Promise((done) => setTimeout(done, 150));
+    await pause();
+    const fixed = await page.evaluate(fixFieldInPage, selector);
+    await pause();
+
+    if (fixed && (await page.evaluate(announcedInPage)).includes(error)) {
+        failures.push({ rule: 'el aviso de un campo corregido sigue a la vista', message: `"${error}" sigue anunciado con el campo ya corregido` });
+    }
+
+    // Closing with a field wrong: Escape, unless the dialog asks first (then it is not closed).
+    if (entry.confirmOnEscape) {
+        return failures;
+    }
+
+    await page.evaluate((target) => {
+        const A = window.__audit;
+        const field = [...(A.scope(target)?.querySelectorAll('[data-ui-input][required]') ?? [])].find((candidate) => A.visible(candidate) && !candidate.readOnly && !candidate.disabled);
+        field.focus();
+        field.value = '';
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+    }, selector);
+    await page.press('Escape');
+    await page.settle();
+
+    if (!(await page.evaluate(isOpenInPage, selector)) && (await page.evaluate(pageRegionsInPage)).includes(error)) {
+        failures.push({ rule: 'aviso de un diálogo cerrado en la página', message: `al cerrar el diálogo con un campo vacío, la página anuncia "${error}"` });
+    }
+
+    await reenter(page, entry, baseUrl);
+
+    return failures;
+}
+
+/** R64 · a prescription row with only its instructions: marked and sent are never both true. */
+async function checkPrescriptionWithInstructionsOnly(page, selector, setAnswer, counter) {
+    const prepared = await page.evaluate((target) => {
+        const A = window.__audit;
+        const row = [...(A.scope(target)?.querySelectorAll('[data-prescription-row]') ?? [])].find(A.visible);
+
+        if (!row) {
+            return false;
+        }
+
+        for (const field of row.querySelectorAll('input')) {
+            field.value = field.matches('[data-prescription-instructions]') ? 'Tomar con agua' : '';
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        return true;
+    }, selector);
+
+    if (!prepared) {
+        return [];
+    }
+
+    setAnswer({ status: 500, body: { error: 'SQLSTATE[HY000]: General error' } });
+    counter.requests = 0;
+    await page.evaluate((target) => {
+        const A = window.__audit;
+        const send = [...(A.scope(target)?.querySelectorAll('button') ?? [])].filter(A.visible)
+            .find((button) => button.type === 'submit' || [...button.attributes].some((attribute) => /^data-.*-(submit|accept|confirm-accept)$/.test(attribute.name)));
+        send?.click();
+    }, selector);
+    await page.settle();
+    await page.evaluate(confirmInPage);
+    await page.settle();
+
+    const marked = await page.evaluate((target) => [...(window.__audit.scope(target)?.querySelectorAll('[data-prescription-row] [aria-invalid="true"]') ?? [])].length, selector);
+
+    return marked > 0 && counter.requests > 0
+        ? [{ rule: 'se envía con campos marcados', message: `una prescripción con solo indicaciones deja ${marked} campos marcados y la cita se envía igual` }]
+        : [];
+}
+
 /** R11, R12 · fields that check themselves as they are typed in and left. */
 async function checkOwnFields(page, selector) {
     const failures = [];
@@ -744,6 +895,8 @@ async function checkScreenForm(page, entry, baseUrl) {
 
                 if (counter.requests > 0 && (await page.evaluate(namedFieldMarkedInPage, selector, field)) === false) {
                     failures.push({ rule: 'error del servidor sin asociar a su campo', message: `una respuesta 422 sobre "${field}" no marca ese campo` });
+                } else if (counter.requests > 0) {
+                    failures.push(...await checkServerErrorStays(page, selector, field));
                 }
             }
 
@@ -871,7 +1024,9 @@ export async function runFresh(page, entry, { baseUrl }) {
 
     try {
         failures.push(...await checkOwnFields(page, entry.dialogSelector));
+        failures.push(...await checkFieldAnnouncementInDialog(page, entry, baseUrl));
         failures.push(...await checkEmptySend(page, entry.dialogSelector, (next) => { answer = next; }, counter));
+        failures.push(...await checkPrescriptionWithInstructionsOnly(page, entry.dialogSelector, (next) => { answer = next; }, counter));
 
         if (!(await page.evaluate(isOpenInPage, entry.dialogSelector))) {
             return failures;
@@ -889,6 +1044,8 @@ export async function runFresh(page, entry, { baseUrl }) {
 
                 if (counter.requests > 0 && (await page.evaluate(namedFieldMarkedInPage, entry.dialogSelector, field)) === false) {
                     failures.push({ rule: 'error del servidor sin asociar a su campo', message: `una respuesta 422 sobre "${field}" no marca ese campo` });
+                } else if (counter.requests > 0) {
+                    failures.push(...await checkServerErrorStays(page, entry.dialogSelector, field));
                 }
             }
 
