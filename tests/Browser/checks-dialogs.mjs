@@ -29,8 +29,9 @@ function measureInPage(dialogSelector, width, height) {
     const labelledBy = (dialog?.getAttribute('aria-labelledby') ?? '').split(/\s+/).filter(Boolean).map((id) => document.getElementById(id));
     const name = (dialog?.getAttribute('aria-label') ?? '').trim() || labelledBy.map((node) => node?.textContent.trim() ?? '').join(' ').trim();
     const title = (dialog?.querySelector('h1, h2, h3')?.textContent ?? '').replace(/\s+/g, ' ').trim();
-    const field = [...root.querySelectorAll('input:not([type=hidden]), textarea, select')].find(A.visible) ?? null;
-    const fieldBox = field?.getBoundingClientRect() ?? null;
+    // Pressed on the title: a select would open its list, and Escape would close only that.
+    const heading = dialog?.querySelector('h1, h2, h3') ?? null;
+    const fieldBox = heading && A.visible(heading) ? heading.getBoundingClientRect() : null;
 
     // The panel: the dialog itself, or the smallest painted box that holds all its controls.
     const controls = [...root.querySelectorAll('button, input:not([type=hidden]), select, textarea, a[href]')].filter(A.visible);
@@ -121,7 +122,7 @@ export async function run(page, entry) {
         failures.push({ rule: 'acciones del diálogo fuera de la vista', message: `${open.lastAction.what} queda en y=${open.lastAction.top}–${open.lastAction.bottom} px` });
     }
 
-    // Pressing inside (on a field) and letting go on the backdrop must not close it: that is how
+    // Pressing inside (on its title) and letting go on the backdrop must not close it: that is how
     // a selection that goes too far ends. A dialog that fills the window has no backdrop.
     const outside = [[2, 2], [viewport.width - 2, viewport.height - 2]].find(([x, y]) => x < box.left || x > box.right || y < box.top || y > box.bottom);
 
@@ -132,7 +133,7 @@ export async function run(page, entry) {
         await page.settle();
 
         if (!(await page.evaluate(isOpenInPage, entry.dialogSelector))) {
-            failures.push({ rule: 'el diálogo se cierra al arrastrar fuera', message: 'pulsar en un campo y soltar sobre el fondo lo cierra' });
+            failures.push({ rule: 'el diálogo se cierra al arrastrar fuera', message: 'pulsar dentro y soltar sobre el fondo lo cierra' });
 
             return failures;
         }
