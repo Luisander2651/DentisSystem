@@ -1,4 +1,4 @@
-import { closeDialog, openDialog } from '../../ui/dialog';
+import { closeDialog, isBackdropClick, openDialog } from '../../ui/dialog';
 import { announce, announceError, clearAnnouncements, failureMessage } from '../../ui/status';
 
 (function () {
@@ -104,7 +104,7 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
         var input = function (name, text, attributes, required) {
             return '<div' + (name === 'instructions' ? ' class="sm:col-span-2"' : '') + '>'
                 + '<label for="' + id + '-' + name + '" class="mb-1.5 block text-sm font-semibold text-ink">' + text + (required ? ' <span class="text-danger" title="Obligatorio">*</span>' : '') + '</label>'
-                + '<input id="' + id + '-' + name + '" data-prescription-' + name + ' class="block h-control w-full rounded-control border border-field bg-surface px-3 text-control text-ink" ' + attributes + (required ? ' required' : '') + '>'
+                + '<input id="' + id + '-' + name + '" data-prescription-' + name + (required ? ' data-prescription-required' : '') + ' class="block h-control w-full rounded-control border border-field bg-surface px-3 text-control text-ink" ' + attributes + '>'
                 + '</div>';
         };
 
@@ -227,6 +227,46 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
 
                 return prescription;
             });
+    }
+
+    // Una fila vacía no cuenta como prescripción; en cuanto tiene algo, sus cuatro datos son
+    // obligatorios. Los que fallan quedan marcados uno a uno (spec 016, CA37).
+    var PRESCRIPTION_RULES = [
+        ['[data-prescription-medication]', 'Escribe el medicamento.', function (value) { return value !== ''; }],
+        ['[data-prescription-dosage]', 'Escribe la dosis.', function (value) { return value !== ''; }],
+        ['[data-prescription-duration]', 'Escribe una duración de 1 a 365 días.', function (value) { return /^\d+$/.test(value) && value >= 1 && value <= 365; }],
+        ['[data-prescription-frequency]', 'Escribe de 1 a 24 veces al día.', function (value) { return /^\d+$/.test(value) && value >= 1 && value <= 24; }],
+    ];
+
+    function syncPrescriptionRequired(row) {
+        var filled = Array.from(row.querySelectorAll('input')).some(function (field) { return field.value.trim() !== ''; });
+
+        row.querySelectorAll('[data-prescription-required]').forEach(function (field) {
+            field.required = filled;
+            field.setAttribute('aria-required', filled ? 'true' : 'false');
+        });
+
+        return filled;
+    }
+
+    function markPrescriptionFields() {
+        var firstInvalid = null;
+
+        Array.from(prescriptionsList.querySelectorAll('[data-prescription-row]')).forEach(function (row) {
+            var filled = syncPrescriptionRequired(row);
+
+            PRESCRIPTION_RULES.forEach(function (rule) {
+                var field = row.querySelector(rule[0]);
+                clearFieldError(field);
+
+                if (filled && !rule[2](field.value.trim())) {
+                    setFieldError(field, rule[1]);
+                    firstInvalid = firstInvalid || field;
+                }
+            });
+        });
+
+        return firstInvalid;
     }
 
     function validatePrescriptions(prescriptions) {
@@ -375,6 +415,12 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
         } catch (error) {
             showError(error instanceof TypeError ? failureMessage(0) : error.message);
             setSubmittingState(false);
+
+            // Al cerrarse la confirmación el botón estaba deshabilitado y el foco se fue a otro sitio.
+            if (submitButton) {
+                submitButton.focus();
+            }
+
             return;
         }
 
@@ -410,6 +456,12 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
     form.addEventListener('input', function (event) {
         isDirty = true;
 
+        var row = event.target.closest ? event.target.closest('[data-prescription-row]') : null;
+
+        if (row) {
+            syncPrescriptionRequired(row);
+        }
+
         if (event.target.getAttribute('aria-invalid') === 'true' && event.target.value.trim()) {
             clearFieldError(event.target);
         }
@@ -428,7 +480,7 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
 
     // El botón de cerrar y el clic fuera del diálogo.
     modal.addEventListener('click', function (event) {
-        if (event.target === modal || event.target.closest('[data-dialog-close]')) {
+        if (isBackdropClick(event, modal) || event.target.closest('[data-dialog-close]')) {
             event.stopPropagation();
             requestClose();
         }
@@ -466,6 +518,8 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
             hideError();
             var prescriptions = collectPrescriptions();
             var errors = validatePrescriptions(prescriptions);
+
+            markPrescriptionFields();
 
             if (errors.length) {
                 showError(errors[0]);
