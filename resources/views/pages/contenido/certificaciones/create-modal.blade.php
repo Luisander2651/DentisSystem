@@ -14,7 +14,7 @@
         </div>
 
         <x-ui.input
-            variant="string"
+            variant="text"
             id="certifications-create-name"
             name="name"
             label="Nombre de la certificación"
