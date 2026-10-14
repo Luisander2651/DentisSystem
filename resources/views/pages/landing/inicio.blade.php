@@ -24,16 +24,12 @@
                         En Dentissa nos apasiona crear sonrisas hermosas y saludables. Ofrecemos tratamientos dentales integrales de alta calidad en un ambiente cálido, seguro y diseñado para tu comodidad.
                     </p>
                     <div class="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
-                        <a href="https://wa.me/521234567890?text=Hola,%20me%20gustaria%20agendar%20una%20citas" target="_blank" rel="noopener noreferrer" aria-label="Agenda una Cita (se abre en otra pestaña)">
-                            <x-ui.button variant="primary" class="w-full sm:w-auto">
-                                Agenda una Cita
-                            </x-ui.button>
-                        </a>
-                        <a href="{{ route('contacto') }}">
-                            <x-ui.button variant="secondary" class="w-full sm:w-auto">
-                                Ver Ubicación
-                            </x-ui.button>
-                        </a>
+                        <x-ui.button variant="primary" href="https://wa.me/521234567890?text=Hola,%20me%20gustaria%20agendar%20una%20citas" target="_blank" rel="noopener noreferrer" label="Agenda una Cita (se abre en otra pestaña)" class="w-full sm:w-auto">
+                            Agenda una Cita
+                        </x-ui.button>
+                        <x-ui.button variant="secondary" :href="route('contacto')" class="w-full sm:w-auto">
+                            Ver Ubicación
+                        </x-ui.button>
                     </div>
                 </div>
 
