@@ -2,6 +2,8 @@
     Campo del sistema de diseño (docs/design/system.md → Campo de formulario): 44 px de alto, letra
     de 16 px en tinta, etiqueta visible, marca de obligatorio y error enlazado al campo.
     `hint` añade un texto de ayuda. El propósito del campo se declara con `autocomplete`.
+    `variant`: `string` (solo letras, para nombres de persona), `text` (texto libre: teléfonos,
+    direcciones, códigos o nombres con números), `number`, `email` o `password`.
 --}}
 @props([
     'variant' => 'string',
@@ -26,6 +28,7 @@
 
     $messages = [
         'string' => 'Solo se permite texto.',
+        'text' => 'Este campo es obligatorio.',
         'number' => 'Solo números no negativos.',
         'email' => 'Ingresa un correo válido.',
         'password' => 'La contraseña no es válida.',
@@ -108,7 +111,7 @@
                     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
                 }
 
-                if (variant === 'password') {
+                if (variant === 'password' || variant === 'text') {
                     return true;
                 }
 
@@ -136,7 +139,7 @@
                 }
             }
 
-            function validateInput(input) {
+            function validateInput(input, leaving) {
                 var variant = input.dataset.variant || 'string';
                 var errorTarget = document.getElementById(input.dataset.errorTarget);
                 if (!errorTarget) {
@@ -172,6 +175,12 @@
                 input.classList.add('border-2', 'border-danger');
                 input.setAttribute('aria-invalid', 'true');
                 input.setAttribute('aria-describedby', describedBy.concat(errorTarget.id).join(' '));
+
+                // Al salir de un campo inválido, su error se anuncia: el foco ya está en otro sitio y
+                // un lector de pantalla no lo leería (spec 016, CA37).
+                if (leaving && window.uiStatus) {
+                    window.uiStatus.announceError(errorTarget.textContent);
+                }
             }
 
             document.addEventListener('input', function (event) {
@@ -189,7 +198,7 @@
                     return;
                 }
 
-                validateInput(input);
+                validateInput(input, true);
             }, true);
 
             document.addEventListener('click', function (event) {
