@@ -209,8 +209,11 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
                 var dosage = row.querySelector('[data-prescription-dosage]').value.trim();
                 var duration = row.querySelector('[data-prescription-duration]').value.trim();
                 var frequency = row.querySelector('[data-prescription-frequency]').value.trim();
+                var instructions = row.querySelector('[data-prescription-instructions]').value.trim();
 
-                return medication || dosage || duration || frequency;
+                // El mismo criterio que syncPrescriptionRequired: con las indicaciones solas, la fila
+                // también cuenta y sus datos obligatorios se piden (spec 016, CA37).
+                return medication || dosage || duration || frequency || instructions;
             })
             .map(function (row) {
                 var instructions = row.querySelector('[data-prescription-instructions]').value.trim();
