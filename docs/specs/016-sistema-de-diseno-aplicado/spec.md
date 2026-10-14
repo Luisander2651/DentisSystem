@@ -1,7 +1,7 @@
 ---
 id: 016
 slug: sistema-de-diseno-aplicado
-status: implemented
+status: approved
 created: 2026-10-06
 extends: [014]   # cambia cómo se presenta un acceso denegado en las pantallas web
 ---
@@ -51,7 +51,7 @@ y cierra la deuda `DS1`–`DS11`, `DS13` y `DS14` de [docs/design/system.md](../
 - [x] CA11 · Dado un ancho de 390 px, cuando se abre la agenda con o sin citas, entonces la página no se desplaza de lado y se pueden ver y abrir las citas de cualquier día del mes.
 
 ### Diálogos y estructura
-- [x] CA12 · Dado cualquier diálogo, cuando se abre, entonces un lector de pantalla anuncia su título, el foco queda dentro del diálogo mientras está abierto y, al cerrarlo, vuelve al control que lo abrió.
+- [ ] CA12 · Dado cualquier diálogo, cuando se abre, entonces un lector de pantalla anuncia su título, el foco queda dentro del diálogo mientras está abierto y, al cerrarlo, vuelve al control que lo abrió.
 - [x] CA13 · Dado un diálogo con más contenido que el alto de la ventana (a 390 × 844, 768 × 1024 y 1440 × 900 px), cuando se abre, entonces no supera el alto de la ventana: su contenido se desplaza dentro y sus acciones siguen alcanzables.
 - [x] CA14 · Dado cualquier pantalla, cuando se revisa su estructura, entonces tiene exactamente un título principal de página.
 
@@ -64,7 +64,7 @@ y cierra la deuda `DS1`–`DS11`, `DS13` y `DS14` de [docs/design/system.md](../
 - [x] CA18 · (abuso) Como usuario con sesión, entro a una pantalla que mi rol no puede ver → veo una página "Sin permiso" con la marca, un mensaje en español y un botón que me lleva a mi inicio; la página no muestra ningún dato de la pantalla pedida y el acceso sigue rechazado como denegado. Sustituye a lo que se ve hoy: una página en negro con un mensaje en crudo (p. ej. un asistente que abre la agenda) o la página genérica en inglés (p. ej. un paciente que abre expedientes).
 - [x] CA19 · Dado cualquier persona, cuando entra a una dirección que no existe, entonces ve una página "No encontrada" con la marca y un enlace de vuelta: a su inicio si tiene sesión, al inicio del sitio público si no la tiene.
 - [x] CA20 · (abuso) Como usuario curioso, provoco un acceso denegado o una dirección inexistente en cualquier pantalla web → nunca recibo datos en crudo, texto en inglés ni detalles técnicos (nombres internos, trazas, rutas del servidor).
-- [x] CA41 · Dado cualquier persona, cuando la aplicación rechaza una petición a una pantalla web porque el método no está permitido o porque el formulario caducó, entonces ve una página propia con la marca, un mensaje en español que dice qué pasó y un enlace de vuelta, igual que en CA19.
+- [ ] CA41 · Dado cualquier persona, cuando la aplicación rechaza una petición a una pantalla web porque el método no está permitido o porque el formulario caducó, entonces ve una página propia con la marca, un mensaje en español que dice qué pasó y un enlace de vuelta, igual que en CA19.
 - [x] CA21 · Dado un visitante sin sesión, cuando entra a una pantalla protegida, entonces se le lleva a iniciar sesión, como hoy.
 
 ### Móvil (390 px)
@@ -83,12 +83,12 @@ Hallazgos `M01`–`M16` de la revisión de las 65 pantallas a 390 px (ver "Dise�
 ### Accesibilidad completa (WCAG 2.1 AA)
 - [x] CA35 · Dado cualquier control interactivo (incluidos los botones que solo muestran un icono) y cualquier imagen con información, cuando lo lee un lector de pantalla, entonces tiene un nombre que dice qué hace o qué es; las imágenes decorativas no se anuncian.
 - [x] CA36 · Dado cualquier campo de formulario, cuando se muestra, entonces tiene una etiqueta visible asociada a él, y los campos obligatorios se distinguen de los opcionales.
-- [x] CA37 · Dado un formulario o una acción, cuando ocurre un error de validación (también el que se detecta antes de enviar, como dos contraseñas que no coinciden), un error al guardar o termina bien, entonces el mensaje se anuncia al lector de pantalla sin mover el foco, y el error de un campo queda asociado a ese campo. Mientras se envía, se anuncia que se está enviando.
+- [ ] CA37 · Dado un formulario o una acción, cuando ocurre un error de validación (también el que se detecta antes de enviar, como dos contraseñas que no coinciden), un error al guardar o termina bien, entonces el mensaje se anuncia al lector de pantalla sin mover el foco, y el error de un campo queda asociado a ese campo. Mientras se envía, se anuncia que se está enviando.
 - [x] CA38 · Dado cualquier icono de acción, borde de control o indicador que transmite información sin texto, cuando se mide contra su fondo, entonces su contraste es de al menos 3:1; y ningún estado se distingue solo por el color.
 
-- [x] CA40 · Dado cualquier elemento que hace algo al pulsarlo con el ratón o con el dedo (incluidos los días del calendario y las tarjetas de la galería), cuando se usa solo el teclado, entonces se puede llegar a él con el tabulador y activarlo con Intro o con la barra espaciadora.
+- [ ] CA40 · Dado cualquier elemento que hace algo al pulsarlo con el ratón o con el dedo (incluidos los días del calendario y las tarjetas de la galería), cuando se usa solo el teclado, entonces se puede llegar a él con el tabulador y activarlo con Intro o con la barra espaciadora.
 - [x] CA42 · Dado un ancho de 1024 px o más, cuando se abre cualquier pantalla del panel o del sitio público, entonces su menú de navegación se ve desplegado sin abrir nada y sin desbordar la pantalla. Por debajo de 1024 px (a 390 y 768 px) se llega a él con el menú plegable: al abrirlo, todas sus opciones quedan dentro de la pantalla y se alcanzan con el teclado, y se cierra con Escape devolviendo el foco al botón que lo abrió.
-- [x] CA43 · Dado un enlace que abre otra pestaña, cuando lo lee un lector de pantalla o se ve su texto, entonces avisa de que se abre en otra pestaña.
+- [ ] CA43 · Dado un enlace que abre otra pestaña, cuando lo lee un lector de pantalla o se ve su texto, entonces avisa de que se abre en otra pestaña.
 
 ### Lo que no cambia y lo que queda escrito
 - [x] CA22 · Dado cualquier pantalla a 1440 px, cuando se compara con su captura anterior, entonces conserva su composición: las mismas secciones en la misma disposición, las mismas acciones, la misma tipografía y los mismos flujos; solo cambian colores, tamaños, radios, foco, diálogos, logo y textos corregidos. A 390 px se conserva igual, salvo los cambios de disposición que piden CA11 y CA25–CA34. Única excepción a 1440 px: gestión de contenido pasa a un solo encabezado (CA34).
