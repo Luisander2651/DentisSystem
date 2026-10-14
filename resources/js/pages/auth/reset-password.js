@@ -37,11 +37,43 @@ import { announce, announceError, announceFailure, clearAnnouncements } from '..
         return;
     }
 
+    const passwordInput = form.querySelector('input[name="password"]');
+    const confirmPasswordInput = form.querySelector('input[name="confirm_password"]');
+    const mismatchMessage = 'Las contraseñas no coinciden.';
+    let mismatchShown = false;
+
+    // El error de contraseñas distintas queda en el campo de confirmación, igual que los del
+    // componente de campo (spec 016, CA37), y se mantiene mientras sigan sin coincidir.
+    function showMismatch() {
+        const errorTarget = document.getElementById(confirmPasswordInput.dataset.errorTarget);
+        const describedBy = (confirmPasswordInput.getAttribute('aria-describedby') || '').split(/\s+/).filter((id) => id !== '' && id !== errorTarget.id);
+
+        errorTarget.textContent = mismatchMessage;
+        errorTarget.classList.remove('hidden');
+        confirmPasswordInput.classList.remove('border-field');
+        confirmPasswordInput.classList.add('border-2', 'border-danger');
+        confirmPasswordInput.setAttribute('aria-invalid', 'true');
+        confirmPasswordInput.setAttribute('aria-describedby', describedBy.concat(errorTarget.id).join(' '));
+        mismatchShown = true;
+    }
+
+    function passwordsMatch() {
+        return passwordInput.value.trim() === confirmPasswordInput.value.trim();
+    }
+
+    // El campo vuelve a validarse solo al escribir o salir de él; si aún no coinciden, el error sigue.
+    ['input', 'blur'].forEach((type) => {
+        confirmPasswordInput.addEventListener(type, () => {
+            if (mismatchShown && !passwordsMatch()) {
+                showMismatch();
+            } else {
+                mismatchShown = false;
+            }
+        });
+    });
+
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
-
-        const passwordInput = form.querySelector('input[name="password"]');
-        const confirmPasswordInput = form.querySelector('input[name="confirm_password"]');
 
         // BR-23: trim the borders here too, so what the user sees compared on screen
         // is exactly what the server will store. Internal spaces are preserved.
@@ -56,7 +88,8 @@ import { announce, announceError, announceFailure, clearAnnouncements } from '..
 
         // Validar coincidencia en cliente antes de enviar
         if (password !== confirmPassword) {
-            announceError('Las contraseñas no coinciden.');
+            showMismatch();
+            announceError(mismatchMessage);
             return;
         }
 
