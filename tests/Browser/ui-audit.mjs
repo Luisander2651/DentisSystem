@@ -535,9 +535,12 @@ async function loadChecks(names) {
 
         const file = join(here, `checks-${name}.mjs`);
 
-        if (existsSync(file)) {
-            checks.push({ name, ...(await import(pathToFileURL(file).href)) });
+        // A module that went missing would take its criteria with it and still end in 0.
+        if (!existsSync(file)) {
+            throw new Error(`Falta el módulo de comprobación ${file}`);
         }
+
+        checks.push({ name, ...(await import(pathToFileURL(file).href)) });
     }
 
     return checks;
@@ -632,8 +635,13 @@ async function visit(browser, entry, width, options, session, config, work) {
         try {
             const failures = await work(page);
 
-            if (page.rateLimited === null || attempt === 6) {
+            if (page.rateLimited === null) {
                 return failures;
+            }
+
+            // Measured without its data, a screen would pass most checks: that is a failure.
+            if (attempt === 6) {
+                return [...failures, { check: 'ui-audit', rule: 'limitada por la API', message: `la API siguió pidiendo esperar (429) tras ${attempt} intentos` }];
             }
 
             rateLimit.resumeAt = Math.max(rateLimit.resumeAt, Date.now() + (page.rateLimited + 1) * 1000);
@@ -680,6 +688,16 @@ async function auditPage(page, entry, width, options, checks, baseline) {
         await enter(page, entry, options);
     } catch (error) {
         return [{ check: 'ui-audit', rule: 'no abre', message: error.message }];
+    }
+
+    // A session that did not take, or a role without access, lands somewhere else (the login):
+    // auditing that page in place of the entry would pass. An entry that leaves on purpose
+    // declares where it lands.
+    const landedOn = await page.evaluate(() => location.pathname);
+    const expected = entry.landsOn ?? new URL(entry.path, options.baseUrl).pathname;
+
+    if (landedOn !== expected) {
+        return [{ check: 'ui-audit', rule: 'otra página', message: `se esperaba ${expected} y la visita terminó en ${landedOn}` }];
     }
 
     if (entry.dialogSelector && !(await page.isVisible(entry.dialogSelector))) {

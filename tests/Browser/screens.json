@@ -1,5 +1,5 @@
 {
-    "$comment": "Inventario de ui-audit (spec 016). screen: pantalla para --only (sin sus diálogos). dialog: nombre del diálogo para --only, en cada pantalla que lo monta. Las fechas son las de UiAuditSeeder (julio de 2026). widths: anchos propios de la entrada (por defecto 390, 768 y 1440). navigation: a 1024 px o más, lo que debe verse desplegado (shown) y el botón del menú plegable que no debe verse (toggle).",
+    "$comment": "Inventario de ui-audit (spec 016). screen: pantalla para --only (sin sus diálogos). dialog: nombre del diálogo para --only, en cada pantalla que lo monta. Las fechas son las de UiAuditSeeder (julio de 2026). widths: anchos propios de la entrada (por defecto 390, 768 y 1440). navigation: a 1024 px o más, lo que debe verse desplegado (shown) y el botón del menú plegable que no debe verse (toggle). sends: la entrada envía algo con datos de prueba (un formulario o una acción); checks-a11y falla si no llega a enviarlo. landsOn: la página en que termina una entrada que sale a propósito (cerrar sesión lleva a /login).",
     "now": "2026-07-22T10:00:00-06:00",
     "timezone": "America/Mexico_City",
     "locale": "es-MX",
@@ -68,22 +68,26 @@
         {
             "id": "login",
             "screen": "login",
-            "path": "/login"
+            "path": "/login",
+            "sends": true
         },
         {
             "id": "register",
             "screen": "register",
-            "path": "/register"
+            "path": "/register",
+            "sends": true
         },
         {
             "id": "forgot-password",
             "screen": "forgot-password",
-            "path": "/forgot-password"
+            "path": "/forgot-password",
+            "sends": true
         },
         {
             "id": "reset-password",
             "screen": "reset-password",
-            "path": "/reset-password?token=token-de-prueba&email=paciente%40ui-audit.dentissa.test"
+            "path": "/reset-password?token=token-de-prueba&email=paciente%40ui-audit.dentissa.test",
+            "sends": true
         },
         {
             "id": "reset-password-sin-token",
@@ -95,7 +99,9 @@
             "screen": "logout",
             "path": "/logout",
             "role": "paciente",
-            "freshSession": true
+            "freshSession": true,
+            "sends": true,
+            "landsOn": "/login"
         },
         {
             "id": "dashboard-administrador",
@@ -163,7 +169,8 @@
                 {
                     "click": "[data-create-patient-open]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "dashboard-crear-usuario",
@@ -176,7 +183,8 @@
                 {
                     "click": "[data-create-user-open]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "agenda",
@@ -268,7 +276,8 @@
                 {
                     "click": "[data-view-appointment-edit]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "agenda-cita-crear",
@@ -281,7 +290,8 @@
                 {
                     "click": "[data-create-appointment-open]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "agenda-cita-completar",
@@ -361,7 +371,8 @@
             "confirmOnEscape": {
                 "dialog": "[data-complete-appointment-confirm]",
                 "accept": "[data-complete-appointment-confirm-accept]"
-            }
+            },
+            "sends": true
         },
         {
             "id": "agenda-cita-completar-receta",
@@ -409,7 +420,8 @@
             "confirmOnEscape": {
                 "dialog": "[data-complete-appointment-confirm]",
                 "accept": "[data-complete-appointment-confirm-accept]"
-            }
+            },
+            "sends": true
         },
         {
             "id": "pacientes",
@@ -428,7 +440,8 @@
                 {
                     "click": "[data-create-patient-open]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "pacientes-editar",
@@ -441,7 +454,8 @@
                 {
                     "click": "[data-patient-edit][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "pacientes-eliminar",
@@ -454,7 +468,8 @@
                 {
                     "click": "[data-patient-delete][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "expedientes",
@@ -477,7 +492,8 @@
                 {
                     "click": "[data-record-open-contact-form]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "expediente-direccion-form",
@@ -488,7 +504,8 @@
                 {
                     "click": "[data-record-open-address-form]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "expediente-medicos-form",
@@ -499,7 +516,8 @@
                 {
                     "click": "[data-record-open-medical-form]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "expediente-asistente",
@@ -537,7 +555,8 @@
                 {
                     "click": "[data-record-delete-contact]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "expediente-asistente-cita-detalle",
@@ -563,7 +582,8 @@
                 {
                     "click": "[data-record-delete-contact]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "expediente-doctor-cita-detalle",
@@ -608,7 +628,8 @@
                 {
                     "click": "[data-treatments-create-open]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "tratamientos-editar",
@@ -621,7 +642,8 @@
                 {
                     "click": "[data-treatments-edit]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "tratamientos-eliminar",
@@ -634,7 +656,8 @@
                 {
                     "click": "[data-treatments-delete]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "contenido-galeria",
@@ -677,7 +700,8 @@
                 {
                     "click": "[data-gallery-edit]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "contenido-galeria-eliminar",
@@ -693,7 +717,8 @@
                 {
                     "click": "[data-gallery-delete]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "contenido-promociones",
@@ -720,7 +745,8 @@
                 {
                     "click": "[data-promotions-create-open]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "contenido-promociones-editar",
@@ -736,7 +762,8 @@
                 {
                     "click": "[data-promotions-edit]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "contenido-promociones-eliminar",
@@ -752,7 +779,8 @@
                 {
                     "click": "[data-promotions-delete]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "contenido-certificaciones",
@@ -795,7 +823,8 @@
                 {
                     "click": "[data-certifications-edit]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "contenido-certificaciones-eliminar",
@@ -811,7 +840,8 @@
                 {
                     "click": "[data-certifications-delete]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "contenido-testimonios",
@@ -838,7 +868,8 @@
                 {
                     "click": "[data-testimonials-edit]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "contenido-testimonios-eliminar",
@@ -854,7 +885,8 @@
                 {
                     "click": "[data-testimonials-delete]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "usuarios",
@@ -873,7 +905,8 @@
                 {
                     "click": "[data-create-user-open]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "usuarios-editar",
@@ -886,7 +919,8 @@
                 {
                     "click": "[data-user-edit][data-user-id=\"9dc7104c-d479-5b65-b39d-5901c84d0415\"]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "usuarios-eliminar",
@@ -899,7 +933,8 @@
                 {
                     "click": "[data-user-delete][data-user-id=\"9dc7104c-d479-5b65-b39d-5901c84d0415\"]"
                 }
-            ]
+            ],
+            "sends": true
         },
         {
             "id": "error-404",
