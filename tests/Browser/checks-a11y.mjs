@@ -399,6 +399,8 @@ async function checkMenu(page) {
         failures.push({ rule: 'opción del menú que no se alcanza con el tabulador', message: summary(missed) });
     }
 
+    // Tab has left the menu by now: Escape is pressed from inside it, on its first option.
+    await page.evaluate(() => document.querySelector('[data-ui-audit-menu]').querySelector('a[href], button:not([disabled])')?.focus());
     await page.press('Escape');
     const after = await page.evaluate(menuAfterEscapeInPage);
 

@@ -50,21 +50,25 @@ function initSidebarToggle(sidebar) {
 
 	syncSidebarMenu(sidebar, menu, toggleButton, openIcon, closeIcon);
 
-	toggleButton.addEventListener('click', function () {
-		const isHidden = menu.classList.contains('hidden');
+	function setOpen(isOpen) {
+		menu.classList.toggle('hidden', !isOpen);
+		toggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+		if (openIcon) openIcon.classList.toggle('hidden', isOpen);
+		if (closeIcon) closeIcon.classList.toggle('hidden', !isOpen);
+	}
 
-		if (isHidden) {
-			menu.classList.remove('hidden');
-			toggleButton.setAttribute('aria-expanded', 'true');
-			if (openIcon) openIcon.classList.add('hidden');
-			if (closeIcon) closeIcon.classList.remove('hidden');
+	toggleButton.addEventListener('click', function () {
+		setOpen(menu.classList.contains('hidden'));
+	});
+
+	// Por debajo de 1024 px el menú es plegable: Escape lo cierra y el foco vuelve a su botón.
+	sidebar.addEventListener('keydown', function (event) {
+		if (event.key !== 'Escape' || window.innerWidth >= 1024 || menu.classList.contains('hidden')) {
 			return;
 		}
 
-		menu.classList.add('hidden');
-		toggleButton.setAttribute('aria-expanded', 'false');
-		if (openIcon) openIcon.classList.remove('hidden');
-		if (closeIcon) closeIcon.classList.add('hidden');
+		setOpen(false);
+		toggleButton.focus();
 	});
 }
 
