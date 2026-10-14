@@ -290,15 +290,24 @@ export function confirmInPage() {
 /** From now on, keeps every text written to a status region (an "Enviando…" lasts a moment). */
 function recordAnnouncementsInPage() {
     const said = [];
+    // A region repainted with the text it already had (the month of a calendar) says nothing new.
+    const regions = '[role=status], [role=alert], [aria-live]';
+    const previous = new WeakMap();
     const note = () => {
-        for (const region of document.querySelectorAll('[role=status], [role=alert], [aria-live]')) {
+        for (const region of document.querySelectorAll(regions)) {
             const text = region.textContent.replace(/\s+/g, ' ').trim();
 
-            if (text !== '' && said.at(-1) !== text) {
+            if (text !== '' && previous.get(region) !== text) {
                 said.push(text);
             }
+
+            previous.set(region, text);
         }
     };
+
+    for (const region of document.querySelectorAll(regions)) {
+        previous.set(region, region.textContent.replace(/\s+/g, ' ').trim());
+    }
 
     new MutationObserver(note).observe(document.body, { subtree: true, childList: true, characterData: true });
     window.__announcedHistory = said;
@@ -636,6 +645,17 @@ async function checkEmptySend(page, selector, setAnswer, counter) {
         }
     } else if (field && (await page.evaluate(namedFieldMarkedInPage, selector, field)) === false) {
         failures.push({ rule: 'error del servidor sin asociar a su campo', message: `una respuesta 422 sobre "${field}" no marca ese campo` });
+    }
+
+    // Sent empty, a form with nothing compulsory may ask to confirm: that question is closed, so
+    // what follows works on the dialog of the entry and not under another one.
+    if (await page.evaluate((target) => {
+        const top = [...document.querySelectorAll('dialog[open]')].at(-1);
+
+        return Boolean(top) && !top.matches(target) && !top.querySelector(target);
+    }, selector)) {
+        await page.press('Escape');
+        await page.settle();
     }
 
     return failures;
