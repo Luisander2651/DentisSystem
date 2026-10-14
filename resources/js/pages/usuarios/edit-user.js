@@ -128,16 +128,23 @@ import { announce, announceError, failureMessage } from '../../ui/status';
         resetPasswordField();
         // BR-28: an unrecognised role is surfaced, never silently rewritten. The previous
         // fall-through to 'asistent' meant opening and saving a Doctor demoted them.
-        if (isKnownRole(userData.roleId)) {
+        var knownRole = isKnownRole(userData.roleId);
+
+        if (knownRole) {
             roleSelect.value = userData.roleId;
         } else {
             roleSelect.selectedIndex = -1;
-            showModalError('El rol de este usuario no es válido. Elige uno antes de guardar.');
         }
 
         statusSelect.value = normalizeStatus(userData.status || 'active');
 
         openDialog(modal);
+
+        // El aviso va con el diálogo ya abierto, en su región: escrito antes, quedaba en la de la
+        // página, detrás del diálogo, sin verse ni anunciarse (spec 016, CA37).
+        if (!knownRole) {
+            showModalError('El rol de este usuario no es válido. Elige uno antes de guardar.');
+        }
     }
 
     function closeModal() {
