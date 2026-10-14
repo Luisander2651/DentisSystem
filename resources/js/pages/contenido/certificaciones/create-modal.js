@@ -1,5 +1,5 @@
 import { closeDialog, openDialog } from '../../../ui/dialog';
-import { announce, announceError, failureMessage } from '../../../ui/status';
+import { announce, announceError, failureMessage, markFieldErrors } from '../../../ui/status';
 export function initCertificationsCreateModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -131,6 +131,24 @@ export function initCertificationsCreateModal(context) {
         reader.readAsDataURL(file);
     });
 
+    // Cada campo obligatorio vacío queda marcado con su error, ligado a él, además del aviso
+    // general (spec 016, CA37).
+    function markMissing(fields) {
+        var missing = {};
+
+        fields.forEach(function (field) {
+            var empty = field.type === 'file' ? !(field.files && field.files[0]) : String(field.value).trim() === '';
+
+            if (empty) {
+                missing[field.name] = ['Este campo es obligatorio.'];
+            }
+        });
+
+        markFieldErrors(form, missing);
+
+        return Object.keys(missing).length > 0;
+    }
+
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
@@ -143,7 +161,7 @@ export function initCertificationsCreateModal(context) {
         var date = dateInput.value;
         var imageFile = imageInput.files && imageInput.files[0] ? imageInput.files[0] : null;
 
-        if (!name || !description || !date || !imageFile) {
+        if (markMissing([nameInput, descriptionInput, dateInput, imageInput])) {
             showModalError('Completa todos los campos obligatorios.');
             return;
         }
