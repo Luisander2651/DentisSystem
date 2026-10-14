@@ -11,13 +11,13 @@
 
     <form id="record-address-form" class="hidden space-y-4 border-b border-line bg-canvas p-4">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <x-ui.input variant="string" id="record-address-street" name="street" label="Calle" placeholder="Av. Juárez 123" autocomplete="off" />
-            <x-ui.input variant="string" id="record-address-city" name="city" label="Ciudad" placeholder="Monterrey" autocomplete="off" />
+            <x-ui.input variant="text" id="record-address-street" name="street" label="Calle" placeholder="Av. Juárez 123" autocomplete="off" />
+            <x-ui.input variant="text" id="record-address-city" name="city" label="Ciudad" placeholder="Monterrey" autocomplete="off" />
         </div>
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <x-ui.input variant="string" id="record-address-state" name="state" label="Estado" placeholder="Nuevo León" autocomplete="off" />
-            <x-ui.input variant="string" id="record-address-postal-code" name="postal_code" label="Código postal" placeholder="64000" autocomplete="off" />
+            <x-ui.input variant="text" id="record-address-state" name="state" label="Estado" placeholder="Nuevo León" autocomplete="off" />
+            <x-ui.input variant="text" id="record-address-postal-code" name="postal_code" label="Código postal" placeholder="64000" autocomplete="off" />
         </div>
 
         <p id="record-address-form-error" role="alert" class="hidden rounded-box border border-danger bg-danger-soft px-3 py-2 text-sm font-semibold text-danger"></p>

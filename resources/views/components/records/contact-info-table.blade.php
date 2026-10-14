@@ -11,11 +11,11 @@
 
     <form id="record-contact-form" class="hidden space-y-4 border-b border-line bg-canvas p-4">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <x-ui.input variant="string" id="record-contact-phone" name="phone_number" label="Teléfono" placeholder="+52 81 1234 5678" autocomplete="off" />
+            <x-ui.input variant="text" id="record-contact-phone" name="phone_number" label="Teléfono" placeholder="+52 81 1234 5678" autocomplete="off" />
             <x-ui.input variant="email" id="record-contact-email" name="contact_email" label="Correo de contacto" placeholder="contacto@correo.com" autocomplete="off" />
         </div>
 
-        <x-ui.input variant="string" id="record-contact-emergency" name="emergency_contact" label="Contacto de emergencia" placeholder="Nombre de contacto" autocomplete="off" />
+        <x-ui.input variant="text" id="record-contact-emergency" name="emergency_contact" label="Contacto de emergencia" placeholder="Nombre de contacto" autocomplete="off" />
 
         <p id="record-contact-form-error" role="alert" class="hidden rounded-box border border-danger bg-danger-soft px-3 py-2 text-sm font-semibold text-danger"></p>
 
