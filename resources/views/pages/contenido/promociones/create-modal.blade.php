@@ -1,52 +1,58 @@
-<div id="promotions-create-modal" data-promotions-create-modal class="fixed inset-0 z-100 hidden overflow-y-auto">
-    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" aria-hidden="true" data-promotions-create-cancel></div>
+<x-ui.dialog id="promotions-create-modal" title="Nueva promoción" data-promotions-create-modal>
+    <form id="promotions-create-form" data-promotions-create-form class="flex flex-col gap-4" novalidate>
+        <x-ui.input
+            variant="text"
+            id="promotions-create-name"
+            name="name"
+            label="Nombre de la promoción"
+            placeholder="Ej. Limpieza de temporada"
+            autocomplete="off"
+            data-promotions-create-name
+            required
+        />
 
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-        <div class="flex min-h-full items-center justify-center p-4">
-            <div class="w-full max-w-2xl rounded-[1.75rem] border border-slate-200 bg-white shadow-xl">
-        <div class="border-b border-slate-200 px-6 py-5">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Promociones</p>
-            <h3 class="mt-2 text-lg font-semibold text-slate-900">Crear promocion</h3>
+        <div>
+            <label for="promotions-create-description" class="mb-1.5 block text-sm font-semibold text-ink">
+                Descripción
+                    <span class="text-danger" title="Obligatorio">*</span>
+            </label>
+            <textarea id="promotions-create-description" name="description" rows="3" data-promotions-create-description class="block w-full rounded-control border border-field bg-surface px-3 py-2.5 text-control text-ink" required></textarea>
         </div>
 
-        <form data-promotions-create-form class="space-y-4 px-6 py-5">
-            <div class="grid gap-4 sm:grid-cols-2">
-                <label class="block text-sm font-medium text-slate-700 sm:col-span-2">
-                    Nombre de la promocion
-                    <input type="text" name="name" data-promotions-create-name class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-[#E91E63] focus:outline-none focus:ring-2 focus:ring-[#F8BBD0]" placeholder="Ej. Descuento de Verano" required />
-                </label>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <x-ui.input
+                variant="number"
+                id="promotions-create-discount"
+                name="discount_percentage"
+                label="Descuento (%)"
+                hint="De 0 a 100."
+                autocomplete="off"
+                data-promotions-create-discount
+                required
+            />
+        </div>
 
-                <label class="block text-sm font-medium text-slate-700 sm:col-span-2">
-                    Descripcion
-                    <textarea name="description" rows="3" data-promotions-create-description class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-[#E91E63] focus:outline-none focus:ring-2 focus:ring-[#F8BBD0]" placeholder="Describe los detalles de la promocion" required></textarea>
-                </label>
-
-                <label class="block text-sm font-medium text-slate-700">
-                    Porcentaje de descuento (%)
-                    <input type="number" name="discount_percentage" step="0.01" min="0" max="100" data-promotions-create-discount class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-[#E91E63] focus:outline-none focus:ring-2 focus:ring-[#F8BBD0]" placeholder="0.00" />
-                </label>
-
-                <div class="hidden sm:block"></div>
-
-                <label class="block text-sm font-medium text-slate-700">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+                <label for="promotions-create-start-date" class="mb-1.5 block text-sm font-semibold text-ink">
                     Fecha de inicio
-                    <input type="date" name="start_date" data-promotions-create-start-date class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-[#E91E63] focus:outline-none focus:ring-2 focus:ring-[#F8BBD0]" required />
+                    <span class="text-danger" title="Obligatorio">*</span>
                 </label>
+                <input type="date" id="promotions-create-start-date" name="start_date" data-promotions-create-start-date class="block h-control w-full rounded-control border border-field bg-surface px-3 text-control text-ink" required />
+            </div>
 
-                <label class="block text-sm font-medium text-slate-700">
+            <div>
+                <label for="promotions-create-end-date" class="mb-1.5 block text-sm font-semibold text-ink">
                     Fecha de cierre
-                    <input type="date" name="end_date" data-promotions-create-end-date class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-[#E91E63] focus:outline-none focus:ring-2 focus:ring-[#F8BBD0]" required />
+                    <span class="text-danger" title="Obligatorio">*</span>
                 </label>
-            </div>
-
-            <p data-promotions-create-error class="hidden rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"></p>
-
-            <div class="flex items-center justify-end gap-2 border-t border-slate-200 pt-4">
-                <button type="button" data-promotions-create-cancel class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">Cancelar</button>
-                <button type="submit" data-promotions-create-submit class="rounded-xl bg-[#E91E63] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#d81b60] disabled:cursor-not-allowed disabled:opacity-60">Guardar promocion</button>
-            </div>
-        </form>
+                <input type="date" id="promotions-create-end-date" name="end_date" data-promotions-create-end-date class="block h-control w-full rounded-control border border-field bg-surface px-3 text-control text-ink" required />
             </div>
         </div>
-    </div>
-</div>
+    </form>
+
+    <x-slot:footer>
+        <x-ui.button data-promotions-create-cancel>Cancelar</x-ui.button>
+        <x-ui.button variant="primary" type="submit" form="promotions-create-form" data-promotions-create-submit>Guardar promoción</x-ui.button>
+    </x-slot:footer>
+</x-ui.dialog>

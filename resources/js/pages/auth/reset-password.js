@@ -1,3 +1,5 @@
+import { announce, announceError, announceFailure, clearAnnouncements } from '../../ui/status';
+
 (function () {
     const form = document.getElementById('reset-form');
     const errorBox = document.getElementById('reset-error');
@@ -24,7 +26,7 @@
     // Si no hay token en la URL, mostrar error inmediato y deshabilitar
     if (!token) {
         if (errorBox) {
-            errorBox.textContent = 'Token de restablecimiento no válido o ausente. Solicita un nuevo enlace.';
+            errorBox.textContent = 'El enlace de restablecimiento no es válido o ya caducó. Solicita uno nuevo.';
             errorBox.classList.remove('hidden');
         }
         const inputs = form.querySelectorAll('input');
@@ -35,11 +37,50 @@
         return;
     }
 
+    const passwordInput = form.querySelector('input[name="password"]');
+    const confirmPasswordInput = form.querySelector('input[name="confirm_password"]');
+    const mismatchMessage = 'Las contraseñas no coinciden.';
+    let mismatchShown = false;
+
+    // El error de contraseñas distintas queda en el campo de confirmación, igual que los del
+    // componente de campo (spec 016, CA37), y se mantiene mientras sigan sin coincidir.
+    function showMismatch() {
+        const errorTarget = document.getElementById(confirmPasswordInput.dataset.errorTarget);
+        const describedBy = (confirmPasswordInput.getAttribute('aria-describedby') || '').split(/\s+/).filter((id) => id !== '' && id !== errorTarget.id);
+
+        errorTarget.textContent = mismatchMessage;
+        errorTarget.classList.remove('hidden');
+        confirmPasswordInput.classList.remove('border-field');
+        confirmPasswordInput.classList.add('border-2', 'border-danger');
+        confirmPasswordInput.setAttribute('aria-invalid', 'true');
+        confirmPasswordInput.setAttribute('aria-describedby', describedBy.concat(errorTarget.id).join(' '));
+        mismatchShown = true;
+    }
+
+    function passwordsMatch() {
+        return passwordInput.value.trim() === confirmPasswordInput.value.trim();
+    }
+
+    // El componente de campo vuelve a validarlo al escribir y al salir de él, y quitaría este
+    // error. Estos oyentes van en el documento, después de los suyos: si aún no coinciden, el
+    // error vuelve a ponerse.
+    const keepMismatch = (event) => {
+        if (event.target !== confirmPasswordInput && event.target !== passwordInput) {
+            return;
+        }
+
+        if (mismatchShown && !passwordsMatch()) {
+            showMismatch();
+        } else {
+            mismatchShown = false;
+        }
+    };
+
+    document.addEventListener('input', keepMismatch);
+    document.addEventListener('blur', keepMismatch, true);
+
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
-
-        const passwordInput = form.querySelector('input[name="password"]');
-        const confirmPasswordInput = form.querySelector('input[name="confirm_password"]');
 
         // BR-23: trim the borders here too, so what the user sees compared on screen
         // is exactly what the server will store. Internal spaces are preserved.
@@ -50,13 +91,12 @@
             errorBox.classList.add('hidden');
             errorBox.textContent = '';
         }
+        clearAnnouncements();
 
         // Validar coincidencia en cliente antes de enviar
         if (password !== confirmPassword) {
-            if (errorBox) {
-                errorBox.textContent = 'Las contraseñas ingresadas no coinciden.';
-                errorBox.classList.remove('hidden');
-            }
+            showMismatch();
+            announceError(mismatchMessage);
             return;
         }
 
@@ -72,7 +112,7 @@
             });
 
             if (!csrfResponse.ok) {
-                throw new Error('No se pudo inicializar la cookie CSRF.');
+                throw new Error('csrf');
             }
 
             const xsrfToken = getCookie('XSRF-TOKEN');
@@ -98,11 +138,7 @@
             });
 
             if (!response.ok) {
-                const message = payload.error || payload.message || 'No se pudo restablecer la contraseña.';
-                if (errorBox) {
-                    errorBox.textContent = message;
-                    errorBox.classList.remove('hidden');
-                }
+                announceFailure(response.status, payload);
                 return;
             }
 
@@ -111,15 +147,13 @@
             }
             if (successBox) {
                 successBox.classList.remove('hidden');
+                announce(successBox.textContent.trim());
             }
 
         } catch (error) {
-            if (errorBox) {
-                errorBox.textContent = 'Error de conexión. Inténtalo de nuevo.';
-                errorBox.classList.remove('hidden');
-            }
+            announceFailure(0);
         } finally {
-            if (submitButton && !successBox.classList.contains('hidden')) {
+            if (submitButton && successBox.classList.contains('hidden')) {
                 submitButton.disabled = false;
             }
         }

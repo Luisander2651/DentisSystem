@@ -1,3 +1,5 @@
+import { stateBadge } from '../../../ui/badge';
+import { failureMessage } from '../../../ui/status';
 import { initCertificationsEditModal } from './edit-modal';
 import { initCertificationsDeleteModal } from './delete-modal';
 import { initCertificationsCreateModal } from './create-modal';
@@ -132,41 +134,21 @@ export function initCertificacionesModule() {
             var rawDate = record.date ? String(record.date).split(' ')[0] : '';
             var imageUrl = record.image_url ?? '';
             var status = normalizeCertificationStatus(record.status);
-            var statusLabel = status === 'visible' ? 'Visible' : 'Oculto';
-            var statusClasses = status === 'visible'
-                ? 'bg-[#FDF1F6] text-[#B5114A]'
-                : 'bg-red-50 text-red-700';
 
             return [
-                '<article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">',
-                    '<div class="flex items-start justify-between gap-4">',
-                        '<div class="flex-1">',
-                            '<p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Certificacion</p>',
-                            '<h3 class="mt-2 text-base font-semibold text-slate-900 break-words">', escapeHtml(name), '</h3>',
-                        '</div>',
-                        '<span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold ', statusClasses, '">', statusLabel, '</span>',
+                '<article class="flex flex-col rounded-card border border-line bg-surface p-4 shadow-sm md:p-5">',
+                    imageUrl
+                        ? '<img src="' + escapeHtml(imageUrl) + '" alt="" class="h-40 w-full rounded-box border border-line bg-canvas object-contain" loading="lazy" />'
+                        : '<div class="flex h-40 w-full items-center justify-center rounded-box border border-line bg-canvas text-sm font-semibold text-muted">Sin imagen</div>',
+                    '<div class="mt-4 flex items-start justify-between gap-3">',
+                        '<h3 class="min-w-0 text-base font-semibold text-ink wrap-anywhere">', escapeHtml(name), '</h3>',
+                        stateBadge(status),
                     '</div>',
-                    
-                    '<div class="mt-4 rounded-2xl border border-dashed border-[#F5C2D6] bg-linear-to-br from-[#FFFDF6] to-white p-4">',
-                        '<div class="flex min-h-40 items-center justify-center overflow-hidden rounded-2xl border border-white/80 bg-white/70">',
-                            imageUrl 
-                                ? '<img src="' + escapeHtml(imageUrl) + '" alt="' + escapeHtml(name) + '" class="h-full w-full object-cover" loading="lazy" />'
-                                : '<div class="text-center p-4"><p class="text-xs text-slate-500">Sin imagen</p></div>',
-                        '</div>',
-                    '</div>',
-
-                    '<p class="mt-3 text-sm leading-6 text-slate-600 break-words line-clamp-2">', escapeHtml(description), '</p>',
-                    
-                    '<div class="mt-4 grid gap-2">',
-                        '<div class="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-600">',
-                            '<span class="font-semibold uppercase tracking-wider text-slate-400">Fecha:</span>',
-                            '<span>', escapeHtml(date), '</span>',
-                        '</div>',
-                    '</div>',
-
-                    '<div class="mt-4 flex flex-wrap gap-2">',
-                        '<button type="button" data-certifications-edit data-certification-id="', escapeHtml(id), '" data-certification-name="', escapeHtml(name), '" data-certification-description="', escapeHtml(description), '" data-certification-date="', escapeHtml(rawDate), '" data-certification-status="', escapeHtml(status), '" data-certification-image="', escapeHtml(imageUrl), '" class="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">Editar</button>',
-                        '<button type="button" data-certifications-delete data-certification-id="', escapeHtml(id), '" data-certification-name="', escapeHtml(name), '" class="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50">Eliminar</button>',
+                    '<p class="mt-2 line-clamp-2 text-sm leading-6 text-muted wrap-anywhere">', escapeHtml(description), '</p>',
+                    '<p class="mt-2 text-sm text-ink">Fecha: ', escapeHtml(date), '</p>',
+                    '<div class="mt-4 flex gap-2">',
+                        '<button type="button" data-certifications-edit data-certification-id="', escapeHtml(id), '" data-certification-name="', escapeHtml(name), '" data-certification-description="', escapeHtml(description), '" data-certification-date="', escapeHtml(rawDate), '" data-certification-status="', escapeHtml(status), '" data-certification-image="', escapeHtml(imageUrl), '" class="inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-canvas">Editar<span class="sr-only"> ', escapeHtml(name), '</span></button>',
+                        '<button type="button" data-certifications-delete data-certification-id="', escapeHtml(id), '" data-certification-name="', escapeHtml(name), '" class="inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-danger-soft hover:text-danger">Eliminar<span class="sr-only"> ', escapeHtml(name), '</span></button>',
                     '</div>',
                 '</article>',
             ].join('');
@@ -196,14 +178,14 @@ export function initCertificacionesModule() {
             });
 
             if (!response.ok) {
-                showCertificationsError(payload.error || payload.message || 'No se pudieron cargar las certificaciones.');
+                showCertificationsError(failureMessage(response.status, payload));
                 renderCertificationCards([]);
                 return;
             }
 
             renderCertificationCards(normalizeCertificationPayload(payload));
         } catch (error) {
-            showCertificationsError('Error de conexion. Intentalo de nuevo.');
+            showCertificationsError(failureMessage(0));
             renderCertificationCards([]);
         } finally {
             setCertificationsLoading(false);

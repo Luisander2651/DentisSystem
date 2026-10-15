@@ -283,7 +283,7 @@ El ensayo del rollback (CA13) cierra la spec.
   - Sin `request_id` (objetivo 5, OB4.a no lo incluye).
 - **Eventos de auditoría:** la aplicación no emite eventos nuevos. CA15 se cumple con
   `deploys.log` en el host.
-- **Métricas y alertas:** ninguna nueva (spec 016).
+- **Métricas y alertas:** ninguna nueva (spec 017).
 - **Cómo se verifica tras el deploy:**
   - `verify.sh --local` y `verify.sh --remote dentissapp.com --origin <IP>`;
   - en Grafana, por túnel SSH, los logs de `dentissa-app` y `dentissa-queue` de la petición y el
@@ -402,7 +402,7 @@ El ensayo del rollback (CA13) cierra la spec.
 - **Docker ignora `ufw`.** Mitigación: producción solo publica 80 y 443, y Grafana en
   `127.0.0.1`. CA9 se comprueba contra la IP directa.
 - **Disco lleno** (imágenes, backups, Loki sin retención). Mitigación: dos etiquetas de imagen,
-  backups de 7 días y aviso con disco > 80 %. La retención de Loki va en la 016.
+  backups de 7 días y aviso con disco > 80 %. La retención de Loki va en la 017.
 - **La plantilla cambia el comportamiento de CI** (`APP_DEBUG`, Redis en sesiones y caché).
   Mitigación: CI sobrescribe los drivers; suite completa antes del merge.
 - **Pérdida del contenido de `storage/app/public`** al pasar a volúmenes. Mitigación: copia en

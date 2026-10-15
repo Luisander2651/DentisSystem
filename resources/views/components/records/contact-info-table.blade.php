@@ -1,60 +1,60 @@
 @props(['canEdit' => false])
 
-<section class="w-full overflow-x-auto rounded-lg border border-slate-200 bg-white">
-    <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
-        <h3 class="text-sm font-semibold text-slate-800">Contacto</h3>
+<section class="w-full overflow-hidden rounded-card border border-line bg-surface shadow-sm">
+    <x-ui.section-title title="Contacto" class="border-b border-line px-4 py-3">
         @if ($canEdit)
-            <button
-                type="button"
-                data-record-open-contact-form
-                class="rounded-md bg-[#E91E63] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#d81b60] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-                Agregar contacto
-            </button>
+            <x-slot:action>
+                <x-ui.button variant="primary" data-record-open-contact-form>Agregar contacto</x-ui.button>
+            </x-slot:action>
         @endif
-    </div>
+    </x-ui.section-title>
 
-    <form id="record-contact-form" class="hidden space-y-3 border-b border-slate-200 bg-slate-50 p-4">
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Telefono</label>
-                <input type="text" name="phone_number" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700" placeholder="+52 81 1234 5678" />
-            </div>
-
-            <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Correo de contacto</label>
-                <input type="email" name="contact_email" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700" placeholder="contacto@correo.com" />
-            </div>
+    <form id="record-contact-form" class="hidden space-y-4 border-b border-line bg-canvas p-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <x-ui.input variant="text" id="record-contact-phone" name="phone_number" label="Teléfono" placeholder="+52 81 1234 5678" autocomplete="off" />
+            <x-ui.input variant="email" id="record-contact-email" name="contact_email" label="Correo de contacto" placeholder="contacto@correo.com" autocomplete="off" />
         </div>
 
-        <div>
-            <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Contacto de emergencia</label>
-            <input type="text" name="emergency_contact" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700" placeholder="Nombre de contacto" />
-        </div>
+        <x-ui.input variant="text" id="record-contact-emergency" name="emergency_contact" label="Contacto de emergencia" placeholder="Nombre de contacto" autocomplete="off" />
 
-        <p id="record-contact-form-error" class="hidden rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"></p>
+        <p id="record-contact-form-error" role="alert" class="hidden rounded-box border border-danger bg-danger-soft px-3 py-2 text-sm font-semibold text-danger"></p>
 
         <div class="flex items-center justify-end gap-2">
-            <button type="button" data-record-cancel-contact-form class="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100">Cancelar</button>
-            <button type="submit" class="rounded-md bg-[#E91E63] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#d81b60]">Guardar contacto</button>
+            <x-ui.button data-record-cancel-contact-form>Cancelar</x-ui.button>
+            <x-ui.button variant="primary" type="submit">Guardar contacto</x-ui.button>
         </div>
     </form>
 
-    <table class="min-w-full border-collapse text-left text-sm text-slate-700">
-        <thead class="bg-slate-100">
-            <tr>
-                <th class="whitespace-nowrap px-4 py-3 font-semibold">Telefono</th>
-                <th class="whitespace-nowrap px-4 py-3 font-semibold">Correo</th>
-                <th class="whitespace-nowrap px-4 py-3 font-semibold">Contacto de emergencia</th>
-                @if ($canEdit)
-                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Acciones</th>
-                @endif
-            </tr>
-        </thead>
-        <tbody id="record-contact-info-body" class="bg-white">
-            <tr class="border-t border-slate-200">
-                <td colspan="{{ $canEdit ? 4 : 3 }}" class="px-4 py-6 text-center text-sm text-slate-500">Sin informacion de contacto.</td>
-            </tr>
-        </tbody>
-    </table>
+    {{-- Por debajo de md: pares de etiqueta y valor (spec 016, CA27). --}}
+    <div class="hidden px-4 pb-4 md:hidden" data-record-when="contact">
+        <dl>
+            <x-ui.record label="Teléfono"><span data-record-field="contact.phone_number">-</span></x-ui.record>
+            <x-ui.record label="Correo"><span data-record-field="contact.contact_email">-</span></x-ui.record>
+            <x-ui.record label="Contacto de emergencia"><span data-record-field="contact.emergency_contact">-</span></x-ui.record>
+        </dl>
+        @if ($canEdit)
+            <x-ui.button data-record-delete-contact class="mt-3">Eliminar contacto</x-ui.button>
+        @endif
+    </div>
+    <p class="px-4 py-6 text-center text-sm text-muted md:hidden" data-record-when-empty="contact">Este paciente aún no tiene datos de contacto.</p>
+
+    <div class="hidden overflow-x-auto md:block">
+        <table class="min-w-full border-collapse text-left text-sm text-ink">
+            <thead class="bg-canvas">
+                <tr>
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Teléfono</th>
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Correo</th>
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Contacto de emergencia</th>
+                    @if ($canEdit)
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold">Acciones</th>
+                    @endif
+                </tr>
+            </thead>
+            <tbody id="record-contact-info-body" class="bg-surface">
+                <tr class="border-t border-line">
+                    <td colspan="{{ $canEdit ? 4 : 3 }}" class="px-4 py-6 text-center text-sm text-muted">Este paciente aún no tiene datos de contacto.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </section>

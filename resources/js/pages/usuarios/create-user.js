@@ -1,3 +1,6 @@
+import { closeDialog, openDialog } from '../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__usersCreateInit) {
         return;
@@ -46,7 +49,7 @@
     var roleSelect = modal.querySelector('[data-create-user-role]');
     var cancelButtons = modal.querySelectorAll('[data-create-user-cancel]');
     var submitButton = modal.querySelector('[data-create-user-submit]');
-    var errorBox = modal.querySelector('[data-create-user-error]');
+    var errorBox = modal.querySelector('[data-create-user-error]') || document.createElement('p');
 
     if (!form || !firstNameInput || !lastNameInput || !emailInput || !passwordInput || !roleSelect || !cancelButtons.length || !submitButton || !errorBox) {
         return;
@@ -57,6 +60,7 @@
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -97,8 +101,7 @@
         resetPasswordField();
         roleSelect.value = 'Administrador';
 
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -109,8 +112,7 @@
         form.reset();
         resetPasswordField();
         hideModalError();
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
     }
 
     async function createUser(payload) {
@@ -133,7 +135,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(extractErrorMessage(data, 'No se pudo crear el usuario.'));
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -167,6 +169,7 @@
             await createUser(payload);
             setSubmittingState(false);
             closeModal();
+            announce('Usuario creado.');
 
             if (window.usersPage && typeof window.usersPage.hideError === 'function') {
                 window.usersPage.hideError();
@@ -176,7 +179,7 @@
                 await window.usersPage.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo crear el usuario.');
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             if (isSubmitting) {
                 setSubmittingState(false);

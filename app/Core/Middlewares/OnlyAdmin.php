@@ -18,11 +18,11 @@ final class OnlyAdmin
         $actor = $request->user();
 
         if (! $actor instanceof UserModel) {
-            return $this->forbidden('Only users can access this resource.');
+            return $this->forbidden($request, 'Only users can access this resource.');
         }
 
         if (($actor->status ?? null) !== 'active') {
-            return $this->forbidden('Your account is inactive.');
+            return $this->forbidden($request, 'Your account is inactive.');
         }
 
         // BR-16: compared against the domain vocabulary instead of a fourth hardcoded
@@ -35,14 +35,22 @@ final class OnlyAdmin
         $roleName = mb_strtolower((string) ($actor->role?->name ?? ''));
 
         if ($roleName !== mb_strtolower(UserRoleId::administrador()->value)) {
-            return $this->forbidden('Only administrators can access this resource.');
+            return $this->forbidden($request, 'Only administrators can access this resource.');
         }
 
         return $next($request);
     }
 
-    private function forbidden(string $message): JsonResponse
+    /**
+     * Spec 016 (CA18, TM4): the API keeps its JSON; a screen answers the "Sin permiso" page,
+     * and the reason never leaves the server.
+     */
+    private function forbidden(Request $request, string $message): JsonResponse
     {
+        if (! $request->is('api/*')) {
+            abort(403);
+        }
+
         return response()->json([
             'error' => $message,
         ], 403);

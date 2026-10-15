@@ -1,3 +1,7 @@
+import { stateBadge } from '../../ui/badge';
+import { isDialogOpen, openDialog } from '../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__agendaIndexInit) {
         return;
@@ -6,7 +10,7 @@
     window.__agendaIndexInit = true;
 
     // State
-    let currentDate = new Date();
+    let currentDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let appointments = [];
     let appointmentsByDate = new Map();
     let appointmentsToday = [];
@@ -17,7 +21,8 @@
         completed: 0,
     };
     let selectedStatus = '';
-    
+    let selectedDate = null;
+
     // Selectors
     const calendarGrid = document.getElementById('calendar-grid');
     const monthDisplay = document.getElementById('current-month-display');
@@ -25,6 +30,8 @@
     const nextMonthBtn = document.getElementById('next-month');
     const todayAppointmentsContainer = document.getElementById('today-appointments-container');
     const statusFilter = document.querySelector('[data-agenda-status-filter]');
+    const dayTitle = document.querySelector('[data-agenda-day-title]');
+    const dayList = document.querySelector('[data-agenda-day-list]');
 
     // Stats Selectors
     const statToday = document.querySelector('[data-stat-today]');
@@ -36,15 +43,45 @@
     const dayDetailsModal = document.getElementById('day-details-modal');
     const modalDateDisplay = document.getElementById('modal-date-display');
     const modalAppointmentsList = document.getElementById('modal-appointments-list');
-    const closeModalBtns = document.querySelectorAll('[data-close-modal]');
 
     const isAdminUser = document.querySelector('[data-agenda-is-admin]')?.getAttribute('data-agenda-is-admin') === 'true';
+
+    // Desde este ancho las citas de un día se abren en su diálogo; por debajo, en la lista bajo el calendario.
+    const dialogFromHere = window.matchMedia('(min-width: 768px)');
+
+    const secondaryButton = 'inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-canvas';
+    const primaryButton = 'inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-transparent bg-primary px-4 text-sm font-semibold text-ink transition-colors hover:bg-primary-hover';
+
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[character]);
+    }
 
     function toLocalDateString(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
+    }
+
+    function fromLocalDateString(value) {
+        const [year, month, day] = value.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    }
+
+    function longDate(date) {
+        return date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function capitalize(text) {
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    function shortTime(time) {
+        return String(time || '').substring(0, 5);
+    }
+
+    function countLabel(count) {
+        return count === 0 ? 'sin citas' : count === 1 ? '1 cita' : `${count} citas`;
     }
 
     const monthNames = [
@@ -66,12 +103,13 @@
             updateStats();
             renderCalendar();
             renderTodayAppointments();
+            renderSelectedDay();
 
             if (window.agendaAppointmentModal && typeof window.agendaAppointmentModal.refreshAvailability === 'function') {
                 window.agendaAppointmentModal.refreshAvailability();
             }
         } catch (error) {
-            console.error('Error fetching appointments:', error);
+            announceError(failureMessage(error.response ? error.response.status : 0, error.response ? error.response.data : null));
         }
     }
 
@@ -129,110 +167,55 @@
     }
 
     function updateStats() {
-        if (!appointments.length) return;
-
         if (statToday) statToday.textContent = appointmentStats.today;
         if (statPending) statPending.textContent = appointmentStats.pending;
         if (statConfirmed) statConfirmed.textContent = appointmentStats.confirmed;
         if (statCompleted) statCompleted.textContent = appointmentStats.completed;
     }
 
-    function renderTodayAppointments() {
-        if (!todayAppointmentsContainer) return;
-        
-        todayAppointmentsContainer.innerHTML = '';
+    function renderAppointmentList(container, list, emptyText) {
+        if (!container) return;
 
-        if (appointmentsToday.length === 0) {
-            todayAppointmentsContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">No hay citas para hoy</p>';
-        } else {
-            appointmentsToday.forEach(appt => {
-                todayAppointmentsContainer.appendChild(createAppointmentCard(appt));
-            });
+        container.innerHTML = '';
+
+        if (list.length === 0) {
+            const empty = document.createElement('p');
+            empty.className = 'text-sm text-ink';
+            empty.textContent = emptyText;
+            container.appendChild(empty);
+            return;
         }
+
+        list.forEach(appt => {
+            container.appendChild(createAppointmentCard(appt));
+        });
+    }
+
+    function renderTodayAppointments() {
+        renderAppointmentList(todayAppointmentsContainer, appointmentsToday, 'No hay citas para hoy.');
     }
 
     function createAppointmentCard(appt) {
         const article = document.createElement('article');
-        article.className = 'relative box-border flex gap-4 rounded-2xl bg-white p-4 shadow-sm transition-transform hover:scale-[1.02]';
-        
-        const timeParts = appt.time.split(':');
-        const hour = parseInt(timeParts[0]);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const formattedTime = `${hour % 12 || 12}:${timeParts[1]}`;
+        article.className = 'rounded-box border border-line bg-surface p-3';
+        article.setAttribute('data-appointment-id', appt.id);
 
+        const patient = appt.patient_name || 'Paciente';
         const normalizedStatus = normalizeAppointmentStatus(appt.status);
-        const statusColors = {
-            'asignada': 'bg-amber-50 text-amber-700',
-            'completada': 'bg-emerald-50 text-emerald-700',
-            'cancelada': 'bg-red-50 text-red-700',
-            'reprogramada': 'bg-blue-50 text-blue-700'
-        };
-        const statusLabel = {
-            'asignada': 'Asignada',
-            'completada': 'Completada',
-            'cancelada': 'Cancelada',
-            'reprogramada': 'Reprogramada'
-        };
-
         const isActionable = normalizedStatus === 'asignada' || normalizedStatus === 'reprogramada';
-        const eyeIcon = `
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        `;
-        const pencilIcon = `
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L7.5 21H3v-4.5L15.232 5.232z" />
-            </svg>
-        `;
-
-        let actionsHtml;
-        if (isActionable && isAdminUser) {
-            actionsHtml = `
-                <div class="ml-auto flex shrink-0 flex-col items-end gap-2">
-                    <button type="button" class="rounded-xl bg-[#E91E63] px-3 py-2 text-[11px] font-bold text-white transition hover:bg-[#d61b5b]" data-complete-appointment-trigger data-appointment-id="${appt.id}">
-                        Completar
-                    </button>
-                    <button type="button" class="rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 transition hover:border-[#B5114A] hover:text-[#B5114A]" data-view-appointment-trigger data-appointment-id="${appt.id}" aria-label="Ver detalles">
-                        ${eyeIcon}
-                    </button>
-                </div>
-            `;
-        } else if (isActionable) {
-            actionsHtml = `
-                <div class="ml-auto flex shrink-0 items-center gap-2">
-                    <button type="button" class="rounded-full border border-slate-200 bg-white p-2 text-slate-500 transition hover:border-[#B5114A] hover:text-[#B5114A]" data-view-appointment-trigger data-appointment-id="${appt.id}" aria-label="Ver detalles">
-                        ${eyeIcon}
-                    </button>
-                    <button type="button" class="rounded-full border border-slate-200 bg-white p-2 text-slate-500 transition hover:border-[#B5114A] hover:text-[#B5114A]" data-edit-appointment-trigger data-appointment-id="${appt.id}" aria-label="Editar cita">
-                        ${pencilIcon}
-                    </button>
-                </div>
-            `;
-        } else {
-            actionsHtml = `
-                <button type="button" class="ml-auto shrink-0 rounded-full border border-slate-200 bg-white p-2 text-slate-500 transition hover:border-[#B5114A] hover:text-[#B5114A]" data-view-appointment-trigger data-appointment-id="${appt.id}" aria-label="Ver detalles">
-                    ${eyeIcon}
-                </button>
-            `;
-        }
+        const suffix = `<span class="sr-only"> la cita de ${escapeHtml(patient)} de las ${escapeHtml(shortTime(appt.time))}</span>`;
 
         article.innerHTML = `
-            <div class="flex flex-col items-center justify-center border-r border-slate-100 pr-4 text-center">
-                <span class="text-sm font-bold text-slate-900">${formattedTime}</span>
-                <span class="text-[10px] font-bold uppercase text-slate-400">${ampm}</span>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-sm font-bold text-ink">${escapeHtml(shortTime(appt.time))}</p>
+                ${stateBadge(normalizedStatus)}
             </div>
-            <div class="flex-1">
-                <h4 class="text-sm font-bold text-slate-900">${appt.patient_name || 'Paciente'}</h4>
-                <p class="text-xs text-slate-500">${appt.treatment_name || 'Consulta'}</p>
-                <div class="mt-2 flex items-center gap-2">
-                    <span class="rounded-full ${statusColors[normalizedStatus] || 'bg-slate-50 text-slate-500'} px-2 py-0.5 text-[10px] font-bold">
-                        ${statusLabel[normalizedStatus] || appt.status}
-                    </span>
-                </div>
+            <h3 class="mt-2 text-sm font-semibold text-ink wrap-break-word">${escapeHtml(patient)}</h3>
+            <p class="text-sm text-muted wrap-break-word">${escapeHtml(appt.treatment_name || 'Consulta')}</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+                ${isActionable && isAdminUser ? `<button type="button" class="${primaryButton}" data-complete-appointment-trigger data-appointment-id="${escapeHtml(appt.id)}">Completar${suffix}</button>` : ''}
+                <button type="button" class="${secondaryButton}" data-view-appointment-trigger data-appointment-id="${escapeHtml(appt.id)}">Ver${suffix}</button>
             </div>
-            ${actionsHtml}
         `;
 
         const completeButton = article.querySelector('[data-complete-appointment-trigger]');
@@ -240,7 +223,7 @@
             completeButton.addEventListener('click', function (event) {
                 event.stopPropagation();
                 if (window.agendaCompleteAppointmentModal && typeof window.agendaCompleteAppointmentModal.open === 'function') {
-                    window.agendaCompleteAppointmentModal.open(appt.id);
+                    window.agendaCompleteAppointmentModal.open(appt.id, completeButton);
                 }
             });
         }
@@ -250,17 +233,7 @@
             viewButton.addEventListener('click', function (event) {
                 event.stopPropagation();
                 if (window.agendaViewAppointmentModal && typeof window.agendaViewAppointmentModal.open === 'function') {
-                    window.agendaViewAppointmentModal.open(appt.id);
-                }
-            });
-        }
-
-        const editButton = article.querySelector('[data-edit-appointment-trigger]');
-        if (editButton) {
-            editButton.addEventListener('click', function (event) {
-                event.stopPropagation();
-                if (window.agendaAppointmentModal && typeof window.agendaAppointmentModal.openEdit === 'function') {
-                    window.agendaAppointmentModal.openEdit(appt.id);
+                    window.agendaViewAppointmentModal.open(appt.id, viewButton);
                 }
             });
         }
@@ -284,100 +257,125 @@
         const daysInPrevMonth = new Date(year, month, 0).getDate();
 
         for (let i = firstDay; i > 0; i--) {
-            const dayDiv = createDayElement(daysInPrevMonth - i + 1, year, month - 1, true);
-            calendarGrid.appendChild(dayDiv);
+            calendarGrid.appendChild(createDayElement(daysInPrevMonth - i + 1, year, month - 1, true));
         }
 
         const today = new Date();
         for (let i = 1; i <= daysInMonth; i++) {
             const isToday = i === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-            const dayDiv = createDayElement(i, year, month, false, isToday);
-            calendarGrid.appendChild(dayDiv);
+            calendarGrid.appendChild(createDayElement(i, year, month, false, isToday));
         }
 
         const totalSlots = calendarGrid.children.length > 35 ? 42 : 35;
         const remainingSlots = totalSlots - calendarGrid.children.length;
         for (let i = 1; i <= remainingSlots; i++) {
-            const dayDiv = createDayElement(i, year, month + 1, true);
-            calendarGrid.appendChild(dayDiv);
+            calendarGrid.appendChild(createDayElement(i, year, month + 1, true));
         }
     }
 
     function createDayElement(dayNumber, year, month, isPadding, isToday = false) {
         const d = new Date(year, month, dayNumber);
         const dateStr = toLocalDateString(d);
-        
         const dayAppointments = appointmentsByDate.get(dateStr) || [];
 
-        const div = document.createElement('div');
-        div.className = `min-h-[100px] rounded-2xl border ${
-            isToday 
-            ? 'border-[#F5C2D6] bg-[#FFF7FA]' 
-            : isPadding ? 'border-slate-50 bg-slate-50/30' : 'border-slate-100 bg-slate-50/50'
-        } p-2 transition-all hover:shadow-sm cursor-pointer`;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `flex min-h-14 flex-col items-stretch gap-1 rounded-control border p-1 text-left transition-colors hover:bg-canvas aria-pressed:ring-2 aria-pressed:ring-ink xl:min-h-24 xl:p-2 ${
+            isToday ? 'border-primary bg-primary-soft' : isPadding ? 'border-field bg-canvas' : 'border-field bg-surface'
+        }`;
+        button.setAttribute('data-pressable', '');
+        button.setAttribute('data-agenda-date', dateStr);
+        button.setAttribute('aria-pressed', dateStr === selectedDate ? 'true' : 'false');
+        button.setAttribute('aria-label', `${longDate(d)}${isToday ? ', hoy' : ''}, ${countLabel(dayAppointments.length)}`);
 
-        div.addEventListener('click', () => {
-            openDayDetails(d, dayAppointments);
+        if (isToday) {
+            button.setAttribute('aria-current', 'date');
+        }
+
+        button.addEventListener('click', () => {
+            openDayDetails(dateStr, button);
         });
 
-        const span = document.createElement('span');
-        span.className = `text-xs font-bold ${
-            isToday ? 'text-[#B5114A]' : isPadding ? 'text-slate-300' : 'text-slate-400'
-        }`;
-        span.textContent = dayNumber;
-
-        div.appendChild(span);
+        const number = document.createElement('span');
+        number.className = `text-sm font-semibold ${isPadding ? 'text-muted' : 'text-ink'}`;
+        number.textContent = dayNumber;
+        button.appendChild(number);
 
         if (dayAppointments.length > 0) {
-            const appointmentsDiv = document.createElement('div');
-            appointmentsDiv.className = 'mt-2 space-y-1';
-            
+            const count = document.createElement('span');
+            count.className = 'inline-flex min-h-6 items-center justify-center rounded-full bg-info-soft px-1 text-min font-bold text-info xl:hidden';
+            count.textContent = dayAppointments.length;
+            button.appendChild(count);
+
             dayAppointments.slice(0, 3).forEach(appt => {
-                const normalizedStatus = normalizeAppointmentStatus(appt.status);
-                const colorClass = normalizedStatus === 'completada' ? 'bg-[#FDF1F6] text-[#B5114A] border-[#B5114A]' : 'bg-sky-50 text-sky-700 border-sky-600';
-                
-                const apptEl = document.createElement('div');
-                apptEl.className = `rounded-lg ${colorClass} p-1.5 text-[10px] font-bold border-l-2 truncate`;
-                apptEl.textContent = `${appt.time.substring(0, 5)} - ${appt.patient_name || 'Paciente'}`;
-                appointmentsDiv.appendChild(apptEl);
+                const done = normalizeAppointmentStatus(appt.status) === 'completada';
+                const label = document.createElement('span');
+                label.className = `hidden rounded-control border-l-2 px-1.5 py-1 text-min font-semibold text-ink wrap-break-word xl:block ${
+                    done ? 'border-success bg-success-soft' : 'border-info bg-info-soft'
+                }`;
+                label.textContent = shortTime(appt.time);
+
+                // El nombre cabe entero a partir de 1440 px; antes, la etiqueta dice solo la hora.
+                const name = document.createElement('span');
+                name.className = 'hidden min-[1440px]:inline';
+                name.textContent = ` ${appt.patient_name || 'Paciente'}`;
+                label.appendChild(name);
+                button.appendChild(label);
             });
 
             if (dayAppointments.length > 3) {
-                const moreEl = document.createElement('div');
-                moreEl.className = 'text-[9px] font-bold text-slate-400 text-center';
-                moreEl.textContent = `+ ${dayAppointments.length - 3} más`;
-                appointmentsDiv.appendChild(moreEl);
+                const more = document.createElement('span');
+                more.className = 'hidden text-min font-semibold text-muted xl:block';
+                more.textContent = `+ ${dayAppointments.length - 3} más`;
+                button.appendChild(more);
             }
-
-            div.appendChild(appointmentsDiv);
         }
 
-        return div;
+        return button;
     }
 
-    function openDayDetails(date, dayAppointments) {
-        if (!dayDetailsModal) return;
+    function markSelectedDay() {
+        if (!calendarGrid) return;
 
-        modalDateDisplay.textContent = `Citas del ${date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
-        modalAppointmentsList.innerHTML = '';
-
-        if (dayAppointments.length === 0) {
-            modalAppointmentsList.innerHTML = '<p class="text-center text-slate-500 py-8">No hay citas agendadas para este día.</p>';
-        } else {
-            dayAppointments.forEach(appt => {
-                modalAppointmentsList.appendChild(createAppointmentCard(appt));
-            });
-        }
-
-        dayDetailsModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        calendarGrid.querySelectorAll('[data-agenda-date]').forEach(button => {
+            button.setAttribute('aria-pressed', button.getAttribute('data-agenda-date') === selectedDate ? 'true' : 'false');
+        });
     }
 
-    function closeModal() {
-        if (dayDetailsModal) {
-            dayDetailsModal.classList.add('hidden');
-            document.body.style.overflow = '';
+    function renderSelectedDay() {
+        if (!selectedDate) return;
+
+        const title = `Citas del ${longDate(fromLocalDateString(selectedDate))}`;
+        const dayAppointments = appointmentsByDate.get(selectedDate) || [];
+        const emptyText = 'No hay citas para este día.';
+
+        if (dayTitle) dayTitle.textContent = title;
+        renderAppointmentList(dayList, dayAppointments, emptyText);
+
+        if (dayDetailsModal && isDialogOpen(dayDetailsModal)) {
+            if (modalDateDisplay) modalDateDisplay.textContent = capitalize(longDate(fromLocalDateString(selectedDate)));
+            renderAppointmentList(modalAppointmentsList, dayAppointments, emptyText);
         }
+    }
+
+    function openDayDetails(dateStr, opener) {
+        selectedDate = dateStr;
+        markSelectedDay();
+        renderSelectedDay();
+
+        if (!dayDetailsModal || !dialogFromHere.matches) {
+            // On a phone the list sits under the calendar: it is brought into view and its day
+            // is announced, so touching a day never looks like it did nothing (spec 016, CA11).
+            const count = (appointmentsByDate.get(dateStr) || []).length;
+            announce(`${capitalize(longDate(fromLocalDateString(dateStr)))}: ${countLabel(count)}.`);
+            dayTitle?.scrollIntoView({ block: 'start' });
+
+            return;
+        }
+
+        if (modalDateDisplay) modalDateDisplay.textContent = capitalize(longDate(fromLocalDateString(dateStr)));
+        renderAppointmentList(modalAppointmentsList, appointmentsByDate.get(dateStr) || [], 'No hay citas para este día.');
+        openDialog(dayDetailsModal, opener);
     }
 
     function setActiveStatusButton(value) {
@@ -387,9 +385,7 @@
 
         statusFilter.querySelectorAll('[data-status-value]').forEach(function (button) {
             var isActive = String(button.getAttribute('data-status-value') || '') === String(value || '');
-            button.classList.toggle('bg-[#FDF1F6]', isActive);
-            button.classList.toggle('text-[#B5114A]', isActive);
-            button.classList.toggle('text-slate-600', !isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
     }
 
@@ -419,10 +415,6 @@
             renderCalendar();
         });
     }
-
-    closeModalBtns.forEach(btn => {
-        btn.addEventListener('click', closeModal);
-    });
 
     if (statusFilter) {
         statusFilter.addEventListener('click', handleStatusFilter);

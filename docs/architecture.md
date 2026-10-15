@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-10-02
+updated: 2026-10-11
 ---
 
 # Arquitectura de Dentissa
@@ -107,17 +107,20 @@ Crear una cita:
 - No hay webhooks entrantes.
 
 ## Frontend
-- Componentes y organización: `resources/views/layouts/{admin,app,dashboard,landing,patient}`, componentes Blade en `components/{ui,calendar,landing,records}` (`<x-ui.input>`), páginas en `pages/<sección>/index.blade.php` con modales hermanos.
-- JS: un archivo por página en `resources/js/pages/<sección>/<acción>.js`, cada uno declarado a mano como entrada en `vite.config.js`; `fetch` a `/api/v1`. Hay JS inline en algunas vistas (login, register, usuarios).
+- Componentes y organización: `resources/views/layouts/{admin,app,dashboard,landing,patient,error}`, componentes Blade en `components/{ui,calendar,landing,records}` y páginas en `pages/<sección>/index.blade.php` con sus diálogos al lado. Los componentes `x-ui.*` (botón, campo, marca, diálogo, región de estado, contador, filtro, insignia, registro, subtítulo, encabezado de página) son la única forma de pintar esos elementos (spec 016).
+- JS: un archivo por página en `resources/js/pages/<sección>/<acción>.js`, cada uno declarado a mano como entrada en `vite.config.js`; `fetch` a `/api/v1`. Lo común vive en `resources/js/ui/`: `dialog.js` abre y cierra los `<dialog>` y devuelve el foco, `status.js` anuncia avisos y errores en la región de estado con textos propios en español, y `badge.js` pinta las insignias de estado.
 - Estado: sin librería de estado; cada página mantiene su estado en el DOM.
-- Routing: rutas web en español (`/agenda`, `/pacientes`, `/expedientes-clinicos`, `/contenido`) definidas como closures en `routes/web.php`.
-- Design tokens / sistema de diseño: Tailwind 4 CSS-first (`resources/css/app.css` con `@theme`); sin modo oscuro.
-- Accesibilidad: objetivo **WCAG 2.1 AA** para pantallas nuevas o modificadas (decisión del 2026-09-22). Las pantallas existentes no se han auditado.
+- Routing: rutas web en español (`/agenda`, `/pacientes`, `/expedientes-clinicos`, `/contenido`) definidas como closures en `routes/web.php`. Cualquier otra dirección web cae en una ruta de respaldo declarada en `bootstrap/app.php`, fuera del grupo `web`, que responde la página "No encontrada" sin abrir sesión.
+- Design tokens / sistema de diseño: Tailwind 4 CSS-first. `resources/css/app.css` declara en `@theme` los únicos colores, radios y tamaños de control, con la paleta por defecto de Tailwind desactivada; sin modo oscuro. El sistema está en [design/system.md](design/system.md) (2.0.0) y lo hacen cumplir `tests/Modules/Core/Unit/Design` y `npm run test:ui` (`tests/Browser/`), que revisa cada pantalla y diálogo a 390, 768 y 1440 px.
+- Diseño adaptable: el menú lateral del panel y el menú del sitio público se despliegan desde 1024 px; por debajo se usa el menú plegable.
+- Accesibilidad: objetivo **WCAG 2.1 AA**. La spec 016 revisó todas las pantallas: contraste de texto 4.5:1, controles de 44 px, un foco visible, etiquetas y nombres accesibles, diálogos con foco atrapado y todo alcanzable con teclado, comprobado por `npm run test:ui`; la comprobación con lector de pantalla es manual.
+- Páginas de error: `resources/views/errors/{403,404,405,419}.blade.php` sobre `layouts/error`, con texto fijo en español y el camino de vuelta.
 
 ## Backend
 - Contratos de API: no hay OpenAPI. El contrato implícito son los `JsonResource` de cada módulo; forma de respuesta `{"message"}` en escrituras, `{"error"}` en errores y `{"data": [...]}` en lecturas.
 - Autenticación y autorización: tokens personales de Sanctum en cookie `auth_token` (httpOnly). Dos capas (spec 014): middleware por tipo de actor (`only.admin`, o `staff` para cualquier staff activo y `staff:<roles>` en la web) y `assertCan` en cada caso de uso, con un mapa `permiso → roles` en `CurrentActorAuthorizationService` como única fuente de verdad (todo el staff lee pacientes y expedientes; administrador y asistente editan datos clínicos; el resto es solo del administrador). Detalle y riesgos en [security.md](security.md).
 - Manejo de errores (spec 014): los controladores traducen las excepciones de negocio (400, 403, 404, 409, 422) y envían cualquier otra a `UnexpectedErrorResponse` (500 `{"error": "Internal server error"}`, log `unexpected_error` sin el mensaje). `withExceptions` en `bootstrap/app.php` hace de red para `api/*`: 401 siempre en JSON, `AuthorizationException` de Core → 403, lo no capturado → `UnexpectedErrorResponse`, y sin el reporte por defecto de Laravel para esas excepciones.
+- Errores de las pantallas web (spec 016): `only.admin` y `staff` responden `abort(403)` sin mensaje fuera de `api/*`. Un render propio en `withExceptions` devuelve para los 403, 404, 405 y 419 de rutas web la vista de `errors/` correspondiente, o un JSON fijo en español (`{"message"}`) cuando se pide JSON; `api/*` conserva sus respuestas.
 - Observabilidad: logs de Laravel en el canal `stderr` (nivel `info`), recogidos por Alloy → Loki → Grafana; health check `/up` que también comprueba PostgreSQL y Redis (`App\Core\Health\CheckDependenciesOnHealth`, escuchando `DiagnosingHealth`); sin métricas, correlación ni auditoría. Detalle en [observability.md](observability.md).
 - Seguridad: rate limiting `throttle:api` (10/min por IP sin autenticar, 100/min por usuario) sobre la IP real del visitante (`App\Core\Middlewares\TrustCloudflareProxies` sustituye a `TrustProxies` y confía solo en los rangos de Cloudflare de `config/security.php`); `App\Core\Middlewares\SecurityHeaders` añade CSP con nonce (`Vite::useCspNonce`), `X-Frame-Options`, `nosniff` y `Referrer-Policy`; CORS limitado a `APP_URL` sin credenciales. Ver [security.md](security.md).
 
@@ -160,3 +163,4 @@ con backups diarios por cron y un registro de operaciones en `deploys.log`. El d
 - Los cuatro `Get*Controller` de ContentManagement devuelven un objeto en vez de una lista cuando hay un solo registro; la galería pública falla con una imagen (roadmap, Pendientes y deuda).
 - `app/Modules/Estadisticas` y `Modules/` en la raíz están vacíos; `DatabaseSeeder` referencia `App\Models\User`, que no existe.
 - README y `ARCHITECTURE.md` declaran PHP 8.2 y PHPUnit; el proyecto usa PHP 8.4 y Pest 3.
+- Interfaz (tras la spec 016): sigue sin alternativa para quien pide menos movimiento (`DS12` de [design/system.md](design/system.md)); `npm run test:ui` necesita Chrome en el equipo y, en local, los datos de `ui:audit-data`; las fuentes son las del sistema, así que el ancho de los textos cambia entre equipos; y la página 500 de las pantallas web sigue siendo la genérica de Laravel.

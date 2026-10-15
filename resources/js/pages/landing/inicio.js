@@ -15,6 +15,8 @@ function initFaqAccordion() {
                     var otherIcon = otherItem.querySelector('.faq-icon');
                     if (otherContent && otherContent !== content) {
                         otherContent.style.maxHeight = '0px';
+                        otherContent.inert = true;
+                        otherItem.querySelector('.faq-trigger').setAttribute('aria-expanded', 'false');
                     }
                     if (otherIcon && otherIcon !== icon) {
                         otherIcon.textContent = '+';
@@ -24,9 +26,13 @@ function initFaqAccordion() {
 
                 if (isOpen) {
                     content.style.maxHeight = '0px';
+                    content.inert = true;
+                    trigger.setAttribute('aria-expanded', 'false');
                     icon.textContent = '+';
                     icon.style.transform = 'rotate(0deg)';
                 } else {
+                    content.inert = false;
+                    trigger.setAttribute('aria-expanded', 'true');
                     content.style.maxHeight = content.scrollHeight + 'px';
                     icon.textContent = '−';
                     icon.style.transform = 'rotate(180deg)';

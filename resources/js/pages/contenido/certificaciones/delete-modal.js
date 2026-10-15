@@ -1,3 +1,5 @@
+import { closeDialog, openDialog } from '../../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../../ui/status';
 export function initCertificationsDeleteModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -9,7 +11,9 @@ export function initCertificationsDeleteModal(context) {
     var submitButton = modal ? modal.querySelector('[data-certifications-delete-submit]') : null;
     var errorBox = modal ? modal.querySelector('[data-certifications-delete-error]') : null;
 
-    if (!modal || !form || !idInput || !nameLabel || !cancelButtons.length || !submitButton || !errorBox || !api) {
+    errorBox = errorBox || document.createElement('p');
+
+    if (!modal || !form || !idInput || !nameLabel || !cancelButtons.length || !submitButton || !api) {
         return;
     }
 
@@ -22,6 +26,7 @@ export function initCertificationsDeleteModal(context) {
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -40,9 +45,8 @@ export function initCertificationsDeleteModal(context) {
     function openModal(data) {
         hideModalError();
         idInput.value = data.id || '';
-        nameLabel.textContent = data.name || 'esta certificacion';
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        nameLabel.textContent = data.name || 'esta certificación';
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -52,8 +56,7 @@ export function initCertificationsDeleteModal(context) {
 
         form.reset();
         hideModalError();
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
     }
 
     async function deleteCertification(id) {
@@ -74,7 +77,7 @@ export function initCertificationsDeleteModal(context) {
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo eliminar la certificacion.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -102,15 +105,18 @@ export function initCertificationsDeleteModal(context) {
         var id = idInput.value;
 
         if (!id) {
-            showModalError('No se pudo identificar el registro a eliminar.');
+            showModalError('No pudimos identificar la certificación. Cierra el diálogo e inténtalo de nuevo.');
             return;
         }
 
         hideModalError();
         setSubmittingState(true);
 
+        var saved = false;
+
         try {
             await deleteCertification(id);
+            saved = true;
 
             if (typeof api.hideError === 'function') {
                 api.hideError();
@@ -120,14 +126,13 @@ export function initCertificationsDeleteModal(context) {
                 await api.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo eliminar la certificacion.');
-
-            if (typeof api.showError === 'function') {
-                api.showError(error.message || 'No se pudo eliminar la certificacion.');
-            }
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             setSubmittingState(false);
-            closeModal();
+            if (saved) {
+                closeModal();
+                announce('Certificación eliminada.');
+            }
         }
     });
 }

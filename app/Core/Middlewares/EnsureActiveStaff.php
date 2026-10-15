@@ -47,6 +47,6 @@ final class EnsureActiveStaff
             return new JsonResponse(['error' => $message], 403);
         }
 
-        abort(403, $message);
+        abort(403);
     }
 }

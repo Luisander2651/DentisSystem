@@ -1,3 +1,5 @@
+import { closeDialog, openDialog } from '../../../ui/dialog';
+import { announce, announceError, failureMessage, markFieldErrors } from '../../../ui/status';
 export function initCertificationsEditModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -15,7 +17,9 @@ export function initCertificationsEditModal(context) {
     var submitButton = modal ? modal.querySelector('[data-certifications-edit-submit]') : null;
     var errorBox = modal ? modal.querySelector('[data-certifications-edit-error]') : null;
 
-    if (!modal || !form || !idInput || !nameInput || !descriptionInput || !dateInput || !statusInput || !imageInput || !cancelButtons.length || !submitButton || !errorBox || !api) {
+    errorBox = errorBox || document.createElement('p');
+
+    if (!modal || !form || !idInput || !nameInput || !descriptionInput || !dateInput || !statusInput || !imageInput || !cancelButtons.length || !submitButton || !api) {
         return;
     }
 
@@ -28,6 +32,7 @@ export function initCertificationsEditModal(context) {
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -53,7 +58,7 @@ export function initCertificationsEditModal(context) {
 
         if (previewImage) {
             previewImage.src = hasUrl ? url : '';
-            previewImage.alt = label || 'Certificacion';
+            previewImage.alt = label || 'Certificación';
             previewImage.classList.toggle('hidden', !hasUrl);
         }
 
@@ -72,8 +77,7 @@ export function initCertificationsEditModal(context) {
         
         togglePreview(data.image, data.name);
         
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -84,8 +88,7 @@ export function initCertificationsEditModal(context) {
         form.reset();
         togglePreview('', '');
         hideModalError();
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
     }
 
     async function updateCertification(id, payload) {
@@ -110,7 +113,7 @@ export function initCertificationsEditModal(context) {
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo actualizar la certificacion.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -146,6 +149,24 @@ export function initCertificationsEditModal(context) {
         reader.readAsDataURL(file);
     });
 
+    // Cada campo obligatorio vacío queda marcado con su error, ligado a él, además del aviso
+    // general (spec 016, CA37).
+    function markMissing(fields) {
+        var missing = {};
+
+        fields.forEach(function (field) {
+            var empty = field.type === 'file' ? !(field.files && field.files[0]) : String(field.value).trim() === '';
+
+            if (empty) {
+                missing[field.name] = ['Este campo es obligatorio.'];
+            }
+        });
+
+        markFieldErrors(form, missing);
+
+        return Object.keys(missing).length > 0;
+    }
+
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
@@ -160,8 +181,8 @@ export function initCertificationsEditModal(context) {
         var status = statusInput.value;
         var imageFile = imageInput.files && imageInput.files[0] ? imageInput.files[0] : null;
 
-        if (!id || !name || !description || !date || !status) {
-            showModalError('Todos los campos son obligatorios.');
+        if (markMissing([nameInput, descriptionInput, dateInput, statusInput]) || !id) {
+            showModalError('Completa todos los campos obligatorios.');
             return;
         }
 
@@ -177,8 +198,11 @@ export function initCertificationsEditModal(context) {
         hideModalError();
         setSubmittingState(true);
 
+        var saved = false;
+
         try {
             await updateCertification(id, payload);
+            saved = true;
 
             if (typeof api.hideError === 'function') {
                 api.hideError();
@@ -188,14 +212,13 @@ export function initCertificationsEditModal(context) {
                 await api.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo actualizar la certificacion.');
-
-            if (typeof api.showError === 'function') {
-                api.showError(error.message || 'No se pudo actualizar la certificacion.');
-            }
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             setSubmittingState(false);
-            closeModal();
+            if (saved) {
+                closeModal();
+                announce('Cambios guardados.');
+            }
         }
     });
 }

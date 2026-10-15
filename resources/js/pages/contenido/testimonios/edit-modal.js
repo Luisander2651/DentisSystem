@@ -1,3 +1,5 @@
+import { closeDialog, openDialog } from '../../../ui/dialog';
+import { announce, announceError, failureMessage } from '../../../ui/status';
 export function initTestimonialsEditModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -11,7 +13,9 @@ export function initTestimonialsEditModal(context) {
     var submitButton = modal ? modal.querySelector('[data-testimonials-edit-submit]') : null;
     var errorBox = modal ? modal.querySelector('[data-testimonials-edit-error]') : null;
 
-    if (!modal || !form || !idInput || !authorLabel || !descriptionLabel || !statusInput || !cancelButtons.length || !submitButton || !errorBox || !api) {
+    errorBox = errorBox || document.createElement('p');
+
+    if (!modal || !form || !idInput || !authorLabel || !descriptionLabel || !statusInput || !cancelButtons.length || !submitButton || !api) {
         return;
     }
 
@@ -24,6 +28,7 @@ export function initTestimonialsEditModal(context) {
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -47,8 +52,7 @@ export function initTestimonialsEditModal(context) {
         descriptionLabel.textContent = data.description || '';
         statusInput.value = data.status || 'visible';
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        openDialog(modal);
     }
 
     function closeModal() {
@@ -58,8 +62,7 @@ export function initTestimonialsEditModal(context) {
 
         form.reset();
         hideModalError();
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        closeDialog(modal);
     }
 
     async function updateTestimonial(id, payload) {
@@ -82,7 +85,7 @@ export function initTestimonialsEditModal(context) {
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo actualizar el testimonio.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -102,11 +105,6 @@ export function initTestimonialsEditModal(context) {
         button.addEventListener('click', closeModal);
     });
 
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
 
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -121,7 +119,7 @@ export function initTestimonialsEditModal(context) {
         var status = statusInput.value;
 
         if (!id || !author || !description || !status) {
-            showModalError('No se pudo identificar la información necesaria para actualizar.');
+            showModalError('No pudimos identificar el testimonio. Cierra el diálogo e inténtalo de nuevo.');
             return;
         }
 
@@ -134,8 +132,11 @@ export function initTestimonialsEditModal(context) {
         hideModalError();
         setSubmittingState(true);
 
+        var saved = false;
+
         try {
             await updateTestimonial(id, payload);
+            saved = true;
 
             if (typeof api.hideError === 'function') {
                 api.hideError();
@@ -145,14 +146,13 @@ export function initTestimonialsEditModal(context) {
                 await api.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo actualizar el testimonio.');
-
-            if (typeof api.showError === 'function') {
-                api.showError(error.message || 'No se pudo actualizar el testimonio.');
-            }
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             setSubmittingState(false);
-            closeModal();
+            if (saved) {
+                closeModal();
+                announce('Cambios guardados.');
+            }
         }
     });
 }

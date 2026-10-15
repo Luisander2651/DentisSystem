@@ -1,3 +1,10 @@
+{{--
+    Campo del sistema de diseño (docs/design/system.md → Campo de formulario): 44 px de alto, letra
+    de 16 px en tinta, etiqueta visible, marca de obligatorio y error enlazado al campo.
+    `hint` añade un texto de ayuda. El propósito del campo se declara con `autocomplete`.
+    `variant`: `string` (solo letras, para nombres de persona), `text` (texto libre: teléfonos,
+    direcciones, códigos o nombres con números), `number`, `email` o `password`.
+--}}
 @props([
     'variant' => 'string',
     'name' => null,
@@ -6,21 +13,25 @@
     'label' => null,
     'placeholder' => '',
     'errorText' => null,
+    'hint' => null,
 ])
 
 @php
     $inputId = $id ?? $name ?? ('ui-input-' . uniqid());
     $resolvedValue = $name ? old($name, $value) : $value;
 
-    $base = 'ui-input w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition-all duration-200 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200';
+    $base = 'ui-input block h-control w-full rounded-control border border-field bg-surface px-3 text-control text-ink transition-colors';
     $isPassword = $variant === 'password';
     $inputType = $isPassword ? 'password' : 'text';
+    $inputMode = ['email' => 'email', 'number' => 'decimal'][$variant] ?? null;
+    $isRequired = $attributes->has('required');
 
     $messages = [
         'string' => 'Solo se permite texto.',
-        'number' => 'Solo numeros no negativos.',
-        'email' => 'Ingresa un correo valido.',
-        'password' => 'La contraseña no es valida.',
+        'text' => 'Este campo es obligatorio.',
+        'number' => 'Solo números no negativos.',
+        'email' => 'Ingresa un correo válido.',
+        'password' => 'La contraseña no es válida.',
     ];
 
     $resolvedErrorText = $errorText ?? ($messages[$variant] ?? $messages['string']);
@@ -28,8 +39,11 @@
 
 <div class="w-full">
     @if ($label)
-        <label for="{{ $inputId }}" class="mb-1.5 block text-sm font-medium text-slate-700">
+        <label for="{{ $inputId }}" class="mb-1.5 block text-sm font-semibold text-ink">
             {{ $label }}
+            @if ($isRequired)
+                <span class="text-danger" title="Obligatorio">*</span>
+            @endif
         </label>
     @endif
 
@@ -40,27 +54,30 @@
             type="{{ $inputType }}"
             value="{{ $resolvedValue }}"
             placeholder="{{ $placeholder }}"
+            @if ($inputMode) inputmode="{{ $inputMode }}" @endif
+            @if ($hint) aria-describedby="{{ $inputId }}-hint" @endif
             data-ui-input
             data-variant="{{ $variant }}"
             data-error-target="{{ $inputId }}-error"
             data-error-text="{{ $resolvedErrorText }}"
-            {{ $attributes->merge(['class' => $base . ($isPassword ? ' pr-11' : '')]) }}
+            data-announce-target="{{ $inputId }}-announce"
+            {{ $attributes->merge(['class' => $base . ($isPassword ? ' pr-12' : '')]) }}
         >
 
         @if ($isPassword)
             <button
                 type="button"
-                class="absolute inset-y-0 right-0 inline-flex w-10 items-center justify-center text-slate-500 transition-colors hover:text-slate-700 focus:outline-none"
+                class="absolute inset-y-0 right-0 inline-flex size-control items-center justify-center rounded-control text-muted transition-colors hover:text-ink"
                 data-toggle-password
                 data-target-input="{{ $inputId }}"
-                aria-label="Mostrar u ocultar contrasena"
+                aria-label="Mostrar contraseña"
                 aria-pressed="false"
             >
-                <svg data-eye-open xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <svg data-eye-open xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
                     <circle cx="12" cy="12" r="3" />
                 </svg>
-                <svg data-eye-closed xmlns="http://www.w3.org/2000/svg" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <svg data-eye-closed xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.77 21.77 0 0 1 5.17-5.94" />
                     <path d="M9.9 4.24A10.94 10.94 0 0 1 12 5c7 0 11 7 11 7a21.78 21.78 0 0 1-3.17 4.22" />
                     <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
@@ -70,13 +87,17 @@
         @endif
     </div>
 
-    <span
-        id="{{ $inputId }}-error"
-        class="mt-1 hidden text-xs font-medium text-red-600"
-        aria-live="polite"
-    >
+    @if ($hint)
+        <p id="{{ $inputId }}-hint" class="mt-1 text-min text-muted">{{ $hint }}</p>
+    @endif
+
+    {{-- Anuncia el error del campo al salir de él; se vacía al corregirlo. Es del campo, así que
+         dentro de un diálogo se va con él. --}}
+    <span id="{{ $inputId }}-announce" class="sr-only" aria-live="polite" data-ui-input-announce></span>
+
+    <p id="{{ $inputId }}-error" class="mt-1 hidden text-sm font-semibold text-danger">
         {{ $resolvedErrorText }}
-    </span>
+    </p>
 </div>
 
 @once
@@ -95,7 +116,7 @@
                     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
                 }
 
-                if (variant === 'password') {
+                if (variant === 'password' || variant === 'text') {
                     return true;
                 }
 
@@ -115,6 +136,7 @@
 
                 input.type = isHidden ? 'text' : 'password';
                 button.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+                button.setAttribute('aria-label', isHidden ? 'Ocultar contraseña' : 'Mostrar contraseña');
 
                 if (openIcon && closedIcon) {
                     openIcon.classList.toggle('hidden', isHidden);
@@ -122,7 +144,7 @@
                 }
             }
 
-            function validateInput(input) {
+            function validateInput(input, leaving) {
                 var variant = input.dataset.variant || 'string';
                 var errorTarget = document.getElementById(input.dataset.errorTarget);
                 if (!errorTarget) {
@@ -133,15 +155,52 @@
                 var isRequired = input.hasAttribute('required');
                 var formatValid = isValidByVariant(value, variant);
                 var valid = isRequired ? value !== '' && formatValid : formatValid;
-                if (valid) {
-                    errorTarget.classList.add('hidden');
-                    input.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-200');
+                var describedBy = (input.getAttribute('aria-describedby') || '').split(/\s+/).filter(function (id) {
+                    return id !== '' && id !== errorTarget.id;
+                });
+                var announcer = document.getElementById(input.dataset.announceTarget);
+                var foreignError = input.getAttribute('aria-invalid') === 'true' && !input.hasAttribute('data-ui-own-error');
+
+                // Un error que no puso el campo (el de una respuesta 422 o el de un script) no se
+                // quita solo con pasar por él: se va al volver a escribir (spec 016, CA37).
+                if (valid && leaving && foreignError) {
                     return;
                 }
 
-                errorTarget.textContent = input.dataset.errorText || 'Valor invalido.';
+                if (valid) {
+                    if (announcer) {
+                        announcer.textContent = '';
+                    }
+
+                    input.removeAttribute('data-ui-own-error');
+                    errorTarget.classList.add('hidden');
+                    input.classList.remove('border-2', 'border-danger');
+                    input.classList.add('border-field');
+                    input.removeAttribute('aria-invalid');
+
+                    if (describedBy.length > 0) {
+                        input.setAttribute('aria-describedby', describedBy.join(' '));
+                    } else {
+                        input.removeAttribute('aria-describedby');
+                    }
+
+                    return;
+                }
+
+                errorTarget.textContent = input.dataset.errorText || 'Valor inválido.';
                 errorTarget.classList.remove('hidden');
-                input.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-200');
+                input.classList.remove('border-field');
+                input.classList.add('border-2', 'border-danger');
+                input.setAttribute('aria-invalid', 'true');
+                input.setAttribute('data-ui-own-error', '');
+                input.setAttribute('aria-describedby', describedBy.concat(errorTarget.id).join(' '));
+
+                // Al salir de un campo inválido, su error se anuncia en la región del propio campo: el
+                // foco ya está en otro sitio y un lector de pantalla no lo leería (spec 016, CA37).
+                if (leaving && announcer) {
+                    announcer.textContent = '';
+                    announcer.textContent = errorTarget.textContent;
+                }
             }
 
             document.addEventListener('input', function (event) {
@@ -159,7 +218,7 @@
                     return;
                 }
 
-                validateInput(input);
+                validateInput(input, true);
             }, true);
 
             document.addEventListener('click', function (event) {

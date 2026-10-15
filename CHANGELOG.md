@@ -5,12 +5,32 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-14
+Sistema de diseño aplicado a toda la interfaz, con accesibilidad WCAG 2.1 AA y páginas de error propias (spec 016).
+
 ### Added
+- Sistema de diseño 2.0.0 aplicado a toda la interfaz (spec 016): paleta nueva con el logo de la clínica, un solo tamaño de control de 44 px, foco visible único, diálogos sobre un componente base y componentes `x-ui.*` para botones, campos, filtros, contadores e insignias. El texto ya no va en rosa y todos los contrastes cumplen 4.5:1.
+- Páginas propias en español para acceso sin permiso (403), dirección inexistente (404), acción no disponible (405) y formulario caducado (419), con el camino de vuelta a tu inicio si tienes sesión; las rutas web responden un JSON fijo en español cuando se pide JSON (spec 016).
+- `npm run test:ui` (spec 016): comprobaciones de interfaz en el navegador (desbordes, tamaños, contraste, foco, teclado, diálogos y composición) sobre las 75 pantallas y diálogos a 390, 768 y 1440 px. CI las ejecuta en cada push y deciden el resultado.
+- Icono de pestaña e iconos de la marca en `public/images/brand/` (spec 016).
 - Documentación del diseño actual de la interfaz en `docs/design/`: colores, tipografía y componentes medidos en la app, capturas de todas las pantallas a 390 y 1440 px y la lista de deuda de diseño (`DS1`–`DS14`). No cambia la aplicación.
 - CI: el workflow `ai-dd` queda activo en `.github/workflows/`. En cada PR valida las specs, el formato (Pint) de los archivos PHP cambiados y la seguridad de lo que cambia el PR (gitleaks, semgrep, auditoría de dependencias y trivy); cada lunes revisa el repositorio completo sin bloquear. Acciones e imágenes fijadas a una versión y semgrep sin envío de métricas.
 
 ### Changed
+- Agenda (spec 016): los días del calendario son botones que se usan con teclado y muestran su número de citas; en el móvil, las citas del día elegido aparecen bajo el calendario y se anuncian al tocar el día. Los expedientes muestran pares de etiqueta y valor en el móvil en lugar de tablas.
+- El menú lateral del panel y el menú del sitio público se despliegan desde 1024 px; por debajo se usa el menú plegable, que se cierra con Escape y devuelve el foco a su botón. Los controles táctiles miden al menos 44 px también a 768 px (spec 016).
+- Al enviar un formulario o una acción (como eliminar), se anuncia "Enviando…" a los lectores de pantalla; los enlaces que abren otra pestaña lo avisan; y en restablecer contraseña, el error de contraseñas que no coinciden queda en su campo (spec 016).
+- Los errores de un formulario quedan marcados en su campo y se anuncian sin mover el foco, también los que devuelve el servidor; un campo vacío obligatorio se marca al enviar, y un error de guardado sigue a la vista mientras el diálogo esté abierto (spec 016).
+- Teléfono, dirección, código postal, tipo de sangre y los nombres de tratamientos, promociones y certificaciones admiten números y signos; editar un paciente deja el diálogo abierto con su error si no se pudo guardar; los diálogos ya no se cierran al soltar el ratón fuera de ellos (spec 016).
+- Textos del panel con acentos y sin términos técnicos; las fechas se muestran en español sea cual sea el idioma del servidor (spec 016).
+- En los diálogos de gestión de contenido y de citas, un guardado que falla deja el diálogo abierto con su mensaje (spec 016).
 - Flujo AI-DD actualizado a 1.11.2: validador y plantillas nuevas, herramientas de seguridad con su estado (se ejecutan con sus imágenes de Docker) y tabla "Decisiones" en la spec 013.
+
+### Removed
+- Componente `x-ui.table` y vista `welcome.blade.php`, que nadie usaba (spec 016).
+
+### Security
+- Herramientas de desarrollo actualizadas a versiones sin vulnerabilidades altas ni críticas (`shell-quote` y `source-map-js`; RS16.a, spec 016).
 
 ## [0.1.0] - 2026-10-04
 Primera versión etiquetada y primera desplegada con el procedimiento reproducible (specs 014 y 015).

@@ -1,76 +1,49 @@
-<div id="certifications-create-modal" data-certifications-create-modal class="fixed inset-0 z-50 hidden">
-    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" aria-hidden="true" data-certifications-create-cancel></div>
+<x-ui.dialog id="certifications-create-modal" title="Nueva certificación" data-certifications-create-modal>
+    <form id="certifications-create-form" data-certifications-create-form class="flex flex-col gap-4" novalidate>
+        <div class="flex h-40 items-center justify-center overflow-hidden rounded-box border border-line bg-canvas">
+            <img data-certifications-create-preview class="hidden h-full w-full object-contain" alt="Vista previa de la imagen elegida" />
+            <p data-certifications-create-preview-empty class="px-4 text-center text-sm text-muted">Elige una imagen para verla antes de guardar.</p>
+        </div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-        <div class="flex min-h-full items-center justify-center p-4">
-            <div class="w-full max-w-3xl transform overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-xl transition-all">
-                <div class="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Certificaciones</p>
-                        <h3 class="mt-2 text-lg font-semibold text-slate-900">Agregar certificacion</h3>
-                    </div>
-                    <button type="button" data-certifications-create-cancel class="text-slate-400 hover:text-slate-500 transition-colors">
-                        <span class="sr-only">Cerrar</span>
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
+        <div>
+            <label for="certifications-create-image" class="mb-1.5 block text-sm font-semibold text-ink">
+                Imagen o sello
+                <span class="text-danger" title="Obligatorio">*</span>
+            </label>
+            <input type="file" id="certifications-create-image" name="image" accept="image/*" data-certifications-create-image class="block w-full text-min text-ink file:mr-2 file:min-h-control file:rounded-control file:border file:border-solid file:border-field file:bg-surface file:px-2 file:text-sm file:font-semibold file:text-ink" required />
+        </div>
 
-                <form data-certifications-create-form class="space-y-5 px-6 py-5">
-                    <div class="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-                        <div class="space-y-3">
-                            <div class="rounded-3xl border border-dashed border-[#F5C2D6] bg-[#FFF7FA] p-4">
-                                <div class="flex min-h-56 items-center justify-center overflow-hidden rounded-3xl border border-white/80 bg-white/70">
-                                    <img data-certifications-create-preview class="hidden h-full w-full object-cover" alt="Nueva certificacion" />
-                                    <div data-certifications-create-preview-empty class="px-4 py-6 text-center">
-                                        <div class="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#FDF1F6] text-[#E91E63]">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                                <path d="M12 15l-3.5 2 1-3.8-3-2.7 3.9-.3L12 7l1.6 3.2 3.9.3-3 2.7 1 3.8z" />
-                                                <path d="M8 21h8" />
-                                                <path d="M12 15v6" />
-                                            </svg>
-                                        </div>
-                                        <p class="text-sm font-semibold text-slate-700">Previsualizacion</p>
-                                        <p class="mt-1 text-xs text-slate-500">Selecciona una imagen para el sello o certificado.</p>
-                                    </div>
-                                </div>
-                            </div>
+        <x-ui.input
+            variant="text"
+            id="certifications-create-name"
+            name="name"
+            label="Nombre de la certificación"
+            autocomplete="off"
+            data-certifications-create-name
+            required
+        />
 
-                            <label class="block text-sm font-medium text-slate-700">
-                                Imagen / Sello
-                                <input type="file" name="image" accept="image/*" data-certifications-create-image class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-[#E91E63] focus:outline-none focus:ring-2 focus:ring-[#F8BBD0]" required />
-                            </label>
+        <div>
+            <label for="certifications-create-description" class="mb-1.5 block text-sm font-semibold text-ink">
+                Descripción
+                <span class="text-danger" title="Obligatorio">*</span>
+            </label>
+            <textarea id="certifications-create-description" name="description" rows="3" data-certifications-create-description class="block w-full rounded-control border border-field bg-surface px-3 py-2.5 text-control text-ink" required></textarea>
+        </div>
 
-                            <p class="text-xs text-slate-500">La imagen es obligatoria para el soporte visual.</p>
-                        </div>
-
-                        <div class="space-y-4">
-                            <label class="block text-sm font-medium text-slate-700">
-                                Nombre de la certificacion
-                                <input type="text" name="name" data-certifications-create-name class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-[#E91E63] focus:outline-none focus:ring-2 focus:ring-[#F8BBD0]" placeholder="Ej. Certificacion ISO 9001" required />
-                            </label>
-
-                            <label class="block text-sm font-medium text-slate-700">
-                                Descripcion
-                                <textarea name="description" rows="3" data-certifications-create-description class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-[#E91E63] focus:outline-none focus:ring-2 focus:ring-[#F8BBD0]" placeholder="Breve descripcion del reconocimiento" required></textarea>
-                            </label>
-
-                            <label class="block text-sm font-medium text-slate-700">
-                                Fecha del documento
-                                <input type="date" name="date" data-certifications-create-date class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-[#E91E63] focus:outline-none focus:ring-2 focus:ring-[#F8BBD0]" required />
-                            </label>
-
-                            <p data-certifications-create-error class="hidden rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"></p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-end gap-2 border-t border-slate-200 pt-4">
-                        <button type="button" data-certifications-create-cancel class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">Cancelar</button>
-                        <button type="submit" data-certifications-create-submit class="rounded-xl bg-[#E91E63] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#d81b60] disabled:cursor-not-allowed disabled:opacity-60">Guardar certificacion</button>
-                    </div>
-                </form>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+                <label for="certifications-create-date" class="mb-1.5 block text-sm font-semibold text-ink">
+                    Fecha del documento
+                <span class="text-danger" title="Obligatorio">*</span>
+                </label>
+                <input type="date" id="certifications-create-date" name="date" data-certifications-create-date class="block h-control w-full rounded-control border border-field bg-surface px-3 text-control text-ink" required />
             </div>
         </div>
-    </div>
-</div>
+    </form>
+
+    <x-slot:footer>
+        <x-ui.button data-certifications-create-cancel>Cancelar</x-ui.button>
+        <x-ui.button variant="primary" type="submit" form="certifications-create-form" data-certifications-create-submit>Guardar certificación</x-ui.button>
+    </x-slot:footer>
+</x-ui.dialog>

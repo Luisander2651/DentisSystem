@@ -1,25 +1,42 @@
+{{--
+    Botón del sistema de diseño (docs/design/system.md → Botón): un solo tamaño y cuatro variantes.
+    - primary: la acción principal de la pantalla (una sola).
+    - secondary: cualquier otra acción.
+    - danger: eliminar.
+    - icon: botón de 44 × 44 px que solo muestra un icono; exige `label`, que es su nombre accesible.
+    Con `href` se pinta como enlace con el mismo aspecto.
+--}}
 @props([
-    'variant' => 'principal',
+    'variant' => 'secondary',
     'type' => 'button',
+    'href' => null,
+    'label' => null,
 ])
 
 @php
-    $base = 'inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60';
+    $base = 'inline-flex min-h-control items-center justify-center gap-2 rounded-control border text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60';
 
     $variants = [
-        'principal' => 'bg-white border border-[#F5C2D6] text-[#B5114A] hover:bg-[#FFF7FA] focus-visible:ring-[#F5C2D6]',
-        'danger' => 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500',
-        'primary' => 'bg-[#E91E63] text-white hover:bg-[#d61b5b] focus-visible:ring-[#E91E63]',
-        'warning' => 'bg-amber-500 text-white hover:bg-amber-600 focus-visible:ring-amber-500',
-        'ok' => 'bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-500',
+        'primary' => 'border-transparent bg-primary px-4 text-ink hover:bg-primary-hover',
+        'secondary' => 'border-field bg-surface px-4 text-ink hover:bg-canvas',
+        'danger' => 'border-transparent bg-danger px-4 text-on-dark hover:bg-danger/90',
+        'icon' => 'size-control shrink-0 border-field bg-surface text-ink hover:bg-canvas',
     ];
 
-    $variantClasses = $variants[$variant] ?? $variants['principal'];
+    $variantClasses = $variants[$variant] ?? $variants['secondary'];
+    $name = $label ?? $attributes->get('aria-label');
+
+    if ($variant === 'icon' && blank($name)) {
+        throw new InvalidArgumentException('x-ui.button: la variante icon necesita `label`, su nombre accesible.');
+    }
 @endphp
 
-<button
-    type="{{ $type }}"
-    {{ $attributes->merge(['class' => "$base $variantClasses"]) }}
->
-    {{ $slot }}
-</button>
+@if ($href)
+    <a href="{{ $href }}" @if ($name) aria-label="{{ $name }}" @endif {{ $attributes->except('aria-label')->merge(['class' => "$base $variantClasses"]) }}>
+        {{ $slot }}
+    </a>
+@else
+    <button type="{{ $type }}" @if ($name) aria-label="{{ $name }}" @endif {{ $attributes->except('aria-label')->merge(['class' => "$base $variantClasses"]) }}>
+        {{ $slot }}
+    </button>
+@endif

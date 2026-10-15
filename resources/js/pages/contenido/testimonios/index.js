@@ -1,3 +1,5 @@
+import { stateBadge } from '../../../ui/badge';
+import { failureMessage } from '../../../ui/status';
 import { initTestimonialsEditModal } from './edit-modal';
 import { initTestimonialsDeleteModal } from './delete-modal';
 
@@ -131,38 +133,18 @@ export function initTestimoniosModule() {
             var description = record.description ?? '';
             var createdAt = formatDate(record.created_at);
             var status = normalizeTestimonialStatus(record.status);
-            var statusLabel = status === 'visible' ? 'Visible' : 'Oculto';
-            var statusClasses = status === 'visible'
-                ? 'bg-[#FDF1F6] text-[#B5114A]'
-                : 'bg-red-50 text-red-700';
-
-            var initial = author.charAt(0).toUpperCase();
 
             return [
-                '<article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">',
-                    '<div class="flex items-start justify-between gap-4">',
-                        '<div class="flex items-center gap-3">',
-                            '<div class="flex h-12 w-12 items-center justify-center rounded-full bg-[#FDF1F6] text-sm font-semibold text-[#B5114A]">', escapeHtml(initial), '</div>',
-                            '<div>',
-                                '<h3 class="text-base font-semibold text-slate-900 break-words">', escapeHtml(author), '</h3>',
-                                '<p class="text-xs text-slate-500">Paciente verificado</p>',
-                            '</div>',
-                        '</div>',
-                        '<span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold ', statusClasses, '">', statusLabel, '</span>',
+                '<article class="flex flex-col rounded-card border border-line bg-surface p-4 shadow-sm md:p-5">',
+                    '<div class="flex items-start justify-between gap-3">',
+                        '<h3 class="min-w-0 text-base font-semibold text-ink wrap-anywhere">', escapeHtml(author), '</h3>',
+                        stateBadge(status),
                     '</div>',
-                    
-                    '<p class="mt-4 text-sm leading-6 text-slate-600 break-words line-clamp-4">', escapeHtml(description), '</p>',
-                    
-                    '<div class="mt-4 grid gap-2">',
-                        '<div class="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-600">',
-                            '<span class="font-semibold uppercase tracking-wider text-slate-400">Recibido:</span>',
-                            '<span>', escapeHtml(createdAt), '</span>',
-                        '</div>',
-                    '</div>',
-
-                    '<div class="mt-4 flex flex-wrap gap-2">',
-                        '<button type="button" data-testimonials-edit data-testimonial-id="', escapeHtml(id), '" data-testimonial-author="', escapeHtml(author), '" data-testimonial-description="', escapeHtml(description), '" data-testimonial-status="', escapeHtml(status), '" class="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">Editar</button>',
-                        '<button type="button" data-testimonials-delete data-testimonial-id="', escapeHtml(id), '" data-testimonial-author="', escapeHtml(author), '" class="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50">Eliminar</button>',
+                    '<p class="mt-2 line-clamp-4 text-sm leading-6 text-ink wrap-anywhere">', escapeHtml(description), '</p>',
+                    '<p class="mt-2 text-sm text-muted">Recibido: ', escapeHtml(createdAt), '</p>',
+                    '<div class="mt-4 flex gap-2">',
+                        '<button type="button" data-testimonials-edit data-testimonial-id="', escapeHtml(id), '" data-testimonial-author="', escapeHtml(author), '" data-testimonial-description="', escapeHtml(description), '" data-testimonial-status="', escapeHtml(status), '" class="inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-canvas">Editar<span class="sr-only"> el testimonio de ', escapeHtml(author), '</span></button>',
+                        '<button type="button" data-testimonials-delete data-testimonial-id="', escapeHtml(id), '" data-testimonial-author="', escapeHtml(author), '" class="inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-danger-soft hover:text-danger">Eliminar<span class="sr-only"> el testimonio de ', escapeHtml(author), '</span></button>',
                     '</div>',
                 '</article>',
             ].join('');
@@ -192,14 +174,14 @@ export function initTestimoniosModule() {
             });
 
             if (!response.ok) {
-                showTestimonialsError(payload.error || payload.message || 'No se pudieron cargar los testimonios.');
+                showTestimonialsError(failureMessage(response.status, payload));
                 renderTestimonialCards([]);
                 return;
             }
 
             renderTestimonialCards(normalizeTestimonialPayload(payload));
         } catch (error) {
-            showTestimonialsError('Error de conexion. Intentalo de nuevo.');
+            showTestimonialsError(failureMessage(0));
             renderTestimonialCards([]);
         } finally {
             setTestimonialsLoading(false);

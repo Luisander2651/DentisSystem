@@ -1,3 +1,5 @@
+import { stateBadge } from '../../../ui/badge';
+import { failureMessage } from '../../../ui/status';
 import { initGalleryEditModal } from './edit-modal';
 import { initGalleryDeleteModal } from './delete-modal';
 import { initGalleryCreateModal } from './create-modal';
@@ -42,19 +44,6 @@ export function initGalleryModule() {
             hour: '2-digit',
             minute: '2-digit',
         }).format(date);
-    }
-
-    function getImageLabel(url) {
-        if (!url) {
-            return 'Sin imagen';
-        }
-
-        try {
-            var parsed = new URL(url, window.location.origin);
-            return parsed.pathname.split('/').filter(Boolean).pop() || parsed.hostname;
-        } catch (error) {
-            return String(url).split('/').filter(Boolean).pop() || String(url);
-        }
     }
 
     function normalizeGalleryPayload(payload) {
@@ -146,62 +135,24 @@ export function initGalleryModule() {
         galleryList.innerHTML = records.map(function (record) {
             var url = record.url ?? '';
             var description = record.description ?? '';
-            var createdAt = formatDate(record.created_at);
-            var updatedAt = formatDate(record.updated_at);
-            var imageLabel = getImageLabel(url);
+            var updatedAt = formatDate(record.updated_at || record.created_at);
+            var title = String(description).trim() || 'Imagen sin descripción';
             var status = normalizeGalleryStatus(record.status);
-            var statusLabel = status === 'visible' ? 'Visible' : 'Oculto';
-            var statusClasses = status === 'visible'
-                ? 'bg-[#FDF1F6] text-[#B5114A]'
-                : 'bg-red-50 text-red-700';
-
             var imageMarkup = url
-                ? [
-                    '<img src="', escapeHtml(url), '" alt="', escapeHtml(imageLabel), '" class="h-full w-full object-cover" loading="lazy" />',
-                ].join('')
-                : [
-                    '<div class="text-center">',
-                        '<div class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#FDF1F6] text-[#E91E63] shadow-sm">',
-                            '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
-                                '<rect x="3" y="3" width="18" height="18" rx="2" ry="2" />',
-                                '<circle cx="8.5" cy="8.5" r="1.5" />',
-                                '<path d="m21 15-5-5L5 21" />',
-                            '</svg>',
-                        '</div>',
-                        '<p class="text-sm font-semibold text-slate-700">Sin imagen</p>',
-                        '<p class="mt-1 text-xs text-slate-500">Este registro no trae url disponible.</p>',
-                    '</div>',
-                ].join('');
+                ? '<img src="' + escapeHtml(url) + '" alt="" class="h-48 w-full rounded-box border border-line object-cover" loading="lazy" />'
+                : '<div class="flex h-48 w-full items-center justify-center rounded-box border border-line bg-canvas text-sm font-semibold text-muted">Sin imagen</div>';
 
             return [
-                '<article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">',
-                    '<div class="flex items-start justify-between gap-4">',
-                        '<div>',
-                            '<p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Galería</p>',
-                            '<h3 class="mt-2 text-base font-semibold text-slate-900 break-words">', escapeHtml(imageLabel), '</h3>',
-                        '</div>',
-                        '<span class="rounded-full px-3 py-1 text-xs font-semibold ', statusClasses, '">', statusLabel, '</span>',
+                '<article class="flex flex-col rounded-card border border-line bg-surface p-4 shadow-sm md:p-5">',
+                    imageMarkup,
+                    '<div class="mt-4 flex items-start justify-between gap-3">',
+                        '<h3 class="min-w-0 text-base font-semibold text-ink wrap-anywhere">', escapeHtml(title), '</h3>',
+                        stateBadge(status),
                     '</div>',
-                    '<div class="mt-4 overflow-hidden rounded-2xl border border-dashed border-[#F5C2D6] bg-linear-to-br from-[#FFF7FA] to-white p-4">',
-                        '<div class="flex min-h-56 items-center justify-center overflow-hidden rounded-2xl border border-white/80 bg-white/70 text-center">',
-                            '<div class="relative h-full min-h-56 w-full">',
-                                imageMarkup,
-                                '<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4 text-left text-white">',
-                                    '<p class="text-sm font-semibold break-words">', escapeHtml(imageLabel), '</p>',
-                                    '<p class="mt-1 text-xs text-white/80">Imagen cargada desde la base de datos.</p>',
-                                '</div>',
-                            '</div>',
-                        '</div>',
-                    '</div>',
-                    '<p class="mt-3 text-sm leading-6 text-slate-600 break-words">', escapeHtml(description), '</p>',
-                    '<div class="mt-4 grid gap-2">',
-                        '<div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600 break-all">', escapeHtml(url || 'Sin URL'), '</div>',
-                        '<div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600 break-words">Creado: ', escapeHtml(createdAt), '</div>',
-                        '<div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600 break-words">Actualizado: ', escapeHtml(updatedAt), '</div>',
-                    '</div>',
-                    '<div class="mt-4 flex flex-wrap gap-2">',
-                        '<button type="button" data-gallery-edit data-gallery-id="', escapeHtml(record.id), '" data-gallery-description="', escapeHtml(description), '" data-gallery-url="', escapeHtml(url), '" data-gallery-status="', escapeHtml(status), '" data-gallery-label="', escapeHtml(imageLabel), '" class="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">Editar</button>',
-                        '<button type="button" data-gallery-delete data-gallery-id="', escapeHtml(record.id), '" data-gallery-label="', escapeHtml(imageLabel), '" class="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50">Eliminar</button>',
+                    '<p class="mt-1 text-sm text-muted">Actualizada: ', escapeHtml(updatedAt), '</p>',
+                    '<div class="mt-4 flex gap-2">',
+                        '<button type="button" data-gallery-edit data-gallery-id="', escapeHtml(record.id), '" data-gallery-description="', escapeHtml(description), '" data-gallery-url="', escapeHtml(url), '" data-gallery-status="', escapeHtml(status), '" data-gallery-label="', escapeHtml(title), '" class="inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-canvas">Editar<span class="sr-only"> ', escapeHtml(title), '</span></button>',
+                        '<button type="button" data-gallery-delete data-gallery-id="', escapeHtml(record.id), '" data-gallery-label="', escapeHtml(title), '" class="inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-danger-soft hover:text-danger">Eliminar<span class="sr-only"> ', escapeHtml(title), '</span></button>',
                     '</div>',
                 '</article>',
             ].join('');
@@ -231,14 +182,14 @@ export function initGalleryModule() {
             });
 
             if (!response.ok) {
-                showGalleryError(payload.error || payload.message || 'No se pudieron cargar los registros de galeria.');
+                showGalleryError(failureMessage(response.status, payload));
                 renderGalleryCards([]);
                 return;
             }
 
             renderGalleryCards(normalizeGalleryPayload(payload));
         } catch (error) {
-            showGalleryError('Error de conexion. Intentalo de nuevo.');
+            showGalleryError(failureMessage(0));
             renderGalleryCards([]);
         } finally {
             setGalleryLoading(false);

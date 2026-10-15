@@ -1,68 +1,65 @@
 @props(['canEdit' => false])
 
-<section class="w-full overflow-x-auto rounded-lg border border-slate-200 bg-white">
-    <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
-        <h3 class="text-sm font-semibold text-slate-800">Direccion</h3>
+<section class="w-full overflow-hidden rounded-card border border-line bg-surface shadow-sm">
+    <x-ui.section-title title="Dirección" class="border-b border-line px-4 py-3">
         @if ($canEdit)
-            <button
-                type="button"
-                data-record-open-address-form
-                class="rounded-md bg-[#E91E63] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#d81b60] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-                Agregar direccion
-            </button>
+            <x-slot:action>
+                <x-ui.button variant="primary" data-record-open-address-form>Agregar dirección</x-ui.button>
+            </x-slot:action>
         @endif
-    </div>
+    </x-ui.section-title>
 
-    <form id="record-address-form" class="hidden space-y-3 border-b border-slate-200 bg-slate-50 p-4">
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Calle</label>
-                <input type="text" name="street" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700" placeholder="Av. Juarez 123" />
-            </div>
-
-            <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Ciudad</label>
-                <input type="text" name="city" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700" placeholder="Monterrey" />
-            </div>
+    <form id="record-address-form" class="hidden space-y-4 border-b border-line bg-canvas p-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <x-ui.input variant="text" id="record-address-street" name="street" label="Calle" placeholder="Av. Juárez 123" autocomplete="off" />
+            <x-ui.input variant="text" id="record-address-city" name="city" label="Ciudad" placeholder="Monterrey" autocomplete="off" />
         </div>
 
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Estado</label>
-                <input type="text" name="state" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700" placeholder="Nuevo Leon" />
-            </div>
-
-            <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">Codigo postal</label>
-                <input type="text" name="postal_code" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700" placeholder="64000" />
-            </div>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <x-ui.input variant="text" id="record-address-state" name="state" label="Estado" placeholder="Nuevo León" autocomplete="off" />
+            <x-ui.input variant="text" id="record-address-postal-code" name="postal_code" label="Código postal" placeholder="64000" autocomplete="off" />
         </div>
 
-        <p id="record-address-form-error" class="hidden rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"></p>
+        <p id="record-address-form-error" role="alert" class="hidden rounded-box border border-danger bg-danger-soft px-3 py-2 text-sm font-semibold text-danger"></p>
 
         <div class="flex items-center justify-end gap-2">
-            <button type="button" data-record-cancel-address-form class="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100">Cancelar</button>
-            <button type="submit" class="rounded-md bg-[#E91E63] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#d81b60]">Guardar direccion</button>
+            <x-ui.button data-record-cancel-address-form>Cancelar</x-ui.button>
+            <x-ui.button variant="primary" type="submit">Guardar dirección</x-ui.button>
         </div>
     </form>
 
-    <table class="min-w-full border-collapse text-left text-sm text-slate-700">
-        <thead class="bg-slate-100">
-            <tr>
-                <th class="whitespace-nowrap px-4 py-3 font-semibold">Calle</th>
-                <th class="whitespace-nowrap px-4 py-3 font-semibold">Ciudad</th>
-                <th class="whitespace-nowrap px-4 py-3 font-semibold">Estado</th>
-                <th class="whitespace-nowrap px-4 py-3 font-semibold">Codigo postal</th>
-                @if ($canEdit)
-                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Acciones</th>
-                @endif
-            </tr>
-        </thead>
-        <tbody id="record-address-body" class="bg-white">
-            <tr class="border-t border-slate-200">
-                <td colspan="{{ $canEdit ? 5 : 4 }}" class="px-4 py-6 text-center text-sm text-slate-500">Sin informacion de direccion.</td>
-            </tr>
-        </tbody>
-    </table>
+    {{-- Por debajo de md: pares de etiqueta y valor (spec 016, CA27). --}}
+    <div class="hidden px-4 pb-4 md:hidden" data-record-when="address">
+        <dl>
+            <x-ui.record label="Calle"><span data-record-field="address.street">-</span></x-ui.record>
+            <x-ui.record label="Ciudad"><span data-record-field="address.city">-</span></x-ui.record>
+            <x-ui.record label="Estado"><span data-record-field="address.state">-</span></x-ui.record>
+            <x-ui.record label="Código postal"><span data-record-field="address.postal_code">-</span></x-ui.record>
+        </dl>
+        @if ($canEdit)
+            <x-ui.button data-record-delete-address class="mt-3">Eliminar dirección</x-ui.button>
+        @endif
+    </div>
+    <p class="px-4 py-6 text-center text-sm text-muted md:hidden" data-record-when-empty="address">Este paciente aún no tiene una dirección registrada.</p>
+
+    <div class="hidden overflow-x-auto md:block">
+        <table class="min-w-full border-collapse text-left text-sm text-ink">
+            <thead class="bg-canvas">
+                <tr>
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Calle</th>
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Ciudad</th>
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Estado</th>
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold">Código postal</th>
+                    @if ($canEdit)
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold">Acciones</th>
+                    @endif
+                </tr>
+            </thead>
+            <tbody id="record-address-body" class="bg-surface">
+                <tr class="border-t border-line">
+                    <td colspan="{{ $canEdit ? 5 : 4 }}" class="px-4 py-6 text-center text-sm text-muted">Este paciente aún no tiene una dirección registrada.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </section>

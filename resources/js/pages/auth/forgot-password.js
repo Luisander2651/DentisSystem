@@ -1,3 +1,5 @@
+import { announce, announceError, announceFailure, clearAnnouncements } from '../../ui/status';
+
 (function () {
     const form = document.getElementById('forgot-form');
     const errorBox = document.getElementById('forgot-error');
@@ -27,6 +29,7 @@
             errorBox.classList.add('hidden');
             errorBox.textContent = '';
         }
+        clearAnnouncements();
         if (successBox) {
             successBox.classList.add('hidden');
         }
@@ -43,7 +46,7 @@
             });
 
             if (!csrfResponse.ok) {
-                throw new Error('No se pudo inicializar la cookie CSRF.');
+                throw new Error('csrf');
             }
 
             const xsrfToken = getCookie('XSRF-TOKEN');
@@ -64,26 +67,20 @@
             });
 
             if (!response.ok) {
-                const message = payload.error || payload.message || 'No se pudo enviar el correo de restablecimiento.';
-                if (errorBox) {
-                    errorBox.textContent = message;
-                    errorBox.classList.remove('hidden');
-                }
+                announceFailure(response.status, payload);
                 return;
             }
 
             if (successBox) {
                 successBox.classList.remove('hidden');
+                announce(successBox.textContent.trim());
             }
             
             if (form) {
                 form.reset();
             }
         } catch (error) {
-            if (errorBox) {
-                errorBox.textContent = 'Error de conexión. Inténtalo de nuevo.';
-                errorBox.classList.remove('hidden');
-            }
+            announceFailure(0);
         } finally {
             if (submitButton) {
                 submitButton.disabled = false;

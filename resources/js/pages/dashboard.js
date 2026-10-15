@@ -1,3 +1,5 @@
+import { announce } from '../ui/status';
+
 (function () {
     if (window.__dashboardInit) {
         return;
@@ -5,59 +7,27 @@
 
     window.__dashboardInit = true;
 
-    // Setup for Patients modal in dashboard
-    var dashboardPatientsSuccess = document.getElementById('dashboard-patients-success');
-
+    // The dialogs to create a patient and a user also open from the start of the panel. Here
+    // there is no listing to reload: saving is announced in the status region.
     window.patientsPage = {
-        hideError: function () {
-            // No-op on dashboard
-        },
-        showError: function (message) {
-            // Errors are shown in modal only
-        },
+        hideError: function () {},
+        showError: function () {},
         showSuccess: function (message) {
-            if (dashboardPatientsSuccess) {
-                dashboardPatientsSuccess.textContent = message;
-                dashboardPatientsSuccess.classList.remove('hidden');
-            }
+            announce(message);
         },
         reload: function () {
-            // On dashboard, just show success message
-            this.showSuccess('¡Paciente creado exitosamente!');
-            setTimeout(function () {
-                if (dashboardPatientsSuccess) {
-                    dashboardPatientsSuccess.textContent = '';
-                    dashboardPatientsSuccess.classList.add('hidden');
-                }
-            }, 3000);
-        }
+            announce('Paciente creado.');
+        },
     };
 
-    // Setup for Users modal in dashboard
-    var dashboardUsersSuccess = document.getElementById('dashboard-users-success');
-
     window.usersPage = {
-        hideError: function () {
-            // No-op on dashboard
-        },
-        showError: function (message) {
-            // Errors are shown in modal only
-        },
+        hideError: function () {},
+        showError: function () {},
         showSuccess: function (message) {
-            if (dashboardUsersSuccess) {
-                dashboardUsersSuccess.textContent = message;
-                dashboardUsersSuccess.classList.remove('hidden');
-            }
+            announce(message);
         },
         reload: function () {
-            // On dashboard, just show success message
-            this.showSuccess('¡Usuario creado exitosamente!');
-            setTimeout(function () {
-                if (dashboardUsersSuccess) {
-                    dashboardUsersSuccess.textContent = '';
-                    dashboardUsersSuccess.classList.add('hidden');
-                }
-            }, 3000);
-        }
+            announce('Usuario creado.');
+        },
     };
 })();

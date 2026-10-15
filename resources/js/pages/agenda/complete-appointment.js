@@ -1,3 +1,6 @@
+import { closeDialog, isBackdropClick, openDialog } from '../../ui/dialog';
+import { announce, announceError, clearAnnouncements, failureMessage } from '../../ui/status';
+
 (function () {
     if (window.__agendaCompleteAppointmentInit) {
         return;
@@ -49,13 +52,13 @@
     var addPrescriptionButton = modal.querySelector('[data-complete-appointment-add-prescription]');
     var prescriptionsEmpty = modal.querySelector('[data-complete-appointment-prescriptions-empty]');
     var prescriptionsList = modal.querySelector('[data-complete-appointment-prescriptions-list]');
-    var errorBox = modal.querySelector('[data-complete-appointment-error]');
+    var errorBox = modal.querySelector('[data-complete-appointment-error]') || document.createElement('p');
     var cancelButtons = modal.querySelectorAll('[data-complete-appointment-cancel]');
     var backButton = modal.querySelector('[data-complete-appointment-back]');
     var nextButton = modal.querySelector('[data-complete-appointment-next]');
     var submitButton = modal.querySelector('[data-complete-appointment-submit]');
 
-    var confirmDialog = modal.querySelector('[data-complete-appointment-confirm]');
+    var confirmDialog = document.querySelector('[data-complete-appointment-confirm]');
     var confirmTitle = confirmDialog ? confirmDialog.querySelector('[data-complete-appointment-confirm-title]') : null;
     var confirmMessage = confirmDialog ? confirmDialog.querySelector('[data-complete-appointment-confirm-message]') : null;
     var confirmAcceptButton = confirmDialog ? confirmDialog.querySelector('[data-complete-appointment-confirm-accept]') : null;
@@ -72,17 +75,20 @@
     var isDirty = false;
     var isSubmitting = false;
     var pendingConfirmAccept = null;
+    var prescriptionCount = 0;
 
     function showError(message) {
         if (!errorBox) return;
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideError() {
         if (!errorBox) return;
         errorBox.textContent = '';
         errorBox.classList.add('hidden');
+        clearAnnouncements();
     }
 
     function updatePrescriptionsEmptyState() {
@@ -92,40 +98,30 @@
     }
 
     function createPrescriptionRow() {
-        var row = document.createElement('div');
-        row.className = 'rounded-2xl border border-slate-200 bg-white p-4';
+        prescriptionCount += 1;
+
+        var id = 'prescription-' + prescriptionCount;
+        var input = function (name, text, attributes, required) {
+            return '<div' + (name === 'instructions' ? ' class="sm:col-span-2"' : '') + '>'
+                + '<label for="' + id + '-' + name + '" class="mb-1.5 block text-sm font-semibold text-ink">' + text + (required ? ' <span class="text-danger" title="Obligatorio">*</span>' : '') + '</label>'
+                + '<input id="' + id + '-' + name + '" data-prescription-' + name + (required ? ' data-prescription-required' : '') + ' class="block h-control w-full rounded-control border border-field bg-surface px-3 text-control text-ink" ' + attributes + '>'
+                + '</div>';
+        };
+
+        var row = document.createElement('fieldset');
+        row.className = 'rounded-box border border-line bg-surface p-3';
         row.setAttribute('data-prescription-row', '');
 
         row.innerHTML = ''
-            + '<div class="flex items-start justify-between gap-3">'
-            + '  <div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2">'
-            + '    <div>'
-            + '      <label class="mb-1 block text-xs font-bold text-slate-600">Medicamento</label>'
-            + '      <input type="text" data-prescription-medication class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10" placeholder="Ej. Amoxicilina 500mg">'
-            + '    </div>'
-            + '    <div>'
-            + '      <label class="mb-1 block text-xs font-bold text-slate-600">Dosis</label>'
-            + '      <input type="text" data-prescription-dosage class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10" placeholder="Ej. 1 tableta">'
-            + '    </div>'
-            + '    <div>'
-            + '      <label class="mb-1 block text-xs font-bold text-slate-600">Duración (días)</label>'
-            + '      <input type="number" min="1" max="365" data-prescription-duration class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10" placeholder="Ej. 7">'
-            + '    </div>'
-            + '    <div>'
-            + '      <label class="mb-1 block text-xs font-bold text-slate-600">Frecuencia (veces/día)</label>'
-            + '      <input type="number" min="1" max="24" data-prescription-frequency class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10" placeholder="Ej. 3">'
-            + '    </div>'
-            + '    <div class="sm:col-span-2">'
-            + '      <label class="mb-1 block text-xs font-bold text-slate-600">Instrucciones <span class="font-normal text-slate-400">(opcional)</span></label>'
-            + '      <input type="text" data-prescription-instructions class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-900 focus:border-[#B5114A] focus:outline-none focus:ring-4 focus:ring-[#B5114A]/10" placeholder="Ej. Tomar despues de alimentos">'
-            + '    </div>'
-            + '  </div>'
-            + '  <button type="button" data-prescription-remove class="cursor-pointer rounded-xl p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600" aria-label="Quitar prescripcion">'
-            + '    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">'
-            + '      <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V7h12z" />'
-            + '    </svg>'
-            + '  </button>'
-            + '</div>';
+            + '<legend class="px-1 text-sm font-bold text-ink">Prescripción</legend>'
+            + '<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">'
+            + input('medication', 'Medicamento', 'type="text" autocomplete="off"', true)
+            + input('dosage', 'Dosis', 'type="text" autocomplete="off"', true)
+            + input('duration', 'Duración en días', 'type="number" min="1" max="365" inputmode="numeric"', true)
+            + input('frequency', 'Veces al día', 'type="number" min="1" max="24" inputmode="numeric"', true)
+            + input('instructions', 'Instrucciones (opcional)', 'type="text" autocomplete="off"', false)
+            + '</div>'
+            + '<button type="button" data-prescription-remove class="mt-3 inline-flex min-h-control items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-danger-soft hover:text-danger">Quitar esta prescripción</button>';
 
         var removeButton = row.querySelector('[data-prescription-remove]');
         removeButton.addEventListener('click', function () {
@@ -147,14 +143,13 @@
         step1El.classList.toggle('hidden', step !== 1);
         step2El.classList.toggle('hidden', step !== 2);
 
-        var cancelButtonOnly = modal.querySelector('form [data-complete-appointment-cancel]');
-        if (cancelButtonOnly) {
-            cancelButtonOnly.classList.toggle('hidden', step !== 1);
-        }
+        cancelButtons.forEach(function (button) {
+            button.hidden = step !== 1;
+        });
 
-        if (backButton) backButton.classList.toggle('hidden', step !== 2);
-        if (nextButton) nextButton.classList.toggle('hidden', step !== 1);
-        if (submitButton) submitButton.classList.toggle('hidden', step !== 2);
+        if (backButton) backButton.hidden = step !== 2;
+        if (nextButton) nextButton.hidden = step !== 1;
+        if (submitButton) submitButton.hidden = step !== 2;
 
         if (stepIndicator) {
             stepIndicator.textContent = step === 1
@@ -165,14 +160,46 @@
         hideError();
     }
 
+    function clearFieldError(field) {
+        var message = document.getElementById(field.id + '-error');
+
+        field.removeAttribute('aria-invalid');
+        field.removeAttribute('aria-describedby');
+        if (message) message.remove();
+    }
+
+    function setFieldError(field, text) {
+        clearFieldError(field);
+
+        var message = document.createElement('p');
+        message.id = field.id + '-error';
+        message.className = 'mt-1 text-sm font-semibold text-danger';
+        message.textContent = text;
+
+        field.setAttribute('aria-invalid', 'true');
+        field.setAttribute('aria-describedby', message.id);
+        field.insertAdjacentElement('afterend', message);
+    }
+
     function validateStep1() {
-        var errors = [];
+        var required = [
+            [reasonInput, 'El motivo de la consulta es obligatorio.'],
+            [diagnosisInput, 'El diagnóstico es obligatorio.'],
+            [procedureInput, 'El procedimiento realizado es obligatorio.'],
+        ];
+        var invalid = [];
 
-        if (!reasonInput.value.trim()) errors.push('El motivo de la consulta es obligatorio.');
-        if (!diagnosisInput.value.trim()) errors.push('El diagnóstico es obligatorio.');
-        if (!procedureInput.value.trim()) errors.push('El procedimiento realizado es obligatorio.');
+        required.forEach(function (pair) {
+            if (pair[0].value.trim()) {
+                clearFieldError(pair[0]);
+                return;
+            }
 
-        return errors;
+            setFieldError(pair[0], pair[1]);
+            invalid.push(pair);
+        });
+
+        return invalid;
     }
 
     function collectPrescriptions() {
@@ -182,8 +209,11 @@
                 var dosage = row.querySelector('[data-prescription-dosage]').value.trim();
                 var duration = row.querySelector('[data-prescription-duration]').value.trim();
                 var frequency = row.querySelector('[data-prescription-frequency]').value.trim();
+                var instructions = row.querySelector('[data-prescription-instructions]').value.trim();
 
-                return medication || dosage || duration || frequency;
+                // El mismo criterio que syncPrescriptionRequired: con las indicaciones solas, la fila
+                // también cuenta y sus datos obligatorios se piden (spec 016, CA37).
+                return medication || dosage || duration || frequency || instructions;
             })
             .map(function (row) {
                 var instructions = row.querySelector('[data-prescription-instructions]').value.trim();
@@ -200,6 +230,46 @@
 
                 return prescription;
             });
+    }
+
+    // Una fila vacía no cuenta como prescripción; en cuanto tiene algo, sus cuatro datos son
+    // obligatorios. Los que fallan quedan marcados uno a uno (spec 016, CA37).
+    var PRESCRIPTION_RULES = [
+        ['[data-prescription-medication]', 'Escribe el medicamento.', function (value) { return value !== ''; }],
+        ['[data-prescription-dosage]', 'Escribe la dosis.', function (value) { return value !== ''; }],
+        ['[data-prescription-duration]', 'Escribe una duración de 1 a 365 días.', function (value) { return /^\d+$/.test(value) && value >= 1 && value <= 365; }],
+        ['[data-prescription-frequency]', 'Escribe de 1 a 24 veces al día.', function (value) { return /^\d+$/.test(value) && value >= 1 && value <= 24; }],
+    ];
+
+    function syncPrescriptionRequired(row) {
+        var filled = Array.from(row.querySelectorAll('input')).some(function (field) { return field.value.trim() !== ''; });
+
+        row.querySelectorAll('[data-prescription-required]').forEach(function (field) {
+            field.required = filled;
+            field.setAttribute('aria-required', filled ? 'true' : 'false');
+        });
+
+        return filled;
+    }
+
+    function markPrescriptionFields() {
+        var firstInvalid = null;
+
+        Array.from(prescriptionsList.querySelectorAll('[data-prescription-row]')).forEach(function (row) {
+            var filled = syncPrescriptionRequired(row);
+
+            PRESCRIPTION_RULES.forEach(function (rule) {
+                var field = row.querySelector(rule[0]);
+                clearFieldError(field);
+
+                if (filled && !rule[2](field.value.trim())) {
+                    setFieldError(field, rule[1]);
+                    firstInvalid = firstInvalid || field;
+                }
+            });
+        });
+
+        return firstInvalid;
     }
 
     function validatePrescriptions(prescriptions) {
@@ -245,7 +315,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo completar la solicitud.');
+            throw new Error(failureMessage(response.status, data));
         }
 
         return data;
@@ -271,7 +341,7 @@
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo completar la cita.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -286,17 +356,18 @@
         if (confirmAcceptText) confirmAcceptText.textContent = options.acceptText;
         if (confirmCancelText) confirmCancelText.textContent = options.cancelText;
         pendingConfirmAccept = options.onAccept;
-        confirmDialog.classList.remove('hidden');
+        openDialog(confirmDialog);
     }
 
     function closeConfirm() {
-        if (confirmDialog) confirmDialog.classList.add('hidden');
+        if (confirmDialog) closeDialog(confirmDialog);
         pendingConfirmAccept = null;
     }
 
     function resetState() {
         hideError();
         form.reset();
+        [reasonInput, diagnosisInput, procedureInput].forEach(clearFieldError);
         prescriptionsList.innerHTML = '';
         updatePrescriptionsEmptyState();
         isDirty = false;
@@ -307,8 +378,7 @@
 
     function closeModal(force) {
         if (isSubmitting && !force) return;
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
         closeConfirm();
     }
 
@@ -346,13 +416,20 @@
         try {
             await completeAppointment(activeAppointmentId, buildPayload());
         } catch (error) {
-            showError(error.message || 'No se pudo completar la cita.');
+            showError(error instanceof TypeError ? failureMessage(0) : error.message);
             setSubmittingState(false);
+
+            // Al cerrarse la confirmación el botón estaba deshabilitado y el foco se fue a otro sitio.
+            if (submitButton) {
+                submitButton.focus();
+            }
+
             return;
         }
 
         setSubmittingState(false);
         closeModal(true);
+        announce('Cita completada.');
 
         if (window.agendaPage && typeof window.agendaPage.reload === 'function') {
             window.agendaPage.reload().catch(function (reloadError) {
@@ -361,11 +438,10 @@
         }
     }
 
-    async function open(appointmentId) {
+    async function open(appointmentId, opener) {
         resetState();
         activeAppointmentId = appointmentId;
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        openDialog(modal, opener || document.activeElement);
         showStep(1);
 
         try {
@@ -376,16 +452,41 @@
                 summaryEl.textContent = (appointment.patient_name || 'Paciente') + ' • ' + (appointment.treatment_name || 'Consulta');
             }
         } catch (error) {
-            showError(error.message || 'No se pudo cargar la información de la cita.');
+            showError(error instanceof TypeError ? failureMessage(0) : error.message);
         }
     }
 
-    form.addEventListener('input', function () {
+    form.addEventListener('input', function (event) {
         isDirty = true;
+
+        var row = event.target.closest ? event.target.closest('[data-prescription-row]') : null;
+
+        if (row) {
+            syncPrescriptionRequired(row);
+        }
+
+        if (event.target.getAttribute('aria-invalid') === 'true' && event.target.value.trim()) {
+            clearFieldError(event.target);
+        }
     });
 
     form.addEventListener('submit', function (event) {
         event.preventDefault();
+    });
+
+    // Escape, el botón de cerrar y el clic fuera del diálogo preguntan, como "Cancelar", si hay
+    // datos sin guardar: un descuido no borra lo capturado.
+    modal.addEventListener('cancel', function (event) {
+        event.preventDefault();
+        requestClose();
+    });
+
+    // El botón de cerrar y el clic fuera del diálogo.
+    modal.addEventListener('click', function (event) {
+        if (isBackdropClick(event, modal) || event.target.closest('[data-dialog-close]')) {
+            event.stopPropagation();
+            requestClose();
+        }
     });
 
     if (addPrescriptionButton) {
@@ -398,17 +499,20 @@
             var errors = validateStep1();
 
             if (errors.length) {
-                showError(errors[0]);
+                showError(errors[0][1]);
+                errors[0][0].focus();
                 return;
             }
 
             showStep(2);
+            if (addPrescriptionButton) addPrescriptionButton.focus();
         });
     }
 
     if (backButton) {
         backButton.addEventListener('click', function () {
             showStep(1);
+            reasonInput.focus();
         });
     }
 
@@ -417,6 +521,8 @@
             hideError();
             var prescriptions = collectPrescriptions();
             var errors = validatePrescriptions(prescriptions);
+
+            markPrescriptionFields();
 
             if (errors.length) {
                 showError(errors[0]);

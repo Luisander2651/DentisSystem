@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-10-04
+updated: 2026-10-11
 ---
 
 # Despliegue de Dentissa
@@ -47,7 +47,7 @@ flowchart LR
 Texto alternativo: un PR pasa CI, se integra en `main`, se etiqueta, se verifica en local, el dueño
 del repo aprueba y se despliega a mano en el VPS.
 
-- `.github/workflows/tests.yml` (push y PR, todas las ramas): PHP 8.4, Node 22, PostgreSQL 16 y Redis 7 como servicios; `composer install`, `npm ci`, `npm run build`, `migrate --env=testing`, `./vendor/bin/pest --parallel`.
+- `.github/workflows/tests.yml` (push y PR, todas las ramas): PHP 8.4, Node 22, PostgreSQL 16 y Redis 7 como servicios; `composer install`, `npm ci`, `npm run build`, `migrate --env=testing`, `./vendor/bin/pest --parallel` y, desde la spec 016, `npm run test:ui` contra `php artisan serve` con los datos de `ui:audit-data`: las comprobaciones de interfaz en el navegador a 390, 768 y 1440 px deciden el resultado, y el informe y las capturas quedan en el artefacto `ui-audit`.
 - `.github/workflows/ai-dd.yml` (activo desde el 2026-10-05; decisión del usuario): en cada PR valida specs con `.ai/bin/aidd.py`, Pint en modo test sobre los archivos PHP del PR y las herramientas de seguridad de [security.md](security.md) en modo baseline (solo fallan problemas nuevos del PR); cada lunes revisa el repositorio completo sin bloquear. Las mismas herramientas se siguen ejecutando en local durante `/implement`, `/review` y `/release`.
 - No hay job de despliegue: el despliegue es manual.
 
@@ -213,6 +213,13 @@ migraciones tienen que ser compatibles con el código que está en servicio (P9)
 - Si falla **la migración**: la versión anterior sigue sirviendo y `.deploy/` no cambia. Se corrige y se repite el deploy; si la migración quedó a medias, se restaura el dump `pre-<tag>` ("Restaurar sin cambiar de versión"). Con `--first` no hay versión de producción sirviendo: se vuelve con `rollback.sh --to-manual`.
 - Si falla **el arranque o la verificación**: la versión nueva queda arrancada y `.deploy/previous` apunta a la anterior; se vuelve con `docker/prod/rollback.sh` (ver "Rollback").
 - La limpieza conserva las imágenes de la versión en servicio y de `.deploy/previous`, también al redesplegar el mismo tag.
+
+### Después de cambiar el icono o las imágenes de la marca
+Cloudflare guarda también `favicon.ico` y `public/images/brand/`. Tras un despliegue que los cambie
+(el primero es el de la spec 016), purga esas direcciones para que los visitantes no sigan viendo
+los anteriores: Cloudflare → Caching → Configuration → Purge Cache → Custom Purge, con
+`https://dentissapp.com/favicon.ico` y las de `https://dentissapp.com/images/brand/`; o Purge
+Everything, que no afecta al sitio.
 
 ### Después de cambiar cabeceras de nginx
 Cloudflare guarda unas dos horas los archivos estáticos (`/storage`, `/build`) **con las cabeceras

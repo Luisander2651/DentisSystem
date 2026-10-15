@@ -1,3 +1,5 @@
+import { closeDialog, openDialog } from '../../../ui/dialog';
+import { announce, announceError, failureMessage, markFieldErrors } from '../../../ui/status';
 export function initGalleryCreateModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -12,7 +14,9 @@ export function initGalleryCreateModal(context) {
     var submitButton = modal ? modal.querySelector('[data-gallery-create-submit]') : null;
     var errorBox = modal ? modal.querySelector('[data-gallery-create-error]') : null;
 
-    if (!openButton || !modal || !form || !descriptionInput || !imageInput || !cancelButtons.length || !submitButton || !errorBox || !api) {
+    errorBox = errorBox || document.createElement('p');
+
+    if (!openButton || !modal || !form || !descriptionInput || !imageInput || !cancelButtons.length || !submitButton || !api) {
         return;
     }
 
@@ -25,6 +29,7 @@ export function initGalleryCreateModal(context) {
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -61,8 +66,7 @@ export function initGalleryCreateModal(context) {
         hideModalError();
         form.reset();
         togglePreview('', 'Nueva imagen');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        openDialog(modal);
         window.setTimeout(function () {
             descriptionInput.focus();
         }, 0);
@@ -76,8 +80,7 @@ export function initGalleryCreateModal(context) {
         form.reset();
         togglePreview('', 'Nueva imagen');
         hideModalError();
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        closeDialog(modal);
     }
 
     async function createGalleryImage(payload) {
@@ -99,7 +102,7 @@ export function initGalleryCreateModal(context) {
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo crear la imagen de galeria.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -109,11 +112,6 @@ export function initGalleryCreateModal(context) {
         button.addEventListener('click', closeModal);
     });
 
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
 
     imageInput.addEventListener('change', function () {
         var file = imageInput.files && imageInput.files[0] ? imageInput.files[0] : null;
@@ -130,6 +128,24 @@ export function initGalleryCreateModal(context) {
         reader.readAsDataURL(file);
     });
 
+    // Cada campo obligatorio vacío queda marcado con su error, ligado a él, además del aviso
+    // general (spec 016, CA37).
+    function markMissing(fields) {
+        var missing = {};
+
+        fields.forEach(function (field) {
+            var empty = field.type === 'file' ? !(field.files && field.files[0]) : String(field.value).trim() === '';
+
+            if (empty) {
+                missing[field.name] = ['Este campo es obligatorio.'];
+            }
+        });
+
+        markFieldErrors(form, missing);
+
+        return Object.keys(missing).length > 0;
+    }
+
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
@@ -140,13 +156,8 @@ export function initGalleryCreateModal(context) {
         var description = descriptionInput.value.trim();
         var imageFile = imageInput.files && imageInput.files[0] ? imageInput.files[0] : null;
 
-        if (!description) {
-            showModalError('La descripcion es obligatoria.');
-            return;
-        }
-
-        if (!imageFile) {
-            showModalError('La imagen es obligatoria.');
+        if (markMissing([descriptionInput, imageInput])) {
+            showModalError(!description ? 'La descripción es obligatoria.' : 'La imagen es obligatoria.');
             return;
         }
 
@@ -157,8 +168,11 @@ export function initGalleryCreateModal(context) {
         hideModalError();
         setSubmittingState(true);
 
+        var saved = false;
+
         try {
             await createGalleryImage(payload);
+            saved = true;
 
             if (typeof api.hideError === 'function') {
                 api.hideError();
@@ -168,14 +182,13 @@ export function initGalleryCreateModal(context) {
                 await api.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo crear la imagen de galeria.');
-
-            if (typeof api.showError === 'function') {
-                api.showError(error.message || 'No se pudo crear la imagen de galeria.');
-            }
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             setSubmittingState(false);
-            closeModal();
+            if (saved) {
+                closeModal();
+                announce('Imagen agregada.');
+            }
         }
     });
 }

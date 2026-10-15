@@ -1,3 +1,5 @@
+import { stateBadge } from '../../../ui/badge';
+import { failureMessage } from '../../../ui/status';
 import { initPromotionsEditModal } from './edit-modal';
 import { initPromotionsDeleteModal } from './delete-modal';
 import { initPromotionsCreateModal } from './create-modal';
@@ -134,52 +136,19 @@ export function initPromocionesModule() {
             var startDate = formatDate(record.start_date);
             var endDate = formatDate(record.end_date);
             var status = normalizePromotionStatus(record.status);
-            var statusLabel = status === 'visible' ? 'Visible' : 'Oculto';
-            var statusClasses = status === 'visible'
-                ? 'bg-[#FDF1F6] text-[#B5114A]'
-                : 'bg-red-50 text-red-700';
 
             return [
-                '<article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">',
-                    '<div class="flex items-start justify-between gap-4">',
-                        '<div class="flex-1">',
-                            '<p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Promocion</p>',
-                            '<h3 class="mt-2 text-base font-semibold text-slate-900 break-words">', escapeHtml(name), '</h3>',
-                        '</div>',
-                        '<span class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold ', statusClasses, '">', statusLabel, '</span>',
+                '<article class="flex flex-col rounded-card border border-line bg-surface p-4 shadow-sm md:p-5">',
+                    '<div class="flex items-start justify-between gap-3">',
+                        '<h3 class="min-w-0 text-base font-semibold text-ink wrap-anywhere">', escapeHtml(name), '</h3>',
+                        stateBadge(status),
                     '</div>',
-                    
-                    '<div class="mt-4 rounded-2xl border border-dashed border-[#F5C2D6] bg-linear-to-br from-[#FFFDF6] to-white p-4">',
-                        '<div class="flex min-h-32 items-center justify-center rounded-2xl border border-white/80 bg-white/70 text-center">',
-                            '<div>',
-                                '<div class="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white text-amber-500 shadow-sm">',
-                                    '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
-                                        '<line x1="19" y1="5" x2="5" y2="19" />',
-                                        '<circle cx="6.5" cy="6.5" r="2.5" />',
-                                        '<circle cx="17.5" cy="17.5" r="2.5" />',
-                                    '</svg>',
-                                '</div>',
-                                '<p class="text-xs font-bold text-amber-600">', escapeHtml(discount), '% de descuento</p>',
-                            '</div>',
-                        '</div>',
-                    '</div>',
-
-                    '<p class="mt-3 text-sm leading-6 text-slate-600 break-words line-clamp-2">', escapeHtml(description), '</p>',
-                    
-                    '<div class="mt-4 grid gap-2">',
-                        '<div class="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-600">',
-                            '<span class="font-semibold uppercase tracking-wider text-slate-400">Inicio:</span>',
-                            '<span>', escapeHtml(startDate), '</span>',
-                        '</div>',
-                        '<div class="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-600">',
-                            '<span class="font-semibold uppercase tracking-wider text-slate-400">Fin:</span>',
-                            '<span>', escapeHtml(endDate), '</span>',
-                        '</div>',
-                    '</div>',
-
-                    '<div class="mt-4 flex flex-wrap gap-2">',
-                        '<button type="button" data-promotions-edit data-promotion-id="', escapeHtml(id), '" data-promotion-name="', escapeHtml(name), '" data-promotion-description="', escapeHtml(description), '" data-promotion-discount="', escapeHtml(discount), '" data-promotion-status="', escapeHtml(status), '" data-promotion-start-date="', escapeHtml(rawStartDate), '" data-promotion-end-date="', escapeHtml(rawEndDate), '" class="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">Editar</button>',
-                        '<button type="button" data-promotions-delete data-promotion-id="', escapeHtml(id), '" data-promotion-name="', escapeHtml(name), '" class="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50">Eliminar</button>',
+                    '<p class="mt-2 text-xl font-bold text-ink">', escapeHtml(discount), ' % <span class="text-sm font-semibold text-muted">de descuento</span></p>',
+                    '<p class="mt-2 line-clamp-2 text-sm leading-6 text-muted wrap-anywhere">', escapeHtml(description), '</p>',
+                    '<p class="mt-3 text-sm text-ink">Del ', escapeHtml(startDate), ' al ', escapeHtml(endDate), '</p>',
+                    '<div class="mt-4 flex gap-2">',
+                        '<button type="button" data-promotions-edit data-promotion-id="', escapeHtml(id), '" data-promotion-name="', escapeHtml(name), '" data-promotion-description="', escapeHtml(description), '" data-promotion-discount="', escapeHtml(discount), '" data-promotion-status="', escapeHtml(status), '" data-promotion-start-date="', escapeHtml(rawStartDate), '" data-promotion-end-date="', escapeHtml(rawEndDate), '" class="inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-canvas">Editar<span class="sr-only"> ', escapeHtml(name), '</span></button>',
+                        '<button type="button" data-promotions-delete data-promotion-id="', escapeHtml(id), '" data-promotion-name="', escapeHtml(name), '" class="inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-danger-soft hover:text-danger">Eliminar<span class="sr-only"> ', escapeHtml(name), '</span></button>',
                     '</div>',
                 '</article>',
             ].join('');
@@ -209,14 +178,14 @@ export function initPromocionesModule() {
             });
 
             if (!response.ok) {
-                showPromotionsError(payload.error || payload.message || 'No se pudieron cargar las promociones.');
+                showPromotionsError(failureMessage(response.status, payload));
                 renderPromotionCards([]);
                 return;
             }
 
             renderPromotionCards(normalizePromotionPayload(payload));
         } catch (error) {
-            showPromotionsError('Error de conexion. Intentalo de nuevo.');
+            showPromotionsError(failureMessage(0));
             renderPromotionCards([]);
         } finally {
             setPromotionsLoading(false);

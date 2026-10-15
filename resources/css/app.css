@@ -5,7 +5,64 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/*
+ * Design tokens (docs/design/system.md, version 2.0.0). Every colour, radius and control size
+ * of the interface is declared here, once. Tailwind's default palette is removed, so a colour
+ * utility whose name is not a token does not exist (P15 of the constitution).
+ */
 @theme {
     --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-*: initial;
+
+    --color-primary: #d75078;
+    --color-primary-hover: #dc6588;
+    --color-primary-soft: #fbe9ee;
+    --color-secondary: #f2b0a6;
+    --color-ink: #0b1120;
+    --color-muted: #556274;
+    --color-canvas: #f8fafc;
+    --color-surface: #ffffff;
+    --color-on-dark: #ffffff;
+    --color-line: #e2e8f0;
+    --color-field: #7c8aa0;
+    --color-overlay: rgb(11 17 32 / 0.55);
+    --color-danger: #b91c1c;
+    --color-danger-soft: #fef2f2;
+    --color-success: #047857;
+    --color-success-soft: #ecfdf5;
+    --color-warning: #b45309;
+    --color-warning-soft: #fffbeb;
+    --color-info: #1d4ed8;
+    --color-info-soft: #eff6ff;
+    --color-whatsapp: #25d366;
+
+    --radius-control: 12px;
+    --radius-box: 16px;
+    --radius-card: 24px;
+
+    --spacing-control: 44px;
+
+    --text-control: 16px;
+    --text-min: 12px;
+
+}
+
+@layer base {
+    /* One focus style: ink on light surfaces, on-dark inside a dark one (CA8). */
+    :focus-visible {
+        outline: 3px solid var(--color-ink);
+        outline-offset: 2px;
+    }
+
+    [data-surface='dark'] :focus-visible {
+        outline-color: var(--color-on-dark);
+    }
+
+    /* The example text of every field, so that none inherits the default 50 % (CA6). */
+    ::placeholder {
+        color: var(--color-muted);
+        opacity: 1;
+    }
 }

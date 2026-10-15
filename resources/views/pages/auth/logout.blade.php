@@ -3,16 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cerrar sesion</title>
+    <title>Cerrar sesión</title>
+
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/brand/icon-192.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/icon-180.png') }}">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-800">
+<body class="min-h-screen bg-canvas text-ink">
     <main class="mx-auto flex min-h-screen max-w-xl items-center justify-center px-6">
-        <div class="w-full rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-            <h1 class="text-xl font-semibold text-slate-900">Cerrando sesion...</h1>
-            <p id="logout-status" class="mt-2 text-sm text-slate-500">Estamos finalizando tu sesion de forma segura.</p>
+        <div class="w-full rounded-card border border-line bg-surface p-8 text-center shadow-sm">
+            <x-ui.brand variant="logo" class="mx-auto mb-6 w-48" />
+            <h1 class="text-xl font-semibold text-ink">Cerrando sesión...</h1>
+            <p id="logout-status" class="mt-2 text-sm text-muted">Estamos cerrando tu sesión de forma segura.</p>
         </div>
     </main>
+
+    <x-ui.status />
 
     <script nonce="{{ Vite::cspNonce() }}">
         (function () {
@@ -49,7 +57,7 @@
                     });
                 } catch (error) {
                     if (status) {
-                        status.textContent = 'No se pudo confirmar el logout en API. Redirigiendo a login...';
+                        status.textContent = 'No pudimos confirmar el cierre de sesión. Te llevamos a la pantalla de acceso...';
                     }
                 } finally {
                     window.location.href = '{{ url('/login') }}';

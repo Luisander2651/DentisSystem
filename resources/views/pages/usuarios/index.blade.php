@@ -7,7 +7,7 @@
     {{-- Header Section --}}
     <x-ui.page-hero
         title="Usuarios"
-        description="Administra el acceso y roles del personal de la clinica."
+        description="Administra el acceso y los roles del personal de la clínica."
     >
         <x-slot:icon>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -16,58 +16,46 @@
         </x-slot:icon>
 
         <x-slot:actions>
-            <button type="button" data-create-user-open class="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#E91E63] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#E91E63]/20 transition hover:bg-[#d61b5b] active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7v14"/></svg>
+            <x-ui.button variant="primary" data-create-user-open class="w-full sm:w-auto">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7v14"/></svg>
                 Nuevo usuario
-            </button>
+            </x-ui.button>
         </x-slot:actions>
     </x-ui.page-hero>
 
     {{-- Counters Section --}}
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Total Personal</p>
-            <p class="mt-2 text-xl font-semibold text-slate-900" data-users-count>0</p>
-        </div>
-        <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Administradores</p>
-            <p class="mt-2 text-xl font-semibold text-[#B5114A]" data-users-admin-count>0</p>
-        </div>
-        <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Asistentes</p>
-            <p class="mt-2 text-xl font-semibold text-sky-600" data-users-asistent-count>0</p>
-        </div>
-        <div class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Doctores</p>
-            <p class="mt-2 text-xl font-semibold text-sky-600" data-users-doctor-count>0</p>
-        </div>
+    <div class="grid grid-cols-2 gap-2 md:gap-3 lg:grid-cols-4">
+        <x-ui.stat label="Total"><span data-users-count>0</span></x-ui.stat>
+        <x-ui.stat label="Administradores"><span data-users-admin-count>0</span></x-ui.stat>
+        <x-ui.stat label="Asistentes"><span data-users-asistent-count>0</span></x-ui.stat>
+        <x-ui.stat label="Doctores"><span data-users-doctor-count>0</span></x-ui.stat>
     </div>
 
     {{-- Info Card --}}
-    <article class="rounded-3xl border border-[#F5C2D6] bg-[#FFF7FA] p-5">
+    <article class="hidden rounded-box border border-secondary bg-primary-soft p-4 md:block md:p-5">
         <div class="flex items-start gap-4">
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#B5114A] shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
+            <div data-accent class="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-surface text-primary">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
             </div>
             <div>
-                <p class="text-sm font-semibold text-[#B5114A]">Gestión de Seguridad</p>
-                <p class="mt-1 text-sm leading-6 text-slate-600">Desde este panel puedes controlar quién tiene acceso al sistema. Asegúrate de asignar los roles correctamente para proteger la información de la clínica.</p>
+                <p class="text-sm font-semibold text-ink">Gestión de seguridad</p>
+                <p class="mt-1 text-sm leading-6 text-ink">Desde este panel puedes controlar quién tiene acceso al sistema. Asegúrate de asignar los roles correctamente para proteger la información de la clínica.</p>
             </div>
         </div>
     </article>
 
     {{-- Feedback and List --}}
-    <div id="users-error" class="hidden rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700 text-center"></div>
+    <div id="users-error" role="alert" class="hidden rounded-box border border-danger bg-danger-soft px-4 py-3 text-center text-sm font-semibold text-danger"></div>
     
-    <div id="users-loading" class="hidden rounded-3xl border border-slate-200 bg-white p-12 text-sm text-slate-500 shadow-sm text-center font-bold">
-        <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-[#B5114A] border-t-transparent mb-3"></div>
-        <p>Sincronizando personal...</p>
+    <div id="users-loading" class="hidden rounded-card border border-line bg-surface p-12 text-sm text-muted shadow-sm text-center font-bold">
+        <div class="mb-3 inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-hidden="true"></div>
+        <p>Cargando usuarios...</p>
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-users-list id="users-table"></div>
 
-    <div id="users-empty" class="hidden rounded-3xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-        <p class="text-sm font-bold text-slate-400 italic">No hay usuarios registrados para mostrar.</p>
+    <div id="users-empty" class="hidden rounded-card border border-line bg-surface p-12 text-center shadow-sm">
+        <p class="text-sm font-semibold text-muted">No hay usuarios registrados para mostrar.</p>
     </div>
 
     {{-- Modals --}}
@@ -169,39 +157,39 @@
                 const statusLabel = normalizeStatus(status);
                 
                 const statusClasses = status === 'active'
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'bg-slate-100 text-slate-500';
+                    ? 'bg-success-soft text-success'
+                    : 'bg-danger-soft text-danger';
 
                 const roleClasses = isAdminRole(roleId)
-                    ? 'bg-[#FDF1F6] text-[#B5114A]'
-                    : 'bg-sky-50 text-sky-700';
+                    ? 'bg-primary-soft text-ink'
+                    : 'bg-info-soft text-info';
 
                 const initial = (firstName.charAt(0) || lastName.charAt(0) || 'U').toUpperCase();
 
                 return [
-                    '<article class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-[#F5C2D6] hover:shadow-md">',
+                    '<article class="rounded-card border border-line bg-surface p-4 shadow-sm md:p-5">',
                         '<div class="flex items-start justify-between gap-4">',
                             '<div class="flex items-center gap-3">',
-                                '<div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ' + roleClasses + ' text-base font-bold transition-transform group-hover:scale-105">', escapeHtml(initial), '</div>',
+                                '<div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-box ' + roleClasses + ' text-base font-bold" aria-hidden="true">', escapeHtml(initial), '</div>',
                                 '<div>',
-                                    '<h3 class="text-base font-semibold text-slate-900 break-words group-hover:text-[#B5114A] transition-colors">', escapeHtml(fullName), '</h3>',
-                                    '<p class="text-[10px] font-bold uppercase tracking-wider ' + (isAdminRole(roleId) ? 'text-[#B5114A]' : 'text-sky-700') + '">', escapeHtml(roleLabel), '</p>',
+                                    '<h2 class="text-base font-semibold text-ink break-words">', escapeHtml(fullName), '</h2>',
+                                    '<p class="text-min font-bold text-muted">', escapeHtml(roleLabel), '</p>',
                                 '</div>',
                             '</div>',
-                            '<span class="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest ' + statusClasses + '">', escapeHtml(statusLabel), '</span>',
+                            '<span class="shrink-0 rounded-full px-2.5 py-0.5 text-min font-bold ' + statusClasses + '">', escapeHtml(statusLabel), '</span>',
                         '</div>',
                         
                         '<div class="mt-5">',
-                            '<div class="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-600 font-bold group-hover:bg-[#FFF7FA] transition-colors">',
-                                '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
+                            '<div class="flex items-center gap-2 rounded-box bg-canvas px-4 py-3 text-sm text-muted">',
+                                '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
                                 '<span class="break-all">', escapeHtml(email), '</span>',
                             '</div>',
                         '</div>',
 
                         '<div class="mt-5 flex gap-2">',
-                            '<button type="button" data-user-edit data-user-id="', escapeHtml(id), '" data-user-first-name="', escapeHtml(firstName), '" data-user-last-name="', escapeHtml(lastName), '" data-user-role-id="', escapeHtml(roleId), '" data-user-status="', escapeHtml(status), '" class="flex-1 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-50 active:scale-95 shadow-sm">Editar</button>',
-                            '<button type="button" data-user-delete data-user-id="', escapeHtml(id), '" data-user-first-name="', escapeHtml(firstName), '" data-user-last-name="', escapeHtml(lastName), '" class="rounded-xl border border-red-100 bg-red-50 p-2.5 text-red-600 transition hover:bg-red-600 hover:text-white active:scale-95 shadow-sm">',
-                                '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+                            '<button type="button" data-user-edit data-user-id="', escapeHtml(id), '" data-user-first-name="', escapeHtml(firstName), '" data-user-last-name="', escapeHtml(lastName), '" data-user-role-id="', escapeHtml(roleId), '" data-user-status="', escapeHtml(status), '" class="inline-flex min-h-control flex-1 items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-canvas">Editar</button>',
+                            '<button type="button" data-user-delete data-user-id="', escapeHtml(id), '" data-user-first-name="', escapeHtml(firstName), '" data-user-last-name="', escapeHtml(lastName), '" class="inline-flex size-control shrink-0 items-center justify-center rounded-control border border-field bg-surface text-ink transition-colors hover:bg-danger-soft hover:text-danger" aria-label="Eliminar a ', escapeHtml(fullName), '">',
+                                '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
                             '</button>',
                         '</div>',
                     '</article>'
@@ -226,7 +214,7 @@
                 const payload = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
-                    const message = payload.error || payload.message || 'No se pudieron cargar los usuarios.';
+                    const message = 'No se pudieron cargar los usuarios. Inténtalo de nuevo en un momento.';
                     showError(message);
                     renderUserCards([]);
                     return;
@@ -235,7 +223,7 @@
                 const records = Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : []);
                 renderUserCards(records);
             } catch (error) {
-                showError('Error de conexion. Intentalo de nuevo.');
+                showError('No hay conexión. Revisa tu red e inténtalo de nuevo.');
                 renderUserCards([]);
             } finally {
                 setLoading(false);

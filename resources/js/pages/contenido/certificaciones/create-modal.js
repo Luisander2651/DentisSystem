@@ -1,3 +1,5 @@
+import { closeDialog, openDialog } from '../../../ui/dialog';
+import { announce, announceError, failureMessage, markFieldErrors } from '../../../ui/status';
 export function initCertificationsCreateModal(context) {
     var root = context && context.root ? context.root : document;
     var api = context && context.api ? context.api : null;
@@ -14,7 +16,9 @@ export function initCertificationsCreateModal(context) {
     var submitButton = modal ? modal.querySelector('[data-certifications-create-submit]') : null;
     var errorBox = modal ? modal.querySelector('[data-certifications-create-error]') : null;
 
-    if (!openButton || !modal || !form || !nameInput || !descriptionInput || !dateInput || !imageInput || !cancelButtons.length || !submitButton || !errorBox || !api) {
+    errorBox = errorBox || document.createElement('p');
+
+    if (!openButton || !modal || !form || !nameInput || !descriptionInput || !dateInput || !imageInput || !cancelButtons.length || !submitButton || !api) {
         return;
     }
 
@@ -27,6 +31,7 @@ export function initCertificationsCreateModal(context) {
     function showModalError(message) {
         errorBox.textContent = message;
         errorBox.classList.remove('hidden');
+        announceError(message);
     }
 
     function hideModalError() {
@@ -52,7 +57,7 @@ export function initCertificationsCreateModal(context) {
 
         if (previewImage) {
             previewImage.src = hasUrl ? url : '';
-            previewImage.alt = label || 'Nueva certificacion';
+            previewImage.alt = label || 'Nueva certificación';
             previewImage.classList.toggle('hidden', !hasUrl);
         }
 
@@ -64,9 +69,8 @@ export function initCertificationsCreateModal(context) {
     function openModal() {
         hideModalError();
         form.reset();
-        togglePreview('', 'Nueva certificacion');
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        togglePreview('', 'Nueva certificación');
+        openDialog(modal);
         window.setTimeout(function () {
             nameInput.focus();
         }, 0);
@@ -78,10 +82,9 @@ export function initCertificationsCreateModal(context) {
         }
 
         form.reset();
-        togglePreview('', 'Nueva certificacion');
+        togglePreview('', 'Nueva certificación');
         hideModalError();
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
+        closeDialog(modal);
     }
 
     async function createCertification(payload) {
@@ -103,7 +106,7 @@ export function initCertificationsCreateModal(context) {
         });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || 'No se pudo crear la certificacion.');
+            throw new Error(failureMessage(response.status, data));
         }
     }
 
@@ -117,7 +120,7 @@ export function initCertificationsCreateModal(context) {
         var file = imageInput.files && imageInput.files[0] ? imageInput.files[0] : null;
 
         if (!file) {
-            togglePreview('', 'Nueva certificacion');
+            togglePreview('', 'Nueva certificación');
             return;
         }
 
@@ -127,6 +130,24 @@ export function initCertificationsCreateModal(context) {
         };
         reader.readAsDataURL(file);
     });
+
+    // Cada campo obligatorio vacío queda marcado con su error, ligado a él, además del aviso
+    // general (spec 016, CA37).
+    function markMissing(fields) {
+        var missing = {};
+
+        fields.forEach(function (field) {
+            var empty = field.type === 'file' ? !(field.files && field.files[0]) : String(field.value).trim() === '';
+
+            if (empty) {
+                missing[field.name] = ['Este campo es obligatorio.'];
+            }
+        });
+
+        markFieldErrors(form, missing);
+
+        return Object.keys(missing).length > 0;
+    }
 
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -140,8 +161,8 @@ export function initCertificationsCreateModal(context) {
         var date = dateInput.value;
         var imageFile = imageInput.files && imageInput.files[0] ? imageInput.files[0] : null;
 
-        if (!name || !description || !date || !imageFile) {
-            showModalError('Todos los campos son obligatorios.');
+        if (markMissing([nameInput, descriptionInput, dateInput, imageInput])) {
+            showModalError('Completa todos los campos obligatorios.');
             return;
         }
 
@@ -154,8 +175,11 @@ export function initCertificationsCreateModal(context) {
         hideModalError();
         setSubmittingState(true);
 
+        var saved = false;
+
         try {
             await createCertification(payload);
+            saved = true;
 
             if (typeof api.hideError === 'function') {
                 api.hideError();
@@ -165,14 +189,13 @@ export function initCertificationsCreateModal(context) {
                 await api.reload();
             }
         } catch (error) {
-            showModalError(error.message || 'No se pudo crear la certificacion.');
-
-            if (typeof api.showError === 'function') {
-                api.showError(error.message || 'No se pudo crear la certificacion.');
-            }
+            showModalError(error instanceof TypeError ? failureMessage(0) : error.message);
         } finally {
             setSubmittingState(false);
-            closeModal();
+            if (saved) {
+                closeModal();
+                announce('Certificación creada.');
+            }
         }
     });
 }
