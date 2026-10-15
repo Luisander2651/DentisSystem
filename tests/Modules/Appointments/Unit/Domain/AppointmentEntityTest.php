@@ -69,7 +69,7 @@ it('refuses to reschedule to a moment that already passed', function (string $da
     'yesterday' => ['2026-10-14', '12:00'],
     'today, earlier' => ['2026-10-15', '09:59'],
     'exactly now' => ['2026-10-15', '10:00'],
-])->skip('017: pendiente de T021');
+]);
 
 it('reschedules to a future moment and leaves the appointment rescheduled', function (string $status, string $date, string $time) {
     $appointment = appointmentWithStatus($status);
@@ -109,7 +109,7 @@ it('refuses to reschedule or cancel a closed appointment', function (string $sta
     'reschedule a cancelled one' => ['cancelada', 'reschedule'],
     'cancel a completed one' => ['completada', 'cancel'],
     'cancel a cancelled one' => ['cancelada', 'cancel'],
-])->skip('017: pendiente de T021');
+]);
 
 it('cancels an assigned or a rescheduled appointment', function (string $status) {
     $appointment = appointmentWithStatus($status);
@@ -125,7 +125,7 @@ it('refuses to complete a cancelled appointment', function () {
     expect(fn () => $appointment->complete())
         ->toThrow(AppointmentException::class, 'La cita ya está completada o cancelada y no se puede cambiar.');
     expect($appointment->Status()->value)->toBe('cancelada');
-})->skip('017: pendiente de T021');
+});
 
 it('completes an assigned, a rescheduled or an already completed appointment', function (string $status) {
     $appointment = appointmentWithStatus($status);
@@ -142,7 +142,7 @@ it('refuses to create an appointment in the past', function (string $date, strin
     'yesterday' => ['2026-10-14', '12:00'],
     'today, earlier' => ['2026-10-15', '09:59'],
     'exactly now' => ['2026-10-15', '10:00'],
-])->skip('017: pendiente de T021');
+]);
 
 it('creates an assigned appointment in the future', function () {
     $appointment = newAppointmentAt('2026-10-15', '10:01', clinicNow());

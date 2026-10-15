@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Appointments\Domain\Entities;
 
 use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
+use App\Modules\Appointments\Domain\Exceptions\AppointmentInThePastException;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
@@ -44,7 +45,12 @@ final class AppointmentEntity
         TreatmentId $treatmentId,
         UserId $userId,
         PatientId $patientId,
+        DateTimeImmutable $now,
     ): self {
+        if (self::isAtOrBefore($date, $time, $now)) {
+            throw AppointmentInThePastException::forCreation();
+        }
+
         return new self(
             AppointmentId::random(),
             $date,
@@ -115,28 +121,62 @@ final class AppointmentEntity
         return UserName::create($firstName ?? '', $lastName ?? '');
     }
 
-    public function reschedule(?AppointmentDate $newDate, ?AppointmentTime $newTime): void
+    /**
+     * Spec 017: a closed appointment is refused first (CA8), then a moment equal to or earlier
+     * than `$now` (CA3), in that order (plan D8).
+     */
+    public function reschedule(AppointmentDate $newDate, AppointmentTime $newTime, DateTimeImmutable $now): void
     {
-        if ($newDate === null && $newTime === null) {
-            throw AppointmentException::rescheduleRequiresDateOrTime();
+        $this->ensureOpen();
+
+        if (self::isAtOrBefore($newDate, $newTime, $now)) {
+            throw AppointmentInThePastException::forReschedule();
         }
 
-        $newDate !== null && $this->date = $newDate;
-        $newTime !== null && $this->time = $newTime;
-        ! $this->status->equals(AppointmentStatus::rescheduled()) && $this->status = AppointmentStatus::rescheduled();
+        $this->date = $newDate;
+        $this->time = $newTime;
+        $this->status = AppointmentStatus::rescheduled();
         $this->updatedAt = new DateTimeImmutable;
     }
 
+    /**
+     * Spec 017 (CA11): a cancelled appointment cannot be completed. Completing one already
+     * completed is left as it was: its clinical follow-up may arrive after it was marked.
+     */
     public function complete(): void
     {
+        if ($this->status->isCancelled()) {
+            throw AppointmentException::cannotChangeClosedAppointment();
+        }
+
         $this->status = AppointmentStatus::completed();
         $this->updatedAt = new DateTimeImmutable;
     }
 
     public function cancel(): void
     {
+        $this->ensureOpen();
+
         $this->status = AppointmentStatus::cancelled();
         $this->updatedAt = new DateTimeImmutable;
+    }
+
+    private function ensureOpen(): void
+    {
+        if ($this->status->isCompleted() || $this->status->isCancelled()) {
+            throw AppointmentException::cannotChangeClosedAppointment();
+        }
+    }
+
+    /**
+     * The date and time of an appointment are the clinic's local time; they are read in the
+     * timezone of `$now`, which the use case takes from the clinic's clock.
+     */
+    private static function isAtOrBefore(AppointmentDate $date, AppointmentTime $time, DateTimeImmutable $now): bool
+    {
+        $moment = new DateTimeImmutable($date->value.' '.$time->value, $now->getTimezone());
+
+        return $moment <= $now;
     }
 
     public function updateWhatsappReminder(): void

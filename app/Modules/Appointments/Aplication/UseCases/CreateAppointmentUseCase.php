@@ -31,15 +31,17 @@ final readonly class CreateAppointmentUseCase
         $time = AppointmentTime::fromString($createAppointmentDTO->time);
         $treatmentId = TreatmentId::fromInt((int) $createAppointmentDTO->treatmentId);
 
-        $this->scheduleAvailabilityChecker->ensureAvailable($date, $time, $treatmentId);
-
+        // Spec 017 (CA4): the entity refuses the past before the schedule is checked.
         $appointment = AppointmentEntity::create(
             date: $date,
             time: $time,
             treatmentId: $treatmentId,
             userId: new UserId($createAppointmentDTO->userId),
             patientId: new PatientId($createAppointmentDTO->patientId),
+            now: now()->toImmutable(),
         );
+
+        $this->scheduleAvailabilityChecker->ensureAvailable($date, $time, $treatmentId);
 
         return $this->appointmentsService->saveAppointment($appointment);
     }

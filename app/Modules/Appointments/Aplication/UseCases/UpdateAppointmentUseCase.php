@@ -68,10 +68,7 @@ final readonly class UpdateAppointmentUseCase
                 excludeAppointmentId: $appointment->Id(),
             );
 
-            $appointment->reschedule(
-                isset($fields['date']) ? $newDate : null,
-                isset($fields['time']) ? $newTime : null
-            );
+            $appointment->reschedule($newDate, $newTime, now()->toImmutable());
         }
     }
 

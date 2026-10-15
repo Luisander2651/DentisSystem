@@ -72,7 +72,7 @@ it('refuses to reschedule to any moment at or before now (property)', function (
 
         expect(refusesAsPast(fn () => assignedAppointment()->reschedule($date, $time, propertyNow())))->toBeTrue();
     });
-})->skip('017: pendiente de T021');
+});
 
 it('reschedules to any moment after now (property)', function () {
     $this->forAll(Eris\Generator\choose(0, 400), Eris\Generator\choose(1, 1440))->then(function (int $days, int $minutes) {
@@ -91,7 +91,7 @@ it('refuses to create an appointment at any moment at or before now (property)',
 
         expect(refusesAsPast(fn () => AppointmentEntity::create($date, $time, TreatmentId::fromInt(1), new UserId((string) Str::uuid()), new PatientId((string) Str::uuid()), propertyNow())))->toBeTrue();
     });
-})->skip('017: pendiente de T021');
+});
 
 it('creates an appointment at any moment after now (property)', function () {
     $this->forAll(Eris\Generator\choose(0, 400), Eris\Generator\choose(1, 1440))->then(function (int $days, int $minutes) {
