@@ -31,7 +31,7 @@ it('rejects a reschedule sent with status asignada, as the agenda dialog did (fi
 
     $response->assertUnprocessable();
     $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'date' => '2026-10-16', 'status' => 'asignada']);
-})->skip('017: pendiente de T025');
+});
 
 it('reschedules an appointment successfully', function () {
     $this->actingAsAdmin();
@@ -138,7 +138,7 @@ it('rejects a reschedule without date or without time and leaves the appointment
 })->with([
     'date without time' => [['date' => '2026-10-20'], 'time'],
     'time without date' => [['time' => '15:00'], 'date'],
-])->skip('017: pendiente de T025');
+]);
 
 it('rejects a reschedule to a moment that already passed and leaves the appointment unchanged', function (string $date, string $time) {
     $this->actingAsAdmin();
@@ -154,7 +154,7 @@ it('rejects a reschedule to a moment that already passed and leaves the appointm
     'yesterday' => ['2026-10-14', '12:00'],
     'today, earlier' => ['2026-10-15', '09:59'],
     'exactly now' => ['2026-10-15', '10:00'],
-])->skip('017: pendiente de T025');
+]);
 
 it('rejects a request that reschedules and changes the status at once', function (array $payload) {
     $this->actingAsAdmin();
@@ -169,7 +169,7 @@ it('rejects a request that reschedules and changes the status at once', function
     'date, time and cancel' => [['date' => '2026-10-17', 'time' => '11:00', 'status' => 'cancelada']],
     'date and complete' => [['date' => '2026-10-17', 'status' => 'completada']],
     'time and cancel' => [['time' => '11:00', 'status' => 'cancelada']],
-])->skip('017: pendiente de T025');
+]);
 
 it('rejects a status other than completada or cancelada', function (string $status) {
     $this->actingAsAdmin();
@@ -180,7 +180,7 @@ it('rejects a status other than completada or cancelada', function (string $stat
     $response->assertUnprocessable()
         ->assertJsonPath('errors.status.0', 'El estado solo puede cambiar a completada o cancelada.');
     $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'asignada']);
-})->with(['asignada', 'reprogramada'])->skip('017: pendiente de T025');
+})->with(['asignada', 'reprogramada']);
 
 it('rejects input with an invalid format', function (array $payload, string $field, ?string $message) {
     $this->actingAsAdmin();
@@ -197,7 +197,7 @@ it('rejects input with an invalid format', function (array $payload, string $fie
     'date in another format' => [['date' => '17/10/2026', 'time' => '11:00'], 'date', 'La fecha no tiene un formato válido.'],
     'time in another format' => [['date' => '2026-10-17', 'time' => '11h'], 'time', 'La hora no tiene un formato válido.'],
     'reminder that is not a boolean' => [['whatsapp_reminder' => 'quizá'], 'whatsapp_reminder', null],
-])->skip('017: pendiente de T025');
+]);
 
 it('returns 409 when no fields are provided', function () {
     $this->actingAsAdmin();
@@ -253,7 +253,7 @@ it('refuses to reschedule or cancel a completed or cancelled appointment', funct
     'reschedule a cancelled one' => ['cancelada', ['date' => '2026-10-17', 'time' => '11:00']],
     'cancel a completed one' => ['completada', ['status' => 'cancelada']],
     'cancel a cancelled one' => ['cancelada', ['status' => 'cancelada']],
-])->skip('017: pendiente de T025');
+]);
 
 it('refuses to complete a cancelled appointment', function () {
     $this->actingAsAdmin();
@@ -264,7 +264,7 @@ it('refuses to complete a cancelled appointment', function () {
     $response->assertStatus(409)
         ->assertJson(['error' => CLOSED_APPOINTMENT_MESSAGE]);
     $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'cancelada']);
-})->skip('017: pendiente de T025');
+});
 
 it('answers a closed appointment before a date in the past (plan D8)', function () {
     $this->actingAsAdmin();
@@ -274,7 +274,7 @@ it('answers a closed appointment before a date in the past (plan D8)', function 
 
     $response->assertStatus(409)
         ->assertJson(['error' => CLOSED_APPOINTMENT_MESSAGE]);
-})->skip('017: pendiente de T025');
+});
 
 it('toggles the whatsapp reminder flag', function () {
     $this->actingAsAdmin();

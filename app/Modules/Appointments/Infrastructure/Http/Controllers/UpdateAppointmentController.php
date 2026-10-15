@@ -11,9 +11,10 @@ use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptio
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentScheduleConflictException;
 use App\Modules\Appointments\Aplication\UseCases\UpdateAppointmentUseCase;
 use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
+use App\Modules\Appointments\Domain\Exceptions\AppointmentInThePastException;
 use App\Modules\Appointments\Domain\Exceptions\ValueObjectsException;
+use App\Modules\Appointments\Infrastructure\Http\Requests\UpdateAppointmentRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 final class UpdateAppointmentController
 {
@@ -21,7 +22,7 @@ final class UpdateAppointmentController
         private UpdateAppointmentUseCase $useCase,
     ) {}
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(UpdateAppointmentRequest $request): JsonResponse
     {
         try {
             $appointmentId = (string) $request->route('id');
@@ -45,11 +46,19 @@ final class UpdateAppointmentController
                 'message' => 'Appointment updated successfully',
                 'data' => $dto->fieldsToUpdate(),
             ], 200);
+        } catch (AppointmentInThePastException $e) {
+            return self::invalid('date', $e->getMessage());
         } catch (AppointmentException $e) {
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (ValueObjectsException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (AppointmentAplicationExceptions $e) {
+            // Spec 017: only the mix of a reschedule and a status is an input error; the empty
+            // body keeps its 409 (decisión del usuario, /analyze A24).
+            if ($e->getMessage() === AppointmentAplicationExceptions::rescheduleAndStatusTogether()->getMessage()) {
+                return self::invalid('status', $e->getMessage());
+            }
+
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (AppointmentScheduleConflictException $e) {
             return response()->json(['error' => $e->getMessage()], 409);
@@ -58,5 +67,11 @@ final class UpdateAppointmentController
         } catch (\Exception $e) {
             return UnexpectedErrorResponse::from($e, self::class);
         }
+    }
+
+    /** Spec 017 (CA5): in the format of a validation error, which the dialog shows as it comes. */
+    private static function invalid(string $field, string $message): JsonResponse
+    {
+        return response()->json(['message' => $message, 'errors' => [$field => [$message]]], 422);
     }
 }
