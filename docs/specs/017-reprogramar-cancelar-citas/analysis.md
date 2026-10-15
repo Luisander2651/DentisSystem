@@ -1,66 +1,86 @@
 ---
 result: fail
-round: 1
+round: 2
 mode: full
 constitution_version: 1.2.0
 date: 2026-10-15
-spec_sha: bd4d219e2406
-plan_sha: a92e2a9631cf
-tasks_sha: 13acfdef1dde
+spec_sha: 2563023a1a12
+plan_sha: 3820c642c2df
+tasks_sha: 20799a80d1aa
 ---
 
 # Análisis · 017 Reprogramar y cancelar citas
 
 ## Resumen
-`fail`. El plan cambia códigos de `/api/v1` de forma incompatible sin la excepción a P4 (A1). Al
-desglose le faltan pruebas de navegador de CA5 y del flujo de cancelar (A2, A3), y ninguna tarea
-ajusta los tests y la línea base de composición que la regla nueva rompe (A4, A5). Análisis hecho
-por un subagente independiente; cada hallazgo se verificó contra los archivos.
-Conteo: CRÍTICA 1 · ALTA 4 · MEDIA 10 · BAJA 7
+`fail`. Los hallazgos de la ronda 1 quedaron resueltos (cuatro con un efecto menor nuevo), pero el
+contrato de reprogramar no dice si se aplica `whatsapp_reminder`, y la casilla del diálogo podría
+quedar sin efecto sin que ningún test lo detecte (A23). Quedan siete hallazgos medios de cobertura y
+de orden de tareas que se corrigen con `--fix`. Modo completo porque la spec ganó CA11. Análisis
+hecho por un subagente independiente; cada hallazgo se verificó contra los archivos.
+Conteo: CRÍTICA 0 · ALTA 1 · MEDIA 7 · BAJA 8
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
-| Criterios con tarea de test e implementación | 9 / 10 (CA5 sin tarea que escriba su test) |
-| Amenazas con control y test | 5 / 5 (TM3 parcial: A9) |
-| Principios de la constitución evaluados | 15 / 15 |
+| Criterios con tarea de test e implementación | 11 / 11 |
+| Amenazas con control y test | 4 / 5 (TM5 parcial: A26) |
+| Principios de la constitución evaluados | 15 / 15 (P4 ❌ aceptado, D10) |
 
 ## Seguimiento de rondas anteriores
-Primera ronda.
+| ID | Severidad | Estado | Evidencia |
+|---|---|---|---|
+| A1 | CRÍTICA | resuelto | plan.md → Constitution Check P4 `❌ aceptado`; Decisiones D10 |
+| A2 | ALTA | resuelto | T018 (422 en "Reprogramar cita" y "Agendar cita"); la estrategia del plan quedó atrás (→ A32) |
+| A3 | ALTA | resuelto | T018 (un solo `PUT {status: cancelada}`, aviso, salir sin petición) |
+| A4 | ALTA | resuelto | T014 (líneas 101 y 104), T016; plan.md → Riesgos |
+| A5 | ALTA | resuelto | T035 |
+| A6 | MEDIA | resuelto con efecto nuevo (→ A25) | T020 conserva el método hasta T024, pero T021 no depende de T012 |
+| A7 | MEDIA | resuelto | plan.md → Pantallas; `dialog.js:96-116`, `view-appointment.js:261-267`; T015 |
+| A8 | MEDIA | resuelto | spec CA10; plan P5, D11; T014, T023; `bootstrap/app.php:87-91` traduce `AuthorizationException` a 403 |
+| A9 | MEDIA | resuelto | CA11; plan D12, TM3; T010, T012, T021; `CompleteAppointmentUseCase.php:52-54` rechaza antes de `complete()` |
+| A10 | MEDIA | resuelto | spec `extends`, RNF; plan D13; T002 |
+| A11 | MEDIA | resuelto | T036 |
+| A12 | MEDIA | resuelto con efecto nuevo (→ A31) | design.md → Anti-clichés aún dice "Rojo solo en el botón que confirma" |
+| A13 | MEDIA | resuelto con efecto nuevo (→ A27) | `--only agenda` deja fuera el detalle de cita del expediente |
+| A14 | MEDIA | resuelto con efecto nuevo (→ A33) | `docs/roadmap.md:15` corregido; queda `docs/specs/015-primer-despliegue-vps/plan.md:286` |
+| A15 | MEDIA | resuelto | plan.md D6 confirmada |
+| A16 | BAJA | resuelto | plan.md → Riesgos; `screens.json` `now` 2026-07-22, seeder en julio de 2026 |
+| A21 | BAJA | resuelto | plan.md → contrato del `PUT` |
+| A22 | BAJA | resuelto con efecto nuevo (→ A30) | T001 renombra el inventario, pero ninguna tarea genera sus capturas |
+
+Los aceptados de la ronda 1 tienen su nota: A17 en T004 (antes T002), A18 en T015 y T018, A20 en T018.
 
 ## Hallazgos nuevos
 | ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
 |---|---|---|---|---|---|
-| A1 | Constitución | CRÍTICA | plan.md → Constitution Check P4, Contratos ("Cambios frente a 007"), D1 | Cambio incompatible de códigos (409 → 422) dentro de `/api/v1`; P4 exige `/api/v2` y no hay excepción registrada | Decisión del usuario (2026-10-15): excepción en esta spec, `❌ aceptado` en P4 con motivo → `/plan --fix A1`. `UpdateAppointmentTest` y `CreateAppointmentTest` fijan el código de cada rechazo |
-| A2 | Cobertura | ALTA | tasks.md T015, T030, Cobertura (CA5); plan.md → Estrategia "Navegador" | Ninguna tarea prueba que, tras un 422 en "Reprogramar cita" y en "Agendar cita", el diálogo siga abierto, conserve lo escrito y muestre el texto del servidor; el caso genérico de `checks-a11y.mjs:781-810` no lo comprueba | `/tasks --fix A2`: comprobación nueva en el navegador, que falla antes de T030, para los dos diálogos |
-| A3 | Cobertura / P2 | ALTA | tasks.md T015 ("sin enviar"), T033; plan.md → Trazabilidad CA1, CA7 | El flujo de cancelar (un solo `PUT {status: cancelada}`, cierre de los dos diálogos, aviso) y "No, mantenerla", cerrar o fondo sin petición, y el aviso "Cita reprogramada.", solo tienen verificación manual | `/tasks --fix A3`: con la API interceptada, confirmar envía exactamente un `PUT` y anuncia el aviso; salir sin confirmar no envía nada (`checks-dialogs.mjs`) |
-| A4 | Inconsistencia | ALTA | `tests/Modules/whatsApp/Integration/WhatsAppFlowLogsTest.php:56`, `AppointmentsIntegrationTestCase.php:34`, `AppointmentsAccessControlTest.php:101,104` | Fechas fijas de septiembre de 2026 sin reloj fijo: con la regla nueva, el test de 015 CA18 (RS9.a) y las filas del administrador en la tabla de permisos pasan a 422 | `/tasks --fix A4`: tarea que fija el reloj en esos tests; la suite completa en verde en T034 |
-| A5 | Inconsistencia | ALTA | `tests/Browser/baseline-1440.json:90,93`; `checks-composition.mjs`; tasks.md T030, T033 | Sin línea base para `agenda-cita-reprogramar` y `agenda-cita-cancelar`; la de `agenda-cita-detalle-pendiente` y la renombrada cambian; ninguna tarea la regenera | `/tasks --fix A5`: regenerar la línea base de las entradas de la agenda tras T033, revisando el diff; `ui-audit` en verde en T034 |
-| A6 | Inconsistencia | MEDIA | tasks.md T020, T021, T022, T024 | T020 retira un método que la entidad y `AppointmentAplicationExceptions` aún usan, y T021 cambia firmas que usan los casos de uso: la suite queda en rojo entre tareas, contra la convención de la spec | `/tasks --fix A6`: reordenar o fusionar para que la suite salga en verde al cerrar cada tarea (salvo los `skip('017:')`) |
-| A7 | Inconsistencia | MEDIA | plan.md → Pantallas, "Detalle de cita"; `view-appointment.js:261-267` | "Reprogramar" cierra el detalle antes de abrir su diálogo; al cerrarlo, el foco no puede volver a "Reprogramar" | `/plan --fix A7`: el foco vuelve al disparador de la cita en el calendario (comportamiento actual de `dialog.js`); lo comprueba la verificación de foco al cerrar de `checks-dialogs` |
-| A8 | Seguridad | MEDIA | spec CA10; plan.md TM1, `UpdateAppointmentRequest` | El FormRequest valida antes de `assertCan`: un no administrador con un cuerpo inválido recibe 422, no acceso denegado | Decisión del usuario (2026-10-15): 403 con cualquier cuerpo → `/plan --fix A8` y `/tasks --fix A8`; test: cuerpos inválidos por actor en `AppointmentsAccessControlTest` |
-| A9 | Cobertura (TM3) | MEDIA | plan.md TM3; `UpdateAppointmentUseCase.php:82-83` | `PUT {status: completada}` sobre una cita cancelada la reabre; TM3 no lo cubre | Decisión del usuario (2026-10-15): incluirlo → `/specify --edit 017` (criterio nuevo), `/plan --fix A9`, `/tasks --fix A9`; test: 409 en `UpdateAppointmentTest` |
-| A10 | Inconsistencia (`extends`) | MEDIA | plan.md → Configuración y Riesgos | La zona global cambia también "citas de hoy" y la vigencia de las promociones (011, 012); el plan solo menciona `created_at` y esas specs no están en `extends` | Decisión del usuario (2026-10-15): global y declararlo → `/specify --edit 017` (`extends`), `/plan --fix A10`; test: "citas de hoy" en el límite del día en la zona de la clínica |
-| A11 | Inconsistencia | MEDIA | plan.md → Impacto en arquitectura; spec.md → Notas para /plan; tasks.md T090–T092 | Nadie anota el cambio en el Historial de 007, y la spec y el plan describen distinto el cambio de 007 CA3 | `/specify --edit` (redacción) y `/tasks --fix A11` (tarea que lo registra, o nota de que lo hace `/release`) |
-| A12 | Inconsistencia (diseño) | MEDIA | design.md → "Cambios a incorporar al sistema", "Componentes"; tasks.md T001 | La regla "en cancelar, solo en el botón que la confirma" contradice la advertencia en `danger` del mismo diálogo; design.md dice "Exclusivos: ninguno" y el plan crea un componente propio | `/design-spec 017 --fix`: la regla dice "solo dentro de la confirmación (botón y advertencia)" y el componente queda declarado; se revisa en `/review` contra `system.md` |
-| A13 | Inconsistencia | MEDIA | tasks.md → convención de navegador | Con la política de no hacer push en `/implement`, no queda demostrado que las pruebas de navegador fallan antes y pasan después (P2) | `/tasks --fix A13`: `npm run test:ui -- --only agenda` en local en T015 y en las tareas de interfaz, con el resultado anotado |
-| A14 | Conflicto | MEDIA | `docs/roadmap.md:15` | El objetivo 4 envía OB7.a, OB7.b y OB8.a a "017 (monitoreo, por crear)"; 017 es esta spec | Propuesta: destino "spec de monitoreo por crear" sin número, en el mismo commit que `/plan --fix` (pendiente de que el usuario la confirme) |
-| A15 | Constitución (P6) | MEDIA | plan.md D6 | `POST` gana un rechazo 422 sin FormRequest (invariante de dominio); zona gris de "reglas de validación" en P6 | Propuesta: confirmar D6 tal cual (la entrada de `POST` no cambia); `CreateAppointmentTest` fija el 422 y su texto (pendiente de que el usuario la confirme) |
-| A16 | Cobertura de riesgos | BAJA | plan.md → Riesgos ("Datos de `ui:audit-data`") | El riesgo no aplica: `screens.json` fija `now` en 2026-07-22, el seeder usa julio de 2026 y las comprobaciones interceptan la API | `/plan --fix A16`: cerrarlo con ese motivo |
-| A17 | Cobertura | BAJA | tasks.md T002 | Nada comprueba que `.env.example` declare `APP_TIMEZONE` | Añadir `APP_TIMEZONE` a `EnvExampleDefaultsTest` |
-| A18 | Cobertura | BAJA | tasks.md T015 | CA8 solo con la cita completada, no la cancelada; CA7 sin el caso de cerrar la confirmación con la X o el fondo | Añadir ambos casos a `checks-dialogs.mjs` |
-| A19 | Ambigüedad | BAJA | spec.md → Decisiones, fila `supuesto` del margen | El supuesto fija el límite `<=` de la regla sin confirmación explícita | Aceptado: la spec, aprobada por el usuario, ya dice "igual o anterior" |
-| A20 | Ambigüedad | BAJA | spec CA5; `status.js:170` | Ante un 409 (choque o cita cerrada) el diálogo muestra el texto genérico "choca con otro registro"; CA5 no define el texto | Aceptado: el texto genérico es el del sistema para 409; se afirma en la prueba de navegador |
-| A21 | Ambigüedad | BAJA | plan.md → contrato del `PUT` | No define `status` con `whatsapp_reminder`, pone "404 no existe (hoy 409)" en rechazos y no da el texto de `cannotChangeClosedAppointment` | `/plan --fix A21`: precisarlo y fijarlo en `UpdateAppointmentTest` |
-| A22 | Inconsistencia | BAJA | T001; `system.md:261-262`; design.md → Pantallas | El inventario de `system.md` y los nombres de capturas siguen con "Editar cita"; design.md usa `agenda-cita-editar` y el plan `agenda-cita-reprogramar` | `/design-spec 017 --fix` y `/tasks --fix A22`: nombres nuevos en el inventario |
+| A23 | Ambigüedad / Inconsistencia | ALTA | plan.md → contrato del `PUT` (fila Reprogramar), D4; T012, T024, T030 | La fila Reprogramar admite `whatsapp_reminder?` sin decir si se aplica; T024 describe tres ramas exclusivas sin el recordatorio al reprogramar, y la interfaz lo envía cuando la casilla cambió. La casilla de CA9 podría no hacer nada sin que un test lo detecte | `/plan --fix A23` y `/tasks --fix A23`: reprogramar con `whatsapp_reminder` deja la cita `reprogramada` y aplica el recordatorio (test en `UpdateAppointmentTest`, T012) |
+| A24 | Ambigüedad (contrato) | MEDIA | plan.md → contrato del `PUT`; T012, T025; `AppointmentAplicationExceptions.php:11-14`; `UpdateAppointmentController.php:52-53` | El contrato no define el cuerpo vacío (hoy 409, `noInfoProvided`), y T025 traduce a 422 solo una fábrica de una clase que hoy va entera a 409 | Decisión del usuario (2026-10-15): sigue en 409 → `/plan --fix A24` y `/tasks --fix A24`: `UpdateAppointmentTest` fija el 409 del cuerpo vacío |
+| A25 | Inconsistencia (orden) | MEDIA | T021 (depende) ; `UpdateAppointmentTest.php` fechas 2026-09-0x | T021 introduce la regla del pasado, pero las fechas fijas de `UpdateAppointmentTest` solo pasan a relativas en T012, que no está entre sus dependencias; además `AppointmentInThePastException` acaba en 500 hasta T022/T025 | `/tasks --fix A25`: al cerrar T021, todos los casos sin `skip` de `UpdateAppointmentTest` y `CreateAppointmentTest` en verde (dependencia de T012 declarada) |
+| A26 | Cobertura (TM5 / P7) | MEDIA | plan.md → TM5; `tests/Modules/Appointments/Integration/UnexpectedErrorTest.php:15-35` | El test de TM5 cubre el listado de citas y tratamientos, no `PUT` ni `POST /appointments`, cuyos `catch` reestructuran T022 y T025 | `/plan --fix A26` y `/tasks --fix A26`: un error inesperado en `PUT` y en `POST /appointments` responde exactamente `{"error":"Internal server error"}` (dos casos en `UnexpectedErrorTest`) |
+| A27 | Cobertura (P2 / P15) | MEDIA | T015, T031, T034; `resources/views/pages/records/index.blade.php:100,111` | El detalle de cita también se monta en el expediente; `ui-audit --only agenda` no lo recorre y "el expediente no muestra los botones" no tiene comprobación automática | `/tasks --fix A27`: `checks-dialogs` afirma que en `expediente-*-cita-detalle` no hay `[data-view-appointment-edit]` ni `[data-view-appointment-cancel-appointment]`; el `ui-audit` local de T031 y T034 incluye esas pantallas |
+| A28 | Cobertura (CA9) | MEDIA | spec CA9; T015 | T015 solo comprueba la ausencia del estado; los textos "Reprogramar" y "Reprogramar cita" quedan a mano | `/tasks --fix A28`: T015 afirma el texto del botón del detalle y el título del diálogo |
+| A29 | Cobertura (CA7) | MEDIA | plan.md → Pantallas ("error en su región"); T015, T018; `checks-a11y.mjs:1058-1075` | Nada prueba el error al confirmar la cancelación | `/tasks --fix A29`: ante un 409 o un 500, la confirmación sigue abierta y anuncia el error en su región (T018) |
+| A30 | Inconsistencia (efecto de A22) | MEDIA | T001; design.md → Cambios al sistema; `docs/design/capturas/` (solo `agenda-cita-editar-*`) | El inventario pasa a enlazar `agenda-cita-reprogramar-*` y `agenda-cita-cancelar-*`, que ninguna tarea genera, y `agenda-cita-detalle-pendiente-*` queda desfasada | `/tasks --fix A30`: tarea posterior a T033 que genera esas capturas; el inventario solo enlaza archivos que existen |
+| A31 | Inconsistencia (diseño) | BAJA | design.md → Anti-clichés | "Rojo solo en el botón que confirma" contradice la regla corregida (botón y advertencia) | Aceptado → nota de T001 |
+| A32 | Inconsistencia | BAJA | plan.md → Estrategia de pruebas (Navegador), Trazabilidad CA8 | La estrategia no recoge el 422 de agendar, el flujo de cancelar con la API interceptada ni la cita cancelada de CA8, que ya están en T015 y T018 | `/plan --fix A32` (junto con A23) |
+| A33 | Conflicto (resto de A14) | BAJA | `docs/specs/015-primer-despliegue-vps/plan.md:286` | "Métricas y alertas: ninguna nueva (spec 017)" sigue apuntando a 017 como spec de monitoreo | `/plan --fix A33`: "spec de monitoreo por crear", en el mismo commit |
+| A34 | Duplicación y conflicto | BAJA | spec.md → Fuera de alcance; `docs/specs/013-codigos-qr-por-cita/spec.md` CA6, CA7 | 013 (approved, sin plan) pide renovar o expirar el QR al reprogramar o cancelar; 017 no lo menciona | Aceptado → spec |
+| A35 | Constitución (P2, precisión) | BAJA | T018; `create-appointment.js:344,593` | El 422 de "Agendar cita" probablemente ya se muestra en el diálogo: esa parte de T018 pasa antes del cambio | Aceptado → nota de T018 |
+| A36 | Ambigüedad | BAJA | plan.md D8; T012 | La precedencia "cita cerrada (409) antes que fecha pasada (422)" no tiene test | Aceptado → nota de T012 |
+| A37 | Cobertura de riesgos | BAJA | plan.md → Riesgos; `docs/security.md` RS1.d, RS9.a | T014 y T016 tocan los tests que evidencian RS1.d y RS9.a, y el plan no los cita | `/plan --fix A37`: citarlos en Riesgos; T034 los mantiene en verde |
+| A38 | Mecánica | BAJA | T035; `ui-audit.mjs:736-747` | `--baseline` conserva las claves guardadas: `agenda-cita-editar` quedaría huérfana | Aceptado → nota de T035 |
 
 ## Decisiones pendientes del usuario
-- A14: ¿destino de OB7.a, OB7.b y OB8.a en el roadmap? Propuesta: "spec de monitoreo por crear", sin número.
-- A15: ¿se confirma D6 (sin FormRequest en `POST`, porque su entrada no cambia)?
+Ninguna. A24 decidida por el usuario el 2026-10-15: el cuerpo vacío sigue en 409.
 
 ## Aceptados
-Aceptados el 2026-10-15 (decisión del usuario sobre A1, A8, A9 y A10; propuesta para A17–A20):
-- **A17** → nota de T002: añadir `APP_TIMEZONE` a `EnvExampleDefaultsTest`
-- **A18** → nota de T015: CA8 también con la cita cancelada del seeder; CA7 también al cerrar con la X y con el fondo
+Aceptados por el usuario el 2026-10-15:
+- **A17** → nota de T004: añadir `APP_TIMEZONE` a `EnvExampleDefaultsTest` (antes nota de T002)
+- **A18** → nota de T015, T018: CA8 también con la cita cancelada; CA7 también al cerrar con la X y con el fondo
 - **A19** → spec: el límite `<=` ya está en el texto aprobado de CA3 y CA4
-- **A20** → nota de T015: ante un 409, afirmar el texto genérico del sistema en la región del diálogo
+- **A20** → nota de T018: ante un 409, afirmar el texto genérico del sistema en la región del diálogo
+- **A31** → nota de T001: alinear el anticliché de `design.md` con la regla (botón y advertencia)
+- **A34** → spec: 013 no tiene plan; su `/plan` deberá contemplar reprogramar y cancelar de 017
+- **A35** → nota de T018: el 422 de "Agendar cita" es caracterización; el "falla antes" se exige a reprogramar y cancelar
+- **A36** → nota de T012: reprogramar una cita cancelada a una fecha pasada responde 409 con el texto de cita cerrada
+- **A38** → nota de T035: el diff no deja entradas obsoletas de la agenda (`agenda-cita-editar`)
