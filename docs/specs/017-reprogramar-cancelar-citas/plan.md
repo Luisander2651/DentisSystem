@@ -37,7 +37,7 @@ por la misma ruta.
 | P14 Trazabilidad y auditoría | ➖ | La spec no tiene eventos de auditoría (el registro aún no existe, roadmap objetivo 5). Sin logs nuevos; los existentes ya llevan `request_id` | — |
 | P15 Solo el sistema de diseño | ✅ | Solo `x-ui.dialog` y `x-ui.button` (`secondary`, `primary`, `danger`). La regla del rojo se amplía en `system.md` antes del código (T001) | test: `OnlyDesignTokensTest`, `DesignTokensTest`, `npm run test:ui` |
 
-Resultado: 12 ✅ · 3 ➖ · 0 ❌.
+Resultado: 12 ✅ · 3 ➖ · ninguna violación.
 
 ## Cambios por módulo
 | Módulo | Cambio | Riesgo |
