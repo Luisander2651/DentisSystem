@@ -70,8 +70,9 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 - [x] T003 Correr la línea base de dependencias pendiente (plan D9) — `composer audit` en el contenedor; `docs/security.md` solo si hay excepción — hecho cuando: sin vulnerabilidades críticas ni altas, o cada una con su decisión (actualizar dentro de 017 o excepción aprobada por el usuario con vencimiento)
   - nota: requiere reiniciar Docker Desktop (montaje de E: perdido el 2026-10-15): resuelto, Docker Desktop reiniciado el 2026-10-15
   - nota: hecha 2026-10-15: `composer audit` → "No security vulnerability advisories found."; npm ya estaba en 0 (plan D9). Sin cambios en `docs/security.md`
-- [ ] T004 [P] Declarar `APP_TIMEZONE=America/Mexico_City` en `.env.example` y exigirlo en su test — `.env.example`, `tests/Modules/Core/Unit/EnvExampleDefaultsTest.php` — hecho cuando: el test falla sin la variable y pasa con ella
+- [x] T004 [P] Declarar `APP_TIMEZONE=America/Mexico_City` en `.env.example` y exigirlo en su test — `.env.example`, `tests/Modules/Core/Unit/EnvExampleDefaultsTest.php` — hecho cuando: el test falla sin la variable y pasa con ella
   - nota: A17 (aceptado en /analyze ronda 1 como nota de T002; se hace aquí porque T002 ya toca tres archivos)
+  - nota: hecha 2026-10-15 (A17): el caso 'clinic timezone (spec 017)' de `EnvExampleDefaultsTest` falló sin la variable ("array has the key 'APP_TIMEZONE'") y pasa con ella
 
 ## Tests (antes de implementar)
 - [ ] T010 [P] Escribir los tests de dominio de la cita: reprogramar a ayer, a hoy a una hora pasada y exactamente a "ahora" lanza `AppointmentInThePastException`; a hoy más tarde y a mañana queda `reprogramada`; reprogramar o cancelar una cita completada o cancelada lanza la excepción de cita cerrada; completar una cita cancelada lanza la excepción de cita cerrada (CA11); crear en el pasado lanza; con un "ahora" de 23:30 en Ciudad de México se aceptan las 23:45 del mismo día — `tests/Modules/Appointments/Unit/Domain/AppointmentEntityTest.php` (nuevo) — hecho cuando: falla por la razón esperada (firma o excepción inexistente) y queda con `skip` hasta T021 — cubre: CA1, CA3, CA4, CA8, CA11

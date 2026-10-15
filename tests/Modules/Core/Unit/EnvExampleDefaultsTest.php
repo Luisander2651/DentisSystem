@@ -40,6 +40,7 @@ it('ships safe defaults and the real stack in .env.example', function (string $n
     'postgresql' => ['DB_CONNECTION', 'pgsql'],
     'predis client' => ['REDIS_CLIENT', 'predis'],
     'no literal null redis password' => ['REDIS_PASSWORD', ''],
+    'clinic timezone (spec 017)' => ['APP_TIMEZONE', 'America/Mexico_City'],
 ]);
 
 it('declares by name every variable the deployment needs', function (string $name) {
