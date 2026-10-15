@@ -331,6 +331,119 @@
                 {
                     "focusAfterClose": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-view-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
                 }
+            ],
+            "flows": [
+                {
+                    "name": "reprogramar con éxito",
+                    "do": [
+                        {
+                            "fill": "[data-edit-appointment-date]",
+                            "value": "2026-07-30"
+                        },
+                        {
+                            "fill": "[data-edit-appointment-time]",
+                            "value": "11:00"
+                        },
+                        {
+                            "click": "[data-edit-appointment-submit]"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [
+                            {
+                                "method": "PUT",
+                                "to": "/api/v1/appointments/c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                                "has": {
+                                    "date": "2026-07-30",
+                                    "time": "11:00"
+                                },
+                                "lacks": [
+                                    "status",
+                                    "whatsapp_reminder"
+                                ]
+                            }
+                        ],
+                        "closed": [
+                            "[data-edit-appointment-modal]"
+                        ],
+                        "announced": "Cita reprogramada."
+                    }
+                },
+                {
+                    "name": "reprogramar al pasado (422)",
+                    "answer": {
+                        "status": 422,
+                        "body": {
+                            "message": "No puedes reprogramar la cita a una fecha u hora que ya pasó.",
+                            "errors": {
+                                "date": [
+                                    "No puedes reprogramar la cita a una fecha u hora que ya pasó."
+                                ]
+                            }
+                        }
+                    },
+                    "do": [
+                        {
+                            "fill": "[data-edit-appointment-date]",
+                            "value": "2026-07-30"
+                        },
+                        {
+                            "fill": "[data-edit-appointment-time]",
+                            "value": "11:00"
+                        },
+                        {
+                            "click": "[data-edit-appointment-submit]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-edit-appointment-modal]"
+                        ],
+                        "values": {
+                            "[data-edit-appointment-date]": "2026-07-30",
+                            "[data-edit-appointment-time]": "11:00"
+                        },
+                        "dialogSays": {
+                            "in": "[data-edit-appointment-modal]",
+                            "text": "No puedes reprogramar la cita a una fecha u hora que ya pasó."
+                        }
+                    }
+                },
+                {
+                    "name": "reprogramar a un horario ocupado (409)",
+                    "answer": {
+                        "status": 409,
+                        "body": {
+                            "error": "Schedule conflict"
+                        }
+                    },
+                    "do": [
+                        {
+                            "fill": "[data-edit-appointment-date]",
+                            "value": "2026-07-30"
+                        },
+                        {
+                            "fill": "[data-edit-appointment-time]",
+                            "value": "11:00"
+                        },
+                        {
+                            "click": "[data-edit-appointment-submit]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-edit-appointment-modal]"
+                        ],
+                        "values": {
+                            "[data-edit-appointment-date]": "2026-07-30",
+                            "[data-edit-appointment-time]": "11:00"
+                        },
+                        "dialogSays": {
+                            "in": "[data-edit-appointment-modal]",
+                            "text": "No se pudo guardar porque choca con otro registro. Revisa los datos e inténtalo de nuevo."
+                        }
+                    }
+                }
             ]
         },
         {
@@ -359,6 +472,141 @@
                 {
                     "focus": "[data-cancel-appointment-keep]"
                 }
+            ],
+            "flows": [
+                {
+                    "name": "confirmar la cancelación",
+                    "do": [
+                        {
+                            "click": "[data-cancel-appointment-accept]"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [
+                            {
+                                "method": "PUT",
+                                "to": "/api/v1/appointments/c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                                "has": {
+                                    "status": "cancelada"
+                                },
+                                "lacks": [
+                                    "date",
+                                    "time"
+                                ]
+                            }
+                        ],
+                        "closed": [
+                            "[data-cancel-appointment-confirm]",
+                            "[data-view-appointment-modal]"
+                        ],
+                        "announced": "Cita cancelada."
+                    }
+                },
+                {
+                    "name": "No, mantenerla",
+                    "do": [
+                        {
+                            "click": "[data-cancel-appointment-keep]"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [],
+                        "closed": [
+                            "[data-cancel-appointment-confirm]"
+                        ],
+                        "open": [
+                            "[data-view-appointment-modal]"
+                        ]
+                    }
+                },
+                {
+                    "name": "Escape",
+                    "do": [
+                        {
+                            "press": "Escape"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [],
+                        "closed": [
+                            "[data-cancel-appointment-confirm]"
+                        ]
+                    }
+                },
+                {
+                    "name": "la X",
+                    "do": [
+                        {
+                            "click": "[data-cancel-appointment-confirm] [data-dialog-close]"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [],
+                        "closed": [
+                            "[data-cancel-appointment-confirm]"
+                        ]
+                    }
+                },
+                {
+                    "name": "el fondo",
+                    "do": [
+                        {
+                            "backdrop": true
+                        }
+                    ],
+                    "expect": {
+                        "requests": [],
+                        "closed": [
+                            "[data-cancel-appointment-confirm]"
+                        ]
+                    }
+                },
+                {
+                    "name": "cita ya cerrada (409)",
+                    "answer": {
+                        "status": 409,
+                        "body": {
+                            "error": "La cita ya está completada o cancelada y no se puede cambiar."
+                        }
+                    },
+                    "do": [
+                        {
+                            "click": "[data-cancel-appointment-accept]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-cancel-appointment-confirm]"
+                        ],
+                        "dialogSays": {
+                            "in": "[data-cancel-appointment-confirm]",
+                            "text": "No se pudo guardar porque choca con otro registro. Revisa los datos e inténtalo de nuevo."
+                        }
+                    }
+                },
+                {
+                    "name": "error inesperado (500)",
+                    "answer": {
+                        "status": 500,
+                        "body": {
+                            "error": "Internal server error"
+                        }
+                    },
+                    "do": [
+                        {
+                            "click": "[data-cancel-appointment-accept]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-cancel-appointment-confirm]"
+                        ],
+                        "dialogSays": {
+                            "in": "[data-cancel-appointment-confirm]",
+                            "text": "Algo salió mal de nuestro lado. Inténtalo de nuevo en un momento."
+                        }
+                    }
+                }
             ]
         },
         {
@@ -373,7 +621,50 @@
                     "click": "[data-create-appointment-open]"
                 }
             ],
-            "sends": true
+            "sends": true,
+            "flows": [
+                {
+                    "name": "agendar en el pasado (422)",
+                    "answer": {
+                        "status": 422,
+                        "body": {
+                            "message": "No puedes agendar una cita en una fecha u hora que ya pasó.",
+                            "errors": {
+                                "date": [
+                                    "No puedes agendar una cita en una fecha u hora que ya pasó."
+                                ]
+                            }
+                        }
+                    },
+                    "do": [
+                        {
+                            "fill": "[data-create-appointment-date]",
+                            "value": "2026-07-30"
+                        },
+                        {
+                            "fillAll": "[data-create-appointment-modal]"
+                        },
+                        {
+                            "fillAll": "[data-create-appointment-modal]"
+                        },
+                        {
+                            "click": "[data-create-appointment-submit]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-create-appointment-modal]"
+                        ],
+                        "values": {
+                            "[data-create-appointment-date]": "2026-07-30"
+                        },
+                        "dialogSays": {
+                            "in": "[data-create-appointment-modal]",
+                            "text": "No puedes agendar una cita en una fecha u hora que ya pasó."
+                        }
+                    }
+                }
+            ]
         },
         {
             "id": "agenda-cita-completar",
