@@ -1,6 +1,7 @@
 ---
 spec: 017-reprogramar-cancelar-citas
 plan: plan.md
+impl_base: ea38cd5
 status: approved   # aprobado por el usuario, 2026-10-15
 ---
 
@@ -58,9 +59,11 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | Definición de terminado | ✅ | T034: Pint, Pest completa, build, `ui-audit` y `aidd.py validate`; T036 y T090–T092 | test: T034 |
 
 ## Preparación
-- [ ] T001 Ampliar en el sistema de diseño la regla del rojo ("eliminar, cancelar una cita y errores; en cancelar, solo dentro de la confirmación: el botón que confirma y la advertencia de que no se puede deshacer"), el uso de `--color-danger`, el componente propio `calendar/cancel-appointment-confirm` y el inventario ("Agenda, reprogramar cita" con capturas `agenda-cita-reprogramar-*`, "Agenda, detalle de cita asignada (con 'Reprogramar' y 'Cancelar cita')" y "Agenda, confirmar cancelación" con capturas `agenda-cita-cancelar-*`), con su fila en "Decisiones" — `docs/design/system.md`, `docs/design/system.html` — hecho cuando: `DesignTokensTest` y `OnlyDesignTokensTest` pasan, `system.html` muestra la regla nueva y ninguna fila del inventario dice "Editar cita"
+- [x] T001 Ampliar en el sistema de diseño la regla del rojo ("eliminar, cancelar una cita y errores; en cancelar, solo dentro de la confirmación: el botón que confirma y la advertencia de que no se puede deshacer"), el uso de `--color-danger`, el componente propio `calendar/cancel-appointment-confirm` y el inventario ("Agenda, reprogramar cita" con capturas `agenda-cita-reprogramar-*`, "Agenda, detalle de cita asignada (con 'Reprogramar' y 'Cancelar cita')" y "Agenda, confirmar cancelación" con capturas `agenda-cita-cancelar-*`), con su fila en "Decisiones" — `docs/design/system.md`, `docs/design/system.html` — hecho cuando: `DesignTokensTest` y `OnlyDesignTokensTest` pasan, `system.html` muestra la regla nueva y ninguna fila del inventario dice "Editar cita"
   - nota: A42 (aceptado) — añadir `docs/specs/017-reprogramar-cancelar-citas/design.md` a sus archivos; al cerrar, `grep "Rojo solo en el botón que confirma"` en `design.md` no da resultados
   - nota: A31 (aceptado) — alinear el anticliché de `design.md` ("Rojo solo en el botón que confirma") con la regla: botón y advertencia
+  - nota: hecha 2026-10-15: regla del rojo, uso de `--color-danger`, componente `calendar/cancel-appointment-confirm`, inventario (3 filas "por capturar/regenerar (017, T037)", 75 de 76) y fila en Decisiones; `system.html`: par de contraste y figuras del inventario. Versión del sistema sin cambio (2.0.0). Tests de diseño: 103 en verde
+  - nota: A42 y A31 aplicados: anticliché de `design.md` alineado; `grep "Rojo solo en el botón que confirma"` sin resultados
 - [ ] T002 Fijar la zona horaria de la clínica por defecto y probar sus efectos: `ClinicTimezoneTest` afirma que `config('app.timezone')` y `date_default_timezone_get()` valen `America/Mexico_City`; `GetTodayAppointmentsTest`, con `travelTo()` a las 23:30 de Ciudad de México (ya el día siguiente en UTC), devuelve las citas de ese día y no las del siguiente — `config/app.php`, `tests/Modules/Core/Unit/ClinicTimezoneTest.php` (nuevo), `tests/Modules/Appointments/Integration/GetTodayAppointmentsTest.php` (nuevo) — hecho cuando: los dos tests fallan antes de cambiar `config/app.php` y pasan después — cubre: CA3, CA4
 - [ ] T003 Correr la línea base de dependencias pendiente (plan D9) — `composer audit` en el contenedor; `docs/security.md` solo si hay excepción — hecho cuando: sin vulnerabilidades críticas ni altas, o cada una con su decisión (actualizar dentro de 017 o excepción aprobada por el usuario con vencimiento)
   - nota: requiere reiniciar Docker Desktop (montaje de E: perdido el 2026-10-15)

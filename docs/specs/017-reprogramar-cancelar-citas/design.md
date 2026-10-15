@@ -107,7 +107,7 @@ Ninguno propio: los diálogos usan la apertura y el cierre del sistema.
 
 | Cliché que esta pantalla podría caer | Alternativa usada |
 |---|---|
-| Botón rojo de "Cancelar" siempre visible en el detalle | Rojo solo en el botón que confirma; en reposo, botón normal |
+| Botón rojo de "Cancelar" siempre visible en el detalle | Rojo solo dentro de la confirmación (botón y advertencia); en el detalle, botón normal |
 | "Cancelar" con dos sentidos en el mismo flujo (cerrar el diálogo y anular la cita) | "Cerrar" o "No, mantenerla" para salir; "Cancelar cita" solo para anularla |
 | Confirmación genérica "¿Estás seguro?" | El mensaje nombra al paciente, la fecha y la hora |
 
