@@ -33,7 +33,7 @@ it('rejects booking an appointment at a moment that already passed', function (s
     'yesterday' => ['2026-08-30', '12:00'],
     'today, earlier' => ['2026-08-31', '09:59'],
     'exactly now' => ['2026-08-31', '10:00'],
-])->skip('017: pendiente de T022');
+]);
 
 it('books an appointment later today', function () {
     $this->actingAsAdmin();
