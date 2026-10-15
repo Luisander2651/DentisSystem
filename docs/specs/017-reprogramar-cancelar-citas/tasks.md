@@ -1,7 +1,7 @@
 ---
 spec: 017-reprogramar-cancelar-citas
 plan: plan.md
-status: draft
+status: approved   # aprobado por el usuario, 2026-10-15
 ---
 
 # Tareas · 017 Reprogramar y cancelar citas
