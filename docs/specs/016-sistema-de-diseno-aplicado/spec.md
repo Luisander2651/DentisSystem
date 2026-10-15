@@ -1,7 +1,7 @@
 ---
 id: 016
 slug: sistema-de-diseno-aplicado
-status: approved
+status: implemented
 created: 2026-10-06
 extends: [014]   # cambia cómo se presenta un acceso denegado en las pantallas web
 ---
@@ -83,7 +83,7 @@ Hallazgos `M01`–`M16` de la revisión de las 65 pantallas a 390 px (ver "Dise�
 ### Accesibilidad completa (WCAG 2.1 AA)
 - [x] CA35 · Dado cualquier control interactivo (incluidos los botones que solo muestran un icono) y cualquier imagen con información, cuando lo lee un lector de pantalla, entonces tiene un nombre que dice qué hace o qué es; las imágenes decorativas no se anuncian.
 - [x] CA36 · Dado cualquier campo de formulario, cuando se muestra, entonces tiene una etiqueta visible asociada a él, y los campos obligatorios se distinguen de los opcionales.
-- [ ] CA37 · Dado un formulario o una acción, cuando ocurre un error de validación (también el que se detecta antes de enviar, como dos contraseñas que no coinciden), un error al guardar o termina bien, entonces el mensaje se anuncia al lector de pantalla sin mover el foco, y el error de un campo queda asociado a ese campo. Mientras se envía, se anuncia que se está enviando.
+- [x] CA37 · Dado un formulario o una acción, cuando ocurre un error de validación (también el que se detecta antes de enviar, como dos contraseñas que no coinciden), un error al guardar o termina bien, entonces el mensaje se anuncia al lector de pantalla sin mover el foco, y el error de un campo queda asociado a ese campo. Mientras se envía, se anuncia que se está enviando.
 - [x] CA38 · Dado cualquier icono de acción, borde de control o indicador que transmite información sin texto, cuando se mide contra su fondo, entonces su contraste es de al menos 3:1; y ningún estado se distingue solo por el color.
 
 - [x] CA40 · Dado cualquier elemento que hace algo al pulsarlo con el ratón o con el dedo (incluidos los días del calendario y las tarjetas de la galería), cuando se usa solo el teclado, entonces se puede llegar a él con el tabulador y activarlo con Intro o con la barra espaciadora.
