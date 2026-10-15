@@ -1,7 +1,8 @@
 ---
 id: 016
 slug: sistema-de-diseno-aplicado
-status: implemented
+status: released
+released: v0.2.0 (2026-10-14)
 created: 2026-10-06
 extends: [014]   # cambia cómo se presenta un acceso denegado en las pantallas web
 ---
@@ -269,3 +270,4 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 | 2026-10-11 | Requisitos no funcionales: 768 px pasa a ancho obligatorio; decisión del corte de 1024 px para la navegación. Se aplicó con la spec ya aprobada y en implementación, sin volver a `draft` | Decisión del usuario (desbordes a 768 px); registrado el 2026-10-13 por `/analyze` ronda 4 (A80) |
 | 2026-10-13 | Vuelve a `draft` desde `implemented` (T092 se reabre): CA42 (navegación según el ancho) y CA43 (enlaces a otra pestaña) nuevos; CA9 también a 768 px; CA13 incluye 768 × 1024 px; CA37 nombra la validación antes de enviar y el anuncio de envío; "Fuera de alcance", "Diseño" y la decisión de anchos al día | `/analyze` ronda 4 (A75, A77, A79, A80, A82, A83, A84, A88, A90); decisión del usuario |
 | 2026-10-13 | Reaprobada tras la edición | Aprobación del usuario |
+| 2026-10-14 | Liberada en v0.2.0 | `/release 016`; aprobación del usuario |

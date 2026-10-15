@@ -562,11 +562,15 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: reabierta por /review (ronda 2, 2026-10-14): la spec vuelve a `approved` hasta cerrar la ronda 2
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - No hay staging: se verifica en producción tras T097, como en la spec 015. `/pagina-que-no-existe` responde 404 con la marca; con un usuario asistente, `/agenda` responde 403 con "Sin permiso"; `/api/v1/ruta-que-no-existe` sigue respondiendo JSON; el icono de pestaña se ve tras purgar la caché de Cloudflare.
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-- [ ] T098 Marcar spec como `released`
+  - nota: 2026-10-14. No hay staging (P12): CI en verde en `main` sobre el merge del PR #21 (`b485b7f`, run 38662090054: Pest y ui-audit). Verificación local con la imagen de la versión: `dentissa-app` y `dentissa-web` (etapas `prod` y `web` de `docker/Dockerfile`) se construyen desde el tag `v0.2.0` con el manifiesto de Vite, las imágenes de `public/images/brand/`, `favicon.ico` con contenido y las vistas `errors/{403,404,405,419}`. Los criterios observables en producción se comprueban tras T097: `/pagina-que-no-existe` → 404 con la marca; asistente en `/agenda` → 403 "Sin permiso"; `/api/v1/ruta-que-no-existe` → JSON; icono de pestaña tras purgar Cloudflare
+- [x] T096 Aprobación humana para producción
+  - aprobado por Luisander2651 el 2026-10-14 23:37 para v0.2.0 ("desplegar v0.2.0 a producción")
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: 2026-10-14, ejecutado por el usuario en el droplet tras la aprobación de T096. Tag `v0.2.0` en `b485b7f` (merge del PR #21). `deploy.sh v0.2.0`: 2 min 50 s, `verify.sh --local --in-operation` 14/14; se conservan las imágenes de v0.2.0 y v0.1.0. `verify.sh --remote` desde fuera: 30/30. Comprobaciones de la spec en producción: `/pagina-que-no-existe` da 404 con la página "No encontrada" en español, la marca y el enlace de vuelta; `/api/v1/ruta-que-no-existe` sigue en JSON 404; un asistente en `/agenda` ve "Sin permiso" (usuario); `favicon.ico` e iconos de la marca servidos. Logs de `app` y `queue`: 0 líneas de error y `queue:failed` vacío (usuario). Ventana de 15 minutos (05:40–05:55 UTC), una muestra por minuto de `/up`, `/login` y la portada: 45/45 con 200, entre 0,27 y 1,27 s. Sin métricas ni alertas automáticas todavía (spec de monitoreo pendiente)
+- [x] T098 Marcar spec como `released`
+  - nota: 2026-10-14. `spec.md` → `status: released`, `released: v0.2.0 (2026-10-14)`; README de specs, objetivo 6 del roadmap como cumplido, 43 aceptados de la review en Pendientes y deuda (016/R#), RS16.a mitigada (v0.2.0) e Historial de la spec 014
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

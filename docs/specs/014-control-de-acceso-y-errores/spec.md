@@ -161,3 +161,4 @@ Constitution Check de `/plan`, junto con la falta de `request_id`.
 | 2026-09-25 | Implementadas las correcciones de `/review` ronda 2 (T087–T089) | `/implement 014` |
 | 2026-09-25 | `/review` ronda 3: approved, sin hallazgos nuevos; pendiente la confirmación humana | `/review 014 --rerun` |
 | 2026-09-25 | Review firmada por el usuario (Luisander2651) | Confirmación humana de la definición de terminado |
+| 2026-10-14 | Comportamiento modificado por 016 en v0.2.0: el acceso denegado en las pantallas web muestra la página "Sin permiso" (y el JSON fijo en español si se pide JSON); `api/*` no cambia | /release |
