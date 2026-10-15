@@ -11,6 +11,8 @@
  *                           on a visit of its own, `runFresh`, with the API answered from here)
  *   ancho             CA26  it fits in the width of the window (M03)
  *   alto              CA13  it fits in its height, with its actions in reach (M09)
+ *   expects           017   what the entry declares about its dialog: texts, controls that must
+ *                           not be in sight, the focus on opening and where it goes on closing
  *
  * It runs after the steps of a dialog entry, with the dialog open, and leaves it closed.
  */
@@ -81,6 +83,51 @@ function isOpenInPage(dialogSelector) {
     return window.__audit.scope(dialogSelector) !== null;
 }
 
+/**
+ * What an entry declares about its own dialog (`expects`, spec 017): the text a control or title
+ * shows (`text` + `is`), a control that must not be in sight (`absent`), the control that holds
+ * the focus when the dialog opens (`focus`).
+ */
+function expectationsInPage(expects) {
+    const A = window.__audit;
+    const shown = (selector) => [...document.querySelectorAll(selector)].find((element) => A.visible(element)) ?? null;
+    const failures = [];
+
+    for (const expectation of expects) {
+        if (expectation.text !== undefined) {
+            const element = shown(expectation.text);
+            const text = element ? element.textContent.replace(/\s+/g, ' ').trim() : null;
+
+            if (text !== expectation.is) {
+                failures.push({ rule: 'texto distinto del esperado', message: `${expectation.text} dice ${text === null ? 'nada (no está a la vista)' : `"${text}"`} y debía decir "${expectation.is}"` });
+            }
+        } else if (expectation.absent !== undefined) {
+            const element = shown(expectation.absent);
+
+            if (element) {
+                failures.push({ rule: 'control que no debía estar', message: `${A.describe(element)} está a la vista (${expectation.absent})` });
+            }
+        } else if (expectation.focus !== undefined) {
+            const active = document.activeElement;
+
+            if (!active || !active.matches(expectation.focus)) {
+                failures.push({ rule: 'foco inicial en otro control', message: `debía estar en ${expectation.focus} y está en ${active && active !== document.body ? A.describe(active) : 'el documento'}` });
+            }
+        }
+    }
+
+    return failures;
+}
+
+function focusMatchesInPage(selector) {
+    const active = document.activeElement;
+
+    return {
+        matches: active !== null && active.matches(selector),
+        active: active && active !== document.body ? window.__audit.describe(active) : 'el documento',
+    };
+}
+
 export async function run(page, entry) {
     if (!entry.dialogSelector) {
         return [];
@@ -94,6 +141,11 @@ export async function run(page, entry) {
 
     const failures = [];
     const { box, viewport } = open;
+    const expects = entry.expects ?? [];
+
+    if (expects.length > 0) {
+        failures.push(...await page.evaluate(expectationsInPage, expects.filter((expectation) => expectation.focusAfterClose === undefined)));
+    }
 
     if (!open.isDialog || open.name === '') {
         failures.push({ rule: 'diálogo sin título como nombre accesible', message: open.isDialog ? 'aria-labelledby no apunta a un título con texto' : 'ningún elemento tiene el papel de diálogo' });
@@ -158,6 +210,20 @@ export async function run(page, entry) {
         await page.waitFor(`!(${isOpenInPage})(${JSON.stringify(entry.dialogSelector)})`, { timeout: 1500, what: 'el cierre con Escape' });
     } catch {
         failures.push({ rule: 'Escape no cierra el diálogo', message: `${entry.dialogSelector} sigue abierto` });
+
+        return failures;
+    }
+
+    // A dialog opened from another one that closes first (spec 017, "Reprogramar"): the focus goes
+    // back to what opened the first one, which the entry names.
+    const returnsTo = expects.find((expectation) => expectation.focusAfterClose !== undefined)?.focusAfterClose;
+
+    if (returnsTo !== undefined) {
+        const focus = await page.evaluate(focusMatchesInPage, returnsTo);
+
+        if (!focus.matches) {
+            failures.push({ rule: 'el foco no vuelve al control que abrió el diálogo', message: `debía volver a ${returnsTo} y está en ${focus.active}` });
+        }
 
         return failures;
     }
