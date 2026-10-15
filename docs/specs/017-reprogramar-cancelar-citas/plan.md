@@ -1,6 +1,6 @@
 ---
 spec: 017-reprogramar-cancelar-citas
-status: approved   # reaprobado por el usuario, 2026-10-15, tras /plan --fix (analysis ronda 1)
+status: approved   # reaprobado por el usuario, 2026-10-15, tras /plan --fix (analysis ronda 2)
 constitution_version: 1.2.0
 created: 2026-10-15
 ---
@@ -27,7 +27,7 @@ por la misma ruta.
 | P4 Contrato de API primero | ❌ aceptado: cambio incompatible de códigos (409 → 422) dentro de `/api/v1` sin `/api/v2`; el único cliente es el JS de la agenda, que se despliega en la misma imagen, y no hay clientes externos ni datos reales — aprobado por el usuario el 2026-10-15 (/analyze A1, D10) | Contrato de `PUT` y `POST /appointments` en "Contratos y datos", con la lista de cambios frente a 007 | test: `UpdateAppointmentTest`, `CreateAppointmentTest` fijan el código y el texto de cada rechazo |
 | P5 Autorización en el servidor | ✅ | El permiso de `PUT` no cambia (`appointments.update` solo administrador, middleware `staff`). `UpdateAppointmentRequest::authorize()` llama a `assertCan('appointments.update')` antes de validar, para que quien no es administrador reciba 403 con cualquier cuerpo (CA10, D11); el caso de uso lo repite | test: `AppointmentsAccessControlTest` (actor × cancelar, reprogramar y cuerpos inválidos) |
 | P6 Validación con FormRequest | ✅ | La entrada de `PUT` cambia → `UpdateAppointmentRequest` nuevo (reglas en array, mensajes en español). La entrada de `POST` no cambia: la fecha pasada es invariante de dominio, no regla de entrada → sin FormRequest (Decisión D6) | test: datasets de payload inválido → 422 en `UpdateAppointmentTest` |
-| P7 Errores sin detalles internos | ✅ | Los 500 siguen en `UnexpectedErrorResponse`. Los mensajes 422 y 409 nuevos no llevan datos personales | test: `UnexpectedErrorTest` existente; `grep getMessage()` en los controladores tocados solo para excepciones de negocio |
+| P7 Errores sin detalles internos | ✅ | Los 500 siguen en `UnexpectedErrorResponse`. Los mensajes 422 y 409 nuevos no llevan datos personales | test: `UnexpectedErrorTest` (casos nuevos de `PUT` y `POST /appointments`); `grep getMessage()` en los controladores tocados solo para excepciones de negocio |
 | P8 Secretos fuera del repositorio | ✅ | `APP_TIMEZONE` se añade por nombre a `.env.example`; no es secreto. Sin `env()` fuera de `config/` | lint: gitleaks en CI; `grep -rn "env(" app/` en tocado |
 | P9 Migraciones reversibles | ➖ | Sin migraciones: los estados ya existen en la columna `status` | — |
 | P10 Dependencias nuevas con ADR | ➖ | Ninguna dependencia nueva | — |
@@ -67,10 +67,11 @@ Una petición hace **una** de estas cosas:
 
 | Petición | Cuerpo | Éxito | Rechazos |
 |---|---|---|---|
-| Reprogramar | `{"date": "2026-10-20", "time": "10:00", "whatsapp_reminder"?: bool}` | 200 `{"message", "data"}`; la cita queda `reprogramada` | 422 falta fecha u hora · 422 fecha u hora pasada · 409 choque de horario · 409 cita completada o cancelada · 409 no existe (como hoy, `AppointmentException::notFound`; sin cambio) |
+| Reprogramar | `{"date": "2026-10-20", "time": "10:00", "whatsapp_reminder"?: bool}` | 200 `{"message", "data"}`; la cita queda `reprogramada` con la nueva fecha y hora y, si llega `whatsapp_reminder`, se aplica también en la misma petición (la interfaz lo envía solo si la casilla cambió, D4) | 422 falta fecha u hora · 422 fecha u hora pasada · 409 choque de horario · 409 cita completada o cancelada · 409 no existe (como hoy, `AppointmentException::notFound`; sin cambio) |
 | Cambiar estado | `{"status": "completada" \| "cancelada", "whatsapp_reminder"?: bool}` | 200; si llega `whatsapp_reminder`, se aplica también, como hoy | 422 valor fuera de la lista · 409 cancelar una cita completada o cancelada · 409 completar una cita cancelada (CA11) · 409 no existe |
 | Recordatorio | `{"whatsapp_reminder": bool}` | 200 (sin cambio de comportamiento, 007 CA6) | — |
 | Mezcla | `status` junto con `date` o `time` | — | 422 |
+| Vacía | `{}` (ningún campo) | — | 409 `{"error"}` con `noInfoProvided`, como hoy (sin cambio; decisión del usuario, 2026-10-15, /analyze A24) |
 | Cualquiera, sin ser administrador | cualquier cuerpo, válido o no | — | 403 antes de validar (CA10); 401 sin sesión |
 
 Formato del 422 (el de Laravel, que la interfaz muestra tal cual):
@@ -78,6 +79,8 @@ Formato del 422 (el de Laravel, que la interfaz muestra tal cual):
 { "message": "No puedes reprogramar la cita a una fecha u hora que ya pasó.",
   "errors": { "date": ["No puedes reprogramar la cita a una fecha u hora que ya pasó."] } }
 ```
+Solo `rescheduleAndStatusTogether` (y `AppointmentInThePastException`) pasan a 422; el resto de `AppointmentAplicationExceptions` (cuerpo vacío) sigue en 409.
+
 Texto del 409 de cita cerrada (`{"error"}`): "La cita ya está completada o cancelada y no se puede cambiar."
 En los 409 la interfaz muestra el texto genérico del sistema (`status.js`), como hoy.
 
@@ -127,11 +130,14 @@ Sin migraciones. "Ahora" = `now()` con `config('app.timezone')` = `America/Mexic
   - `tests/Modules/whatsApp/Integration/WhatsAppFlowLogsTest.php`: su fecha fija (línea 56) pasa a `travelTo()` para que la regla nueva no lo rompa.
   - `GetTodayAppointmentsTest.php` (nuevo): con `travelTo()` a las 23:30 de Ciudad de México (ya el día siguiente en UTC), devuelve las citas de ese día y no las del siguiente.
 - **Configuración, `tests/Modules/Core/Unit/`:** `ClinicTimezoneTest.php` (nuevo): `config('app.timezone')` y `date_default_timezone_get()` valen `America/Mexico_City` (la segunda rige `new DateTime()` de las promociones); `EnvExampleDefaultsTest` exige `APP_TIMEZONE`.
-- **Navegador (`npm run test:ui`, CI):**
+- **Errores inesperados, `tests/Modules/Appointments/Integration/UnexpectedErrorTest.php`:** dos casos nuevos: el repositorio lanza en `PUT` y en `POST /appointments` → 500 con `{"error":"Internal server error"}` exacto.
+- **Navegador (`npm run test:ui`, en local y en CI):**
   - `screens.json`: el diálogo de reprogramar (renombrado) y la confirmación nueva, a 390, 768 y 1440 px. Comprobaciones de desborde, tamaño, contraste, foco y teclado del verificador.
   - `checks-dialogs.mjs`: foco inicial de la confirmación en "No, mantenerla" y, al cerrarla con Escape, vuelta a "Cancelar cita"; al cerrar "Reprogramar cita", el foco vuelve a la cita que abrió el detalle.
-  - Un 422 simulado en reprogramar muestra el mensaje del servidor en el diálogo, que sigue abierto con lo escrito (CA5).
-  - El detalle de una cita completada no tiene "Reprogramar" ni "Cancelar cita" (CA8).
+  - Textos de CA9: el botón del detalle dice "Reprogramar" y el diálogo se titula "Reprogramar cita".
+  - Con la API interceptada: reprogramar envía un solo `PUT` con `date` y `time`, sin `status`, y avisa "Cita reprogramada." (CA1); un 422 en "Reprogramar cita" y otro en "Agendar cita" dejan el diálogo abierto con lo escrito y el texto del servidor (CA5); un 409 muestra el texto genérico; "Sí, cancelar la cita" envía un solo `PUT {status: "cancelada"}` y avisa "Cita cancelada."; "No, mantenerla", Escape, la X y el fondo no envían nada; un error al confirmar deja la confirmación abierta con el error en su región (CA7).
+  - El detalle de una cita completada y el de una cancelada no tienen "Reprogramar" ni "Cancelar cita" (CA8), y el detalle en el expediente (`expediente-*-cita-detalle`) tampoco.
+  - Tras el cambio se regeneran la línea base de composición de la agenda y las capturas del inventario (`agenda-cita-reprogramar-*`, `agenda-cita-cancelar-*`, `agenda-cita-detalle-pendiente-*`).
 - **Diseño:** `DesignTokensTest` y `OnlyDesignTokensTest` siguen en verde tras actualizar `system.md`. `UnusedUiTest` sin cambios: la clave `data-edit-appointment-trigger` sigue sin usarse.
 - Cada test nuevo de navegador se ejecuta dos veces (estabilidad).
 
@@ -145,7 +151,7 @@ caso de uso → base de datos. Datos: paciente y tratamiento (personal y salud).
 | TM2 | Tampering: colar un cambio de estado dentro de una reprogramación para saltar la regla (p. ej. volver a `asignada`) | A04:2025 Insecure Design · API3 BOPLA | `UpdateAppointmentRequest`, `UpdateAppointmentUseCase` | `prohibits` en el FormRequest y guardia en el caso de uso; estados admitidos solo `completada` y `cancelada` | `UpdateAppointmentTest`: mezcla → 422; `status: asignada` o `reprogramada` → 422 |
 | TM3 | Tampering: reabrir o mover una cita cerrada por la API, incluido marcar como completada una cita cancelada | A04:2025 Insecure Design | `AppointmentEntity` | `reschedule()` y `cancel()` rechazan completada y cancelada; `complete()` rechaza cancelada (protege `PUT` y el seguimiento) | `AppointmentEntityTest`, `UpdateAppointmentTest` (CA8, CA11), `CompleteAppointmentTest` existente |
 | TM4 | Tampering: agendar o mover al pasado saltándose la interfaz | A04:2025 Insecure Design | `AppointmentEntity` | regla en el dominio con "ahora" del servidor en la zona de la clínica; el `min` del selector solo ayuda | `CreateAppointmentTest`, `UpdateAppointmentTest` (CA3, CA4) |
-| TM5 | Information disclosure: mensajes de error con datos internos | A10:2025 Mishandling of Exceptional Conditions | controladores tocados | 422 y 409 con textos fijos; 500 genérico | `UnexpectedErrorTest` existente; aserción de texto exacto en los 422 nuevos |
+| TM5 | Information disclosure: mensajes de error con datos internos | A10:2025 Mishandling of Exceptional Conditions | controladores tocados | 422 y 409 con textos fijos; 500 genérico | `UnexpectedErrorTest` de Appointments con dos casos nuevos: un error inesperado en `PUT` y en `POST /appointments` responde exactamente `{"error":"Internal server error"}`; aserción de texto exacto en los 422 nuevos |
 
 Casos de abuso de la spec: CA10 → TM1; CA8 → TM3; CA6 → TM2; CA11 → TM3.
 
@@ -153,14 +159,14 @@ Casos de abuso de la spec: CA10 → TM1; CA8 → TM3; CA6 → TM2; CA11 → TM3.
 | Criterio de aceptación | Cambio(s) | Test(s) |
 |---|---|---|
 | Ficha: reprogramar con `status: asignada` devolvía 409 | UpdateAppointmentUseCase, UpdateAppointmentRequest | integración `UpdateAppointmentTest` › rejects mixing a reschedule with a status (reproducción) |
-| CA1: reprogramar a futuro deja `reprogramada` y avisa | AppointmentEntity, UpdateAppointmentUseCase, create-appointment.js | unit `AppointmentEntityTest`; integración `UpdateAppointmentTest` › reschedules to a future slot; navegador `agenda-cita-reprogramar`; verificación manual: aviso "Cita reprogramada." y agenda actualizada a 390 y 1440 px |
+| CA1: reprogramar a futuro deja `reprogramada` y avisa | AppointmentEntity, UpdateAppointmentUseCase, create-appointment.js | unit `AppointmentEntityTest`; integración `UpdateAppointmentTest` › reschedules to a future slot, › applies the reminder sent with a reschedule; navegador `agenda-cita-reprogramar`; verificación manual: aviso "Cita reprogramada." y agenda actualizada a 390 y 1440 px |
 | CA2: falta fecha u hora → mensaje y sin cambios | UpdateAppointmentRequest, UpdateAppointmentUseCase | integración `UpdateAppointmentTest` › rejects date without time / time without date (422, texto exacto) |
 | CA3: reprogramar al pasado → mensaje y sin cambios | AppointmentEntity, AppointmentInThePastException, UpdateAppointmentController | unit `AppointmentEntityTest`, `AppointmentSchedulePropertiesTest`; integración `UpdateAppointmentTest` (ayer, hoy pasado, ahora exacto) |
 | CA4: agendar en el pasado → mensaje y no se crea | AppointmentEntity, CreateAppointmentUseCase, CreateAppointmentController | unit `AppointmentEntityTest`; integración `CreateAppointmentTest` |
 | CA5: el diálogo sigue abierto con el mensaje | create-appointment.js, `status.js` (sin cambios) | navegador: 422 simulado en reprogramar y en agendar → mensaje en la región del diálogo, campos intactos |
 | CA6: reprogramar y estado a la vez → rechazo | UpdateAppointmentRequest, UpdateAppointmentUseCase | integración `UpdateAppointmentTest` › rejects mixing (422, sin cambios) |
 | CA7: cancelar con confirmación; "No, mantenerla" no cambia nada | cancel-appointment.js, cancel-appointment-confirm.blade.php, view-appointment.js, AppointmentEntity | integración `UpdateAppointmentTest` › cancels an assigned / a rescheduled appointment; navegador `agenda-cita-cancelar` (foco inicial, Escape) y, con la API interceptada, confirmar envía un solo `PUT {status: cancelada}` y avisa "Cita cancelada.", y salir sin confirmar no envía nada; verificación manual: confirmar y ver "Cancelada" en la agenda a 390 y 1440 px |
-| CA8: completada o cancelada sin acciones y rechazo por API | AppointmentEntity, view-appointment.js | unit `AppointmentEntityTest`; integración `UpdateAppointmentTest` › refuses to reschedule or cancel a closed appointment (409); navegador: detalle de cita completada sin los dos botones |
+| CA8: completada o cancelada sin acciones y rechazo por API | AppointmentEntity, view-appointment.js | unit `AppointmentEntityTest`; integración `UpdateAppointmentTest` › refuses to reschedule or cancel a closed appointment (409); navegador: detalle de cita completada y de cita cancelada sin los dos botones, también en el expediente |
 | CA9: "Reprogramar" abre "Reprogramar cita" sin estado | edit-appointment-modal.blade.php, view-appointment-modal.blade.php, create-appointment.js | navegador `agenda-cita-reprogramar` (título, sin `[data-edit-appointment-status]`); verificación manual: contra `design.md` → Composición a 390 y 1440 px |
 | CA10 (abuso): no administrador → denegado con datos válidos o no | UpdateAppointmentRequest (`authorize()`) | integración `AppointmentsAccessControlTest` (TM1): actor × reprogramar y cancelar, y cuerpos inválidos → 403 |
 | CA11 (abuso): una cita cancelada no puede completarse | AppointmentEntity (`complete()`), UpdateAppointmentController | unit `AppointmentEntityTest` › refuses to complete a cancelled appointment; integración `UpdateAppointmentTest` › refuses to complete a cancelled appointment (409, sigue cancelada); `CompleteAppointmentTest` existente |
@@ -168,7 +174,7 @@ Casos de abuso de la spec: CA10 → TM1; CA8 → TM3; CA6 → TM2; CA11 → TM3.
 | TM2 | UpdateAppointmentRequest, UpdateAppointmentUseCase | `UpdateAppointmentTest` › mixing; › rejects status asignada and reprogramada |
 | TM3 | AppointmentEntity | `AppointmentEntityTest`; `UpdateAppointmentTest` (CA8, CA11); `CompleteAppointmentTest` |
 | TM4 | AppointmentEntity | `CreateAppointmentTest`; `UpdateAppointmentTest` (CA3) |
-| TM5 | controladores | `UnexpectedErrorTest`; textos exactos en los 422 |
+| TM5 | controladores | `UnexpectedErrorTest` (`PUT` y `POST /appointments` → 500 genérico); textos exactos en los 422 |
 | RNF: "ahora" en la zona de Ciudad de México | config/app.php, AppointmentEntity | unit `AppointmentEntityTest` › compares in the clinic timezone; integración con `travelTo()` en `America/Mexico_City` |
 | RNF: la misma zona rige "citas de hoy" (007) y la vigencia de las promociones (011, 012) | config/app.php (sin cambios en esos módulos) | unit `ClinicTimezoneTest` (zona de config y de PHP); integración `GetTodayAppointmentsTest` en el límite del día |
 | RNF: solo sistema de diseño, 390/768/1440 px | vistas y JS tocados, system.md | `OnlyDesignTokensTest`, `DesignTokensTest`, `npm run test:ui` |
@@ -251,6 +257,9 @@ cambia rutas públicas.
 - **Tests existentes con fechas ya pasadas** fallarían con la regla nueva (`UpdateAppointmentTest`,
   `CreateAppointmentTest`, `AppointmentsAccessControlTest:101,104`, `WhatsAppFlowLogsTest:56`) →
   `travelTo()` en `beforeEach` de esos archivos. Correr la suite completa antes de cerrar.
+  `AppointmentsAccessControlTest` y `WhatsAppFlowLogsTest` son evidencia de dos riesgos ya mitigados
+  de `docs/security.md` (tests de acceso denegado, spec 014; logs sin datos personales, spec 015): al fijar su reloj no se quita ni se debilita ninguna
+  aserción, y siguen en verde en la suite completa.
 - **Datos de `ui:audit-data` con citas en fechas fijas** → cerrado, no aplica: `screens.json` fija
   `now` en 2026-07-22, el seeder usa julio de 2026 y las comprobaciones de los diálogos interceptan
   la API (/analyze A16).
