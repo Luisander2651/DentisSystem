@@ -32,7 +32,7 @@ diseñados").
 |---|---|---|---|---|
 | Detalle de cita asignada o reprogramada | captura `agenda-cita-detalle-pendiente-390.png` con el pie nuevo | no aplica (sin filas) | `agenda-cita-detalle-pendiente-1440.png` con el pie nuevo | CA7, CA9 |
 | Detalle de cita completada o cancelada | `agenda-cita-detalle-390.png` (sin cambios: solo "Cerrar") | no aplica | `agenda-cita-detalle-1440.png` | CA8 |
-| Reprogramar cita · reposo | `agenda-cita-editar-390.png` sin el campo Estado | no aplica | `agenda-cita-editar-1440.png` sin el campo Estado | CA1, CA9 |
+| Reprogramar cita · reposo (entrada `agenda-cita-reprogramar`, antes `agenda-cita-editar`) | captura `agenda-cita-editar-390.png` sin el campo Estado; pasa a `agenda-cita-reprogramar-390.png` | no aplica | ídem a 1440 px | CA1, CA9 |
 | Reprogramar cita · con error | mensaje en la región de estado del diálogo | no aplica | ídem | CA2, CA3, CA5 |
 | Agendar cita · con error de fecha pasada | mensaje en la región de estado del diálogo | no aplica | ídem | CA4, CA5 |
 | Confirmar cancelación | `pacientes-eliminar-390.png` como referencia | no aplica | `pacientes-eliminar-1440.png` como referencia | CA7 |
@@ -65,16 +65,18 @@ diseñados").
 - **Del sistema:** `x-ui.dialog` (detalle, reprogramar, confirmación `size="sm"`), `x-ui.button`
   (`secondary`, `primary`, `danger`), región de estado del diálogo y del marco
   (`resources/js/ui/status.js`), campos de fecha y hora como están hoy.
-- **Exclusivos de esta pantalla:** ninguno.
+- **Exclusivos de esta pantalla:** la confirmación de cancelar es un componente propio de la agenda
+  (`calendar/cancel-appointment-confirm`), hecho solo con `x-ui.dialog` y `x-ui.button`, sin valores
+  visuales nuevos. No reutiliza la confirmación de eliminar porque esa fija sus textos.
 - **Adornos generados desde datos:** ninguno.
 
 ## Cambios a incorporar al sistema
 
 | Token, componente o regla | Modo | Valor (menor) | Valor (mayor) | Motivo |
 |---|---|---|---|---|
-| Regla de uso "Rojo solo para eliminar y errores" → "Rojo solo para eliminar, cancelar una cita y errores; en cancelar, solo en el botón que la confirma" | fijo | — | — | Cancelar no se deshace y la insignia "Cancelada" ya es roja (decisión del usuario, 2026-10-15) |
+| Regla de uso "Rojo solo para eliminar y errores" → "Rojo solo para eliminar, cancelar una cita y errores; en cancelar, solo dentro de la confirmación (el botón que confirma y la advertencia de que no se puede deshacer)" | fijo | — | — | Cancelar no se deshace y la insignia "Cancelada" ya es roja (decisión del usuario, 2026-10-15) |
 | Token `--color-danger`, columna "Uso": "Eliminar, cancelar una cita y errores" | fijo | `#b91c1c` (sin cambio) | — | Coherencia con la regla |
-| Inventario de vistas: "Agenda, editar cita" pasa a "Agenda, reprogramar cita"; nueva fila "Agenda, confirmar cancelación" | fijo | — | — | Pantallas que cambian de nombre o aparecen |
+| Inventario de vistas: "Agenda, editar cita" pasa a "Agenda, reprogramar cita" (capturas `agenda-cita-reprogramar-*`); "Agenda, detalle de cita asignada (con 'Editar cita')" pasa a "(con 'Reprogramar' y 'Cancelar cita')"; nueva fila "Agenda, confirmar cancelación" (capturas `agenda-cita-cancelar-*`) | fijo | — | — | Pantallas que cambian de nombre o aparecen |
 
 ## Movimiento
 
@@ -93,7 +95,10 @@ Ninguno propio: los diálogos usan la apertura y el cierre del sistema.
 - **Teclado:**
   - Al abrir la confirmación, el foco va a "No, mantenerla", la opción segura. Escape equivale a
     "No, mantenerla".
-  - Al cerrar la confirmación sin cancelar, el foco vuelve a "Cancelar cita".
+  - Al cerrar la confirmación sin cancelar, el foco vuelve a "Cancelar cita" (el detalle sigue
+    abierto debajo).
+  - "Reprogramar" cierra el detalle antes de abrir su diálogo; al cerrar "Reprogramar cita" sin
+    guardar, el foco vuelve a la cita en el calendario o en la lista del día que abrió el detalle.
   - Tras cancelar o reprogramar, el foco lo gestiona `dialog.js` como tras guardar en el resto de
     diálogos.
 - **Sin animación:** no aplica.
@@ -114,3 +119,4 @@ Ninguno propio: los diálogos usan la apertura y el cierre del sistema.
 | 2026-10-15 | contradicción | La regla del sistema reserva el rojo para eliminar y errores; cancelar una cita es destructivo | Rojo solo en "Sí, cancelar la cita"; la regla se amplía en el sistema | usuario |
 | 2026-10-15 | diseño | Texto del botón que sale del diálogo de reprogramar | "Cerrar" en lugar de "Cancelar", para que "Cancelar" no tenga dos sentidos | /design-spec |
 | 2026-10-15 | diseño | Foco inicial de la confirmación | En la opción segura, "No, mantenerla" | /design-spec |
+| 2026-10-15 | refinado | La regla del rojo contradecía la advertencia en `danger` de la confirmación; el componente propio no estaba declarado; nombres del inventario y foco al cerrar "Reprogramar cita" | Regla: rojo solo dentro de la confirmación; componente declarado como exclusivo; inventario y capturas con los nombres nuevos; foco a la cita que abrió el detalle | /analyze 017 A12, A22, A7 |
