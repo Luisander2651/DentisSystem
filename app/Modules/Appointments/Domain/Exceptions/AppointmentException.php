@@ -36,9 +36,4 @@ final class AppointmentException extends Exception
     {
         return new self('La cita ya está completada o cancelada y no se puede cambiar.');
     }
-
-    public static function rescheduleRequiresDateOrTime(): self
-    {
-        return new self('At least one of date or time must be provided for rescheduling.');
-    }
 }
