@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Tests\Modules\Appointments\Integration\AppointmentsIntegrationTestCase;
@@ -72,6 +73,9 @@ function appointmentsDataSnapshot(): array
 
 beforeEach(function () {
     $this->withoutMiddleware(ThrottleRequests::class);
+    // Spec 017: the clock is fixed the day before the dates booked and moved below, so the
+    // administrator's rows keep answering 2xx and do not turn into a "date in the past" 422.
+    $this->travelTo(Carbon::parse('2026-08-31 10:00:00', 'America/Mexico_City'));
 
     $this->actAs = function (string $actor): void {
         match ($actor) {
@@ -128,6 +132,30 @@ it('answers each agenda and appointments route according to the permissions tabl
 
     expect(appointmentsDataSnapshot())->toEqual($before);
 })->with(appointmentsAccessActors())->with(appointmentsAccessRouteDataset());
+
+it('refuses to reschedule or cancel an appointment to anyone but the administrator, whatever the body (spec 017, CA10)', function (string $actor, array $payload) {
+    $appointment = $this->createAppointment();
+    ($this->actAs)($actor);
+    $before = appointmentsDataSnapshot();
+
+    $response = $this->putJson($this->appointmentUrl($appointment->id), $payload);
+
+    $actor === 'guest' ? $response->assertUnauthorized() : $response->assertForbidden();
+    expect(appointmentsDataSnapshot())->toEqual($before);
+})->with([
+    'asistente' => 'asistente',
+    'doctor' => 'doctor',
+    'inactive staff' => 'inactive',
+    'patient' => 'patient',
+    'guest' => 'guest',
+])->with([
+    'reschedule' => [['date' => '2026-09-02', 'time' => '11:00']],
+    'cancel' => [['status' => 'cancelada']],
+    'date without time' => [['date' => '2026-09-02']],
+    'status outside the list' => [['status' => 'asignada']],
+    'reschedule and status at once' => [['date' => '2026-09-02', 'time' => '11:00', 'status' => 'cancelada']],
+    'date in another format' => [['date' => '02/09/2026', 'time' => '11:00']],
+]);
 
 it('keeps the clinical tracking of an appointment away from assistants and doctors', function (string $role) {
     $appointment = $this->createAppointment();
