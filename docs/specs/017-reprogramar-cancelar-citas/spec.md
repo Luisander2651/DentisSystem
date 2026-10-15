@@ -70,6 +70,7 @@ cita"), cancelar se percibe como acción destructiva y siempre pide confirmació
 toca: el detalle de la cita, el diálogo "Reprogramar cita" (antes "Editar cita") y un diálogo
 nuevo de confirmación de la cancelación. Solo con componentes del sistema de diseño
 ([docs/design/system.md](../../design/system.md)); no es un rediseño.
+Diseño de la spec: [design.md](design.md) (sin composiciones; rojo solo al confirmar la cancelación).
 
 ## Requisitos no funcionales
 - "Ahora" es la fecha y hora de la clínica, en la zona horaria de Ciudad de México.
@@ -91,6 +92,7 @@ nuevo de confirmación de la cancelación. Solo con componentes del sistema de d
 | 2026-10-15 | brecha | ¿Se corrige aquí el recordatorio de WhatsApp que se invierte? | No, fuera de alcance | usuario |
 | 2026-10-15 | brecha | ¿Se quita el selector de estado y se separa cancelar? | Sí: "Reprogramar" sin estado y botón "Cancelar cita" con confirmación | usuario |
 | 2026-10-15 | implícita | ¿Quién puede reprogramar y cancelar? | Solo el administrador | `docs/specs/007-agenda-de-citas/spec.md` → Historial (014, v0.1.0) |
+| 2026-10-15 | diseño | ¿Cómo se ven las acciones y la confirmación? | Ver [design.md](design.md): "Cancelar cita" normal en el detalle, rojo solo en "Sí, cancelar la cita" | /design-spec 017, usuario |
 | 2026-10-15 | implícita | ¿Qué estado deja una reprogramación? | `reprogramada` (007 CA5); el estado solo cambia a completada o cancelada (007 CA4) | `docs/specs/007-agenda-de-citas/spec.md` |
 
 ## Notas para /plan
