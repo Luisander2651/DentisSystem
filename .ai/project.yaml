@@ -18,7 +18,12 @@ workflow:
   # Flujo AI-DLC previo en pausa: reglas en AIDLC.md, estado en aidlc-docs/aidlc-state.md
   # (Unidad 5 ContentManagement a medias; Unidades 6 Email y 7 whatsApp pendientes).
   legacy_workflow: aidlc-paused
-skills_version: 1.11.2  # versión del paquete de skills (actualizado con /init --upgrade el 2026-10-04; inicializado con 1.8.1)
+  lanes:                       # carriles /fix, /refactor, /chore (shared/contract.md → "Carriles")
+    max_files: 5               # más archivos de código (sin tests ni docs) → flujo completo
+    contract_paths: []         # rutas que son contrato público además de openapi/proto/graphql
+sync:
+  last: null                   # commit hasta el que /sync concilió la deriva
+skills_version: 1.14.0  # versión del paquete de skills (actualizado con /init --upgrade el 2026-10-15; inicializado con 1.8.1)
 deploy:
   strategy: manual             # none | manual | ci-on-merge | ci-on-tag
   platform: "Droplet de DigitalOcean con Docker Compose, detrás de Cloudflare (dentissapp.com)"
@@ -59,6 +64,11 @@ observability:
     required: true             # LFPDPPP: datos de salud = datos personales sensibles
     events: [login, login_failed, access_denied, sensitive_read, sensitive_write, role_change]
     retention: "5 años (como el expediente clínico); base legal por confirmar"
+seo:                           # solo sitios web públicos (shared/contract.md → "SEO técnico")
+  status: inferred             # /seo audit sobre producción, 2026-10-15 (el usuario quiere que el sitio aparezca en buscadores)
+  indexable: true              # decisión del usuario, 2026-10-15
+  site_url: https://dentissapp.com
+  rendering: ssr               # Blade en el servidor; la galería pública carga sus imágenes con JS (SE5)
 skills:
   enabled: [design]
 design:                        # solo proyectos con interfaz (frontend, fullstack, mobile)
@@ -75,15 +85,18 @@ paths:
   deployment: docs/deployment.md
   security: docs/security.md
   observability: docs/observability.md
+  seo: docs/seo.md             # solo si seo.indexable es true
+  changes: docs/changes
   changelog: CHANGELOG.md
   specs: docs/specs
   adr: docs/adr
   templates: docs/templates
 template_hashes:              # huellas de docs/templates/ al copiarlas (aidd.py templates --yaml)
   adr.md: 479eaebd1fed
-  plan.md: 475640938449
-  review.md: 4e22b9063245
-  spec.md: 0408aa3527d3
+  change.md: 776fe7c0b58d
+  plan.md: 2a5c45f54da9
+  review.md: b307b807a00f
+  spec.md: 876efac8d9eb
   tasks.md: 77ed236f954b
 verification:                  # lo llena la Fase 4 (2026-09-22)
   - { command: "python .ai/bin/aidd.py validate", result: pass, note: "13 specs, 0 errores; re-sincronizado a 1.4.1 el 2026-09-24 (ya no requiere PYTHONIOENCODING)" }

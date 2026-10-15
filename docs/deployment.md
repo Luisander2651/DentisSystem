@@ -284,6 +284,13 @@ Estado: ensayado en local (T058) y en el droplet (T051, T054). Cada rollback que
 - `compose.sh up -d` después de un rollback mantiene la versión de `.deploy/current`; el `.env` no puede cambiarla.
 - En código: cada merge a `main` es `--no-ff` y se puede revertir con `git revert -m 1 <merge>`; después se etiqueta y se despliega una versión nueva.
 
+## Hotfix
+Lo usa `/fix --hotfix` (decisión del usuario, 2026-10-15).
+- Rama: `hotfix/<slug>` desde el tag de producción `vX.Y.Z`.
+- Staging: no hay. Como en cada release (P12): CI en verde en la rama y verificación local con la imagen de la versión; la misma aprobación humana escrita antes de producción.
+- Versión y despliegue: tag de parche `vX.Y.(Z+1)` desde la rama hotfix y despliegue con `docker/prod/deploy.sh vX.Y.(Z+1)`, como en "Despliegues siguientes"; rollback con `docker/prod/rollback.sh`.
+- Vuelta a la rama principal: tras producción, PR de la rama hotfix a `main` con merge `--no-ff`.
+
 ## Variables de entorno
 | Nombre | local | prod | Dónde se configura |
 |---|---|---|---|

@@ -37,10 +37,16 @@ Un solo archivo de tests: `docker compose exec app ./vendor/bin/pest tests/Modul
 6. `/review` → contra spec, plan y constitución → `review.md`
 7. `/release` → versión, changelog y, con tu aprobación, producción
 
-Usa `/clarify` para cerrar ambigüedades de una spec antes de aprobarla. Estado de todas las specs:
+Trabajo que no añade comportamiento (carriles ligeros, ficha en `docs/changes/`): `/fix` para un
+bug (`--hotfix` en producción), `/refactor` para deuda sin cambio de comportamiento, `/chore` para
+dependencias, configuración y docs. Si el cambio crece o toca contratos, datos o seguridad, pasa
+al flujo completo. `/sync` concilia lo que se hizo fuera del flujo.
+
+Usa `/clarify` para cerrar ambigüedades de una spec antes de aprobarla. Sistema de diseño:
+`/design-spec system`. Sitio público: `/seo audit` para re-auditar el SEO técnico. Estado de todas las specs:
 `python .ai/bin/aidd.py status`.
 
-No implementes sin spec aprobada. No hagas commit sin que pasen los tests y Pint.
+No implementes sin spec aprobada o ficha abierta de un carril. No hagas commit sin que pasen los tests y Pint.
 Nunca despliegues a producción sin aprobación explícita; sigue [docs/deployment.md](docs/deployment.md).
 Nunca escribas secretos en el código, los logs ni los docs. No leas `.env`.
 El `.env` local debe definir `DB_USERNAME`, `DB_PASSWORD` y `DB_DATABASE` iguales a los del volumen `db-data` local: `docker-compose.yml` los exige (spec 015). Tras cambiar a los volúmenes con nombre de `vendor/` y `node_modules/`, ejecuta una vez `docker compose exec -u root app chown -R www-data:www-data vendor node_modules` y después `composer install` y `npm install` dentro de `app`.
@@ -81,6 +87,7 @@ en el flujo AI-DLC. Sus reglas están en [AIDLC.md](AIDLC.md) y su estado en
 - [Seguridad](docs/security.md) — datos sensibles, auth, herramientas y excepciones
 - [Observabilidad](docs/observability.md) — logs, correlación, auditoría, métricas y brechas
 - [Diseño](docs/design/system.md) — sistema extraído del código, deuda `DS` y [vista en HTML](docs/design/system.html)
+- [SEO](docs/seo.md) — reglas del sitio público, inventario de rutas y brechas `SE`
 - [Roadmap](docs/roadmap.md) — etapa actual y objetivos
 - [Specs](docs/specs/README.md)
 - [ADRs](docs/adr/)
