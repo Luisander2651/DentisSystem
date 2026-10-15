@@ -5,6 +5,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+### Changed
+- Flujo AI-DD actualizado a 1.14.0: carriles ligeros (`/fix`, `/refactor`, `/chore`) con fichas en `docs/changes/` y sección "Hotfix" en `docs/deployment.md`; `/sync` para la deriva entre documentos y código; validador y plantillas nuevas. Auditoría de SEO técnico del sitio público en `docs/seo.md` (brechas SE1–SE8) y objetivo 7 del roadmap.
+
 ## [0.2.0] - 2026-10-14
 Sistema de diseño aplicado a toda la interfaz, con accesibilidad WCAG 2.1 AA y páginas de error propias (spec 016).
 
