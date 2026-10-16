@@ -68,10 +68,12 @@ function write(kind, message) {
     }
 }
 
-// Al cerrarse un diálogo, sus regiones quedan vacías: al reabrirlo no aparece un aviso viejo.
+// Al cerrarse un diálogo, sus regiones y sus campos quedan sin errores: al reabrirlo no aparece
+// un aviso ni una marca vieja aunque sus campos se rellenen sin escribir (spec 017).
 document.addEventListener('close', (event) => {
     if (event.target instanceof HTMLDialogElement) {
         event.target.querySelectorAll('[data-ui-status], [data-ui-alert]').forEach((target) => show(target, ''));
+        event.target.querySelectorAll('[aria-invalid="true"]').forEach(unmarkField);
     }
 }, true);
 
@@ -259,18 +261,27 @@ export function markFieldErrors(scope, errors) {
             field.classList.add('border-2', 'border-danger');
         }
 
-        field.addEventListener('input', () => {
-            target.classList.add('hidden');
-            field.removeAttribute('aria-invalid');
-            field.classList.remove('border-2', 'border-danger');
-            field.classList.add('border-field');
+        field.addEventListener('input', () => unmarkField(field), { once: true });
+    }
+}
 
-            if (others.length > 0) {
-                field.setAttribute('aria-describedby', others.join(' '));
-            } else {
-                field.removeAttribute('aria-describedby');
-            }
-        }, { once: true });
+/** Retira la marca de error de un campo: su texto, aria-invalid, su enlace y el borde. */
+function unmarkField(field) {
+    const target = document.getElementById(field.dataset.errorTarget ?? '') ?? document.getElementById(`${field.id}-error`);
+    const others = (field.getAttribute('aria-describedby') ?? '').split(/\s+/).filter((id) => id !== '' && id !== target?.id);
+
+    target?.classList.add('hidden');
+    field.removeAttribute('aria-invalid');
+
+    if (field.hasAttribute('data-ui-input')) {
+        field.classList.remove('border-2', 'border-danger');
+        field.classList.add('border-field');
+    }
+
+    if (others.length > 0) {
+        field.setAttribute('aria-describedby', others.join(' '));
+    } else {
+        field.removeAttribute('aria-describedby');
     }
 }
 
