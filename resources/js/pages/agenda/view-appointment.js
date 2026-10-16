@@ -29,6 +29,8 @@ import { announceError, failureMessage } from '../../ui/status';
     }
 
     var activeAppointmentId = null;
+    // What the cancel confirmation names: the patient, the date and the time (spec 017, CA7).
+    var activeAppointmentSummary = null;
 
 
     function normalizeAppointmentStatus(status) {
@@ -190,6 +192,7 @@ import { announceError, failureMessage } from '../../ui/status';
 
     async function open(appointmentId, opener) {
         activeAppointmentId = appointmentId;
+        activeAppointmentSummary = null;
         hideError();
         generalContainer.innerHTML = '';
         clinicalSection.classList.add('hidden');
@@ -203,6 +206,13 @@ import { announceError, failureMessage } from '../../ui/status';
             var data = await requestJson('/api/v1/appointments/' + appointmentId);
             var appointment = data.data || {};
             var normalizedStatus = normalizeAppointmentStatus(appointment.status);
+
+            activeAppointmentSummary = {
+                id: appointmentId,
+                patient: appointment.patient_name || 'Paciente',
+                date: formatDate(appointment.date),
+                time: formatTime(appointment.time),
+            };
 
             addRow(generalContainer, 'Paciente', appointment.patient_name || 'Paciente');
             addRow(generalContainer, 'Tratamiento', appointment.treatment_name || 'Consulta');
@@ -261,6 +271,7 @@ import { announceError, failureMessage } from '../../ui/status';
     function closeModal() {
         closeDialog(modal);
         activeAppointmentId = null;
+        activeAppointmentSummary = null;
     }
 
     cancelButtons.forEach(function (button) {
@@ -273,6 +284,14 @@ import { announceError, failureMessage } from '../../ui/status';
             closeModal();
             if (window.agendaAppointmentModal && typeof window.agendaAppointmentModal.openEdit === 'function' && appointmentId) {
                 window.agendaAppointmentModal.openEdit(appointmentId);
+            }
+        });
+    }
+
+    if (cancelAppointmentButton) {
+        cancelAppointmentButton.addEventListener('click', function () {
+            if (activeAppointmentSummary && window.agendaCancelAppointment && typeof window.agendaCancelAppointment.open === 'function') {
+                window.agendaCancelAppointment.open(activeAppointmentSummary, cancelAppointmentButton);
             }
         });
     }
