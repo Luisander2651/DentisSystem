@@ -21,6 +21,7 @@ import { announceError, failureMessage } from '../../ui/status';
     var clinicalBody = modal.querySelector('[data-view-appointment-clinical-body]');
     var errorBox = modal.querySelector('[data-view-appointment-error]') || document.createElement('p');
     var editButton = modal.querySelector('[data-view-appointment-edit]');
+    var cancelAppointmentButton = modal.querySelector('[data-view-appointment-cancel-appointment]');
     var cancelButtons = modal.querySelectorAll('[data-view-appointment-cancel]');
 
     if (!generalContainer || !clinicalSection || !clinicalBody) {
@@ -194,6 +195,7 @@ import { announceError, failureMessage } from '../../ui/status';
         clinicalSection.classList.add('hidden');
         clinicalBody.innerHTML = '';
         if (editButton) editButton.hidden = true;
+        if (cancelAppointmentButton) cancelAppointmentButton.hidden = true;
 
         openDialog(modal, opener || document.activeElement);
 
@@ -209,9 +211,16 @@ import { announceError, failureMessage } from '../../ui/status';
             addRow(generalContainer, 'Hora', formatTime(appointment.time));
             addRow(generalContainer, 'Estado', stateBadge(normalizedStatus), true);
 
+            // Spec 017 (CA8): only an open appointment can be rescheduled or cancelled, and only
+            // where the agenda loaded those dialogs (not in the clinical record).
+            var isOpen = normalizedStatus === 'asignada' || normalizedStatus === 'reprogramada';
             var canEdit = window.agendaAppointmentModal && typeof window.agendaAppointmentModal.openEdit === 'function';
-            if ((normalizedStatus === 'asignada' || normalizedStatus === 'reprogramada') && editButton && canEdit) {
+            var canCancel = window.agendaCancelAppointment && typeof window.agendaCancelAppointment.open === 'function';
+            if (isOpen && editButton && canEdit) {
                 editButton.hidden = false;
+            }
+            if (isOpen && cancelAppointmentButton && canCancel) {
+                cancelAppointmentButton.hidden = false;
             }
 
             if (normalizedStatus === 'completada' && isAdmin) {
