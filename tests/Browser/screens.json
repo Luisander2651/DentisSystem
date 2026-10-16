@@ -443,6 +443,50 @@
                             "text": "No se pudo guardar porque choca con otro registro. Revisa los datos e inténtalo de nuevo."
                         }
                     }
+                },
+                {
+                    "name": "reabrir tras un 422",
+                    "answer": {
+                        "status": 422,
+                        "body": {
+                            "message": "No puedes reprogramar la cita a una fecha u hora que ya pasó.",
+                            "errors": {
+                                "date": [
+                                    "No puedes reprogramar la cita a una fecha u hora que ya pasó."
+                                ]
+                            }
+                        }
+                    },
+                    "do": [
+                        {
+                            "fill": "[data-edit-appointment-date]",
+                            "value": "2026-07-30"
+                        },
+                        {
+                            "fill": "[data-edit-appointment-time]",
+                            "value": "11:00"
+                        },
+                        {
+                            "click": "[data-edit-appointment-submit]"
+                        },
+                        {
+                            "click": "[data-edit-appointment-cancel]"
+                        },
+                        {
+                            "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-view-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                        },
+                        {
+                            "click": "[data-view-appointment-edit]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-edit-appointment-modal]"
+                        ],
+                        "unmarked": [
+                            "[data-edit-appointment-modal]"
+                        ]
+                    }
                 }
             ]
         },

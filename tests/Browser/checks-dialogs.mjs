@@ -290,6 +290,10 @@ function flowStateInPage(expect) {
         closed: Object.fromEntries((expect.closed ?? []).map((selector) => [selector, A.scope(selector) === null])),
         values: Object.fromEntries(Object.keys(expect.values ?? {}).map((selector) => [selector, document.querySelector(selector)?.value ?? null])),
         dialogSays: expect.dialogSays ? regions(A.scope(expect.dialogSays.in) ?? document.createElement('div')) : '',
+        // A field still marked by an earlier refusal: invalid, or with its error text in sight.
+        marked: (expect.unmarked ?? []).flatMap((selector) => [...(A.scope(selector)?.querySelectorAll('[aria-invalid=true], [id$="-error"]') ?? [])]
+            .filter((element) => element.getAttribute('aria-invalid') === 'true' || (A.visible(element) && element.textContent.trim() !== ''))
+            .map((element) => A.describe(element))),
         announced: (window.__flowAnnounced ?? []).join(' · '),
     };
 }
@@ -376,6 +380,10 @@ async function runFlows(page, entry, baseUrl) {
 
             if (expect.dialogSays && !state.dialogSays.includes(expect.dialogSays.text)) {
                 fail(`la región de ${expect.dialogSays.in} dice "${state.dialogSays || 'nada'}" y debía decir "${expect.dialogSays.text}"`);
+            }
+
+            if (state.marked.length > 0) {
+                fail(`siguen marcados con el error anterior: ${state.marked.join('; ')}`);
             }
 
             if (expect.announced && !state.announced.includes(expect.announced)) {
