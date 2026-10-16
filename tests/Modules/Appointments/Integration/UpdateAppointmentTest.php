@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Modules\Appointments\Aplication\DTOs\UpdateAppointmentDTO;
+use App\Modules\Appointments\Aplication\Exceptions\RescheduleAndStatusTogetherException;
+use App\Modules\Appointments\Aplication\UseCases\UpdateAppointmentUseCase;
+use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Tests\Modules\Appointments\Integration\AppointmentsIntegrationTestCase;
@@ -172,6 +176,28 @@ it('rejects a request that reschedules and changes the status at once', function
     'date and complete' => [['date' => '2026-10-17', 'status' => 'completada']],
     'time and cancel' => [['time' => '11:00', 'status' => 'cancelada']],
 ]);
+
+it('refuses in the use case a reschedule that travels with a status, without the form request', function () {
+    $this->actingAsAdmin();
+    $appointment = $this->createAppointment(['date' => '2026-10-16', 'time' => '10:00']);
+
+    expect(fn () => app(UpdateAppointmentUseCase::class)->execute(
+        UpdateAppointmentDTO::create($appointment->id, '2026-10-17', '11:00', null, 'cancelada'),
+    ))->toThrow(RescheduleAndStatusTogetherException::class, 'No puedes reprogramar y cambiar el estado de la cita a la vez.');
+
+    $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'date' => '2026-10-16', 'status' => 'asignada']);
+});
+
+it('answers the refusal to reschedule and change the status at once as an input error of the status', function () {
+    $this->actingAsAdmin();
+    $appointment = $this->createAppointment(['date' => '2026-10-16', 'time' => '10:00']);
+    $this->mock(AppointmentsRepositoryInterface::class)
+        ->shouldReceive('findById')->andThrow(new RescheduleAndStatusTogetherException('No puedes reprogramar y cambiar el estado de la cita a la vez.'));
+
+    $this->putJson($this->appointmentUrl($appointment->id), ['date' => '2026-10-17', 'time' => '11:00'])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.status.0', 'No puedes reprogramar y cambiar el estado de la cita a la vez.');
+});
 
 it('rejects a status other than completada or cancelada', function (string $status) {
     $this->actingAsAdmin();
