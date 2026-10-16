@@ -236,9 +236,9 @@ Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
 **Todas** las vistas de la app, con capturas de la app real hechas con datos de prueba. Nada se
 dibuja a mano. Las capturas son las del sistema 2.0.0: las generó el paso `ui-audit` de CI el
 2026-10-12 (corrida del commit `871ee45`) sobre una base recién migrada que solo contiene los datos
-de `UiAuditSeeder`. **75 de 76 capturadas** (147 imágenes, a 390 y 1440 px); la spec 017 renombra "Editar cita" a
-"Reprogramar cita" y añade "Confirmar cancelación": sus capturas y la del detalle de cita
-asignada se regeneran en su tarea T037. CI comprueba además
+de `UiAuditSeeder`. **76 de 76 capturadas** (149 imágenes, a 390 y 1440 px). La spec 017 renombró "Editar cita" a
+"Reprogramar cita", añadió "Confirmar cancelación" y regeneró esas capturas y la del detalle de
+cita asignada el 2026-10-16, con `ui-audit` en local sobre los mismos datos. CI comprueba además
 cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas quedan en el artefacto
 `ui-audit` de cada corrida.
 
@@ -267,9 +267,9 @@ cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas qued
 | Agenda, mes con citas | `/agenda` (julio de 2026) | Administrador | [390](capturas/agenda-con-citas-390.png) · [1440](capturas/agenda-con-citas-1440.png) | capturada |
 | Agenda, citas del día | `components/calendar/day-details-modal.blade.php` | Administrador | [1440](capturas/agenda-dia-1440.png) | capturada a 1440 px (el diálogo existe desde 768 px y CI lo revisa también a ese ancho; en el móvil es una lista bajo el calendario) |
 | Agenda, detalle de cita | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-390.png) · [1440](capturas/agenda-cita-detalle-1440.png) | capturada |
-| Agenda, detalle de cita asignada (con "Reprogramar" y "Cancelar cita") | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-pendiente-390.png) · [1440](capturas/agenda-cita-detalle-pendiente-1440.png) | por regenerar (017, T037) |
-| Agenda, reprogramar cita | `components/calendar/edit-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-reprogramar-390.png) · [1440](capturas/agenda-cita-reprogramar-1440.png) | por capturar (017, T037) |
-| Agenda, confirmar cancelación | `components/calendar/cancel-appointment-confirm.blade.php` | Administrador | [390](capturas/agenda-cita-cancelar-390.png) · [1440](capturas/agenda-cita-cancelar-1440.png) | por capturar (017, T037) |
+| Agenda, detalle de cita asignada (con "Reprogramar" y "Cancelar cita") | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-pendiente-390.png) · [1440](capturas/agenda-cita-detalle-pendiente-1440.png) | capturada |
+| Agenda, reprogramar cita | `components/calendar/edit-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-reprogramar-390.png) · [1440](capturas/agenda-cita-reprogramar-1440.png) | capturada |
+| Agenda, confirmar cancelación | `components/calendar/cancel-appointment-confirm.blade.php` | Administrador | [390](capturas/agenda-cita-cancelar-390.png) · [1440](capturas/agenda-cita-cancelar-1440.png) | capturada |
 | Agenda, agendar cita | `components/calendar/create-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-crear-390.png) · [1440](capturas/agenda-cita-crear-1440.png) | capturada |
 | Agenda, completar cita (paso 1) | `components/calendar/complete-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-completar-390.png) · [1440](capturas/agenda-cita-completar-1440.png) | capturada |
 | Agenda, completar cita con error de validación | `components/calendar/complete-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-completar-validacion-390.png) · [1440](capturas/agenda-cita-completar-validacion-1440.png) | capturada |
