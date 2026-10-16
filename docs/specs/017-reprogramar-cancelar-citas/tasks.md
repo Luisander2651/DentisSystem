@@ -164,6 +164,20 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 - [x] T034 Cerrar la implementación: Pint (`--dirty`) y suite Pest completa sin ninguna marca `skip('017:` (incluidos `CompleteAppointmentTest`, `WhatsAppFlowLogsTest`, `AppointmentsAccessControlTest` y `UnexpectedErrorTest`). `npm run build` y `ui-audit` dos veces seguidas en verde. `grep` de `now(`, `Illuminate` y `Carbon` en `app/Modules/Appointments/Domain/` sin resultados nuevos; `grep -rn "env(" app/` sin resultados nuevos. `python .ai/bin/aidd.py validate` sin errores. — ninguno (solo verificación) — hecho cuando: todo lo anterior en verde — depende: T002, T003, T004, T022, T035, T037, T039
   - nota: hecha 2026-10-16: Pint sin cambios; suite Pest completa 1338/1338 sin ningún `skip('017:')` (una corrida en paralelo previa dio una `PDOException` intermitente en `CurrentActorAuthorizationServiceTest`, que aislado pasa 12/12 y en la siguiente corrida completa pasó); `npm run build` correcto; `ui-audit` de la convención dos veces en verde (41 visitas, 0 fallos); el diff desde `impl_base` no añade `now(`, `Illuminate` ni `Carbon` en `Domain/` ni `env(` en `app/`; `aidd.py validate` sin errores (solo el aviso de análisis desactualizado por T038 y T039, añadidas durante /implement)
 
+### Correcciones de /review (ronda 1)
+- [ ] T040 Describir que una reprogramación con la fecha y la hora vacías a la vez (`''` y `null`) se rechaza con 422 y el texto de CA2 en `errors.date.0`, y la cita no cambia; añadir los dos casos al dataset de CA2 — `tests/Modules/Appointments/Integration/UpdateAppointmentTest.php` — hecho cuando: los dos casos nuevos fallan hoy por la razón esperada ("La fecha no tiene un formato válido." en lugar del texto de CA2) y los demás casos del archivo siguen en verde — cubre: CA2
+  - nota: añadida por /review: R1
+- [ ] T041 Exigir fecha y hora, con el texto de CA2, siempre que la petición traiga la clave `date` o la clave `time` (aunque llegue vacía), en lugar de `required_with`; el cuerpo vacío `{}` sigue sin exigirlas (409, A24) — `app/Modules/Appointments/Infrastructure/Http/Requests/UpdateAppointmentRequest.php` — hecho cuando: T040 pasa y `UpdateAppointmentTest` y `AppointmentsAccessControlTest` siguen en verde — cubre: CA2 — depende: T040
+  - nota: añadida por /review: R1
+- [ ] T042 Describir la guardia del caso de uso contra mezclar reprogramación y estado sin pasar por el FormRequest: (a) `UpdateAppointmentUseCase::execute()` con un DTO que trae fecha, hora y `status: cancelada` lanza `RescheduleAndStatusTogetherException` y la cita no cambia; (b) con el caso de uso sustituido en el contenedor por uno que lanza esa excepción, `PUT` con una reprogramación válida responde 422 con el texto de CA6 en `errors.status.0` — `tests/Modules/Appointments/Integration/UpdateAppointmentTest.php` — hecho cuando: los dos casos fallan hoy por la razón esperada (la clase `RescheduleAndStatusTogetherException` no existe) y los demás siguen en verde — cubre: CA6 — depende: T041
+  - nota: añadida por /review: R2, R3
+- [ ] T043 Crear `RescheduleAndStatusTogetherException` (final, con el texto de CA6), lanzarla desde `UpdateAppointmentUseCase` en lugar de `AppointmentAplicationExceptions::rescheduleAndStatusTogether()` y responderla en `UpdateAppointmentController` con su propio `catch` (422 `errors.status`), sin comparar mensajes — `app/Modules/Appointments/Aplication/Exceptions/RescheduleAndStatusTogetherException.php` (nuevo), `app/Modules/Appointments/Aplication/UseCases/UpdateAppointmentUseCase.php`, `app/Modules/Appointments/Infrastructure/Http/Controllers/UpdateAppointmentController.php` — hecho cuando: T042 pasa, el controlador no contiene `getMessage() ===` y la suite de Appointments sigue en verde — cubre: CA6 — depende: T042
+  - nota: añadida por /review: R2, R3
+- [ ] T044 Retirar la fábrica `rescheduleAndStatusTogether()`, que queda sin uso — `app/Modules/Appointments/Aplication/Exceptions/AppointmentAplicationExceptions.php` — hecho cuando: `grep -rn "rescheduleAndStatusTogether" app tests` no da resultados, Pint (`--dirty`) limpio y la suite Pest completa en verde — depende: T043
+  - nota: añadida por /review: R2
+- [ ] T045 Encontrar y corregir el fallo intermitente de la prueba de navegador de la agenda: correr la convención (`npm run test:ui -- --only agenda,citas-del-dia,detalle-cita,reprogramar-cita,nueva-cita,cancelar-cita`) guardando la salida completa hasta que falle, identificar la entrada y la comprobación, y sustituir la espera que falla por una espera por condición (nunca un reintento ni un tiempo mayor) — `tests/Browser/checks-dialogs.mjs`, `tests/Browser/screens.json` — hecho cuando: la causa queda anotada en la tarea y la convención pasa cinco veces seguidas con 0 fallos — cubre: CA5, CA7 — depende: T044
+  - nota: añadida por /review: R11
+
 ## Integración y documentación
 - [x] T036 Registrar en el Historial de las specs extendidas el cambio de 017: 007 (CA3 y CA4 pasan de 409 a 422, CA14 cumplido, "citas de hoy" en la zona de la clínica, completar una cita cancelada se rechaza), 011 y 012 (vigencia de las promociones en la zona de la clínica) — `docs/specs/007-agenda-de-citas/spec.md`, `docs/specs/011-sitio-publico/spec.md`, `docs/specs/012-gestion-de-contenido/spec.md` — hecho cuando: cada Historial tiene una fila que cita 017 y `aidd.py validate` no da errores nuevos — depende: T034
   - nota: hecha 2026-10-16: una fila en el Historial de 007 (CA3 y CA4 de 409 a 422, completar una cancelada rechazado, CA14 cumplido, "citas de hoy" en la zona de la clínica), 011 y 012 (vigencia de las promociones en la zona de la clínica), marcadas "pendiente de liberar": `/release` las fecha con la versión. `aidd.py validate` sin errores en las cuatro specs
@@ -171,7 +185,7 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: hecha 2026-10-16: `docs/architecture.md` → "Backend" (zona de la clínica para toda la aplicación; el dominio de citas recibe el "ahora"; reglas de cita cerrada) y "Contrato entre capas" (un `PUT` de cita hace una sola acción, rechazos de entrada en 422, excepción a P4 de la spec 017)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: `APP_TIMEZONE` en las variables de producción y comprobar antes del deploy que el `.env` de producción no fija otra zona
   - nota: hecha 2026-10-16: `docs/deployment.md` → fila `APP_TIMEZONE` en "Variables de entorno" y la variable en la comprobación 2c, con la condición de que, si se define, valga `America/Mexico_City`. `docs/observability.md` → "Logs": la fecha de cada línea de Laravel pasa a la zona de la clínica (antes UTC); `deploys.log` sigue en UTC. Sin eventos de auditoría ni métricas nuevas
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - nota: hecha 2026-10-16: spec en `implemented`, CA1–CA11 marcados (sus tests pasan: Pest 1338/1338 y ui-audit de la convención en verde), fila en su Historial y en `docs/specs/README.md`
 
 ## Despliegue (lo ejecuta `/release`)
@@ -185,11 +199,11 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
 | CA1 | T010, T012, T018 | T021, T024, T025, T030 |
-| CA2 | T012 | T023, T024, T025 |
+| CA2 | T012, T040 | T023, T024, T025, T041 |
 | CA3 | T002, T010, T011, T012 | T020, T021, T024, T025 |
 | CA4 | T002, T010, T011, T013 | T020, T021, T022 |
 | CA5 | T018, T038 | T030, T039 |
-| CA6 | T012 | T023, T024, T025 |
+| CA6 | T012, T042 | T023, T024, T025, T043 |
 | CA7 | T012, T015, T018 | T024, T025, T031, T032, T033, T035, T037 |
 | CA8 | T010, T012, T015 | T020, T021, T024, T025, T031 |
 | CA9 | T012, T015 | T024, T030, T031, T035, T037 |
@@ -199,7 +213,7 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
 | TM1 | T023, T025 | T014 |
-| TM2 | T023, T024 | T012 |
+| TM2 | T023, T024, T043 | T012, T042 |
 | TM3 | T021 | T010, T012 |
 | TM4 | T021, T022 | T010, T011, T012, T013 |
 | TM5 | T022, T025 | T012, T013, T017 |
@@ -210,15 +224,15 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | Appointments · Domain (excepciones) | T020, T024 |
 | Appointments · Aplication (`UpdateAppointmentUseCase`) | T021, T024 |
 | Appointments · Aplication (`CreateAppointmentUseCase`) | T021 |
-| Appointments · Aplication (`AppointmentAplicationExceptions`) | T024 |
-| Appointments · Infrastructure (`UpdateAppointmentRequest`) | T023 |
-| Appointments · Infrastructure (controladores) | T022, T025 |
+| Appointments · Aplication (`AppointmentAplicationExceptions`) | T024, T043, T044 |
+| Appointments · Infrastructure (`UpdateAppointmentRequest`) | T023, T041 |
+| Appointments · Infrastructure (controladores) | T022, T025, T043 |
 | Configuración (`config/app.php`, `.env.example`) | T002, T004 |
 | Interfaz · agenda (reprogramar) | T030 |
 | Interfaz · agenda (detalle) | T031, T033 |
 | Interfaz · agenda (confirmación y script) | T032, T033 |
 | Sistema de diseño | T001, T037 |
-| Tests de navegador | T015, T018, T035, T038 |
+| Tests de navegador | T015, T018, T035, T038, T045 |
 | Sistema de diseño, `status.js` (añadida durante /implement) | T039 |
 | Tests existentes con fechas fijas | T012, T013, T014, T016 |
 | Historial de 007, 011 y 012 | T036 |

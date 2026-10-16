@@ -1,7 +1,7 @@
 ---
 id: 017
 slug: reprogramar-cancelar-citas
-status: implemented
+status: approved
 created: 2026-10-15
 extends: [007, 011, 012]
 ---
