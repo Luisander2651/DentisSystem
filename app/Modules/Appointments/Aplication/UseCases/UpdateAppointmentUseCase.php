@@ -7,6 +7,7 @@ namespace App\Modules\Appointments\Aplication\UseCases;
 use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Modules\Appointments\Aplication\DTOs\UpdateAppointmentDTO;
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptions;
+use App\Modules\Appointments\Aplication\Exceptions\RescheduleAndStatusTogetherException;
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
 use App\Modules\Appointments\Domain\Service\AppointmentsService;
@@ -67,7 +68,7 @@ final readonly class UpdateAppointmentUseCase
     private function validateReschedule(UpdateAppointmentDTO $updateAppointmentDTO): void
     {
         if ($updateAppointmentDTO->status !== null) {
-            throw AppointmentAplicationExceptions::rescheduleAndStatusTogether();
+            throw RescheduleAndStatusTogetherException::create();
         }
 
         if ($updateAppointmentDTO->date === null || $updateAppointmentDTO->time === null) {

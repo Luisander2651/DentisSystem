@@ -9,6 +9,7 @@ use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Appointments\Aplication\DTOs\UpdateAppointmentDTO;
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptions;
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentScheduleConflictException;
+use App\Modules\Appointments\Aplication\Exceptions\RescheduleAndStatusTogetherException;
 use App\Modules\Appointments\Aplication\UseCases\UpdateAppointmentUseCase;
 use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
 use App\Modules\Appointments\Domain\Exceptions\AppointmentInThePastException;
@@ -52,13 +53,10 @@ final class UpdateAppointmentController
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (ValueObjectsException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
+        } catch (RescheduleAndStatusTogetherException $e) {
+            return self::invalid('status', $e->getMessage());
         } catch (AppointmentAplicationExceptions $e) {
-            // Spec 017: only the mix of a reschedule and a status is an input error; the empty
-            // body keeps its 409 (decisión del usuario, /analyze A24).
-            if ($e->getMessage() === AppointmentAplicationExceptions::rescheduleAndStatusTogether()->getMessage()) {
-                return self::invalid('status', $e->getMessage());
-            }
-
+            // Spec 017: the empty body keeps its 409 (decisión del usuario, /analyze A24).
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (AppointmentScheduleConflictException $e) {
             return response()->json(['error' => $e->getMessage()], 409);
