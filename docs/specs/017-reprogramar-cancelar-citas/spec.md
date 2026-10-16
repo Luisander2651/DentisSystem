@@ -1,7 +1,7 @@
 ---
 id: 017
 slug: reprogramar-cancelar-citas
-status: approved
+status: implemented
 created: 2026-10-15
 extends: [007, 011, 012]
 ---
@@ -25,17 +25,17 @@ citas en el pasado que nunca se atenderán. Escalada desde la ficha
   que la agenda solo tenga citas que se pueden atender.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dada una cita asignada o reprogramada, cuando el administrador la reprograma a una fecha y hora futuras y libres, entonces la cita queda con la nueva fecha y hora y en estado "reprogramada" sin que tenga que elegir el estado, el diálogo se cierra, se avisa "Cita reprogramada." y la agenda muestra el cambio.
-- [ ] CA2 · Dada una reprogramación, cuando falta la fecha o la hora, entonces se rechaza con el mensaje "Necesitas proporcionar fecha y hora para reprogramar la cita." y la cita no cambia.
-- [ ] CA3 · Dada una fecha anterior a hoy, o la fecha de hoy con una hora igual o anterior a la hora actual de la clínica, cuando el administrador reprograma una cita a ese momento, entonces se rechaza con el mensaje "No puedes reprogramar la cita a una fecha u hora que ya pasó." y la cita no cambia. Cumple 007 CA14 al reprogramar.
-- [ ] CA4 · Dada una fecha anterior a hoy, o la fecha de hoy con una hora igual o anterior a la hora actual de la clínica, cuando se intenta agendar una cita nueva en ese momento, entonces se rechaza con el mensaje "No puedes agendar una cita en una fecha u hora que ya pasó." y no se crea la cita. Cumple 007 CA14 al crear.
-- [ ] CA5 · Dado un rechazo por fecha u hora pasada, choque de horario o dato faltante, cuando el administrador está en el diálogo de agendar o de reprogramar, entonces el diálogo sigue abierto con lo que escribió y muestra el mensaje junto al formulario.
-- [ ] CA6 · Dada una misma solicitud que pide reprogramar y cambiar el estado a la vez, entonces se rechaza y la cita no cambia: reprogramar y cambiar el estado son acciones separadas.
-- [ ] CA7 · Dada una cita asignada o reprogramada, cuando el administrador pulsa "Cancelar cita" en su detalle y lo confirma, entonces la cita queda cancelada, se avisa "Cita cancelada." y la agenda muestra el cambio; si en la confirmación elige no cancelar o la cierra, la cita no cambia.
-- [ ] CA8 · Dada una cita completada o cancelada, cuando el administrador abre su detalle, entonces no ve "Reprogramar" ni "Cancelar cita"; y si intenta reprogramarla o cancelarla por otra vía, se rechaza y la cita no cambia.
-- [ ] CA9 · Dado el detalle de una cita asignada o reprogramada, entonces el botón que antes decía "Editar cita" dice "Reprogramar" y abre el diálogo "Reprogramar cita", que pide fecha, hora y el recordatorio de WhatsApp, sin selector de estado.
-- [ ] CA10 · (abuso) Como miembro del staff que no es administrador, intento reprogramar o cancelar una cita, con datos válidos o no → se rechaza con acceso denegado y la cita no cambia.
-- [ ] CA11 · (abuso) Dada una cita cancelada, cuando se intenta marcarla como completada por cualquier vía, entonces se rechaza y la cita sigue cancelada.
+- [x] CA1 · Dada una cita asignada o reprogramada, cuando el administrador la reprograma a una fecha y hora futuras y libres, entonces la cita queda con la nueva fecha y hora y en estado "reprogramada" sin que tenga que elegir el estado, el diálogo se cierra, se avisa "Cita reprogramada." y la agenda muestra el cambio.
+- [x] CA2 · Dada una reprogramación, cuando falta la fecha o la hora, entonces se rechaza con el mensaje "Necesitas proporcionar fecha y hora para reprogramar la cita." y la cita no cambia.
+- [x] CA3 · Dada una fecha anterior a hoy, o la fecha de hoy con una hora igual o anterior a la hora actual de la clínica, cuando el administrador reprograma una cita a ese momento, entonces se rechaza con el mensaje "No puedes reprogramar la cita a una fecha u hora que ya pasó." y la cita no cambia. Cumple 007 CA14 al reprogramar.
+- [x] CA4 · Dada una fecha anterior a hoy, o la fecha de hoy con una hora igual o anterior a la hora actual de la clínica, cuando se intenta agendar una cita nueva en ese momento, entonces se rechaza con el mensaje "No puedes agendar una cita en una fecha u hora que ya pasó." y no se crea la cita. Cumple 007 CA14 al crear.
+- [x] CA5 · Dado un rechazo por fecha u hora pasada, choque de horario o dato faltante, cuando el administrador está en el diálogo de agendar o de reprogramar, entonces el diálogo sigue abierto con lo que escribió y muestra el mensaje junto al formulario.
+- [x] CA6 · Dada una misma solicitud que pide reprogramar y cambiar el estado a la vez, entonces se rechaza y la cita no cambia: reprogramar y cambiar el estado son acciones separadas.
+- [x] CA7 · Dada una cita asignada o reprogramada, cuando el administrador pulsa "Cancelar cita" en su detalle y lo confirma, entonces la cita queda cancelada, se avisa "Cita cancelada." y la agenda muestra el cambio; si en la confirmación elige no cancelar o la cierra, la cita no cambia.
+- [x] CA8 · Dada una cita completada o cancelada, cuando el administrador abre su detalle, entonces no ve "Reprogramar" ni "Cancelar cita"; y si intenta reprogramarla o cancelarla por otra vía, se rechaza y la cita no cambia.
+- [x] CA9 · Dado el detalle de una cita asignada o reprogramada, entonces el botón que antes decía "Editar cita" dice "Reprogramar" y abre el diálogo "Reprogramar cita", que pide fecha, hora y el recordatorio de WhatsApp, sin selector de estado.
+- [x] CA10 · (abuso) Como miembro del staff que no es administrador, intento reprogramar o cancelar una cita, con datos válidos o no → se rechaza con acceso denegado y la cita no cambia.
+- [x] CA11 · (abuso) Dada una cita cancelada, cuando se intenta marcarla como completada por cualquier vía, entonces se rechaza y la cita sigue cancelada.
 
 ## Fuera de alcance
 - El recordatorio de WhatsApp que se invierte cada vez que se guarda el diálogo (007 CA6): el
@@ -137,3 +137,4 @@ Diseño de la spec: [design.md](design.md) (sin composiciones; rojo solo al conf
 | 2026-10-15 | Aprobada | Aprobación del usuario |
 | 2026-10-15 | CA10 con datos inválidos, CA11 nuevo, `extends` con 011 y 012, efectos de la zona horaria; vuelve a `draft` | /analyze 017 ronda 1 (A8, A9, A10, A11) |
 | 2026-10-15 | Reaprobada tras la edición | Aprobación del usuario |
+| 2026-10-16 | Implementada: CA1–CA11 con sus tests en verde (Pest y ui-audit) | /implement 017 |
