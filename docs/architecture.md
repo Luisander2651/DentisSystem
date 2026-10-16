@@ -120,13 +120,24 @@ Crear una cita:
 - Contratos de API: no hay OpenAPI. El contrato implícito son los `JsonResource` de cada módulo; forma de respuesta `{"message"}` en escrituras, `{"error"}` en errores y `{"data": [...]}` en lecturas.
 - Autenticación y autorización: tokens personales de Sanctum en cookie `auth_token` (httpOnly). Dos capas (spec 014): middleware por tipo de actor (`only.admin`, o `staff` para cualquier staff activo y `staff:<roles>` en la web) y `assertCan` en cada caso de uso, con un mapa `permiso → roles` en `CurrentActorAuthorizationService` como única fuente de verdad (todo el staff lee pacientes y expedientes; administrador y asistente editan datos clínicos; el resto es solo del administrador). Detalle y riesgos en [security.md](security.md).
 - Manejo de errores (spec 014): los controladores traducen las excepciones de negocio (400, 403, 404, 409, 422) y envían cualquier otra a `UnexpectedErrorResponse` (500 `{"error": "Internal server error"}`, log `unexpected_error` sin el mensaje). `withExceptions` en `bootstrap/app.php` hace de red para `api/*`: 401 siempre en JSON, `AuthorizationException` de Core → 403, lo no capturado → `UnexpectedErrorResponse`, y sin el reporte por defecto de Laravel para esas excepciones.
+- Tiempo (spec 017): la zona de toda la aplicación es la de la clínica, `America/Mexico_City`
+  (`APP_TIMEZONE`, valor por defecto en `config/app.php`); rige el "ahora" de las citas, las citas de
+  hoy y la vigencia de las promociones. El dominio de citas no lee el reloj: `AppointmentEntity::create()`
+  y `reschedule()` reciben el "ahora" (`DateTimeImmutable`) del caso de uso y rechazan un momento igual o
+  anterior; `reschedule()` y `cancel()` rechazan una cita completada o cancelada, y `complete()` una cancelada.
 - Errores de las pantallas web (spec 016): `only.admin` y `staff` responden `abort(403)` sin mensaje fuera de `api/*`. Un render propio en `withExceptions` devuelve para los 403, 404, 405 y 419 de rutas web la vista de `errors/` correspondiente, o un JSON fijo en español (`{"message"}`) cuando se pide JSON; `api/*` conserva sus respuestas.
 - Observabilidad: logs de Laravel en el canal `stderr` (nivel `info`), recogidos por Alloy → Loki → Grafana; health check `/up` que también comprueba PostgreSQL y Redis (`App\Core\Health\CheckDependenciesOnHealth`, escuchando `DiagnosingHealth`); sin métricas, correlación ni auditoría. Detalle en [observability.md](observability.md).
 - Seguridad: rate limiting `throttle:api` (10/min por IP sin autenticar, 100/min por usuario) sobre la IP real del visitante (`App\Core\Middlewares\TrustCloudflareProxies` sustituye a `TrustProxies` y confía solo en los rangos de Cloudflare de `config/security.php`); `App\Core\Middlewares\SecurityHeaders` añade CSP con nonce (`Vite::useCspNonce`), `X-Frame-Options`, `nosniff` y `Referrer-Policy`; CORS limitado a `APP_URL` sin credenciales. Ver [security.md](security.md).
 
 ## Contrato entre capas
 - Fuente de verdad: los `JsonResource` y las rutas de `routes/api.php`; no hay tipos compartidos con el JS. Desde esta constitución (P4), el contrato de cada endpoint nuevo o modificado se escribe en su spec o plan.
-- Versionado: prefijo `/api/v1`; un cambio incompatible pasa a `/api/v2`.
+- Versionado: prefijo `/api/v1`; un cambio incompatible pasa a `/api/v2`. Excepción aceptada en la spec 017
+  (plan D10): `PUT /api/v1/appointments/{id}` y `POST /api/v1/appointments` pasaron sus rechazos de entrada de
+  409 a 422 dentro de `/api/v1`, porque su único cliente es el JS de la agenda, que se despliega a la vez.
+- Una petición `PUT /api/v1/appointments/{id}` hace una sola acción (reprogramar con fecha y hora, cambiar el
+  estado a `completada` o `cancelada`, o el recordatorio); sus reglas de entrada están en
+  `UpdateAppointmentRequest`, que autoriza antes de validar. Los rechazos de entrada son 422 con el formato
+  de validación de Laravel (`{"message", "errors"}`), el único que la interfaz muestra tal cual.
 - Cómo se regenera: no aplica (no hay generación de tipos).
 
 ## Despliegue

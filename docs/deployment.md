@@ -136,7 +136,8 @@ nano .env
 
 # 2c. Comprobar sin mostrar secretos: nombres presentes y variables no secretas.
 grep -oE '^(DB_USERNAME|DB_PASSWORD|DB_DATABASE|REDIS_PASSWORD|GRAFANA_PASSWORD|APP_KEY)=.' .env | cut -d= -f1
-grep -E '^(COMPOSE_FILE|DATA_VOLUME_PREFIX|APP_ENV|APP_DEBUG|APP_URL|LOG_CHANNEL|LOG_LEVEL|SESSION_DRIVER|SESSION_ENCRYPT|SESSION_SECURE_COOKIE|CACHE_STORE|QUEUE_CONNECTION|REDIS_CLIENT|CSP_REPORT_ONLY)=' .env
+grep -E '^(COMPOSE_FILE|DATA_VOLUME_PREFIX|APP_ENV|APP_DEBUG|APP_URL|APP_TIMEZONE|LOG_CHANNEL|LOG_LEVEL|SESSION_DRIVER|SESSION_ENCRYPT|SESSION_SECURE_COOKIE|CACHE_STORE|QUEUE_CONNECTION|REDIS_CLIENT|CSP_REPORT_ONLY)=' .env
+#     APP_TIMEZONE, si aparece, debe valer America/Mexico_City (spec 017).
 stat -c '%a %U' .env                                      # 600 deploy
 docker/prod/compose.sh config --quiet && echo "compose ok"
 
@@ -295,6 +296,7 @@ Lo usa `/fix --hotfix` (decisión del usuario, 2026-10-15).
 | Nombre | local | prod | Dónde se configura |
 |---|---|---|---|
 | APP_NAME, APP_ENV, APP_KEY, APP_DEBUG, APP_URL | ✓ | ✓ | `.env` (prod: `APP_ENV=production`, `APP_DEBUG=false`) |
+| APP_TIMEZONE | opcional | opcional | `.env` (por defecto `America/Mexico_City` en `config/app.php`, spec 017; si se define, debe ser esa zona: rige el "ahora" de las citas) |
 | DB_CONNECTION, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD | ✓ | ✓ | `.env` |
 | REDIS_CLIENT, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT | ✓ | ✓ | `.env` (usar `predis`) |
 | QUEUE_CONNECTION, CACHE_STORE, SESSION_* | ✓ | ✓ | `.env` (prod: `QUEUE_CONNECTION=redis`, `CACHE_STORE=redis`, `SESSION_DRIVER=redis`, `SESSION_ENCRYPT=true`, `SESSION_SECURE_COOKIE=true`) |
