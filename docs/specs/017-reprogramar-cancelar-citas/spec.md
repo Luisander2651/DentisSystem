@@ -1,7 +1,7 @@
 ---
 id: 017
 slug: reprogramar-cancelar-citas
-status: approved
+status: implemented
 created: 2026-10-15
 extends: [007, 011, 012]
 ---
@@ -138,3 +138,4 @@ Diseño de la spec: [design.md](design.md) (sin composiciones; rojo solo al conf
 | 2026-10-15 | CA10 con datos inválidos, CA11 nuevo, `extends` con 011 y 012, efectos de la zona horaria; vuelve a `draft` | /analyze 017 ronda 1 (A8, A9, A10, A11) |
 | 2026-10-15 | Reaprobada tras la edición | Aprobación del usuario |
 | 2026-10-16 | Implementada: CA1–CA11 con sus tests en verde (Pest y ui-audit) | /implement 017 |
+| 2026-10-16 | Correcciones de /review ronda 1 (R1, R2, R3, R11): T040–T045; vuelve a `implemented` | /implement 017 |

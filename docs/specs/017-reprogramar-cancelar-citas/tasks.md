@@ -191,8 +191,9 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: hecha 2026-10-16: `docs/architecture.md` → "Backend" (zona de la clínica para toda la aplicación; el dominio de citas recibe el "ahora"; reglas de cita cerrada) y "Contrato entre capas" (un `PUT` de cita hace una sola acción, rechazos de entrada en 422, excepción a P4 de la spec 017)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: `APP_TIMEZONE` en las variables de producción y comprobar antes del deploy que el `.env` de producción no fija otra zona
   - nota: hecha 2026-10-16: `docs/deployment.md` → fila `APP_TIMEZONE` en "Variables de entorno" y la variable en la comprobación 2c, con la condición de que, si se define, valga `America/Mexico_City`. `docs/observability.md` → "Logs": la fecha de cada línea de Laravel pasa a la zona de la clínica (antes UTC); `deploys.log` sigue en UTC. Sin eventos de auditoría ni métricas nuevas
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
   - nota: hecha 2026-10-16: spec en `implemented`, CA1–CA11 marcados (sus tests pasan: Pest 1338/1338 y ui-audit de la convención en verde), fila en su Historial y en `docs/specs/README.md`
+  - nota: hecha de nuevo 2026-10-16 tras las correcciones de /review (T040–T045): Pest 1342/1342, Pint limpio, spec en `implemented`, fila en su Historial y en `docs/specs/README.md`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
