@@ -5,8 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-16
+Reprogramar y cancelar citas desde la agenda, sin citas en el pasado (spec 017).
+
+### Added
+- "Cancelar cita" en el detalle de una cita asignada o reprogramada, con un diálogo de confirmación; al confirmar se avisa "Cita cancelada." y la agenda se actualiza (spec 017).
+
 ### Changed
+- Reprogramar una cita pide solo la nueva fecha, la hora y el recordatorio de WhatsApp: el botón "Editar cita" pasa a llamarse "Reprogramar", el diálogo ya no pide el estado y la cita queda como "reprogramada" (spec 017).
+- Las citas completadas o canceladas ya no muestran "Reprogramar" ni "Cancelar cita", y no se pueden reprogramar, cancelar ni volver a marcar como completadas por ninguna vía (spec 017).
+- Si una cita no se puede agendar o reprogramar (hora pasada, choque de horario, falta la fecha o la hora), el diálogo sigue abierto con lo que escribiste y muestra el motivo junto al formulario (spec 017).
+- La aplicación usa la hora de la clínica (Ciudad de México) para todo lo que depende del día actual: las citas de hoy de la agenda y la vigencia de las promociones del sitio. La fecha de los registros del servidor también pasa a esa zona (spec 017).
 - Flujo AI-DD actualizado a 1.14.0: carriles ligeros (`/fix`, `/refactor`, `/chore`) con fichas en `docs/changes/` y sección "Hotfix" en `docs/deployment.md`; `/sync` para la deriva entre documentos y código; validador y plantillas nuevas. Auditoría de SEO técnico del sitio público en `docs/seo.md` (brechas SE1–SE8) y objetivo 7 del roadmap.
+
+### Fixed
+- Ya no se puede reprogramar una cita a una fecha u hora que ya pasó, ni agendar una cita nueva en el pasado; antes la reprogramación desde la agenda se rechazaba siempre (spec 017).
 
 ## [0.2.0] - 2026-10-14
 Sistema de diseño aplicado a toda la interfaz, con accesibilidad WCAG 2.1 AA y páginas de error propias (spec 016).
