@@ -138,6 +138,8 @@ it('rejects a reschedule without date or without time and leaves the appointment
 })->with([
     'date without time' => [['date' => '2026-10-20'], 'time'],
     'time without date' => [['time' => '15:00'], 'date'],
+    'both empty, as the dialog sends them cleared' => [['date' => '', 'time' => ''], 'date'],
+    'both null' => [['date' => null, 'time' => null], 'date'],
 ]);
 
 it('rejects a reschedule to a moment that already passed and leaves the appointment unchanged', function (string $date, string $time) {
