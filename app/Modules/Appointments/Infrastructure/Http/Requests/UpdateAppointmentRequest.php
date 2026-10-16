@@ -27,13 +27,18 @@ final class UpdateAppointmentRequest extends FormRequest
     }
 
     /**
+     * A request that carries the date or the time is a reschedule, so it needs both even when they
+     * arrive empty, as the dialog sends them cleared (CA2, /review R1). An empty body asks for neither.
+     *
      * @return array<string, array<int, mixed>>
      */
     public function rules(): array
     {
+        $reschedules = $this->exists('date') || $this->exists('time');
+
         return [
-            'date' => ['required_with:time', 'date_format:Y-m-d'],
-            'time' => ['required_with:date', 'date_format:H:i,H:i:s'],
+            'date' => ['bail', Rule::requiredIf($reschedules), 'date_format:Y-m-d'],
+            'time' => ['bail', Rule::requiredIf($reschedules), 'date_format:H:i,H:i:s'],
             'status' => [Rule::in(['completada', 'cancelada']), 'prohibits:date,time'],
             'whatsapp_reminder' => ['boolean'],
         ];
@@ -45,8 +50,8 @@ final class UpdateAppointmentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'date.required_with' => 'Necesitas proporcionar fecha y hora para reprogramar la cita.',
-            'time.required_with' => 'Necesitas proporcionar fecha y hora para reprogramar la cita.',
+            'date.required' => 'Necesitas proporcionar fecha y hora para reprogramar la cita.',
+            'time.required' => 'Necesitas proporcionar fecha y hora para reprogramar la cita.',
             'date.date_format' => 'La fecha no tiene un formato válido.',
             'time.date_format' => 'La hora no tiene un formato válido.',
             'status.in' => 'El estado solo puede cambiar a completada o cancelada.',
