@@ -18,12 +18,6 @@ final class AppointmentAplicationExceptions extends Exception
         return new self('Necesitas proporcionar fecha y hora para reprogramar la cita.');
     }
 
-    /** Spec 017 (CA6): rescheduling and changing the status are separate actions. */
-    public static function rescheduleAndStatusTogether(): self
-    {
-        return new self('No puedes reprogramar y cambiar el estado de la cita a la vez.');
-    }
-
     public static function invalidPatientId(): self
     {
         return new self('Patient ID cannot be empty');
