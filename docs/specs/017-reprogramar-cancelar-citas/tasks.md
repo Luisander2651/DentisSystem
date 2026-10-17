@@ -196,13 +196,15 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: hecha de nuevo 2026-10-16 tras las correcciones de /review (T040–T045): Pest 1342/1342, Pint limpio, spec en `implemented`, fila en su Historial y en `docs/specs/README.md`
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - Sin staging (`deploy.environments: [local, prod]`): la verificación se hace en producción tras T097. Reprogramar una cita de prueba a futuro (CA1), intentar una hora pasada (CA3, 422 con el mensaje), cancelar con confirmación (CA7), y comprobar en Loki que no hay 500 nuevos en `/api/v1/appointments*`.
   - nota: 2026-10-16. No hay staging (P12): CI en verde en el PR #24 y en `main` sobre su merge (`5946e93`, runs 38993301616 y 38993254497: Pest, build y ui-audit). Verificación local con la imagen de la versión: `dentissa-app` y `dentissa-web` (etapas `prod` y `web` de `docker/Dockerfile`) construidas desde `git archive v0.3.0`; manifiesto de Vite con `cancel-appointment`, `RescheduleAndStatusTogetherException` presente, zona por defecto `America/Mexico_City`, sin `.env`, `.git`, `public/hot`, Node ni Composer, usuario `www-data`. Sin cambios en `docker/` ni `docker-compose.prod.yml` desde v0.2.0. Los criterios observables (CA1, CA3, CA7 y Loki) se comprueban en producción tras T097
+  - nota: verificación en producción 2026-10-16 (02:34–02:48 UTC del 17), confirmada por el usuario: reprogramar a futuro «Cita reprogramada.» (CA1); hora pasada rechazada con 422 y el mensaje, diálogo abierto (CA3; `PUT /api/v1/appointments/… 422` a las 02:46:40 UTC en Loki); cancelar con confirmación «Cita cancelada.» (CA7); sin 500 en `/api/v1/appointments*` ni errores de `dentissa-app`/`dentissa-queue` en Loki
 - [x] T096 Aprobación humana para producción
   - aprobado por Luisander2651 el 2026-10-16 20:19 para v0.3.0 ("desplegar v0.3.0 a producción")
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-- [ ] T098 Marcar spec como `released`
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: 2026-10-16, despliegue manual del usuario en el droplet con `docker/prod/deploy.sh` (2 min 59 s, verificación local 14/14) y `verify.sh --remote` 30/30. Vigilancia de 15 min (02:34–02:48 UTC): 45/45 peticiones a `/up`, `/`, `/agenda` y la API con la respuesta esperada (0,31–2,59 s); el asset servido coincide con la build de v0.3.0. Sin rollback
+- [x] T098 Marcar spec como `released`
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

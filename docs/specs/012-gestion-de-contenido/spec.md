@@ -74,7 +74,8 @@ testimonios del sitio público sin tocar código.
 | 2026-09-23 | Aclaraciones: imágenes de 5 MB y 2000 px (CA7), promociones fuera de vigencia ocultas (CA9), crear testimonios desde el panel (CA10); pendientes de spec nueva | /clarify |
 | 2026-09-23 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
 | 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA8 resuelto | /release |
-| 2026-10-16 | Comportamiento modificado por 017 (pendiente de liberar): la vigencia de las promociones se evalúa en la zona de la clínica (`America/Mexico_City`, zona de toda la aplicación), como pedían sus Notas | /implement 017 |
+| 2026-10-16 | Comportamiento modificado por 017 (liberado en v0.3.0): la vigencia de las promociones se evalúa en la zona de la clínica (`America/Mexico_City`, zona de toda la aplicación), como pedían sus Notas | /implement 017 |
+| 2026-10-16 | Comportamiento modificado por 017 en v0.3.0 | /release |
 
 ## Aclaraciones
 ### Sesión 2026-09-23

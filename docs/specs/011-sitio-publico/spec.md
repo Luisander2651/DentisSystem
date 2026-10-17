@@ -61,4 +61,5 @@ galería, y la forma de contactarla.
 | 2026-09-22 | Creación inferida del código | /init |
 | 2026-09-22 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
 | 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: 500 genérico | /release |
-| 2026-10-16 | Comportamiento modificado por 017 (pendiente de liberar): la vigencia de las promociones se evalúa en la zona de la clínica (`America/Mexico_City`, zona de toda la aplicación) | /implement 017 |
+| 2026-10-16 | Comportamiento modificado por 017 (liberado en v0.3.0): la vigencia de las promociones se evalúa en la zona de la clínica (`America/Mexico_City`, zona de toda la aplicación) | /implement 017 |
+| 2026-10-16 | Comportamiento modificado por 017 en v0.3.0 | /release |
