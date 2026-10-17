@@ -15,8 +15,8 @@ Hecho con `/design-spec 018` sobre el sistema `docs/design/system.md`. Sin compo
 
 **Sin exploración.** La spec no crea pantallas ni cambia la composición de ninguna. Abre la agenda,
 el detalle de la cita, la sección "Registro clínico" y el diálogo de completar, que ya existen, a
-dos roles más, y muestra a cada rol solo las acciones que puede usar (`references/spec-mode.md` §1:
-"solo cambia datos o comportamiento dentro de componentes ya diseñados").
+dos roles más, y muestra a cada rol solo las acciones que puede usar (regla de exploración de `/design-spec`:
+"se omite si solo cambian datos o comportamiento dentro de componentes ya diseñados").
 
 - **Motivo:** todas las piezas están en el inventario del sistema y capturadas como administrador
   ("Agenda, mes con citas", "Agenda, detalle de cita", "Agenda, detalle de cita asignada", "Agenda,

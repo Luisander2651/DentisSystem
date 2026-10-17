@@ -1,6 +1,7 @@
 ---
 spec: 018-agenda-por-rol
 plan: plan.md
+impl_base: 2a6f200
 status: approved   # reaprobado por el usuario, 2026-10-17, tras /tasks --fix (analysis ronda 1)
 ---
 
@@ -59,7 +60,10 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | Definición de terminado | ✅ | T033: Pint, Pest completa en serie, build, `ui-audit` y `aidd.py validate`; T034–T036 y T090–T092 | test: T033 |
 
 ## Preparación
-- [ ] T001 Añadir al inventario del sistema de diseño las vistas con rol Asistente y Doctor de la tabla "Pantallas" de `design.md` (agenda, detalle pendiente, detalle completado con y sin registro clínico, agenda del doctor sin citas hoy) y mover "Acceso denegado (asistente en ruta de administrador)" de `/agenda` a `/usuarios`, con su fila en "Decisiones" — `docs/design/system.md`, `docs/design/system.html` — hecho cuando: `DesignTokensTest` y `OnlyDesignTokensTest` pasan y ninguna fila del inventario dice que `/agenda` rechaza al asistente
+- [x] T001 Añadir al inventario del sistema de diseño las vistas con rol Asistente y Doctor de la tabla "Pantallas" de `design.md` (agenda, detalle pendiente, detalle completado con y sin registro clínico, agenda del doctor sin citas hoy) y mover "Acceso denegado (asistente en ruta de administrador)" de `/agenda` a `/usuarios`, con su fila en "Decisiones" — `docs/design/system.md`, `docs/design/system.html` — hecho cuando: `DesignTokensTest` y `OnlyDesignTokensTest` pasan y ninguna fila del inventario dice que `/agenda` rechaza al asistente
+  - nota: hecha 2026-10-17: 10 filas nuevas en el inventario (asistente y doctor, con los ids de T019) y sus figuras en `system.html`; "Acceso denegado (asistente en ruta de administrador)" pasa a `/usuarios`; fila de Decisiones en `system.md`. Las capturas enlazadas se generan en T035. `DesignTokensTest` y `OnlyDesignTokensTest` en verde (Core/Unit/Design 103/103)
+  - nota: A16 — en `design.md` → "Dirección elegida", la cita a `references/spec-mode.md` §1 pasa a la regla de exploración de `/design-spec`
+  - nota: A25 — los ids del inventario son los de T019 (`agenda-asistente`, `agenda-cita-crear-asistente`, `agenda-doctor`, `agenda-doctor-hoy-sin-citas`, `agenda-cita-detalle-pendiente-asistente`, `agenda-cita-detalle-pendiente-doctor`, `agenda-cita-detalle-doctor`, `agenda-cita-detalle-doctor-sin-seguimiento`, `agenda-cita-detalle-asistente`, `agenda-cita-completar-doctor`)
 
 ## Tests (antes de implementar)
 - [ ] T010 [P] Ampliar el test del servicio de autorización con `can()` y `currentActorId()`: sin actor, paciente, staff inactivo y cada rol con un permiso que tiene y otro que no; `currentActorId()` sin actor de staff lanza `unauthenticated()` — `tests/Modules/Users/Unit/Domain/CurrentActorAuthorizationServiceTest.php` — hecho cuando: los casos nuevos fallan porque los métodos no existen y quedan con `skip` — cubre: CA11
