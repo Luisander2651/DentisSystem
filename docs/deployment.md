@@ -9,8 +9,8 @@ updated: 2026-10-11
 > repositorio.
 
 **Estado actual:** producción en un droplet de DigitalOcean (`dentissapp.com`, detrás de
-Cloudflare). Versión en servicio: **v0.1.0**, desplegada el 2026-10-04 con `docker/prod/deploy.sh`
-(specs 014 y 015). El procedimiento se ensayó en local (T058) y en el droplet (T050–T054, T076,
+Cloudflare). Versión en servicio: **v0.3.0**, desplegada el 2026-10-16 con `docker/prod/deploy.sh`
+(spec 017); la primera, v0.1.0, el 2026-10-04 (specs 014 y 015). El procedimiento se ensayó en local (T058) y en el droplet (T050–T054, T076,
 T088). La pila manual anterior sigue en el droplet, detenida, como vuelta atrás del primer paso
 hasta que se retire ("Retirar la pila manual").
 

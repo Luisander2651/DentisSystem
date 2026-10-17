@@ -52,11 +52,13 @@ Para pasar de **prototipo** a **MVP** con una clínica real:
 - Seguridad sin objetivo asignado (decisión del usuario, 2026-09-24; destinos de la spec 014, "Cobertura de riesgos"):
   - RS5.a: protección CSRF (`SameSite=strict` o cabecera o token anti-CSRF).
   - RS8.a: revocar los tokens de sesión al restablecer la contraseña (spec 003).
+- Aceptados sin tarea en la review de la spec 017 (v0.3.0; decisión del usuario, 2026-10-16):
+  - Agenda: 017/R4, mostrar el texto de dominio de los 409 (cita cerrada, choque de horario) en lugar del genérico; 017/R5, «No, mantenerla», Escape, la X y el fondo siguen activos durante el envío de la cancelación; 017/R6, `whatsapp_reminder` invierte el valor en lugar de aplicarlo (no idempotente); 017/R7, `reschedule()` guarda `updatedAt` con el reloj del sistema en lugar de `$now`; 017/R8, entrada de navegador del detalle de una cita cancelada en el expediente.
+  - Tests y documentación: 017/R9, el test de reproducción de la ficha debería comprobar el texto de CA6; 017/R10, categoría OWASP de TM2–TM4 (A06:2025, no A04); 017/R12, en local la conexión a Postgres agota su tiempo cuando el equipo va justo de memoria y da falsos fallos en `test:ui` y en Pest en paralelo.
 - Flujo AI-DLC en pausa: Unidad 5 en diseño funcional (paso 1, 6 preguntas sin responder), Unidades 6 y 7 sin empezar, Build and Test final pendiente. `aidlc-docs/` no está versionado: hacer copia de seguridad.
 - Seguimiento clínico (spec 009): abrirlo a doctores, pantalla de edición y completar citas solo con seguimiento (CA9, CA11, CA12; requiere spec nueva).
 - WhatsApp (spec 010): recordatorio previo, avisos de reprogramación y cancelación, estado del envío visible en la cita (CA7–CA11; requiere spec nueva, scheduler y worker de colas).
 - Contenido (spec 012): límite de imágenes de 5 MB y 2000 px, ocultar promociones fuera de vigencia (también cambia la spec 011), crear testimonios desde el panel y no perder imágenes ante fallos (CA7, CA9–CA11; requiere spec nueva).
-- Agenda (spec 007): rechazar fechas y horas pasadas al crear o reprogramar citas (CA14) → [017](specs/017-reprogramar-cancelar-citas/spec.md) (approved).
 - Portal del paciente sin pantallas; módulo `Estadisticas` vacío.
 - Arquitectura: fugas de capa (`TreatmentsService`, `LoginService`), imports cruzados sobrantes, grafías `Aplication`/`Application` y `Http`/`HTTP`, posible doble registro de listeners.
 - Configuración: `env()` fuera de `config/` (Twilio, Brevo), variables `TWILIO_*`, `BREVO_*` y `SANCTUM_*` ausentes de `.env.example`, `.env.example` con SQLite y phpredis.
