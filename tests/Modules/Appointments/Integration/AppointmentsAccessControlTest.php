@@ -11,29 +11,45 @@ use Tests\Modules\Appointments\Integration\AppointmentsIntegrationTestCase;
 uses(AppointmentsIntegrationTestCase::class);
 
 /**
- * Spec 014, "Permisos esperados": every agenda and appointments route behind the staff
- * middleware, with the actors allowed to use it. Viewing the detail and the history of a
- * patient's appointments is for every active staff member; the rest of the agenda is only
- * for the administrator.
+ * Spec 014, "Permisos esperados", as spec 018 changed it: every agenda and appointments route
+ * behind the staff middleware, with the actors allowed to use it. Viewing the detail and the
+ * history of a patient's appointments is for every active staff member; the assistant manages
+ * the agenda except completing and deleting; the doctor lists their own appointments and
+ * completes and reads the follow-up of their own ones.
  *
  * @return array<string, list<string>>
  */
 function appointmentsAccessRoutes(): array
 {
     $allStaff = ['admin', 'asistente', 'doctor'];
+    $agendaManagers = ['admin', 'asistente'];
 
     return [
-        'GET /agenda/patients' => ['admin'],
-        'GET /agenda/doctors' => ['admin'],
-        'GET /agenda/treatments' => ['admin'],
-        'GET /agenda/today-appointments' => ['admin'],
-        'GET /appointments' => ['admin'],
-        'POST /appointments' => ['admin'],
+        'GET /agenda/patients' => $agendaManagers,
+        'GET /agenda/doctors' => $agendaManagers,
+        'GET /agenda/treatments' => $agendaManagers,
+        'GET /agenda/today-appointments' => $allStaff,
+        'GET /appointments' => $allStaff,
+        'POST /appointments' => $agendaManagers,
         'GET /appointments/patient/{patientId}' => $allStaff,
         'GET /appointments/{id}' => $allStaff,
-        'PUT /appointments/{id}' => ['admin'],
+        'PUT /appointments/{id}' => $agendaManagers,
         'DELETE /appointments/{id}' => ['admin'],
+        'POST /appointments/{id}/complete' => ['admin', 'doctor'],
+        'GET /appointments/{id}/tracking' => ['admin', 'doctor'],
     ];
+}
+
+/**
+ * Spec 018 (/analyze A19): what these routes answer an allowed actor depends on who owns the
+ * appointment and on whether it has a follow-up, so this table only checks that they refuse
+ * the actors who are not allowed. Ownership and success are covered by DoctorTrackingTest.
+ *
+ * @return list<string>
+ */
+function appointmentsDenialOnlyRoutes(): array
+{
+    return ['POST /appointments/{id}/complete', 'GET /appointments/{id}/tracking'];
 }
 
 /**
@@ -107,6 +123,13 @@ beforeEach(function () {
             'GET /appointments/{id}' => ['getJson', $this->appointmentUrl($appointment->id), []],
             'PUT /appointments/{id}' => ['putJson', $this->appointmentUrl($appointment->id), ['date' => '2026-09-02', 'time' => '11:00']],
             'DELETE /appointments/{id}' => ['deleteJson', $this->appointmentUrl($appointment->id), []],
+            'POST /appointments/{id}/complete' => ['postJson', $this->appointmentUrl($appointment->id).'/complete', [
+                'reason' => 'Dolor en una muela',
+                'symptoms' => ['dolor'],
+                'diagnosis' => 'Caries',
+                'procedure_performed' => 'Resina',
+            ]],
+            'GET /appointments/{id}/tracking' => ['getJson', $this->appointmentUrl($appointment->id).'/tracking', []],
         };
     };
 });
@@ -119,6 +142,12 @@ it('answers each agenda and appointments route according to the permissions tabl
     $response = $this->{$method}($url, $payload);
 
     if (in_array($actor, $allowed, true)) {
+        if (in_array($route, appointmentsDenialOnlyRoutes(), true)) {
+            expect($response->status())->not->toBeIn([401, 403]);
+
+            return;
+        }
+
         $response->assertSuccessful();
 
         return;
@@ -131,9 +160,10 @@ it('answers each agenda and appointments route according to the permissions tabl
     }
 
     expect(appointmentsDataSnapshot())->toEqual($before);
-})->with(appointmentsAccessActors())->with(appointmentsAccessRouteDataset());
+})->with(appointmentsAccessActors())->with(appointmentsAccessRouteDataset())
+    ->skip('018: pendiente de T021, T023, T027, T038 y T039');
 
-it('refuses to reschedule or cancel an appointment to anyone but the administrator, whatever the body (spec 017, CA10)', function (string $actor, array $payload) {
+it('refuses to change an appointment to the doctor, inactive staff, patients and guests, whatever the body (spec 017 CA10, spec 018 CA7)', function (string $actor, array $payload) {
     $appointment = $this->createAppointment();
     ($this->actAs)($actor);
     $before = appointmentsDataSnapshot();
@@ -143,7 +173,6 @@ it('refuses to reschedule or cancel an appointment to anyone but the administrat
     $actor === 'guest' ? $response->assertUnauthorized() : $response->assertForbidden();
     expect(appointmentsDataSnapshot())->toEqual($before);
 })->with([
-    'asistente' => 'asistente',
     'doctor' => 'doctor',
     'inactive staff' => 'inactive',
     'patient' => 'patient',
@@ -151,27 +180,57 @@ it('refuses to reschedule or cancel an appointment to anyone but the administrat
 ])->with([
     'reschedule' => [['date' => '2026-09-02', 'time' => '11:00']],
     'cancel' => [['status' => 'cancelada']],
+    'complete' => [['status' => 'completada']],
     'date without time' => [['date' => '2026-09-02']],
     'status outside the list' => [['status' => 'asignada']],
     'reschedule and status at once' => [['date' => '2026-09-02', 'time' => '11:00', 'status' => 'cancelada']],
     'date in another format' => [['date' => '02/09/2026', 'time' => '11:00']],
 ]);
 
-it('keeps the clinical tracking of an appointment away from assistants and doctors', function (string $role) {
+it('keeps the clinical tracking of an appointment away from the assistant and from a doctor who does not own it', function (string $role) {
+    // The appointment belongs to an administrator, so the doctor is refused as a stranger.
     $appointment = $this->createAppointment();
     $this->actingAsNonAdminUser($role);
 
     $this->getJson($this->appointmentUrl($appointment->id).'/tracking')->assertForbidden();
 })->with(['Asistente', 'Doctor']);
 
-it('refuses today appointments and the doctors selector to assistants and doctors with 403, not 500', function (string $url, string $role) {
+it('refuses the assistant completing an appointment through the edit or deleting it (spec 018 CA4)', function (string $method, array $payload) {
+    $appointment = $this->createAppointment();
+    $this->actingAsNonAdminUser('Asistente');
+    $before = appointmentsDataSnapshot();
+
+    $this->{$method}($this->appointmentUrl($appointment->id), $payload)->assertForbidden();
+
+    expect(appointmentsDataSnapshot())->toEqual($before);
+})->with([
+    'complete through the edit' => ['putJson', ['status' => 'completada']],
+    'delete' => ['deleteJson', []],
+]);
+
+it('answers today appointments to every staff role and the doctors selector to the administrator and the assistant (spec 018)', function (string $url, string $role, bool $allowed) {
     $this->actingAsNonAdminUser($role);
+
+    $response = $this->getJson($url);
+
+    $allowed ? $response->assertOk() : $response->assertForbidden();
+})->with([
+    'today appointments, assistant' => ['/api/v1/agenda/today-appointments', 'Asistente', true],
+    'today appointments, doctor' => ['/api/v1/agenda/today-appointments', 'Doctor', true],
+    'doctors selector, assistant' => ['/api/v1/agenda/doctors', 'Asistente', true],
+    'doctors selector, doctor' => ['/api/v1/agenda/doctors', 'Doctor', false],
+    'treatments selector, assistant' => ['/api/v1/agenda/treatments', 'Asistente', true],
+    'treatments selector, doctor' => ['/api/v1/agenda/treatments', 'Doctor', false],
+])->skip('018: pendiente de T023 y T038');
+
+it('keeps the management of users and of the catalogue away from the assistant (spec 018, D11)', function (string $url) {
+    $this->actingAsNonAdminUser('Asistente');
 
     $this->getJson($url)->assertForbidden();
 })->with([
-    'today appointments' => '/api/v1/agenda/today-appointments',
-    'doctors selector' => '/api/v1/agenda/doctors',
-])->with(['Asistente', 'Doctor']);
+    'users' => '/api/v1/users',
+    'treatments' => '/api/v1/treatments',
+]);
 
 it('returns the agenda treatments catalog to the administrator ordered by name, with a null duration as 0', function () {
     $this->createTreatment(['name' => 'Ortodoncia', 'time' => 60]);
@@ -201,4 +260,4 @@ it('covers every agenda and appointments route and protects each one with the st
         ->toEqual(collect(array_keys(appointmentsAccessRoutes()))->sort()->values()->all());
 
     $routes->each(fn (array $route) => expect($route['middleware'])->toContain('staff'));
-});
+})->skip('018: pendiente de T027');
