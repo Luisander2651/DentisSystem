@@ -198,7 +198,9 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
   - Sin staging (`deploy.environments: [local, prod]`): la verificación se hace en producción tras T097. Reprogramar una cita de prueba a futuro (CA1), intentar una hora pasada (CA3, 422 con el mensaje), cancelar con confirmación (CA7), y comprobar en Loki que no hay 500 nuevos en `/api/v1/appointments*`.
-- [ ] T096 Aprobación humana para producción
+  - nota: 2026-10-16. No hay staging (P12): CI en verde en el PR #24 y en `main` sobre su merge (`5946e93`, runs 38993301616 y 38993254497: Pest, build y ui-audit). Verificación local con la imagen de la versión: `dentissa-app` y `dentissa-web` (etapas `prod` y `web` de `docker/Dockerfile`) construidas desde `git archive v0.3.0`; manifiesto de Vite con `cancel-appointment`, `RescheduleAndStatusTogetherException` presente, zona por defecto `America/Mexico_City`, sin `.env`, `.git`, `public/hot`, Node ni Composer, usuario `www-data`. Sin cambios en `docker/` ni `docker-compose.prod.yml` desde v0.2.0. Los criterios observables (CA1, CA3, CA7 y Loki) se comprueban en producción tras T097
+- [x] T096 Aprobación humana para producción
+  - aprobado por Luisander2651 el 2026-10-16 20:19 para v0.3.0 ("desplegar v0.3.0 a producción")
 - [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
 - [ ] T098 Marcar spec como `released`
 
