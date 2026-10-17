@@ -10,6 +10,18 @@ function escapeHtml(value) {
         .replace(/'/g, '&#039;');
 }
 
+function normalizeGalleryPayload(payload) {
+    if (Array.isArray(payload)) {
+        return payload;
+    }
+
+    if (payload && typeof payload === 'object' && 'url' in payload) {
+        return [payload];
+    }
+
+    return [];
+}
+
 async function loadGallery() {
     var list = document.querySelector('[data-gallery-list]');
     var loading = document.querySelector('[data-gallery-loading]');
@@ -19,7 +31,7 @@ async function loadGallery() {
 
     try {
         var response = await fetch('/api/v1/public/gallery-images');
-        var records = await response.json();
+        var payload = await response.json();
 
         if (loading) loading.classList.add('hidden');
 
@@ -27,6 +39,8 @@ async function loadGallery() {
             announceError('No pudimos cargar las imágenes de la galería. Inténtalo de nuevo en un momento.');
             return;
         }
+
+        var records = normalizeGalleryPayload(payload);
 
         if (records.length === 0) {
             if (empty) empty.classList.remove('hidden');

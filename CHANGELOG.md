@@ -5,6 +5,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-17
+Corrección de la galería del sitio público.
+
+### Fixed
+- La galería del sitio público vuelve a mostrar la imagen cuando solo hay una publicada; antes se veía vacía con un aviso de error (fix 2026-10-17-fix-galeria-una-imagen).
+
 ## [0.3.0] - 2026-10-16
 Reprogramar y cancelar citas desde la agenda, sin citas en el pasado (spec 017).
 
