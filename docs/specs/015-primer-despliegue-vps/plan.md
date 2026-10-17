@@ -283,7 +283,7 @@ El ensayo del rollback (CA13) cierra la spec.
   - Sin `request_id` (objetivo 5, OB4.a no lo incluye).
 - **Eventos de auditoría:** la aplicación no emite eventos nuevos. CA15 se cumple con
   `deploys.log` en el host.
-- **Métricas y alertas:** ninguna nueva (spec 017).
+- **Métricas y alertas:** ninguna nueva (spec de monitoreo por crear, sin número; antes "spec 017", número que pasó a reprogramar y cancelar citas el 2026-10-15).
 - **Cómo se verifica tras el deploy:**
   - `verify.sh --local` y `verify.sh --remote dentissapp.com --origin <IP>`;
   - en Grafana, por túnel SSH, los logs de `dentissa-app` y `dentissa-queue` de la petición y el

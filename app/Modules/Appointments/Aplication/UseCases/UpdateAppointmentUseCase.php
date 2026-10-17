@@ -7,6 +7,7 @@ namespace App\Modules\Appointments\Aplication\UseCases;
 use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Modules\Appointments\Aplication\DTOs\UpdateAppointmentDTO;
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptions;
+use App\Modules\Appointments\Aplication\Exceptions\RescheduleAndStatusTogetherException;
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
 use App\Modules\Appointments\Domain\Service\AppointmentsService;
@@ -16,6 +17,12 @@ use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentTime;
 
+/**
+ * Spec 017: a request reschedules (date and time together, with the reminder if it comes), or
+ * changes the status (to completada or cancelada, with the reminder if it comes), or only the
+ * reminder. Rescheduling and changing the status at once is refused (CA6). Checks, in order:
+ * input, existence, closed appointment, past, schedule conflict (plan D8).
+ */
 final readonly class UpdateAppointmentUseCase
 {
     public function __construct(
@@ -28,7 +35,9 @@ final readonly class UpdateAppointmentUseCase
     {
         $this->authorization->assertCan('appointments.update');
 
-        if (! $updateAppointmentDTO->status && ! $updateAppointmentDTO->whatsappReminder) {
+        $reschedules = $updateAppointmentDTO->date !== null || $updateAppointmentDTO->time !== null;
+
+        if ($reschedules) {
             $this->validateReschedule($updateAppointmentDTO);
         }
 
@@ -41,38 +50,45 @@ final readonly class UpdateAppointmentUseCase
 
         $fields = $updateAppointmentDTO->fieldsToUpdate();
 
-        $this->rescheduleAppointment($appointment, $fields);
+        if ($reschedules) {
+            $this->rescheduleAppointment($appointment, $fields['date'], $fields['time']);
+        }
 
-        $this->manageStatusAndWhatsappReminderChange($appointment, $fields);
+        if (isset($fields['status'])) {
+            $this->updateStatus($appointment, $fields['status']);
+        }
+
+        if (isset($fields['whatsapp_reminder'])) {
+            $appointment->updateWhatsappReminder();
+        }
 
         $this->appointmentsService->saveAppointment($appointment);
     }
 
     private function validateReschedule(UpdateAppointmentDTO $updateAppointmentDTO): void
     {
-        if (($updateAppointmentDTO->date && ! $updateAppointmentDTO->time) || (! $updateAppointmentDTO->date && $updateAppointmentDTO->time)) {
+        if ($updateAppointmentDTO->status !== null) {
+            throw RescheduleAndStatusTogetherException::create();
+        }
+
+        if ($updateAppointmentDTO->date === null || $updateAppointmentDTO->time === null) {
             throw AppointmentAplicationExceptions::rescheduleRequiresDateAndTime();
         }
     }
 
-    private function rescheduleAppointment(AppointmentEntity $appointment, array $fields): void
+    private function rescheduleAppointment(AppointmentEntity $appointment, string $date, string $time): void
     {
-        if (isset($fields['date']) || isset($fields['time'])) {
-            $newDate = isset($fields['date']) ? AppointmentDate::fromString($fields['date']) : $appointment->Date();
-            $newTime = isset($fields['time']) ? AppointmentTime::fromString($fields['time']) : $appointment->Time();
+        $newDate = AppointmentDate::fromString($date);
+        $newTime = AppointmentTime::fromString($time);
 
-            $this->scheduleAvailabilityChecker->ensureAvailable(
-                $newDate,
-                $newTime,
-                $appointment->TreatmentId(),
-                excludeAppointmentId: $appointment->Id(),
-            );
+        $appointment->reschedule($newDate, $newTime, now()->toImmutable());
 
-            $appointment->reschedule(
-                isset($fields['date']) ? $newDate : null,
-                isset($fields['time']) ? $newTime : null
-            );
-        }
+        $this->scheduleAvailabilityChecker->ensureAvailable(
+            $newDate,
+            $newTime,
+            $appointment->TreatmentId(),
+            excludeAppointmentId: $appointment->Id(),
+        );
     }
 
     private function updateStatus(AppointmentEntity $appointment, string $status): void
@@ -85,25 +101,6 @@ final readonly class UpdateAppointmentUseCase
             $appointment->cancel();
         } else {
             throw AppointmentException::invalidStatusTransition();
-        }
-    }
-
-    private function updateWhatsappReminder(AppointmentEntity $appointment): void
-    {
-        $appointment->updateWhatsappReminder();
-    }
-
-    private function manageStatusAndWhatsappReminderChange(AppointmentEntity $appointment, array $fields): void
-    {
-        foreach ($fields as $field => $value) {
-            switch ($field) {
-                case 'status':
-                    $this->updateStatus($appointment, $value);
-                    break;
-                case 'whatsapp_reminder':
-                    $this->updateWhatsappReminder($appointment);
-                    break;
-            }
         }
     }
 }

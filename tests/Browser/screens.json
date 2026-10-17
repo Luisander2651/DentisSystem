@@ -241,6 +241,38 @@
                 {
                     "click": "[data-view-appointment-trigger][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
                 }
+            ],
+            "expects": [
+                {
+                    "absent": "[data-view-appointment-edit]"
+                },
+                {
+                    "absent": "[data-view-appointment-cancel-appointment]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-detalle-cancelada",
+            "screen": "agenda",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(10)"
+                },
+                {
+                    "click": "[data-view-appointment-trigger][data-appointment-id=\"b1dd1a62-a336-51ef-a3b5-2a1bd619032a\"]"
+                }
+            ],
+            "expects": [
+                {
+                    "absent": "[data-view-appointment-edit]"
+                },
+                {
+                    "absent": "[data-view-appointment-cancel-appointment]"
+                }
             ]
         },
         {
@@ -257,12 +289,22 @@
                 {
                     "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-view-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
                 }
+            ],
+            "expects": [
+                {
+                    "text": "[data-view-appointment-cancel-appointment]",
+                    "is": "Cancelar cita"
+                },
+                {
+                    "text": "[data-view-appointment-edit]",
+                    "is": "Reprogramar"
+                }
             ]
         },
         {
-            "id": "agenda-cita-editar",
+            "id": "agenda-cita-reprogramar",
             "screen": "agenda",
-            "dialog": "editar-cita",
+            "dialog": "reprogramar-cita",
             "dialogSelector": "[data-edit-appointment-modal]",
             "path": "/agenda",
             "role": "administrador",
@@ -277,7 +319,339 @@
                     "click": "[data-view-appointment-edit]"
                 }
             ],
-            "sends": true
+            "sends": true,
+            "expects": [
+                {
+                    "text": "[data-edit-appointment-modal] h2",
+                    "is": "Reprogramar cita"
+                },
+                {
+                    "absent": "[data-edit-appointment-status]"
+                },
+                {
+                    "focusAfterClose": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-view-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                }
+            ],
+            "flows": [
+                {
+                    "name": "reprogramar con éxito",
+                    "do": [
+                        {
+                            "fill": "[data-edit-appointment-date]",
+                            "value": "2026-07-30"
+                        },
+                        {
+                            "fill": "[data-edit-appointment-time]",
+                            "value": "11:00"
+                        },
+                        {
+                            "click": "[data-edit-appointment-submit]"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [
+                            {
+                                "method": "PUT",
+                                "to": "/api/v1/appointments/c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                                "has": {
+                                    "date": "2026-07-30",
+                                    "time": "11:00"
+                                },
+                                "lacks": [
+                                    "status",
+                                    "whatsapp_reminder"
+                                ]
+                            }
+                        ],
+                        "closed": [
+                            "[data-edit-appointment-modal]"
+                        ],
+                        "announced": "Cita reprogramada."
+                    }
+                },
+                {
+                    "name": "reprogramar al pasado (422)",
+                    "answer": {
+                        "status": 422,
+                        "body": {
+                            "message": "No puedes reprogramar la cita a una fecha u hora que ya pasó.",
+                            "errors": {
+                                "date": [
+                                    "No puedes reprogramar la cita a una fecha u hora que ya pasó."
+                                ]
+                            }
+                        }
+                    },
+                    "do": [
+                        {
+                            "fill": "[data-edit-appointment-date]",
+                            "value": "2026-07-30"
+                        },
+                        {
+                            "fill": "[data-edit-appointment-time]",
+                            "value": "11:00"
+                        },
+                        {
+                            "click": "[data-edit-appointment-submit]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-edit-appointment-modal]"
+                        ],
+                        "values": {
+                            "[data-edit-appointment-date]": "2026-07-30",
+                            "[data-edit-appointment-time]": "11:00"
+                        },
+                        "dialogSays": {
+                            "in": "[data-edit-appointment-modal]",
+                            "text": "No puedes reprogramar la cita a una fecha u hora que ya pasó."
+                        }
+                    }
+                },
+                {
+                    "name": "reprogramar a un horario ocupado (409)",
+                    "answer": {
+                        "status": 409,
+                        "body": {
+                            "error": "Schedule conflict"
+                        }
+                    },
+                    "do": [
+                        {
+                            "fill": "[data-edit-appointment-date]",
+                            "value": "2026-07-30"
+                        },
+                        {
+                            "fill": "[data-edit-appointment-time]",
+                            "value": "11:00"
+                        },
+                        {
+                            "click": "[data-edit-appointment-submit]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-edit-appointment-modal]"
+                        ],
+                        "values": {
+                            "[data-edit-appointment-date]": "2026-07-30",
+                            "[data-edit-appointment-time]": "11:00"
+                        },
+                        "dialogSays": {
+                            "in": "[data-edit-appointment-modal]",
+                            "text": "No se pudo guardar porque choca con otro registro. Revisa los datos e inténtalo de nuevo."
+                        }
+                    }
+                },
+                {
+                    "name": "reabrir tras un 422",
+                    "answer": {
+                        "status": 422,
+                        "body": {
+                            "message": "No puedes reprogramar la cita a una fecha u hora que ya pasó.",
+                            "errors": {
+                                "date": [
+                                    "No puedes reprogramar la cita a una fecha u hora que ya pasó."
+                                ]
+                            }
+                        }
+                    },
+                    "do": [
+                        {
+                            "fill": "[data-edit-appointment-date]",
+                            "value": "2026-07-30"
+                        },
+                        {
+                            "fill": "[data-edit-appointment-time]",
+                            "value": "11:00"
+                        },
+                        {
+                            "click": "[data-edit-appointment-submit]"
+                        },
+                        {
+                            "click": "[data-edit-appointment-cancel]"
+                        },
+                        {
+                            "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-view-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                        },
+                        {
+                            "click": "[data-view-appointment-edit]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-edit-appointment-modal]"
+                        ],
+                        "unmarked": [
+                            "[data-edit-appointment-modal]"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-cancelar",
+            "screen": "agenda",
+            "dialog": "cancelar-cita",
+            "dialogSelector": "[data-cancel-appointment-confirm]",
+            "path": "/agenda",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(24)"
+                },
+                {
+                    "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-view-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                },
+                {
+                    "click": "[data-view-appointment-cancel-appointment]"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "[data-cancel-appointment-confirm] h2",
+                    "is": "Cancelar cita"
+                },
+                {
+                    "focus": "[data-cancel-appointment-keep]"
+                }
+            ],
+            "flows": [
+                {
+                    "name": "confirmar la cancelación",
+                    "do": [
+                        {
+                            "click": "[data-cancel-appointment-accept]"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [
+                            {
+                                "method": "PUT",
+                                "to": "/api/v1/appointments/c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                                "has": {
+                                    "status": "cancelada"
+                                },
+                                "lacks": [
+                                    "date",
+                                    "time"
+                                ]
+                            }
+                        ],
+                        "closed": [
+                            "[data-cancel-appointment-confirm]",
+                            "[data-view-appointment-modal]"
+                        ],
+                        "announced": "Cita cancelada."
+                    }
+                },
+                {
+                    "name": "No, mantenerla",
+                    "do": [
+                        {
+                            "click": "[data-cancel-appointment-keep]"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [],
+                        "closed": [
+                            "[data-cancel-appointment-confirm]"
+                        ],
+                        "open": [
+                            "[data-view-appointment-modal]"
+                        ]
+                    }
+                },
+                {
+                    "name": "Escape",
+                    "do": [
+                        {
+                            "press": "Escape"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [],
+                        "closed": [
+                            "[data-cancel-appointment-confirm]"
+                        ]
+                    }
+                },
+                {
+                    "name": "la X",
+                    "do": [
+                        {
+                            "click": "[data-cancel-appointment-confirm] [data-dialog-close]"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [],
+                        "closed": [
+                            "[data-cancel-appointment-confirm]"
+                        ]
+                    }
+                },
+                {
+                    "name": "el fondo",
+                    "do": [
+                        {
+                            "backdrop": true
+                        }
+                    ],
+                    "expect": {
+                        "requests": [],
+                        "closed": [
+                            "[data-cancel-appointment-confirm]"
+                        ]
+                    }
+                },
+                {
+                    "name": "cita ya cerrada (409)",
+                    "answer": {
+                        "status": 409,
+                        "body": {
+                            "error": "La cita ya está completada o cancelada y no se puede cambiar."
+                        }
+                    },
+                    "do": [
+                        {
+                            "click": "[data-cancel-appointment-accept]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-cancel-appointment-confirm]"
+                        ],
+                        "dialogSays": {
+                            "in": "[data-cancel-appointment-confirm]",
+                            "text": "No se pudo guardar porque choca con otro registro. Revisa los datos e inténtalo de nuevo."
+                        }
+                    }
+                },
+                {
+                    "name": "error inesperado (500)",
+                    "answer": {
+                        "status": 500,
+                        "body": {
+                            "error": "Internal server error"
+                        }
+                    },
+                    "do": [
+                        {
+                            "click": "[data-cancel-appointment-accept]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-cancel-appointment-confirm]"
+                        ],
+                        "dialogSays": {
+                            "in": "[data-cancel-appointment-confirm]",
+                            "text": "Algo salió mal de nuestro lado. Inténtalo de nuevo en un momento."
+                        }
+                    }
+                }
+            ]
         },
         {
             "id": "agenda-cita-crear",
@@ -291,7 +665,50 @@
                     "click": "[data-create-appointment-open]"
                 }
             ],
-            "sends": true
+            "sends": true,
+            "flows": [
+                {
+                    "name": "agendar en el pasado (422)",
+                    "answer": {
+                        "status": 422,
+                        "body": {
+                            "message": "No puedes agendar una cita en una fecha u hora que ya pasó.",
+                            "errors": {
+                                "date": [
+                                    "No puedes agendar una cita en una fecha u hora que ya pasó."
+                                ]
+                            }
+                        }
+                    },
+                    "do": [
+                        {
+                            "fill": "[data-create-appointment-date]",
+                            "value": "2026-07-30"
+                        },
+                        {
+                            "fillAll": "[data-create-appointment-modal]"
+                        },
+                        {
+                            "fillAll": "[data-create-appointment-modal]"
+                        },
+                        {
+                            "click": "[data-create-appointment-submit]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-create-appointment-modal]"
+                        ],
+                        "values": {
+                            "[data-create-appointment-date]": "2026-07-30"
+                        },
+                        "dialogSays": {
+                            "in": "[data-create-appointment-modal]",
+                            "text": "No puedes agendar una cita en una fecha u hora que ya pasó."
+                        }
+                    }
+                }
+            ]
         },
         {
             "id": "agenda-cita-completar",
@@ -542,6 +959,35 @@
                 {
                     "click": "[data-record-view-appointment][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
                 }
+            ],
+            "expects": [
+                {
+                    "absent": "[data-view-appointment-edit]"
+                },
+                {
+                    "absent": "[data-view-appointment-cancel-appointment]"
+                }
+            ]
+        },
+        {
+            "id": "expediente-administrador-cita-detalle-pendiente",
+            "screen": "expedientes",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-record-view-appointment][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                }
+            ],
+            "expects": [
+                {
+                    "absent": "[data-view-appointment-edit]"
+                },
+                {
+                    "absent": "[data-view-appointment-cancel-appointment]"
+                }
             ]
         },
         {
@@ -569,6 +1015,14 @@
                 {
                     "click": "[data-record-view-appointment][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
                 }
+            ],
+            "expects": [
+                {
+                    "absent": "[data-view-appointment-edit]"
+                },
+                {
+                    "absent": "[data-view-appointment-cancel-appointment]"
+                }
             ]
         },
         {
@@ -595,6 +1049,14 @@
             "steps": [
                 {
                     "click": "[data-record-view-appointment][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
+                }
+            ],
+            "expects": [
+                {
+                    "absent": "[data-view-appointment-edit]"
+                },
+                {
+                    "absent": "[data-view-appointment-cancel-appointment]"
                 }
             ]
         },

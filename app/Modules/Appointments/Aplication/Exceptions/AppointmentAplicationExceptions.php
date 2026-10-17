@@ -18,11 +18,6 @@ final class AppointmentAplicationExceptions extends Exception
         return new self('Necesitas proporcionar fecha y hora para reprogramar la cita.');
     }
 
-    public static function rescheduleRequiresDateOrTime(): self
-    {
-        return new self('At least one of date or time must be provided for rescheduling.');
-    }
-
     public static function invalidPatientId(): self
     {
         return new self('Patient ID cannot be empty');

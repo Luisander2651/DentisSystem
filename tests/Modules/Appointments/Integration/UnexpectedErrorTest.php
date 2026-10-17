@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tests\Modules\Appointments\Integration\AppointmentsIntegrationTestCase;
 
@@ -31,6 +32,34 @@ it('answers a generic 500 when updating a treatment fails unexpectedly', functio
     DB::statement('ALTER TABLE treatments RENAME TO treatments_unavailable');
 
     $this->putJson($this->treatmentAdminUrl($treatment->id), ['name' => 'Limpieza profunda'])
+        ->assertStatus(500)
+        ->assertExactJson(['error' => 'Internal server error']);
+});
+
+/*
+ * Spec 017 (TM5, P7): T022 and T025 restructure the catches of booking and updating an
+ * appointment; an unexpected failure there still answers the generic 500.
+ */
+it('answers a generic 500 when updating an appointment fails unexpectedly', function () {
+    $this->actingAsAdmin();
+    $appointment = $this->createAppointment();
+    $this->mock(AppointmentsRepositoryInterface::class)
+        ->shouldReceive('findById')->andThrow(new RuntimeException('detalle interno'));
+
+    $this->putJson($this->appointmentUrl($appointment->id), ['status' => 'cancelada'])
+        ->assertStatus(500)
+        ->assertExactJson(['error' => 'Internal server error']);
+});
+
+it('answers a generic 500 when booking an appointment fails unexpectedly', function () {
+    // The booked 2026-09-01 stays in the future, so the request reaches the schedule check.
+    $this->travelTo(Carbon::parse('2026-08-31 10:00:00', 'America/Mexico_City'));
+    $this->actingAsAdmin();
+    $payload = $this->validCreateAppointmentPayload();
+    $this->mock(AppointmentsRepositoryInterface::class)
+        ->shouldReceive('findAllByStatusAndDateOrPatientId')->andThrow(new RuntimeException('detalle interno'));
+
+    $this->postJson($this->appointmentsUrl(), $payload)
         ->assertStatus(500)
         ->assertExactJson(['error' => 'Internal server error']);
 });

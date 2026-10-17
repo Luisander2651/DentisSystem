@@ -30,6 +30,9 @@ usuario (indicado en cada caso).
 - Formato: texto de línea del canal `single`; casi todas las llamadas pasan un array de contexto
   (`Log::info('…', [...])`), sin formateador JSON. Excepción: `app/Modules/Email/Infrastructure/ExternalApi/BrevoApi.php:49`
   concatena el mensaje de la excepción.
+- Hora de los logs: la fecha que Laravel escribe en cada línea está en la zona de la aplicación,
+  `America/Mexico_City` desde la spec 017 (antes UTC); la marca de tiempo de Loki es la de ingesta.
+  El registro de operaciones (`deploys.log`) sigue en UTC.
 - Campos obligatorios (objetivo, P14): `timestamp`, `level`, `request_id`, `actor_id` (si hay
   sesión), `message`, `context`. Hoy no hay `request_id` ni `actor_id`.
 - Emisión por módulo (aprox.): Appointments 16 · whatsApp 18 · Auth 5 (solo `error` en el catch

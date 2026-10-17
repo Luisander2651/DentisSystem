@@ -28,8 +28,12 @@ final class AppointmentException extends Exception
         return new self('Invalid status value. Allowed values are: completada, cancelada.');
     }
 
-    public static function rescheduleRequiresDateOrTime(): self
+    /**
+     * Spec 017 (CA8, CA11): a completed or cancelled appointment is closed; it can no longer be
+     * moved or cancelled, and a cancelled one cannot be completed.
+     */
+    public static function cannotChangeClosedAppointment(): self
     {
-        return new self('At least one of date or time must be provided for rescheduling.');
+        return new self('La cita ya está completada o cancelada y no se puede cambiar.');
     }
 }

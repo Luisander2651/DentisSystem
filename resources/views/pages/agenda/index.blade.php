@@ -60,6 +60,7 @@
 <x-calendar.create-appointment-modal :is-admin="$isAdmin" />
 <x-calendar.edit-appointment-modal />
 <x-calendar.view-appointment-modal :is-admin="$isAdmin" />
+<x-calendar.cancel-appointment-confirm />
 @if ($isAdmin)
     <x-calendar.complete-appointment-modal />
 @endif
@@ -67,6 +68,7 @@
 @vite('resources/js/pages/agenda/index.js')
 @vite('resources/js/pages/agenda/create-appointment.js')
 @vite('resources/js/pages/agenda/view-appointment.js')
+@vite('resources/js/pages/agenda/cancel-appointment.js')
 @if ($isAdmin)
     @vite('resources/js/pages/agenda/complete-appointment.js')
 @endif

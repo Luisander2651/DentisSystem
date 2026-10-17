@@ -4,12 +4,45 @@ declare(strict_types=1);
 
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\ContactInfoModel;
 use Illuminate\Log\Events\MessageLogged;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Tests\Modules\Appointments\Integration\AppointmentsIntegrationTestCase;
 use Tests\Support\FakesTwilio;
 
 uses(AppointmentsIntegrationTestCase::class, FakesTwilio::class);
+
+/*
+ * Spec 017: the clock is fixed the day before the dates this file books (and the 2026-09-01 of
+ * validCreateAppointmentPayload()), so they stay in the future whatever day the suite runs.
+ */
+beforeEach(function () {
+    $this->travelTo(Carbon::parse('2026-08-31 10:00:00', 'America/Mexico_City'));
+});
+
+it('rejects booking an appointment at a moment that already passed', function (string $date, string $time) {
+    $this->actingAsAdmin();
+
+    $response = $this->postJson($this->appointmentsUrl(), $this->validCreateAppointmentPayload(['date' => $date, 'time' => $time]));
+
+    $response->assertUnprocessable()
+        ->assertJsonPath('message', 'No puedes agendar una cita en una fecha u hora que ya pasó.')
+        ->assertJsonPath('errors.date.0', 'No puedes agendar una cita en una fecha u hora que ya pasó.');
+    $this->assertDatabaseCount('appointments', 0);
+})->with([
+    'yesterday' => ['2026-08-30', '12:00'],
+    'today, earlier' => ['2026-08-31', '09:59'],
+    'exactly now' => ['2026-08-31', '10:00'],
+]);
+
+it('books an appointment later today', function () {
+    $this->actingAsAdmin();
+
+    $response = $this->postJson($this->appointmentsUrl(), $this->validCreateAppointmentPayload(['date' => '2026-08-31', 'time' => '10:01']));
+
+    $response->assertCreated();
+    $this->assertDatabaseCount('appointments', 1);
+});
 
 it('creates an appointment successfully', function () {
     $this->actingAsAdmin();

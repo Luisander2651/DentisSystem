@@ -11,6 +11,7 @@ use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptio
 use App\Modules\Appointments\Aplication\Exceptions\AppointmentScheduleConflictException;
 use App\Modules\Appointments\Aplication\UseCases\RetriveDataForScheduledAppointmenEventUseCase;
 use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
+use App\Modules\Appointments\Domain\Exceptions\AppointmentInThePastException;
 use App\Modules\Appointments\Domain\Exceptions\ValueObjectsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -54,6 +55,9 @@ final readonly class CreateAppointmentController
             return response()->json([
                 'message' => 'Appointment created successfully',
             ], 201);
+        } catch (AppointmentInThePastException $e) {
+            // Spec 017 (CA4, CA5): in the format of a validation error, which the dialog shows.
+            return response()->json(['message' => $e->getMessage(), 'errors' => ['date' => [$e->getMessage()]]], 422);
         } catch (AppointmentException $e) {
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (InvalidArgumentException $e) {

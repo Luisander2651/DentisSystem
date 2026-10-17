@@ -7,6 +7,7 @@ use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\ContactInfoM
 use App\Modules\whatsApp\Infrastructure\ExternalApi\TwilioConection;
 use App\Modules\whatsApp\Infrastructure\Listeners\CreatedAppointmentListener;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -25,6 +26,10 @@ uses(AppointmentsIntegrationTestCase::class);
  */
 
 beforeEach(function () {
+    // Spec 017: the appointment is booked on 2026-09-01, which must stay in the future. Not at
+    // 10:00, the time of the appointment, which every log line would then carry in its date.
+    $this->travelTo(Carbon::parse('2026-08-31 08:30:00', 'America/Mexico_City'));
+
     // Without an injectable client the flow would call the real Twilio API.
     $constructor = (new ReflectionClass(TwilioConection::class))->getConstructor();
     expect($constructor?->getNumberOfParameters() ?? 0)

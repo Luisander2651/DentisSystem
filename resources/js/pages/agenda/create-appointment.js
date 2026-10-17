@@ -76,12 +76,10 @@ import { announce, announceError, failureMessage } from '../../ui/status';
     var editForm = editModal ? editModal.querySelector('[data-edit-appointment-form]') : null;
     var editDateInput = editModal ? editModal.querySelector('[data-edit-appointment-date]') : null;
     var editTimeInput = editModal ? editModal.querySelector('[data-edit-appointment-time]') : null;
-    var editStatusSelect = editModal ? editModal.querySelector('[data-edit-appointment-status]') : null;
     var editWhatsappCheckbox = editModal ? editModal.querySelector('[data-edit-appointment-whatsapp-reminder]') : null;
     var editCancelButtons = editModal ? editModal.querySelectorAll('[data-edit-appointment-cancel]') : [];
     var editSubmitButton = editModal ? editModal.querySelector('[data-edit-appointment-submit]') : null;
     var editErrorBox = editModal ? editModal.querySelector('[data-edit-appointment-error]') : null;
-    var editSummary = editModal ? editModal.querySelector('[data-edit-appointment-summary]') : null;
 
     if (!form || !treatmentSelect || !dateInput || !timeSelect || !cancelButtons.length || !submitButton || !errorBox) {
         return;
@@ -91,6 +89,8 @@ import { announce, announceError, failureMessage } from '../../ui/status';
     var treatments = [];
     var isSubmitting = false;
     var isEditingSubmitting = false;
+    // Spec 017 (plan D4): the reminder travels with a reschedule only when the box was changed.
+    var editWhatsappInitial = false;
     var activeAppointmentId = null;
     var timeStep = 15;
     var openingHour = 8 * 60;
@@ -99,23 +99,6 @@ import { announce, announceError, failureMessage } from '../../ui/status';
     function todayString() {
         var now = new Date();
         return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-    }
-
-    function normalizeAppointmentStatus(status) {
-        var normalized = String(status || '').trim().toLowerCase();
-        var mapping = {
-            pending: 'asignada',
-            confirmed: 'asignada',
-            assigned: 'asignada',
-            completed: 'completada',
-            cancelled: 'cancelada',
-            cancelada: 'cancelada',
-            completada: 'completada',
-            asignada: 'asignada',
-            reprogramada: 'reprogramada'
-        };
-
-        return mapping[normalized] || 'asignada';
     }
 
     function showModalError(message) {
@@ -400,7 +383,7 @@ import { announce, announceError, failureMessage } from '../../ui/status';
 
     async function updateAppointment(payload) {
         if (!activeAppointmentId) {
-            throw new Error('No hay una cita seleccionada para editar.');
+            throw new Error('No hay una cita seleccionada para reprogramar.');
         }
 
         var xsrfToken = getCookie('XSRF-TOKEN');
@@ -489,12 +472,16 @@ import { announce, announceError, failureMessage } from '../../ui/status';
     }
 
     function buildEditPayload() {
-        return {
+        var payload = {
             date: editDateInput ? editDateInput.value.trim() : '',
             time: editTimeInput ? editTimeInput.value.trim() : '',
-            status: editStatusSelect ? editStatusSelect.value.trim() : '',
-            whatsapp_reminder: editWhatsappCheckbox ? editWhatsappCheckbox.checked : false,
         };
+
+        if (editWhatsappCheckbox && editWhatsappCheckbox.checked !== editWhatsappInitial) {
+            payload.whatsapp_reminder = editWhatsappCheckbox.checked;
+        }
+
+        return payload;
     }
 
     function resetEditFormState() {
@@ -504,16 +491,13 @@ import { announce, announceError, failureMessage } from '../../ui/status';
         }
         if (editDateInput) {
             editDateInput.value = todayString();
-        }
-        if (editSummary) {
-            editSummary.textContent = 'Actualiza la fecha, la hora o el estado de la cita.';
-        }
-        if (editStatusSelect) {
-            editStatusSelect.value = 'asignada';
+            // Only a help: the server decides what is in the past (spec 017, CA3).
+            editDateInput.min = todayString();
         }
         if (editWhatsappCheckbox) {
             editWhatsappCheckbox.checked = false;
         }
+        editWhatsappInitial = false;
         activeAppointmentId = null;
     }
 
@@ -531,16 +515,9 @@ import { announce, announceError, failureMessage } from '../../ui/status';
             if (editTimeInput) {
                 editTimeInput.value = appointment.time || '';
             }
-            if (editStatusSelect) {
-                editStatusSelect.value = normalizeAppointmentStatus(appointment.status);
-            }
             if (editWhatsappCheckbox) {
                 editWhatsappCheckbox.checked = Boolean(appointment.whatsapp_reminder);
-            }
-            if (editSummary) {
-                var patientName = appointment.patient_name || 'Paciente';
-                var treatmentName = appointment.treatment_name || 'Consulta';
-                editSummary.textContent = patientName + ' • ' + treatmentName;
+                editWhatsappInitial = editWhatsappCheckbox.checked;
             }
         } catch (error) {
             showEditModalError(error instanceof TypeError ? failureMessage(0) : error.message);
@@ -635,11 +612,11 @@ import { announce, announceError, failureMessage } from '../../ui/status';
             }
 
             closeEditModal(true);
-            announce('Cita actualizada.');
+            announce('Cita reprogramada.');
 
             if (window.agendaPage && typeof window.agendaPage.reload === 'function') {
                 window.agendaPage.reload().catch(function (reloadError) {
-                    console.error('No se pudo recargar la agenda tras editar la cita:', reloadError);
+                    console.error('No se pudo recargar la agenda tras reprogramar la cita:', reloadError);
                 });
             }
         });

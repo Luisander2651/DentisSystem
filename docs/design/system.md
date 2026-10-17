@@ -7,7 +7,7 @@ html: docs/design/system.html
 canvas: null
 widths: [390, 768, 1440]
 created: 2026-10-04
-updated: 2026-10-12
+updated: 2026-10-15
 ---
 
 # Sistema de diseño de Dentissa
@@ -56,7 +56,7 @@ iconos).
 | `--color-line` | `#e2e8f0` | `border-line` | Separadores y bordes de tarjeta | decorativo |
 | `--color-field` | `#7c8aa0` | `border-field` | Borde de campo y de control | 3.50:1 sobre `--color-surface` · 3.35:1 sobre `--color-canvas` |
 | `--color-overlay` | `rgb(11 17 32 / 0.55)` | `bg-overlay` | Capa tras un diálogo | — |
-| `--color-danger` | `#b91c1c` | `bg-danger`, `text-danger` | Eliminar y errores | 5.91:1 sobre `--color-danger-soft` · 6.47:1 sobre `--color-surface` |
+| `--color-danger` | `#b91c1c` | `bg-danger`, `text-danger` | Eliminar, cancelar una cita y errores | 5.91:1 sobre `--color-danger-soft` · 6.47:1 sobre `--color-surface` |
 | `--color-danger-soft` | `#fef2f2` | `bg-danger-soft` | Fondo de errores y de "Cancelada" | `--color-danger` encima 5.91:1 |
 | `--color-success` | `#047857` | `text-success` | "Activo", "Completada" | 5.21:1 sobre `--color-success-soft` |
 | `--color-success-soft` | `#ecfdf5` | `bg-success-soft` | Fondo de esos estados | `--color-success` encima 5.21:1 |
@@ -198,6 +198,13 @@ Marco propio con el logo completo, el código en `muted`, un `h1`, un texto fijo
 principal de vuelta. Pantallas: "Sin permiso" (403), "No encontrada" (404), método no permitido (405)
 y formulario caducado (419).
 
+### Confirmación de cancelar cita · `calendar/cancel-appointment-confirm`
+Componente propio de la agenda (spec 017), hecho solo con `x-ui.dialog` (`size="sm"`) y
+`x-ui.button`, sin valores visuales nuevos. Título "Cancelar cita", mensaje con el paciente en
+negrita, la fecha y la hora, advertencia en `danger` ("Esta acción no se puede deshacer.") y pie
+"No, mantenerla" (`secondary`, recibe el foco) / "Sí, cancelar la cita" (`danger`). No reutiliza
+`x-ui.confirm-delete-modal` porque ese fija sus textos.
+
 ### Estados de pantalla
 Vacío: texto centrado y completo, sin recortes. Carga: `animate-spin` en el botón que envía. Error:
 mensaje en la región de estado y, si es de un campo, bajo el campo.
@@ -229,7 +236,9 @@ Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
 **Todas** las vistas de la app, con capturas de la app real hechas con datos de prueba. Nada se
 dibuja a mano. Las capturas son las del sistema 2.0.0: las generó el paso `ui-audit` de CI el
 2026-10-12 (corrida del commit `871ee45`) sobre una base recién migrada que solo contiene los datos
-de `UiAuditSeeder`. **75 de 75 capturadas** (147 imágenes, a 390 y 1440 px). CI comprueba además
+de `UiAuditSeeder`. **76 de 76 capturadas** (149 imágenes, a 390 y 1440 px). La spec 017 renombró "Editar cita" a
+"Reprogramar cita", añadió "Confirmar cancelación" y regeneró esas capturas y la del detalle de
+cita asignada el 2026-10-16, con `ui-audit` en local sobre los mismos datos. CI comprueba además
 cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas quedan en el artefacto
 `ui-audit` de cada corrida.
 
@@ -258,8 +267,9 @@ cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas qued
 | Agenda, mes con citas | `/agenda` (julio de 2026) | Administrador | [390](capturas/agenda-con-citas-390.png) · [1440](capturas/agenda-con-citas-1440.png) | capturada |
 | Agenda, citas del día | `components/calendar/day-details-modal.blade.php` | Administrador | [1440](capturas/agenda-dia-1440.png) | capturada a 1440 px (el diálogo existe desde 768 px y CI lo revisa también a ese ancho; en el móvil es una lista bajo el calendario) |
 | Agenda, detalle de cita | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-390.png) · [1440](capturas/agenda-cita-detalle-1440.png) | capturada |
-| Agenda, detalle de cita asignada (con "Editar cita") | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-pendiente-390.png) · [1440](capturas/agenda-cita-detalle-pendiente-1440.png) | capturada |
-| Agenda, editar cita | `components/calendar/edit-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-editar-390.png) · [1440](capturas/agenda-cita-editar-1440.png) | capturada |
+| Agenda, detalle de cita asignada (con "Reprogramar" y "Cancelar cita") | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-pendiente-390.png) · [1440](capturas/agenda-cita-detalle-pendiente-1440.png) | capturada |
+| Agenda, reprogramar cita | `components/calendar/edit-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-reprogramar-390.png) · [1440](capturas/agenda-cita-reprogramar-1440.png) | capturada |
+| Agenda, confirmar cancelación | `components/calendar/cancel-appointment-confirm.blade.php` | Administrador | [390](capturas/agenda-cita-cancelar-390.png) · [1440](capturas/agenda-cita-cancelar-1440.png) | capturada |
 | Agenda, agendar cita | `components/calendar/create-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-crear-390.png) · [1440](capturas/agenda-cita-crear-1440.png) | capturada |
 | Agenda, completar cita (paso 1) | `components/calendar/complete-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-completar-390.png) · [1440](capturas/agenda-cita-completar-1440.png) | capturada |
 | Agenda, completar cita con error de validación | `components/calendar/complete-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-completar-validacion-390.png) · [1440](capturas/agenda-cita-completar-validacion-1440.png) | capturada |
@@ -320,7 +330,9 @@ cita" se recorrió hasta el paso 2 sin enviarlo, así que no escribió nada.
 - El texto nunca va en rosa; enlaces y elemento activo en tinta, con el rosa como acento.
 - Ningún color, radio ni tamaño de control fuera de los tokens (P15 de la constitución, que añade la
   spec 016): lo verifican `OnlyDesignTokensTest`, `DesignTokensTest` y `npm run test:ui`.
-- Rojo solo para eliminar y errores; verde, ámbar, azul y rojo para estados de cita, siempre con
+- Rojo solo para eliminar, cancelar una cita y errores; en cancelar, solo dentro de la
+  confirmación (el botón que confirma y la advertencia de que no se puede deshacer): el botón
+  "Cancelar cita" del detalle es `secondary`. Verde, ámbar, azul y rojo para estados de cita, siempre con
   texto además de color.
 - Todo lo que hace algo al pulsarlo es un control nativo (`button`, `a`, campo) o tiene rol, foco y
   activación con Intro y barra espaciadora.
@@ -378,3 +390,4 @@ lo nuevo a partir del último.
 | 2026-10-08 | diseño | ¿Se aprueba el sistema 2.0.0 (variante B)? | Aprobado, tras ver la pantalla de pacientes migrada a 390 y 1440 px en una rama de vista previa | usuario |
 | 2026-10-08 | diseño | ¿La spec 016 aplica el sistema al sitio público, que tendrá un rediseño completo en otra spec? | Sí: se queda en la 016 con su pase de paleta, marca, tamaños y accesibilidad; el rediseño futuro partirá de los tokens | usuario |
 | 2026-10-11 | diseño | A 768 px el panel y el menú del sitio público se desbordaban. ¿Qué anchos se comprueban? | 390, 768 y 1440 px; los menús se despliegan desde 1024 px | usuario |
+| 2026-10-15 | contradicción | Cancelar una cita es destructivo y la regla reservaba el rojo para eliminar y errores | El rojo se amplía a cancelar una cita, solo dentro de la confirmación (botón y advertencia); "Editar cita" pasa a "Reprogramar cita" y se añade la confirmación como componente propio | usuario (docs/specs/017-reprogramar-cancelar-citas/design.md) |
