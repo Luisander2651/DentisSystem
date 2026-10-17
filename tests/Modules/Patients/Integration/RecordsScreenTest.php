@@ -120,3 +120,16 @@ it('shows the list, without a link back, while no patient is chosen', function (
         ->assertDontSee('data-records-back', false)
         ->assertSee('data-records-browser class="space-y-6"', false);
 });
+
+it('tells the appointment detail of the records whose clinical follow-up each role may read (spec 018, D5)', function (string $role, string $scope) {
+    $user = $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
+
+    $this->get('/expedientes-clinicos/'.$this->createPatient()->id)->assertOk()
+        ->assertSee('data-view-appointment-tracking-scope="'.$scope.'"', false)
+        ->assertSee('data-view-appointment-actor-id="'.$user->id.'"', false)
+        ->assertDontSee('data-view-appointment-is-admin', false);
+})->with([
+    'administrador' => ['Administrador', 'all'],
+    'doctor' => ['Doctor', 'own'],
+    'asistente' => ['Asistente', 'none'],
+])->skip('018: pendiente de T031');
