@@ -4,7 +4,7 @@ Sistema de gestión para una clínica dental: agenda de citas sin solapamientos,
 expediente clínico, seguimiento clínico con recetas, catálogo de tratamientos, gestión del staff y
 contenido del sitio público, con confirmación de citas por WhatsApp. Lo usan el staff
 administrativo y clínico; el portal del paciente aún no tiene pantallas. Etapa: **prototipo**, en
-producción en `dentissapp.com` (v0.3.0) y sin datos reales.
+producción en `dentissapp.com` (v0.3.1) y sin datos reales.
 
 > Antes de cualquier cambio lee [docs/constitution.md](docs/constitution.md). Si algo aquí
 > contradice la constitución, prevalece la constitución.
