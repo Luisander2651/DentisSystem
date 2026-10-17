@@ -54,6 +54,12 @@ final class UiAuditSeeder extends Seeder
         'inactivo' => 'inactivo@'.self::EMAIL_DOMAIN,
     ];
 
+    /**
+     * Spec 018: a second doctor whose appointments share the month and the day of the
+     * doctor's, so the agenda of the doctor shows that it only lists their own.
+     */
+    public const OTHER_DOCTOR_EMAIL = 'otro.doctor@'.self::EMAIL_DOMAIN;
+
     public const PATIENT_EMAIL = 'paciente@'.self::EMAIL_DOMAIN;
 
     public const EMPTY_PATIENT_EMAIL = 'paciente.vacio@'.self::EMAIL_DOMAIN;
@@ -91,6 +97,7 @@ final class UiAuditSeeder extends Seeder
         $this->seedPatient(self::EMPTY_PATIENT_EMAIL, 'Pedro', 'Prueba');
         $treatments = $this->seedTreatments();
         $this->seedAppointments($patient, $staff['doctor'], $treatments);
+        $this->seedOtherDoctorAppointments($patient, $this->seedOtherDoctor(), $treatments);
         $this->seedContent();
     }
 
@@ -260,6 +267,8 @@ final class UiAuditSeeder extends Seeder
             ['14', '12:00:00', 'reprogramada', 2],
             ['22', '10:15:00', 'asignada', 0],
             ['22', '16:00:00', 'asignada', 1],
+            // Spec 018: a completed appointment without clinical follow-up.
+            ['20', '11:00:00', 'completada', 2],
         ];
 
         foreach ($appointments as $index => [$day, $time, $status, $treatment]) {
@@ -292,6 +301,51 @@ final class UiAuditSeeder extends Seeder
             'instructions' => 'Tomar después de los alimentos.',
             'appointment_tracking_id' => $tracking->id,
         ]);
+    }
+
+    private function seedOtherDoctor(): UserModel
+    {
+        $user = UserModel::query()->firstOrNew(['email' => self::OTHER_DOCTOR_EMAIL]);
+
+        if (! $user->exists) {
+            $user->id = self::stableId('user', 'otro-doctor');
+            $user->password = Hash::make(Str::random(40));
+        }
+
+        $user->fill([
+            'first_name' => 'Diego',
+            'last_name' => 'Prueba',
+            'status' => 'active',
+            'role_id' => UserRoleId::fromString('Doctor')->toDatabaseId(),
+        ])->save();
+
+        return $user;
+    }
+
+    /**
+     * Spec 018: the second doctor's appointments, on the doctor's day 22 and on another day of
+     * APPOINTMENTS_MONTH, so the doctor's agenda must leave them out.
+     *
+     * @param  list<TreatmentModel>  $treatments
+     */
+    private function seedOtherDoctorAppointments(PatientModel $patient, UserModel $doctor, array $treatments): void
+    {
+        $appointments = [
+            ['22', '12:00:00', 'asignada', 1],
+            ['15', '09:30:00', 'asignada', 0],
+        ];
+
+        foreach ($appointments as $index => [$day, $time, $status, $treatment]) {
+            AppointmentModel::query()->updateOrCreate(['id' => self::stableId('other-doctor-appointment', $index)], [
+                'date' => self::APPOINTMENTS_MONTH.'-'.$day,
+                'time' => $time,
+                'whatsapp_reminder' => false,
+                'status' => $status,
+                'treatment_id' => $treatments[$treatment]->id,
+                'user_id' => $doctor->id,
+                'patient_id' => $patient->id,
+            ]);
+        }
     }
 
     private function seedContent(): void

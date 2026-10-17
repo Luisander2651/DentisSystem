@@ -60,7 +60,7 @@ it('seeds one user per role, an inactive staff member, two patients, appointment
     $staff = UserModel::query()->with('role')->where('email', 'like', '%@'.UiAuditSeeder::EMAIL_DOMAIN)->get();
 
     expect($staff->where('status', 'active')->pluck('role.name')->sort()->values()->all())
-        ->toBe(['Administrador', 'Asistente', 'Doctor'])
+        ->toBe(['Administrador', 'Asistente', 'Doctor', 'Doctor'])
         ->and($staff->where('status', 'inactive'))->toHaveCount(1);
 
     $fullRecord = PatientModel::query()->where('email', UiAuditSeeder::PATIENT_EMAIL)->firstOrFail();
@@ -86,6 +86,25 @@ it('seeds one user per role, an inactive staff member, two patients, appointment
         ->and(PromotionModel::query()->count())->toBeGreaterThan(0)
         ->and(CertificationModel::query()->count())->toBeGreaterThan(0)
         ->and(TestimonialModel::query()->count())->toBeGreaterThan(0);
+});
+
+it('seeds a second doctor who shares the doctor\'s day, and a completed appointment without follow-up (spec 018)', function () {
+    (new UiAuditSeeder)->run();
+
+    $doctor = UserModel::query()->where('email', UiAuditSeeder::STAFF_EMAILS['doctor'])->firstOrFail();
+    $otherDoctor = UserModel::query()->with('role')->where('email', UiAuditSeeder::OTHER_DOCTOR_EMAIL)->firstOrFail();
+    $sharedDay = UiAuditSeeder::APPOINTMENTS_MONTH.'-22';
+
+    expect($otherDoctor->role->name)->toBe('Doctor')
+        ->and($otherDoctor->status)->toBe('active')
+        ->and(AppointmentModel::query()->where('user_id', $doctor->id)->whereDate('date', $sharedDay)->count())->toBe(2)
+        ->and(AppointmentModel::query()->where('user_id', $otherDoctor->id)->whereDate('date', $sharedDay)->count())->toBe(1);
+
+    $completed = AppointmentModel::query()->where('user_id', $doctor->id)->where('status', 'completada')->pluck('id');
+    $withTracking = AppointmentTrackingModel::query()->whereIn('appointment_id', $completed)->pluck('appointment_id');
+
+    expect($completed)->toHaveCount(2)
+        ->and($withTracking)->toHaveCount(1);
 });
 
 it('stores neutral images of its own under its reserved directory', function () {
@@ -136,7 +155,8 @@ it('does not duplicate anything when it runs twice', function () {
 it('seeds through the ui:audit-data command', function () {
     $this->artisan('ui:audit-data')->assertSuccessful();
 
-    expect(UserModel::query()->where('email', 'like', '%@'.UiAuditSeeder::EMAIL_DOMAIN)->count())->toBe(4);
+    // One per role, the inactive one and the second doctor of spec 018.
+    expect(UserModel::query()->where('email', 'like', '%@'.UiAuditSeeder::EMAIL_DOMAIN)->count())->toBe(5);
 });
 
 it('fails the ui:audit-data command outside local and testing without writing (abuse)', function () {
