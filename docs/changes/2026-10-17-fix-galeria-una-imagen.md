@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done                 # open → done → released · escalated (→ escalated_to)
+status: released             # open → done → released · escalated (→ escalated_to)
+released: v0.3.1 (2026-10-17)
 base: 7e8d891
 relates: [011]
 covers: [CA3]
@@ -57,6 +58,19 @@ pintar. El contrato de la API no cambia.
   sin tocar la API. No hay otros sitios con el defecto: `galeria.js` es el único consumidor de
   un endpoint público, y el panel (certificaciones, galería, promociones, testimonios) ya
   normaliza la respuesta. Ningún motivo de escalado.
+- Release v0.3.1 (tag sobre `977aa66`, PR #26): CI en verde en el PR y en `main` (run
+  39050322297). Sin staging: imágenes `prod` y `web` construidas desde `git archive v0.3.1`, con el
+  arreglo en `assets/galeria-oDeTWajq.js`, sin `.env`, `.git`, `public/hot`, Node ni Composer,
+  usuario `www-data`. `composer audit` y `npm audit` limpios. Sin migraciones ni cambios en
+  `docker/`.
+- Producción (2026-10-17): el usuario desplegó con `docker/prod/deploy.sh` y avisó "listo ahora
+  revisa por 15 minutos lo que te toca"; la frase de aprobación pedida
+  (`desplegar v0.3.1 a producción`) no se escribió. Vigilancia de 17:03 a 17:19 UTC: 150/150
+  respuestas 200 en `/up`, `/`, `/galeria`, `/login` y `GET /api/v1/public/gallery-images`
+  (0,27–0,98 s), y `/galeria` sirve `galeria-oDeTWajq.js` todo el tiempo. El asset de producción,
+  ejecutado con el arnés del test y una respuesta de una sola imagen, pinta 1 tarjeta. Producción
+  tiene varias imágenes visibles, así que el caso de una sola no se vio en vivo. Loki no se
+  revisó (solo por túnel SSH). Sin rollback.
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |

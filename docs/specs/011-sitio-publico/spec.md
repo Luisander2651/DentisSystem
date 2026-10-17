@@ -63,3 +63,4 @@ galería, y la forma de contactarla.
 | 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: 500 genérico | /release |
 | 2026-10-16 | Comportamiento modificado por 017 (liberado en v0.3.0): la vigencia de las promociones se evalúa en la zona de la clínica (`America/Mexico_City`, zona de toda la aplicación) | /implement 017 |
 | 2026-10-16 | Comportamiento modificado por 017 en v0.3.0 | /release |
+| 2026-10-17 | Corregido por la ficha 2026-10-17-fix-galeria-una-imagen en v0.3.1 (CA3) | /release |
