@@ -727,6 +727,175 @@
             ]
         },
         {
+            "id": "agenda-asistente",
+            "screen": "agenda",
+            "path": "/agenda",
+            "role": "asistente"
+        },
+        {
+            "id": "agenda-cita-crear-asistente",
+            "screen": "agenda",
+            "dialog": "nueva-cita",
+            "dialogSelector": "[data-create-appointment-modal]",
+            "path": "/agenda",
+            "role": "asistente",
+            "steps": [
+                {
+                    "click": "[data-create-appointment-open]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-detalle-pendiente-asistente",
+            "screen": "agenda",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/agenda",
+            "role": "asistente",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(24)"
+                },
+                {
+                    "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-view-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "[data-view-appointment-cancel-appointment]",
+                    "is": "Cancelar cita"
+                },
+                {
+                    "text": "[data-view-appointment-edit]",
+                    "is": "Reprogramar"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-detalle-asistente",
+            "screen": "agenda",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/agenda",
+            "role": "asistente",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(8)"
+                },
+                {
+                    "click": "[data-view-appointment-trigger][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
+                }
+            ],
+            "expects": [
+                {
+                    "absent": "[data-view-appointment-clinical-section]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-doctor",
+            "screen": "agenda",
+            "path": "/agenda",
+            "role": "doctor"
+        },
+        {
+            "id": "agenda-doctor-hoy-sin-citas",
+            "screen": "agenda",
+            "path": "/agenda",
+            "role": "doctor",
+            "now": "2026-07-23T10:00:00-06:00"
+        },
+        {
+            "id": "agenda-cita-detalle-pendiente-doctor",
+            "screen": "agenda",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/agenda",
+            "role": "doctor",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(24)"
+                },
+                {
+                    "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-view-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                }
+            ],
+            "expects": [
+                {
+                    "absent": "[data-view-appointment-edit]"
+                },
+                {
+                    "absent": "[data-view-appointment-cancel-appointment]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-detalle-doctor",
+            "screen": "agenda",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/agenda",
+            "role": "doctor",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(8)"
+                },
+                {
+                    "click": "[data-view-appointment-trigger][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "#view-appointment-clinical-title",
+                    "is": "Registro clínico"
+                },
+                {
+                    "absent": "[data-view-appointment-clinical-section] :is(input, textarea, select)"
+                },
+                {
+                    "absent": "[data-view-appointment-edit]"
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-detalle-doctor-sin-seguimiento",
+            "screen": "agenda",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/agenda",
+            "role": "doctor",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(22)"
+                },
+                {
+                    "click": "[data-view-appointment-trigger][data-appointment-id=\"ce66c7b7-5547-5ab7-a688-938a2d629fdf\"]"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "[data-view-appointment-clinical-body] p",
+                    "is": "Esta cita no tiene seguimiento registrado."
+                }
+            ]
+        },
+        {
+            "id": "agenda-cita-completar-doctor",
+            "screen": "agenda",
+            "dialog": "completar-cita",
+            "dialogSelector": "[data-complete-appointment-modal]",
+            "path": "/agenda",
+            "role": "doctor",
+            "steps": [
+                {
+                    "click": "#calendar-grid > :nth-child(24)"
+                },
+                {
+                    "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-complete-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                }
+            ]
+        },
+        {
             "id": "agenda-cita-completar-validacion",
             "screen": "agenda",
             "dialog": "completar-cita",
@@ -1418,7 +1587,7 @@
         {
             "id": "error-403-admin",
             "screen": "error-403",
-            "path": "/agenda",
+            "path": "/usuarios",
             "role": "asistente"
         }
     ]
