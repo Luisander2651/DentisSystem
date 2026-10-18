@@ -44,7 +44,7 @@ it('gives the administrator and the assistant booking, rescheduling and cancelli
         ->assertSee('data-edit-appointment-modal', false)
         ->assertSee('data-cancel-appointment-confirm', false)
         ->assertSee('Consulta y organiza las citas de la clínica.');
-})->with(['Administrador', 'Asistente'])->skip('018: pendiente de T029');
+})->with(['Administrador', 'Asistente']);
 
 it('shows the patient and doctor selectors of the booking dialog to the administrator and the assistant', function (string $role) {
     actAsAgendaRole($this, $role);
@@ -69,7 +69,7 @@ it('gives completing to the administrator and the doctor, not to the assistant',
     'administrador' => ['Administrador', true],
     'asistente' => ['Asistente', false],
     'doctor' => ['Doctor', true],
-])->skip('018: pendiente de T029');
+]);
 
 it('shows the doctor their agenda without booking, rescheduling or cancelling', function () {
     actAsAgendaRole($this, 'Doctor');
@@ -82,7 +82,7 @@ it('shows the doctor their agenda without booking, rescheduling or cancelling', 
         ->assertDontSee('data-create-appointment-modal', false)
         ->assertDontSee('data-edit-appointment-modal', false)
         ->assertDontSee('data-cancel-appointment-confirm', false);
-})->skip('018: pendiente de T029');
+});
 
 it('keeps the default empty text of today for the administrator and the assistant', function (string $role) {
     actAsAgendaRole($this, $role);
@@ -90,4 +90,4 @@ it('keeps the default empty text of today for the administrator and the assistan
     $this->get('/agenda')->assertOk()
         ->assertSee('data-agenda-empty-today="No hay citas para hoy."', false)
         ->assertDontSee('Tus citas asignadas.');
-})->with(['Administrador', 'Asistente'])->skip('018: pendiente de T029');
+})->with(['Administrador', 'Asistente']);
