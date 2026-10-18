@@ -150,7 +150,8 @@ it('answers each agenda and appointments route according to the permissions tabl
 
     if (in_array($actor, $allowed, true)) {
         if (in_array($route, appointmentsDenialOnlyRoutes(), true)) {
-            expect($response->status())->not->toBeIn([401, 403]);
+            // Allowed: the expected answers of the route, never a refusal nor an unexpected error.
+            expect($response->status())->toBeIn([200, 201, 404, 409, 422]);
 
             return;
         }
@@ -191,6 +192,22 @@ it('refuses to change an appointment to the doctor, inactive staff, patients and
     'status outside the list' => [['status' => 'asignada']],
     'reschedule and status at once' => [['date' => '2026-09-02', 'time' => '11:00', 'status' => 'cancelada']],
     'date in another format' => [['date' => '02/09/2026', 'time' => '11:00']],
+]);
+
+it('refuses booking to the doctor before reading the body, whatever it is (spec 018 CA7, TM1)', function (array $body) {
+    ($this->actAs)('doctor');
+    $before = appointmentsDataSnapshot();
+
+    $this->postJson($this->appointmentsUrl(), $body)->assertForbidden();
+
+    expect(appointmentsDataSnapshot())->toEqual($before);
+})->with([
+    'valid' => fn () => $this->validCreateAppointmentPayload(['date' => '2026-09-03']),
+    'empty' => fn () => [],
+    'date in another format' => fn () => $this->validCreateAppointmentPayload(['date' => '02/09/2026']),
+    'treatment that is not a number' => fn () => $this->validCreateAppointmentPayload(['treatment_id' => 'abc']),
+    'patient that is not an id' => fn () => $this->validCreateAppointmentPayload(['patient_id' => 'no-es-un-id']),
+    'date in the past' => fn () => $this->validCreateAppointmentPayload(['date' => '2020-01-01']),
 ]);
 
 it('keeps the clinical tracking of an appointment away from the assistant and from a doctor who does not own it', function (string $role) {
