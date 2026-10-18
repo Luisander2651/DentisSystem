@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\AppointmentTracking\Application\UseCases;
 
 use App\Core\Authorization\AuthorizationServiceInterface;
+use App\Core\Authorization\Exceptions\AuthorizationException;
 use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
 use App\Modules\Appointments\Domain\Service\AppointmentsService;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
@@ -40,13 +41,23 @@ final readonly class CompleteAppointmentUseCase
 
     public function execute(CompleteAppointmentDTO $dto): AppointmentTrackingRecord
     {
-        $this->authorization->assertCan('appointment-tracking.create');
+        $completesAny = $this->authorization->can('appointment-tracking.create');
+
+        if (! $completesAny && ! $this->authorization->can('appointment-tracking.create-own')) {
+            $this->authorization->assertCan('appointment-tracking.create');
+        }
 
         $appointmentId = new AppointmentId($dto->appointmentId);
         $appointment = $this->appointmentsService->findById($appointmentId);
 
         if (! $appointment) {
             throw AppointmentException::notFound($appointmentId);
+        }
+
+        // Spec 018 (CA13): the doctor only completes the appointments assigned to them,
+        // checked before the appointment or its follow-up are touched.
+        if (! $completesAny && $appointment->UserId()->value !== $this->authorization->currentActorId()) {
+            throw AuthorizationException::forbidden('appointment-tracking.create-own');
         }
 
         if ($appointment->Status()->isCancelled()) {
