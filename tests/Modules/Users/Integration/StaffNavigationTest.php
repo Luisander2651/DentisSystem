@@ -31,7 +31,7 @@ it('offers the assistant the agenda and the records but not patient registration
         ->assertSee('href="/agenda"', false)
         ->assertSee('href="/expedientes-clinicos"', false)
         ->assertDontSee('data-create-patient-open', false);
-})->skip('018: pendiente de T028');
+});
 
 it('offers the doctor the agenda and the records (spec 018, CA5)', function () {
     $this->actingAsNonAdminUser('Doctor');
@@ -40,7 +40,7 @@ it('offers the doctor the agenda and the records (spec 018, CA5)', function () {
         ->assertSee('href="/agenda"', false)
         ->assertSee('href="/expedientes-clinicos"', false)
         ->assertDontSee('data-create-patient-open', false);
-})->skip('018: pendiente de T028');
+});
 
 it('offers the patient neither the agenda nor the records', function () {
     $this->actingAsPatient();

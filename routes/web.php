@@ -52,6 +52,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
                 'selectedPatientId' => $patientId,
             ]);
         })->name('records.show');
+
+        // Spec 018: the agenda by role; what each role may do is decided by the API.
+        Route::get('/agenda', function () {
+            return view('pages.agenda.index');
+        })->name('agenda.index');
     });
 });
 
@@ -71,8 +76,4 @@ Route::middleware(['auth:sanctum', 'only.admin'])->group(function () {
     Route::get('/pacientes', function () {
         return view('pages.patients.index');
     })->name('patients.index');
-
-    Route::get('/agenda', function () {
-        return view('pages.agenda.index');
-    })->name('agenda.index');
 });

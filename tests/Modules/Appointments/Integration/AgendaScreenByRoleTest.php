@@ -26,7 +26,7 @@ it('opens the agenda to every staff role', function (string $role) {
     actAsAgendaRole($this, $role);
 
     $this->get('/agenda')->assertOk()->assertSee('Agenda de citas');
-})->with(['Administrador', 'Asistente', 'Doctor'])->skip('018: pendiente de T028');
+})->with(['Administrador', 'Asistente', 'Doctor']);
 
 it('refuses the agenda to a patient and to inactive staff with the "Sin permiso" page', function (string $actor) {
     $actor === 'paciente' ? $this->actingAsPatient() : $this->actingAsInactiveAdmin();
