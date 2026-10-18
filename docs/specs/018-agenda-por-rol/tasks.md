@@ -163,12 +163,20 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 - [x] T036 Actualizar el modelo de autorización y los puntos de entrada: asistente con la agenda salvo completar y eliminar; doctor con sus citas, completar y leer el seguimiento de las suyas; `/agenda`, `POST /complete` y `GET /tracking` en la tabla de puntos de entrada — `docs/security.md` — hecho cuando: la línea del modelo de autorización y las filas de la tabla coinciden con el contrato del plan — depende: T033
   - nota: hecha 2026-10-18: el modelo de autorización describe la agenda del asistente (sin completar ni eliminar) y la del doctor (sus citas, completar y leer el seguimiento de las suyas, permisos `*-own` contra el dueño); filas nuevas de `POST /complete` y `GET /tracking` (`staff` + `assertCan`) y de `/agenda` web (`staff:administrador,asistente,doctor`); `/appointment-tracking/*` sigue en `only.admin`
 
+### Correcciones de /review
+- [ ] T041 Comprobar en la agenda el alcance del registro clínico por rol: el detalle de cita de `/agenda` lleva `data-view-appointment-tracking-scope` `all` (administrador), `own` (doctor) y `none` (asistente) y `data-view-appointment-actor-id` con el id del actor, sin `data-view-appointment-is-admin` — `tests/Modules/Appointments/Integration/AgendaScreenByRoleTest.php` — hecho cuando: el caso nuevo pasa y falla al pasar `'all'` al asistente en `resources/views/pages/agenda/index.blade.php` (comprobado rompiéndolo y restaurado) — cubre: CA4, CA9
+  - nota: añadida por /review: R1
+- [ ] T042 Probar que el doctor recibe 403 al agendar con cuerpos inválidos (sin cuerpo, fecha `02/09/2026`, `treatment_id` `abc`, `patient_id` que no es uuid, fecha pasada) y que la tabla de citas no cambia; y acotar el caso de actor permitido de `POST /appointments/{id}/complete` y `GET /appointments/{id}/tracking` en la tabla genérica a un conjunto cerrado de estados (`[200, 201, 404, 409, 422]`) para que un 500 no pase — `tests/Modules/Appointments/Integration/AppointmentsAccessControlTest.php` — hecho cuando: los casos nuevos pasan y fallan si `CreateAppointmentUseCase` valida antes de `assertCan` (comprobado moviendo la llamada y restaurado); la tabla genérica sigue en verde — cubre: CA7, CA11
+  - nota: añadida por /review: R2, R3
+- [ ] T043 Ajustar dos tests de la spec: en `DoctorTrackingTest`, el caso "edit the follow-up" envía un cuerpo de seguimiento válido y todos los casos del rechazo afirman el cuerpo exacto `{"error": …}`; en `AgendaByRoleTest`, el choque de horario del asistente afirma el mismo mensaje de error que el del administrador — `tests/Modules/AppointmentTracking/Integration/DoctorTrackingTest.php`, `tests/Modules/Appointments/Integration/AgendaByRoleTest.php` — hecho cuando: los dos archivos pasan con las aserciones nuevas — cubre: CA2, CA10
+  - nota: añadida por /review: R4, R10
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: sección de autorización con los permisos "propios" del doctor y los métodos `can()` y `currentActorId()`
   - nota: hecha 2026-10-18: `architecture.md` cita `can()` y `currentActorId()` en Core y explica en autenticación y autorización cómo se aplican los permisos "propios" del doctor
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de auditoría de la 018 para el objetivo 5 (lectura y escritura de seguimiento por el doctor, cambios de cita por el asistente); sin cambios en `deployment.md`
   - nota: hecha 2026-10-18: `observability.md` lista los puntos de emisión de auditoría de la 018 para el objetivo 5 (lectura y escritura de seguimiento, cambios de cita); `deployment.md` sin cambios (no hay variables, entornos ni pasos nuevos)
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - nota: hecha 2026-10-18: CA1–CA13 marcados (sus tests pasan en T033), spec en `implemented` y fila del README actualizada
 
 ## Despliegue (lo ejecuta `/release`)
@@ -182,22 +190,22 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
 | CA1 | T012, T016, T019 | T021, T023, T028, T029 |
-| CA2 | T012, T013, T015, T016, T019 | T021, T023, T029, T037, T038, T040 |
+| CA2 | T012, T013, T015, T016, T019, T043 | T021, T023, T029, T037, T038, T040 |
 | CA3 | T012, T019 | T021, T023, T031 |
-| CA4 | T011, T013, T014, T015, T019 | T021, T024, T025, T026, T027, T030, T031 |
+| CA4 | T011, T013, T014, T015, T019, T041 | T021, T024, T025, T026, T027, T030, T031 |
 | CA5 | T012, T016, T018, T019 | T023, T028, T029, T030, T039 |
 | CA6 | T019 | T029, T030, T031 |
-| CA7 | T011, T013 | T021, T024, T038 |
+| CA7 | T011, T013, T042 | T021, T024, T038 |
 | CA8 | T012, T018 | T023, T039 |
-| CA9 | T014, T017, T018, T019 | T026, T027, T031 |
-| CA10 | T014, T017 | T026, T027, T031 |
-| CA11 | T010, T011, T012, T013, T014, T016, T017 | T020, T021, T024, T027, T028 |
+| CA9 | T014, T017, T018, T019, T041 | T026, T027, T031 |
+| CA10 | T014, T017, T043 | T026, T027, T031 |
+| CA11 | T010, T011, T012, T013, T014, T016, T017, T042 | T020, T021, T024, T027, T028 |
 | CA12 | T014, T019 | T025, T027, T030, T031 |
 | CA13 | T014 | T025, T027 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
-| TM1 | T021, T038 | T013 |
+| TM1 | T021, T038 | T013, T042 |
 | TM2 | T023 | T012 |
 | TM3 | T026 | T014 |
 | TM4 | T025 | T014 |
@@ -234,3 +242,4 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-10-17 | T010 amplía el test existente; T012 lista vacía; T013 casos que cambian, rutas nuevas y selectores; T014 `/tracking` por actor y 409; T016 selectores; T018 dividida en T018 (seeder) y T019 (`screens.json`) con ids y `now`; nuevas T037–T040 (selectores de la agenda, lista vacía, diálogo de agendar); T027 depende de T013 | /tasks --fix A1, A2, A3, A5, A6, A7, A13, A14 |
+| 2026-10-18 | T041–T043 añadidas (solo tests); T092 desmarcada y spec de vuelta a `approved` | /review ronda 1: R1, R2, R3, R4, R10 |

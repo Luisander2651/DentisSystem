@@ -1,7 +1,7 @@
 ---
 id: 018
 slug: agenda-por-rol
-status: implemented
+status: approved
 created: 2026-10-17
 extends: [007, 008, 009, 014, 017]
 ---
