@@ -206,7 +206,7 @@ it('refuses the assistant completing an appointment through the edit or deleting
 })->with([
     'complete through the edit' => ['putJson', ['status' => 'completada']],
     'delete' => ['deleteJson', []],
-])->skip('018: pendiente de T024');
+]);
 
 it('answers today appointments to every staff role and the doctors selector to the administrator and the assistant (spec 018)', function (string $url, string $role, bool $allowed) {
     $this->actingAsNonAdminUser($role);

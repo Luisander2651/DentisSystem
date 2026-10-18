@@ -96,6 +96,9 @@ final readonly class UpdateAppointmentUseCase
         $newStatus = AppointmentStatus::fromString($status);
 
         if ($newStatus->isCompleted()) {
+            // Spec 018 (D1): completing without the clinical follow-up stays with the
+            // administrator; the assistant may edit the appointment but not close it this way.
+            $this->authorization->assertCan('appointments.mark-completed');
             $appointment->complete();
         } elseif ($newStatus->isCancelled()) {
             $appointment->cancel();
