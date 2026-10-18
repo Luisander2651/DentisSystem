@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentModel;
 use App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent\Models\AppointmentTrackingModel;
 use App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent\Models\AppointmentTrackingPrescriptionModel;
-use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Modules\AppointmentTracking\Integration\AppointmentTrackingIntegrationTestCase;
@@ -71,14 +71,14 @@ it('lets the doctor complete their own appointment with its follow-up and prescr
         ->assertJsonCount(1, 'data.prescriptions');
     $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'completada']);
     $this->assertDatabaseHas('appointment_tracking', ['appointment_id' => $appointment->id, 'diagnosis' => 'Caries profunda']);
-})->skip('018: pendiente de T027');
+});
 
 it('answers 409, as for the administrator, when the doctor completes an appointment that does not exist', function () {
     $this->actingAsNonAdminUser('Doctor');
 
     $this->postJson($this->completeAppointmentUrl((string) Str::uuid()), $this->validCompletePayload())
         ->assertStatus(409);
-})->skip('018: pendiente de T027');
+});
 
 it('lets the doctor read the follow-up of their own completed appointment', function () {
     $doctor = $this->actingAsNonAdminUser('Doctor');
@@ -89,7 +89,7 @@ it('lets the doctor read the follow-up of their own completed appointment', func
         ->assertOk()
         ->assertJsonPath('data.appointment_tracking.diagnosis', 'Caries superficial')
         ->assertJsonPath('data.prescriptions.0.medication', 'Ibuprofeno');
-})->skip('018: pendiente de T027');
+});
 
 it('answers 404 when the doctor reads their own completed appointment without follow-up', function () {
     $doctor = $this->actingAsNonAdminUser('Doctor');
@@ -98,7 +98,7 @@ it('answers 404 when the doctor reads their own completed appointment without fo
     $this->getJson(trackingUrl($appointment->id))
         ->assertNotFound()
         ->assertExactJson(['error' => 'Appointment tracking not found.']);
-})->skip('018: pendiente de T027');
+});
 
 it('refuses the doctor the follow-up of another doctor without giving away any clinical data', function () {
     $this->actingAsNonAdminUser('Doctor');
@@ -108,7 +108,7 @@ it('refuses the doctor the follow-up of another doctor without giving away any c
     $this->getJson(trackingUrl($appointment->id))
         ->assertForbidden()
         ->assertExactJson(['error' => 'You are not allowed to perform this action (appointment-tracking.view-own).']);
-})->skip('018: pendiente de T027');
+});
 
 it('refuses the doctor completing an appointment of another doctor and leaves it untouched', function () {
     $this->actingAsNonAdminUser('Doctor');
@@ -120,7 +120,7 @@ it('refuses the doctor completing an appointment of another doctor and leaves it
         ->assertExactJson(['error' => 'You are not allowed to perform this action (appointment-tracking.create-own).']);
 
     expect(clinicalSnapshot())->toEqual($before);
-})->skip('018: pendiente de T027');
+});
 
 it('refuses the doctor and the assistant editing a follow-up or its prescriptions, even on the doctor\'s own appointment', function (string $role, string $method, string $route) {
     $doctor = $this->createUserWithRole('doctor');
@@ -160,7 +160,7 @@ it('refuses the assistant completing an appointment or reading its follow-up', f
 })->with([
     'complete' => ['postJson', 'appointment-tracking.create'],
     'read the follow-up' => ['getJson', 'appointment-tracking.view'],
-])->skip('018: pendiente de T027');
+]);
 
 it('refuses the follow-up to a patient, to inactive staff and to a guest', function (string $actor, int $status, array $body) {
     $appointment = $this->createAppointment(['status' => 'completada']);
@@ -178,4 +178,4 @@ it('refuses the follow-up to a patient, to inactive staff and to a guest', funct
     'patient' => ['patient', 403, ['error' => 'Only staff can access this resource.']],
     'inactive staff' => ['inactive', 403, ['error' => 'Your account is inactive.']],
     'guest' => ['guest', 401, ['message' => 'Unauthenticated.']],
-])->skip('018: pendiente de T027');
+]);

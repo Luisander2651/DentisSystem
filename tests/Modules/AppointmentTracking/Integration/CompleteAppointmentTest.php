@@ -144,7 +144,7 @@ it('rejects authenticated non user actor', function () {
 
     $response->assertStatus(403)
         ->assertJson(['error' => 'Only staff can access this resource.']);
-})->skip('018: pendiente de T027');
+});
 
 it('rejects inactive admin', function () {
     $this->actingAsInactiveAdmin();
@@ -170,7 +170,7 @@ it('rejects the assistant, who does not complete appointments (spec 018, CA4)', 
 
     $response->assertStatus(403)
         ->assertJson(['error' => 'You are not allowed to perform this action (appointment-tracking.create).']);
-})->skip('018: pendiente de T027');
+});
 
 it('allows admin role case insensitively', function () {
     $this->createRole('ADMINISTRADOR');

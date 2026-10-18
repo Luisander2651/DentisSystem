@@ -111,6 +111,7 @@ beforeEach(function () {
      */
     $this->buildRequest = function (string $route): array {
         $appointment = $this->createAppointment();
+        $this->builtAppointment = $appointment;
 
         return match ($route) {
             'GET /agenda/patients' => ['getJson', '/api/v1/agenda/patients', []],
@@ -137,6 +138,12 @@ beforeEach(function () {
 it('answers each agenda and appointments route according to the permissions table', function (string $actor, string $route, array $allowed) {
     [$method, $url, $payload] = ($this->buildRequest)($route);
     ($this->actAs)($actor);
+
+    if ($actor === 'doctor' && in_array($route, appointmentsDenialOnlyRoutes(), true)) {
+        // The doctor is allowed on their own appointments only; ownership is DoctorTrackingTest's.
+        $this->builtAppointment->update(['user_id' => auth()->id()]);
+    }
+
     $before = appointmentsDataSnapshot();
 
     $response = $this->{$method}($url, $payload);
@@ -160,8 +167,7 @@ it('answers each agenda and appointments route according to the permissions tabl
     }
 
     expect(appointmentsDataSnapshot())->toEqual($before);
-})->with(appointmentsAccessActors())->with(appointmentsAccessRouteDataset())
-    ->skip('018: pendiente de T021, T023, T027, T038 y T039');
+})->with(appointmentsAccessActors())->with(appointmentsAccessRouteDataset());
 
 it('refuses to change an appointment to the doctor, inactive staff, patients and guests, whatever the body (spec 017 CA10, spec 018 CA7)', function (string $actor, array $payload) {
     $appointment = $this->createAppointment();
@@ -260,4 +266,4 @@ it('covers every agenda and appointments route and protects each one with the st
         ->toEqual(collect(array_keys(appointmentsAccessRoutes()))->sort()->values()->all());
 
     $routes->each(fn (array $route) => expect($route['middleware'])->toContain('staff'));
-})->skip('018: pendiente de T027');
+});
