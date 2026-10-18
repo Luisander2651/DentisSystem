@@ -91,18 +91,29 @@ it('answers can() without throwing for every kind of actor', function (?string $
     'staff inactivo' => ['inactivo', 'appointments.view', false],
     'administrador con permiso' => ['Administrador', 'appointments.view', true],
     'administrador sin permiso propio' => ['Administrador', 'appointments.view-own', false],
-    'asistente con permiso' => ['Asistente', 'appointments.create', true],
+    'asistente con permiso' => ['Asistente', 'patients.clinical-data.manage', true],
     'asistente sin permiso' => ['Asistente', 'appointment-tracking.create', false],
-    'doctor con permiso propio' => ['Doctor', 'appointments.view-own', true],
+    'doctor con permiso' => ['Doctor', 'patients.view', true],
     'doctor sin permiso general' => ['Doctor', 'appointments.view', false],
     'permiso inexistente' => ['Administrador', 'users.impersonate', false],
-])->skip('018: pendiente de T020');
+]);
+
+it('answers can() with the permissions spec 018 adds to the map', function (string $role, string $permission, bool $expected) {
+    $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
+
+    expect($this->service->can($permission))->toBe($expected);
+})->with([
+    'asistente agenda' => ['Asistente', 'appointments.create', true],
+    'doctor con permiso propio' => ['Doctor', 'appointments.view-own', true],
+    'doctor completa los suyos' => ['Doctor', 'appointment-tracking.create-own', true],
+    'asistente sin permiso propio' => ['Asistente', 'appointments.view-own', false],
+])->skip('018: pendiente de T021');
 
 it('returns the id of the acting staff member', function (string $role) {
     $user = $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
 
     expect($this->service->currentActorId())->toBe((string) $user->id);
-})->with(['Administrador', 'Asistente', 'Doctor'])->skip('018: pendiente de T020');
+})->with(['Administrador', 'Asistente', 'Doctor']);
 
 it('refuses currentActorId() without a staff actor', function (?string $actor) {
     if ($actor === 'paciente') {
@@ -111,4 +122,4 @@ it('refuses currentActorId() without a staff actor', function (?string $actor) {
 
     expect(fn () => $this->service->currentActorId())
         ->toThrow(AuthorizationException::class, 'Authentication is required.');
-})->with(['sin sesión' => [null], 'paciente' => ['paciente']])->skip('018: pendiente de T020');
+})->with(['sin sesión' => [null], 'paciente' => ['paciente']]);

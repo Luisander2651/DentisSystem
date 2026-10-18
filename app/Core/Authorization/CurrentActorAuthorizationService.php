@@ -37,6 +37,28 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
         }
     }
 
+    public function can(string $permission): bool
+    {
+        try {
+            $this->assertCan($permission);
+        } catch (AuthorizationException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function currentActorId(): string
+    {
+        $actor = Auth::user();
+
+        if (! $actor instanceof UserModel) {
+            throw AuthorizationException::unauthenticated();
+        }
+
+        return (string) $actor->id;
+    }
+
     /**
      * Spec 014: the single source of truth for the "Permisos esperados" table. Each permission
      * lists the staff roles that hold it; anything not listed is denied by default.
