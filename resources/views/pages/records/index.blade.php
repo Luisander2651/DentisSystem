@@ -4,7 +4,12 @@
 
 @section('content')
 @php
-    $isAdmin = in_array($sidebarRole, ['admin', 'administrador'], true);
+    // Spec 018 (D5): the clinical record of an appointment, as in the agenda.
+    $trackingScope = match (true) {
+        in_array($sidebarRole, ['admin', 'administrador'], true) => 'all',
+        $sidebarRole === 'doctor' => 'own',
+        default => 'none',
+    };
     // Spec 014, CA4: the doctor sees the records read-only; the server refuses his writes anyway.
     $canEdit = in_array($sidebarRole, ['admin', 'administrador', 'asistente'], true);
     // Spec 016, CA31: below md the chosen record takes the place of the list.
@@ -97,7 +102,7 @@
         confirm-text="Eliminar"
         cancel-text="Cancelar"
     />
-    <x-calendar.view-appointment-modal :is-admin="$isAdmin" />
+    <x-calendar.view-appointment-modal :tracking-scope="$trackingScope" :actor-id="(string) auth()->id()" />
 
     @if ($canEdit)
         {{-- index.js clones this to render each "Eliminar" button; without it, none is rendered. --}}

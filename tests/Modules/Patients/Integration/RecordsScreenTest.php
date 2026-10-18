@@ -132,4 +132,4 @@ it('tells the appointment detail of the records whose clinical follow-up each ro
     'administrador' => ['Administrador', 'all'],
     'doctor' => ['Doctor', 'own'],
     'asistente' => ['Asistente', 'none'],
-])->skip('018: pendiente de T031');
+]);

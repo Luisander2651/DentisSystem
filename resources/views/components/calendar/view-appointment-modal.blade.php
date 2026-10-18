@@ -1,10 +1,15 @@
-@props(['isAdmin' => false])
+@props([
+    // Spec 018: whose clinical record the detail shows: 'all', 'own' (the actor's appointments) or 'none'.
+    'trackingScope' => 'none',
+    'actorId' => '',
+])
 
 <x-ui.dialog
     id="view-appointment-modal"
     title="Detalle de la cita"
     data-view-appointment-modal
-    data-view-appointment-is-admin="{{ $isAdmin ? 'true' : 'false' }}"
+    data-view-appointment-tracking-scope="{{ $trackingScope }}"
+    data-view-appointment-actor-id="{{ $actorId }}"
 >
     <dl data-view-appointment-general></dl>
 
