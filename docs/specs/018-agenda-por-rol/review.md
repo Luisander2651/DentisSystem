@@ -5,7 +5,7 @@ round: 2
 date: 2026-10-18
 base: afe1416
 head: a6a0641
-human_signoff: pending
+human_signoff: Luisander2651, 2026-10-18
 ---
 
 # Review · 018 Agenda por rol
