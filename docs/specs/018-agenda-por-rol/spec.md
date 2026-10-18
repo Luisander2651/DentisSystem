@@ -1,7 +1,7 @@
 ---
 id: 018
 slug: agenda-por-rol
-status: approved
+status: implemented
 created: 2026-10-17
 extends: [007, 008, 009, 014, 017]
 ---
@@ -28,19 +28,19 @@ de hoy y las acciones rápidas.
 - Como administrador, quiero conservar todo lo que hoy hago en la agenda.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dado un asistente activo, cuando abre la agenda desde su menú, entonces ve las citas de todos los doctores, con el calendario, las citas de hoy y los filtros por estado, igual que el administrador.
-- [ ] CA2 · Dado un asistente, cuando agenda una cita nueva eligiendo paciente, doctor, tratamiento, fecha y hora, entonces la cita se crea con las mismas reglas que para el administrador (sin choques de horario en la clínica y nunca en el pasado) y con los mismos mensajes de rechazo.
-- [ ] CA3 · Dada una cita asignada o reprogramada, cuando el asistente la reprograma o la cancela, entonces se aplica igual que para el administrador (017 CA1–CA9), incluidos los avisos "Cita reprogramada." y "Cita cancelada.".
-- [ ] CA4 · (abuso) Como asistente, intento completar una cita, leer o editar su seguimiento clínico o sus recetas, o eliminar una cita, por la pantalla o por otra vía → se rechaza con acceso denegado, la cita no cambia y la pantalla no le ofrece "Completar" ni el seguimiento.
-- [ ] CA5 · Dado un doctor activo, cuando abre la agenda desde su menú, entonces ve solo las citas que tiene asignadas, en el calendario, en las citas de hoy y en los filtros, y no ve el botón para agendar.
-- [ ] CA6 · Dada una cita asignada a un doctor, cuando la abre en la agenda, entonces ve fecha, hora, paciente, tratamiento y estado, sin "Reprogramar" ni "Cancelar cita"; si la cita está asignada o reprogramada, ve además "Completar".
-- [ ] CA7 · (abuso) Como doctor, intento agendar, reprogramar, cancelar o eliminar una cita por otra vía, con datos válidos o no → se rechaza con acceso denegado y la cita no cambia.
-- [ ] CA12 · Dada una cita asignada o reprogramada que tiene asignada, cuando el doctor la completa registrando el seguimiento clínico (motivo, síntomas, diagnóstico y procedimiento obligatorios; observaciones y recomendaciones opcionales) y cero o más recetas, entonces la cita queda completada con su seguimiento y sus recetas, con las mismas reglas que para el administrador (009 CA1–CA4 y CA13).
-- [ ] CA13 · (abuso) Como doctor, intento completar una cita asignada a otro doctor, por la pantalla o por otra vía → se rechaza con acceso denegado, la cita no cambia y no se guarda ningún seguimiento.
-- [ ] CA8 · (abuso) Como doctor, intento obtener en los listados de la agenda (las citas del calendario y las de hoy) las citas de otro doctor, por otra vía, cambiando el filtro o pidiendo un día concreto → solo recibo las mías; las demás no aparecen ni cuentan. Si no tengo citas, el listado viene vacío, no como error. Quedan fuera, a propósito, el detalle de una cita y el historial de citas de un paciente, que todo el staff ve desde el expediente (014), sin datos clínicos.
-- [ ] CA9 · Dada una cita completada que tiene asignada, cuando el doctor abre su detalle, entonces ve el seguimiento clínico y las recetas en solo lectura, sin opción de editarlos; si la cita no tiene seguimiento, se le indica "Esta cita no tiene seguimiento registrado.".
-- [ ] CA10 · (abuso) Como doctor, intento leer el seguimiento clínico o las recetas de una cita asignada a otro doctor, o editar el seguimiento o las recetas de una de mis citas → se rechaza con acceso denegado y no se devuelve ningún dato clínico.
-- [ ] CA11 · (abuso) Como paciente, staff inactivo o visitante sin sesión, intento abrir la agenda o usar cualquiera de sus operaciones → se rechaza igual que hoy (014); y el administrador conserva todas sus acciones de la agenda sin cambios.
+- [x] CA1 · Dado un asistente activo, cuando abre la agenda desde su menú, entonces ve las citas de todos los doctores, con el calendario, las citas de hoy y los filtros por estado, igual que el administrador.
+- [x] CA2 · Dado un asistente, cuando agenda una cita nueva eligiendo paciente, doctor, tratamiento, fecha y hora, entonces la cita se crea con las mismas reglas que para el administrador (sin choques de horario en la clínica y nunca en el pasado) y con los mismos mensajes de rechazo.
+- [x] CA3 · Dada una cita asignada o reprogramada, cuando el asistente la reprograma o la cancela, entonces se aplica igual que para el administrador (017 CA1–CA9), incluidos los avisos "Cita reprogramada." y "Cita cancelada.".
+- [x] CA4 · (abuso) Como asistente, intento completar una cita, leer o editar su seguimiento clínico o sus recetas, o eliminar una cita, por la pantalla o por otra vía → se rechaza con acceso denegado, la cita no cambia y la pantalla no le ofrece "Completar" ni el seguimiento.
+- [x] CA5 · Dado un doctor activo, cuando abre la agenda desde su menú, entonces ve solo las citas que tiene asignadas, en el calendario, en las citas de hoy y en los filtros, y no ve el botón para agendar.
+- [x] CA6 · Dada una cita asignada a un doctor, cuando la abre en la agenda, entonces ve fecha, hora, paciente, tratamiento y estado, sin "Reprogramar" ni "Cancelar cita"; si la cita está asignada o reprogramada, ve además "Completar".
+- [x] CA7 · (abuso) Como doctor, intento agendar, reprogramar, cancelar o eliminar una cita por otra vía, con datos válidos o no → se rechaza con acceso denegado y la cita no cambia.
+- [x] CA12 · Dada una cita asignada o reprogramada que tiene asignada, cuando el doctor la completa registrando el seguimiento clínico (motivo, síntomas, diagnóstico y procedimiento obligatorios; observaciones y recomendaciones opcionales) y cero o más recetas, entonces la cita queda completada con su seguimiento y sus recetas, con las mismas reglas que para el administrador (009 CA1–CA4 y CA13).
+- [x] CA13 · (abuso) Como doctor, intento completar una cita asignada a otro doctor, por la pantalla o por otra vía → se rechaza con acceso denegado, la cita no cambia y no se guarda ningún seguimiento.
+- [x] CA8 · (abuso) Como doctor, intento obtener en los listados de la agenda (las citas del calendario y las de hoy) las citas de otro doctor, por otra vía, cambiando el filtro o pidiendo un día concreto → solo recibo las mías; las demás no aparecen ni cuentan. Si no tengo citas, el listado viene vacío, no como error. Quedan fuera, a propósito, el detalle de una cita y el historial de citas de un paciente, que todo el staff ve desde el expediente (014), sin datos clínicos.
+- [x] CA9 · Dada una cita completada que tiene asignada, cuando el doctor abre su detalle, entonces ve el seguimiento clínico y las recetas en solo lectura, sin opción de editarlos; si la cita no tiene seguimiento, se le indica "Esta cita no tiene seguimiento registrado.".
+- [x] CA10 · (abuso) Como doctor, intento leer el seguimiento clínico o las recetas de una cita asignada a otro doctor, o editar el seguimiento o las recetas de una de mis citas → se rechaza con acceso denegado y no se devuelve ningún dato clínico.
+- [x] CA11 · (abuso) Como paciente, staff inactivo o visitante sin sesión, intento abrir la agenda o usar cualquiera de sus operaciones → se rechaza igual que hoy (014); y el administrador conserva todas sus acciones de la agenda sin cambios.
 
 ## Fuera de alcance
 - Que el asistente complete citas o registre seguimiento clínico y recetas (decisión del usuario, 2026-10-17).

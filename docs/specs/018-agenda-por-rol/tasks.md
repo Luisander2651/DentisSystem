@@ -168,7 +168,8 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: hecha 2026-10-18: `architecture.md` cita `can()` y `currentActorId()` en Core y explica en autenticación y autorización cómo se aplican los permisos "propios" del doctor
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de auditoría de la 018 para el objetivo 5 (lectura y escritura de seguimiento por el doctor, cambios de cita por el asistente); sin cambios en `deployment.md`
   - nota: hecha 2026-10-18: `observability.md` lista los puntos de emisión de auditoría de la 018 para el objetivo 5 (lectura y escritura de seguimiento, cambios de cita); `deployment.md` sin cambios (no hay variables, entornos ni pasos nuevos)
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
+  - nota: hecha 2026-10-18: CA1–CA13 marcados (sus tests pasan en T033), spec en `implemented` y fila del README actualizada
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
