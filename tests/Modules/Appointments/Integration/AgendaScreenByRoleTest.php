@@ -28,6 +28,19 @@ it('opens the agenda to every staff role', function (string $role) {
     $this->get('/agenda')->assertOk()->assertSee('Agenda de citas');
 })->with(['Administrador', 'Asistente', 'Doctor']);
 
+it('tells the appointment detail of the agenda whose clinical follow-up each role may read', function (string $role, string $scope) {
+    $user = $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
+
+    $this->get('/agenda')->assertOk()
+        ->assertSee('data-view-appointment-tracking-scope="'.$scope.'"', false)
+        ->assertSee('data-view-appointment-actor-id="'.$user->id.'"', false)
+        ->assertDontSee('data-view-appointment-is-admin', false);
+})->with([
+    'administrador' => ['Administrador', 'all'],
+    'asistente' => ['Asistente', 'none'],
+    'doctor' => ['Doctor', 'own'],
+]);
+
 it('refuses the agenda to a patient and to inactive staff with the "Sin permiso" page', function (string $actor) {
     $actor === 'paciente' ? $this->actingAsPatient() : $this->actingAsInactiveAdmin();
 
