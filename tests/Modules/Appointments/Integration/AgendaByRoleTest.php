@@ -141,7 +141,7 @@ it('answers an empty list, not an error, to a doctor without appointments', func
     $this->getJson($this->agendaTodayAppointmentsUrl())
         ->assertOk()
         ->assertExactJson(['data' => []]);
-})->skip('018: pendiente de T023 y T039');
+});
 
 it('keeps every appointment for the administrator', function () {
     twoDoctorsWithAppointments($this);
@@ -158,4 +158,4 @@ it('answers an empty list to the administrator when a filter has no appointments
     $this->getJson($this->appointmentsUrl().'?status=cancelada')
         ->assertOk()
         ->assertExactJson(['message' => 'Appointments retrieved successfully', 'data' => []]);
-})->skip('018: pendiente de T039');
+});

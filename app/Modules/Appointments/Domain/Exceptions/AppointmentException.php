@@ -18,11 +18,6 @@ final class AppointmentException extends Exception
         return new self('Appointment not found.');
     }
 
-    public static function notFoundByFilters(): self
-    {
-        return new self('No appointments found with the provided filters.');
-    }
-
     public static function invalidStatusTransition(): self
     {
         return new self('Invalid status value. Allowed values are: completada, cancelada.');

@@ -6,7 +6,6 @@ namespace App\Modules\Appointments\Aplication\UseCases;
 
 use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Modules\Appointments\Aplication\DTOs\GetAllAppointmentsByStatusAndDateDTO;
-use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
 use App\Modules\Appointments\Domain\Service\AppointmentsService;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
@@ -34,17 +33,12 @@ final readonly class GetAllApointmentsByStatusAndDateUseCase
             $date = AppointmentDate::fromString($getAllAppointmentsByStatusAndDateDTO->date);
         }
 
-        $appointments = $this->appointmentsService->findByStatusAndDate(
+        // Spec 018 (D10): no appointments is an empty list, not an error.
+        return $this->appointmentsService->findByStatusAndDate(
             status: $status,
             date: $date,
             userId: $userId,
         );
-
-        if (empty($appointments)) {
-            throw AppointmentException::notFoundByFilters();
-        }
-
-        return $appointments;
     }
 
     /**
