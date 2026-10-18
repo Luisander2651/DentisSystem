@@ -49,8 +49,8 @@
 
     $roleTabs = [
         'administrador' => ['inicio', 'agenda', 'tratamientos', 'pacientes', 'expedientes', 'contenido', 'usuarios'],
-        'asistente' => ['inicio', 'expedientes'],
-        'doctor' => ['inicio', 'expedientes'],
+        'asistente' => ['inicio', 'agenda', 'expedientes'],
+        'doctor' => ['inicio', 'agenda', 'expedientes'],
         'paciente' => ['inicio'],
     ];
 

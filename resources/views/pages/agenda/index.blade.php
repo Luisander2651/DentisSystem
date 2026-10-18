@@ -3,11 +3,22 @@
 @section('title', 'Agenda - Dentissa')
 
 @section('content')
-@php $isAdmin = in_array($sidebarRole, ['admin', 'administrador'], true); @endphp
-<div class="space-y-6" data-agenda-is-admin="{{ $isAdmin ? 'true' : 'false' }}">
+@php
+    // Spec 018: what each role gets in the agenda; the API refuses the rest anyway.
+    $hasAdministratorRole = in_array($sidebarRole, ['admin', 'administrador'], true);
+    $isDoctor = $sidebarRole === 'doctor';
+    $canManageAgenda = $hasAdministratorRole || $sidebarRole === 'asistente';
+    $canCompleteAppointments = $hasAdministratorRole || $isDoctor;
+    $trackingScope = $hasAdministratorRole ? 'all' : ($isDoctor ? 'own' : 'none');
+@endphp
+<div
+    class="space-y-6"
+    data-agenda-can-complete="{{ $canCompleteAppointments ? 'true' : 'false' }}"
+    data-agenda-empty-today="{{ $isDoctor ? 'No tienes citas para hoy.' : 'No hay citas para hoy.' }}"
+>
     <x-ui.page-hero
         title="Agenda de citas"
-        description="Consulta y organiza las citas de la clínica."
+        :description="$isDoctor ? 'Tus citas asignadas.' : 'Consulta y organiza las citas de la clínica.'"
     />
 
     <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 md:gap-3">
@@ -44,12 +55,14 @@
 
                 <div id="today-appointments-container" class="mt-4 space-y-3"></div>
 
-                <x-ui.button variant="primary" class="mt-4 w-full" data-create-appointment-open>
-                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                        <path d="M12 5v14M5 12h14" />
-                    </svg>
-                    Agendar nueva cita
-                </x-ui.button>
+                @if ($canManageAgenda)
+                    <x-ui.button variant="primary" class="mt-4 w-full" data-create-appointment-open>
+                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        Agendar nueva cita
+                    </x-ui.button>
+                @endif
             </section>
         </div>
     </div>
@@ -57,19 +70,26 @@
 
 {{-- Modals --}}
 <x-calendar.day-details-modal />
-<x-calendar.create-appointment-modal :is-admin="$isAdmin" />
-<x-calendar.edit-appointment-modal />
-<x-calendar.view-appointment-modal :is-admin="$isAdmin" />
-<x-calendar.cancel-appointment-confirm />
-@if ($isAdmin)
+@if ($canManageAgenda)
+    <x-calendar.create-appointment-modal :with-selectors="$canManageAgenda" />
+    <x-calendar.edit-appointment-modal />
+@endif
+<x-calendar.view-appointment-modal :tracking-scope="$trackingScope" :actor-id="(string) auth()->id()" />
+{{-- After the detail: status.js writes into the last open dialog of the page, and the confirmation opens over the detail. --}}
+@if ($canManageAgenda)
+    <x-calendar.cancel-appointment-confirm />
+@endif
+@if ($canCompleteAppointments)
     <x-calendar.complete-appointment-modal />
 @endif
 
 @vite('resources/js/pages/agenda/index.js')
-@vite('resources/js/pages/agenda/create-appointment.js')
 @vite('resources/js/pages/agenda/view-appointment.js')
-@vite('resources/js/pages/agenda/cancel-appointment.js')
-@if ($isAdmin)
+@if ($canManageAgenda)
+    @vite('resources/js/pages/agenda/create-appointment.js')
+    @vite('resources/js/pages/agenda/cancel-appointment.js')
+@endif
+@if ($canCompleteAppointments)
     @vite('resources/js/pages/agenda/complete-appointment.js')
 @endif
 @endsection

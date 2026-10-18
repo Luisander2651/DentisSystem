@@ -117,7 +117,8 @@ it('completes appointment with blank observations normalizes to null', function 
 });
 
 // -----------------------------------------------------------------
-// B. Autenticación / autorización (respuestas del middleware OnlyAdmin)
+// B. Autenticación / autorización (middleware staff y assertCan; spec 018: el doctor completa
+//    las suyas, en DoctorTrackingTest)
 // -----------------------------------------------------------------
 
 it('rejects unauthenticated request', function () {
@@ -142,7 +143,7 @@ it('rejects authenticated non user actor', function () {
     );
 
     $response->assertStatus(403)
-        ->assertJson(['error' => 'Only users can access this resource.']);
+        ->assertJson(['error' => 'Only staff can access this resource.']);
 });
 
 it('rejects inactive admin', function () {
@@ -158,8 +159,8 @@ it('rejects inactive admin', function () {
         ->assertJson(['error' => 'Your account is inactive.']);
 });
 
-it('rejects authenticated non admin role', function () {
-    $this->actingAsNonAdminUser();
+it('rejects the assistant, who does not complete appointments (spec 018, CA4)', function () {
+    $this->actingAsNonAdminUser('Asistente');
     $appointment = $this->createAppointment();
 
     $response = $this->postJson(
@@ -168,7 +169,7 @@ it('rejects authenticated non admin role', function () {
     );
 
     $response->assertStatus(403)
-        ->assertJson(['error' => 'Only administrators can access this resource.']);
+        ->assertJson(['error' => 'You are not allowed to perform this action (appointment-tracking.create).']);
 });
 
 it('allows admin role case insensitively', function () {

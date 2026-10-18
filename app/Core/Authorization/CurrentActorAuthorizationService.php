@@ -37,6 +37,28 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
         }
     }
 
+    public function can(string $permission): bool
+    {
+        try {
+            $this->assertCan($permission);
+        } catch (AuthorizationException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function currentActorId(): string
+    {
+        $actor = Auth::user();
+
+        if (! $actor instanceof UserModel) {
+            throw AuthorizationException::unauthenticated();
+        }
+
+        return (string) $actor->id;
+    }
+
     /**
      * Spec 014: the single source of truth for the "Permisos esperados" table. Each permission
      * lists the staff roles that hold it; anything not listed is denied by default.
@@ -51,7 +73,9 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
 
         $allStaff = [$administrador, $asistente, $doctor];
         $clinicalStaff = [$administrador, $asistente];
+        $agendaManagers = [$administrador, $asistente];
         $adminOnly = [$administrador];
+        $doctorOnly = [$doctor];
 
         return [
             'patients.view' => $allStaff,
@@ -62,11 +86,16 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
             'patients.update' => $adminOnly,
             'patients.create' => $adminOnly,
             'patients.delete' => $adminOnly,
-            'appointments.view' => $adminOnly,
-            'appointments.create' => $adminOnly,
-            'appointments.update' => $adminOnly,
+            // Spec 018: the assistant manages the agenda except completing and deleting; the
+            // doctor's "-own" permissions only apply to appointments assigned to them, which
+            // the use case checks.
+            'appointments.view' => $agendaManagers,
+            'appointments.view-own' => $doctorOnly,
+            'appointments.create' => $agendaManagers,
+            'appointments.update' => $agendaManagers,
+            'appointments.mark-completed' => $adminOnly,
             'appointments.delete' => $adminOnly,
-            'agenda.selectors.view' => $adminOnly,
+            'agenda.selectors.view' => $agendaManagers,
             'users.create' => $adminOnly,
             'users.update' => $adminOnly,
             'users.delete' => $adminOnly,
@@ -81,7 +110,9 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
             'treatments.update' => $adminOnly,
             'treatments.delete' => $adminOnly,
             'appointment-tracking.create' => $adminOnly,
+            'appointment-tracking.create-own' => $doctorOnly,
             'appointment-tracking.view' => $adminOnly,
+            'appointment-tracking.view-own' => $doctorOnly,
             'appointment-tracking.update' => $adminOnly,
             'appointment-tracking.prescriptions.create' => $adminOnly,
             'appointment-tracking.prescriptions.update' => $adminOnly,

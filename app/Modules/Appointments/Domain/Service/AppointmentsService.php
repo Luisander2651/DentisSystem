@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Modules\Appointments\Domain\Service;
 
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
+use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
+use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
-use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
-use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
+use App\Modules\Appointments\Domain\ValueObjects\AppointmentUserId;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
-
 
 class AppointmentsService
 {
@@ -28,9 +28,9 @@ class AppointmentsService
         return $this->repository->findById($id);
     }
 
-    public function findByStatusAndDate(?AppointmentStatus $status, ?AppointmentDate $date, ?PatientId $patientId = null): array
+    public function findByStatusAndDate(?AppointmentStatus $status, ?AppointmentDate $date, ?PatientId $patientId = null, ?AppointmentUserId $userId = null): array
     {
-        return $this->repository->findAllByStatusAndDateOrPatientId($status, $date, $patientId);
+        return $this->repository->findAllByStatusAndDateOrPatientId($status, $date, $patientId, $userId);
     }
 
     public function deleteAppointment(AppointmentId $id): void

@@ -15,7 +15,8 @@ import { announceError, failureMessage } from '../../ui/status';
         return;
     }
 
-    var isAdmin = modal.getAttribute('data-view-appointment-is-admin') === 'true';
+    var trackingScope = modal.getAttribute('data-view-appointment-tracking-scope') || 'none';
+    var actorId = modal.getAttribute('data-view-appointment-actor-id') || '';
     var generalContainer = modal.querySelector('[data-view-appointment-general]');
     var clinicalSection = modal.querySelector('[data-view-appointment-clinical-section]');
     var clinicalBody = modal.querySelector('[data-view-appointment-clinical-body]');
@@ -233,7 +234,12 @@ import { announceError, failureMessage } from '../../ui/status';
                 cancelAppointmentButton.hidden = false;
             }
 
-            if (normalizedStatus === 'completada' && isAdmin) {
+            // Spec 018 (CA3, CA9): the administrator reads every clinical record, the doctor only
+            // the ones of their own appointments and the assistant none; the API refuses the rest.
+            var readsTracking = trackingScope === 'all'
+                || (trackingScope === 'own' && actorId !== '' && String(appointment.user_id || '') === actorId);
+
+            if (normalizedStatus === 'completada' && readsTracking) {
                 clinicalSection.classList.remove('hidden');
 
                 var loading = document.createElement('p');
@@ -251,7 +257,7 @@ import { announceError, failureMessage } from '../../ui/status';
                     if (trackingError.status === 404) {
                         var noRecord = document.createElement('p');
                         noRecord.className = 'text-sm text-muted';
-                        noRecord.textContent = 'Esta cita no tiene registro clínico.';
+                        noRecord.textContent = 'Esta cita no tiene seguimiento registrado.';
                         clinicalBody.appendChild(noRecord);
                         return;
                     }

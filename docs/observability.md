@@ -63,6 +63,10 @@ usuario (indicado en cada caso).
 - Puntos únicos de 401 y 403 (donde se enganchará la auditoría de accesos denegados, RS11/OB1):
   `app/Core/Middlewares/EnsureActiveStaff.php`, `OnlyAdmin` y el render de `AuthorizationException`
   en `bootstrap/app.php`.
+- Puntos de emisión de la spec 018 para el registro de auditoría (objetivo 5): lectura de seguimiento
+  clínico por el doctor en `GetAppointmentTrackingByAppointmentIdUseCase`, escritura de seguimiento y
+  recetas en `CompleteAppointmentUseCase`, y cambios de cita por el asistente (y cualquier actor) en
+  `CreateAppointmentUseCase` y `UpdateAppointmentUseCase`. Hoy no se registran (P14 aceptado).
 
 ## Correlación
 - Identificador por petición: cabecera `X-Request-Id` (propuesta); se acepta del cliente si es

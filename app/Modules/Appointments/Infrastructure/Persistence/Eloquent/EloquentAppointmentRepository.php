@@ -9,6 +9,7 @@ use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
+use App\Modules\Appointments\Domain\ValueObjects\AppointmentUserId;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentModel;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 
@@ -40,7 +41,7 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
         return $appointment ? $this->mapToDomain($appointment) : null;
     }
 
-    public function findAllByStatusAndDateOrPatientId(?AppointmentStatus $status, ?AppointmentDate $date, ?PatientId $patientId = null): array
+    public function findAllByStatusAndDateOrPatientId(?AppointmentStatus $status, ?AppointmentDate $date, ?PatientId $patientId = null, ?AppointmentUserId $userId = null): array
     {
         $query = AppointmentModel::query()->with([
             'user:id,first_name,last_name',
@@ -58,6 +59,10 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
 
         if ($patientId) {
             $query->where('patient_id', $patientId->value);
+        }
+
+        if ($userId) {
+            $query->where('user_id', $userId->value);
         }
 
         $appointments = $query->get();

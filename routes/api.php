@@ -141,11 +141,6 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::get('/', GetTestimonialsController::class);
             });
 
-            Route::prefix('appointments')->group(function (): void {
-                Route::post('/{id}/complete', CompleteAppointmentController::class);
-                Route::get('/{id}/tracking', GetAppointmentTrackingByAppointmentIdController::class);
-            });
-
             Route::prefix('appointment-tracking')->group(function (): void {
                 Route::put('/{id}', UpdateAppointmentTrackingController::class);
                 Route::post('/{appointmentTrackingId}/prescriptions', CreatePrescriptionController::class);
@@ -189,6 +184,10 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::get('/{id}', GetAppointmentByIdController::class);
                 Route::put('/{id}', UpdateAppointmentController::class);
                 Route::delete('/{id}', DeleteAppointmentController::class);
+                // Spec 018: the doctor completes and reads the follow-up of their own
+                // appointments; the use cases check who owns the appointment.
+                Route::post('/{id}/complete', CompleteAppointmentController::class);
+                Route::get('/{id}/tracking', GetAppointmentTrackingByAppointmentIdController::class);
             });
         });
     });

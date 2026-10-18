@@ -42,7 +42,7 @@ it('any authenticated staff can list appointments by patient id', function () {
 });
 
 // -----------------------------------------------------------------
-// GetAllApointmentsByStatusAndDate - admin-only (403 explicito)
+// GetAllApointmentsByStatusAndDate - administrador y asistente (spec 018); el doctor, sus citas
 // -----------------------------------------------------------------
 
 it('admin can list appointments by status and date', function () {
@@ -54,16 +54,18 @@ it('admin can list appointments by status and date', function () {
     $response->assertStatus(200);
 });
 
-it('non-admin staff gets 403 when listing appointments', function () {
+it('lets the assistant list appointments too (spec 018, CA1)', function () {
     $this->actingAsNonAdminUser('Asistente');
+    $this->createAppointment(['date' => '2026-09-01']);
 
     $response = $this->getJson($this->appointmentsUrl());
 
-    $response->assertStatus(403);
+    $response->assertOk();
+    $response->assertJsonCount(1, 'data');
 });
 
 // -----------------------------------------------------------------
-// GetTodayAppointments - admin-only, PERO sin try/catch (BR-5b: 500, no 403)
+// GetTodayAppointments - todo el staff (spec 018); el doctor recibe solo sus citas
 // -----------------------------------------------------------------
 
 it('admin can get today appointments', function () {
@@ -74,20 +76,30 @@ it('admin can get today appointments', function () {
     $response->assertStatus(200);
 });
 
-it('refuses today appointments to non-admin staff with 403, not 500 (spec 014, CA10)', function () {
+it('gives today appointments to the assistant too (spec 018, replaces spec 014 CA10)', function () {
     $this->actingAsNonAdminUser('Asistente');
 
     $response = $this->getJson($this->agendaTodayAppointmentsUrl());
 
-    $response->assertForbidden();
+    $response->assertOk();
 });
 
 // -----------------------------------------------------------------
-// Catalogo agenda/treatments - solo administrador (spec 014: la agenda es solo del administrador)
+// Catalogo agenda/treatments - administrador y asistente, para agendar (spec 018, D11)
 // -----------------------------------------------------------------
 
-it('refuses the agenda treatments catalog to non-admin staff with 403 (spec 014)', function () {
+it('gives the agenda treatments catalog to the assistant, who books appointments (spec 018, CA2)', function () {
     $this->actingAsNonAdminUser('Asistente');
+    $this->createTreatment(['name' => 'Limpieza dental']);
+
+    $response = $this->getJson($this->agendaTreatmentsUrl());
+
+    $response->assertOk();
+    $response->assertJsonPath('data.0.name', 'Limpieza dental');
+});
+
+it('refuses the agenda treatments catalog to the doctor, who does not book appointments (spec 018)', function () {
+    $this->actingAsNonAdminUser('Doctor');
     $this->createTreatment(['name' => 'Limpieza dental']);
 
     $response = $this->getJson($this->agendaTreatmentsUrl());

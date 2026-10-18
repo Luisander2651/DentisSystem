@@ -44,7 +44,10 @@ import { announce, announceError, failureMessage } from '../../ui/status';
     const modalDateDisplay = document.getElementById('modal-date-display');
     const modalAppointmentsList = document.getElementById('modal-appointments-list');
 
-    const isAdminUser = document.querySelector('[data-agenda-is-admin]')?.getAttribute('data-agenda-is-admin') === 'true';
+    // Spec 018: the page says what the role may do; the API refuses the rest anyway.
+    const agendaRoot = document.querySelector('[data-agenda-can-complete]');
+    const canCompleteAppointments = agendaRoot?.getAttribute('data-agenda-can-complete') === 'true';
+    const emptyTodayText = agendaRoot?.getAttribute('data-agenda-empty-today') || 'No hay citas para hoy.';
 
     // Desde este ancho las citas de un día se abren en su diálogo; por debajo, en la lista bajo el calendario.
     const dialogFromHere = window.matchMedia('(min-width: 768px)');
@@ -192,7 +195,7 @@ import { announce, announceError, failureMessage } from '../../ui/status';
     }
 
     function renderTodayAppointments() {
-        renderAppointmentList(todayAppointmentsContainer, appointmentsToday, 'No hay citas para hoy.');
+        renderAppointmentList(todayAppointmentsContainer, appointmentsToday, emptyTodayText);
     }
 
     function createAppointmentCard(appt) {
@@ -213,7 +216,7 @@ import { announce, announceError, failureMessage } from '../../ui/status';
             <h3 class="mt-2 text-sm font-semibold text-ink wrap-break-word">${escapeHtml(patient)}</h3>
             <p class="text-sm text-muted wrap-break-word">${escapeHtml(appt.treatment_name || 'Consulta')}</p>
             <div class="mt-3 flex flex-wrap gap-2">
-                ${isActionable && isAdminUser ? `<button type="button" class="${primaryButton}" data-complete-appointment-trigger data-appointment-id="${escapeHtml(appt.id)}">Completar${suffix}</button>` : ''}
+                ${isActionable && canCompleteAppointments ? `<button type="button" class="${primaryButton}" data-complete-appointment-trigger data-appointment-id="${escapeHtml(appt.id)}">Completar${suffix}</button>` : ''}
                 <button type="button" class="${secondaryButton}" data-view-appointment-trigger data-appointment-id="${escapeHtml(appt.id)}">Ver${suffix}</button>
             </div>
         `;

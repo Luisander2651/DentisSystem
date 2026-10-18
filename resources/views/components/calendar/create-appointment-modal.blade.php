@@ -3,7 +3,7 @@
     'title' => 'Nueva cita',
     'saveText' => 'Guardar cita',
     'cancelText' => 'Cancelar',
-    'isAdmin' => false,
+    'withSelectors' => false,
     'currentPatientId' => '',
     'currentUserId' => '',
 ])
@@ -12,12 +12,12 @@
     :id="$modalId"
     :title="$title"
     data-create-appointment-modal
-    data-create-appointment-is-admin="{{ $isAdmin ? 'true' : 'false' }}"
+    data-create-appointment-with-selectors="{{ $withSelectors ? 'true' : 'false' }}"
     data-create-appointment-current-patient-id="{{ $currentPatientId }}"
     data-create-appointment-current-user-id="{{ $currentUserId }}"
 >
     <form id="{{ $modalId }}-form" data-create-appointment-form class="flex flex-col gap-4" novalidate>
-        @if ($isAdmin)
+        @if ($withSelectors)
             <div>
                 <label for="{{ $modalId }}-patient_id" class="mb-1.5 block text-sm font-semibold text-ink">
                     Paciente

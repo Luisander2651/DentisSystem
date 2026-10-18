@@ -20,9 +20,10 @@ uses(CoreIntegrationTestCase::class);
 
 const DENIED_PATIENT_ID = '11111111-2222-4333-8444-555555555555';
 
-const DENIED_ADMIN_SCREENS = ['/usuarios', '/contenido', '/tratamientos', '/pacientes', '/agenda'];
+const DENIED_ADMIN_SCREENS = ['/usuarios', '/contenido', '/tratamientos', '/pacientes'];
 
-const DENIED_STAFF_SCREENS = ['/expedientes-clinicos', '/expedientes-clinicos/'.DENIED_PATIENT_ID];
+// Spec 018: the agenda is a staff screen, denied only to patients and inactive staff.
+const DENIED_STAFF_SCREENS = ['/expedientes-clinicos', '/expedientes-clinicos/'.DENIED_PATIENT_ID, '/agenda'];
 
 const DENIED_INTERNAL_MESSAGES = [
     'Only administrators',
@@ -124,7 +125,7 @@ it('still lets each role into the screens it may see', function (string $role, a
         $this->get($screen)->assertOk();
     }
 })->with([
-    'administrador' => ['Administrador', [...DENIED_ADMIN_SCREENS, '/expedientes-clinicos']],
+    'administrador' => ['Administrador', [...DENIED_ADMIN_SCREENS, '/expedientes-clinicos', '/agenda']],
     'asistente' => ['Asistente', ['/expedientes-clinicos', '/dashboard']],
     'doctor' => ['Doctor', ['/expedientes-clinicos', '/dashboard']],
 ]);

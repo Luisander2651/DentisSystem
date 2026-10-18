@@ -5,6 +5,22 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-18
+Agenda por rol: el asistente gestiona la agenda y cada doctor trabaja con sus propias citas (spec 018).
+
+### Added
+- El asistente tiene la agenda en su menú: ve todas las citas de la clínica, agenda citas nuevas eligiendo paciente, doctor y tratamiento, y reprograma o cancela citas, con las mismas reglas que el administrador (spec 018).
+- El doctor tiene la agenda en su menú con solo sus citas ("Tus citas asignadas."); si no tiene citas hoy ve "No tienes citas para hoy." (spec 018).
+- El doctor completa sus propias citas con el seguimiento clínico y las recetas, y lee el registro clínico de sus citas completadas en la agenda y en el expediente, sin poder editarlo (spec 018).
+
+### Changed
+- Completar una cita queda para el administrador y para el doctor de esa cita; eliminarla, solo para el administrador. El asistente no ve "Completar" ni el registro clínico (spec 018).
+- Una cita completada sin seguimiento muestra "Esta cita no tiene seguimiento registrado." (spec 018).
+- Un filtro de citas sin resultados muestra la agenda vacía en lugar de un error (spec 018).
+
+### Security
+- Un doctor no puede ver, completar ni leer el seguimiento de las citas de otro doctor, aunque cambie los filtros o pida la cita directamente; el asistente no puede completar ni eliminar citas ni editar seguimientos por ninguna vía (spec 018).
+
 ## [0.3.1] - 2026-10-17
 Corrección de la galería del sitio público.
 

@@ -72,3 +72,54 @@ it('matches the administrator role case-insensitively', function () {
 
     expect(true)->toBeTrue();
 });
+
+it('answers can() without throwing for every kind of actor', function (?string $actor, string $permission, bool $expected) {
+    // Spec 018: use cases ask can() to choose between the general and the "own" permission,
+    // so it must answer false - never throw - for anyone who does not hold the permission.
+    match ($actor) {
+        null => null,
+        'paciente' => $this->actingAsPatient(),
+        'inactivo' => $this->actingAsInactiveAdmin(),
+        'Administrador' => $this->actingAsAdmin(),
+        default => $this->actingAsNonAdminUser($actor),
+    };
+
+    expect($this->service->can($permission))->toBe($expected);
+})->with([
+    'sin sesión' => [null, 'appointments.view', false],
+    'paciente' => ['paciente', 'appointments.view', false],
+    'staff inactivo' => ['inactivo', 'appointments.view', false],
+    'administrador con permiso' => ['Administrador', 'appointments.view', true],
+    'administrador sin permiso propio' => ['Administrador', 'appointments.view-own', false],
+    'asistente con permiso' => ['Asistente', 'patients.clinical-data.manage', true],
+    'asistente sin permiso' => ['Asistente', 'appointment-tracking.create', false],
+    'doctor con permiso' => ['Doctor', 'patients.view', true],
+    'doctor sin permiso general' => ['Doctor', 'appointments.view', false],
+    'permiso inexistente' => ['Administrador', 'users.impersonate', false],
+]);
+
+it('answers can() with the permissions spec 018 adds to the map', function (string $role, string $permission, bool $expected) {
+    $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
+
+    expect($this->service->can($permission))->toBe($expected);
+})->with([
+    'asistente agenda' => ['Asistente', 'appointments.create', true],
+    'doctor con permiso propio' => ['Doctor', 'appointments.view-own', true],
+    'doctor completa los suyos' => ['Doctor', 'appointment-tracking.create-own', true],
+    'asistente sin permiso propio' => ['Asistente', 'appointments.view-own', false],
+]);
+
+it('returns the id of the acting staff member', function (string $role) {
+    $user = $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
+
+    expect($this->service->currentActorId())->toBe((string) $user->id);
+})->with(['Administrador', 'Asistente', 'Doctor']);
+
+it('refuses currentActorId() without a staff actor', function (?string $actor) {
+    if ($actor === 'paciente') {
+        $this->actingAsPatient();
+    }
+
+    expect(fn () => $this->service->currentActorId())
+        ->toThrow(AuthorizationException::class, 'Authentication is required.');
+})->with(['sin sesión' => [null], 'paciente' => ['paciente']]);
