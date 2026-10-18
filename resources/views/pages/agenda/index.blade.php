@@ -5,11 +5,11 @@
 @section('content')
 @php
     // Spec 018: what each role gets in the agenda; the API refuses the rest anyway.
-    $isAdministrator = in_array($sidebarRole, ['admin', 'administrador'], true);
+    $hasAdministratorRole = in_array($sidebarRole, ['admin', 'administrador'], true);
     $isDoctor = $sidebarRole === 'doctor';
-    $canManageAgenda = $isAdministrator || $sidebarRole === 'asistente';
-    $canCompleteAppointments = $isAdministrator || $isDoctor;
-    $trackingScope = $isAdministrator ? 'all' : ($isDoctor ? 'own' : 'none');
+    $canManageAgenda = $hasAdministratorRole || $sidebarRole === 'asistente';
+    $canCompleteAppointments = $hasAdministratorRole || $isDoctor;
+    $trackingScope = $hasAdministratorRole ? 'all' : ($isDoctor ? 'own' : 'none');
 @endphp
 <div
     class="space-y-6"
