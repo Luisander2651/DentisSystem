@@ -32,7 +32,7 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 | 015 | [Despliegue de producción en el VPS](015-primer-despliegue-vps/spec.md) | Infraestructura, whatsApp, Email, Appointments, Auth | released (v0.1.0) | — | — | — |
 | 016 | [Sistema de diseño aplicado](016-sistema-de-diseno-aplicado/spec.md) | Interfaz (todas las vistas), Core | released (v0.2.0) | — | — | — |
 | 017 | [Reprogramar y cancelar citas](017-reprogramar-cancelar-citas/spec.md) | Appointments, interfaz de la agenda | released (v0.3.0) | — | — | — |
-| 018 | [Agenda por rol](018-agenda-por-rol/spec.md) | Appointments, AppointmentTracking, Core, interfaz de la agenda | approved | — | — | — |
+| 018 | [Agenda por rol](018-agenda-por-rol/spec.md) | Appointments, AppointmentTracking, Core, interfaz de la agenda | implemented | — | — | — |
 
 ## Pendientes sin spec
 - **Dashboard por rol** (`/dashboard`, accesos rápidos): tablero de inicio por crear después de la 018; alcance en `docs/roadmap.md` → Pendientes y deuda (decisión del usuario, 2026-10-17).
