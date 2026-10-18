@@ -221,7 +221,7 @@ it('answers today appointments to every staff role and the doctors selector to t
     'doctors selector, doctor' => ['/api/v1/agenda/doctors', 'Doctor', false],
     'treatments selector, assistant' => ['/api/v1/agenda/treatments', 'Asistente', true],
     'treatments selector, doctor' => ['/api/v1/agenda/treatments', 'Doctor', false],
-])->skip('018: pendiente de T023 y T038');
+]);
 
 it('keeps the management of users and of the catalogue away from the assistant (spec 018, D11)', function (string $url) {
     $this->actingAsNonAdminUser('Asistente');

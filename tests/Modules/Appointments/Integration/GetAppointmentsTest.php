@@ -96,7 +96,7 @@ it('gives the agenda treatments catalog to the assistant, who books appointments
 
     $response->assertOk();
     $response->assertJsonPath('data.0.name', 'Limpieza dental');
-})->skip('018: pendiente de T038');
+});
 
 it('refuses the agenda treatments catalog to the doctor, who does not book appointments (spec 018)', function () {
     $this->actingAsNonAdminUser('Doctor');
