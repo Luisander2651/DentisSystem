@@ -70,7 +70,7 @@ it('lets the assistant book an appointment with the same rules as the administra
 
     $response->assertCreated();
     $this->assertDatabaseCount('appointments', 1);
-})->skip('018: pendiente de T021');
+});
 
 it('rejects the assistant booking an overlapping slot or a moment that already passed', function () {
     $this->actingAsNonAdminUser('Asistente');
@@ -87,7 +87,7 @@ it('rejects the assistant booking an overlapping slot or a moment that already p
         ->assertJsonPath('message', 'No puedes agendar una cita en una fecha u hora que ya pasó.');
 
     $this->assertDatabaseCount('appointments', 1);
-})->skip('018: pendiente de T021');
+});
 
 it('lets the assistant reschedule and cancel an appointment', function () {
     $this->actingAsNonAdminUser('Asistente');
@@ -99,7 +99,7 @@ it('lets the assistant reschedule and cancel an appointment', function () {
 
     $this->assertDatabaseHas('appointments', ['id' => $toMove->id, 'date' => '2026-09-03', 'status' => 'reprogramada']);
     $this->assertDatabaseHas('appointments', ['id' => $toCancel->id, 'status' => 'cancelada']);
-})->skip('018: pendiente de T021');
+});
 
 it('gives the doctor only their own appointments, whatever filter the request sends', function (array $query) {
     [$doctor, $otherDoctor] = twoDoctorsWithAppointments($this);

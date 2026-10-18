@@ -107,7 +107,7 @@ it('answers can() with the permissions spec 018 adds to the map', function (stri
     'doctor con permiso propio' => ['Doctor', 'appointments.view-own', true],
     'doctor completa los suyos' => ['Doctor', 'appointment-tracking.create-own', true],
     'asistente sin permiso propio' => ['Asistente', 'appointments.view-own', false],
-])->skip('018: pendiente de T021');
+]);
 
 it('returns the id of the acting staff member', function (string $role) {
     $user = $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
