@@ -17,8 +17,7 @@ Formato:
 - Bajo una tarea: `  - nota: …`, `  - bloqueo: AAAA-MM-DD — <qué falta> — <skill a ejecutar>`.
 - La comprobación a mano va en la tarea que construye la pieza:
   `hecho cuando: T010 pasa · verificación manual: <qué, dónde, contra qué>`.
-
-Línea base (2026-10-17, `2a6f200`, `php -d memory_limit=1G ./vendor/bin/pest` en serie: con el límite por defecto de 128 MB la suite se queda sin memoria): 1344 en verde, 15 omitidos, 1 fallo ajeno a la spec, `DeployScriptsBehaviourTest` ("records the version as verified…"), porque `git tag` agota su tiempo de 60 s en el contenedor local. No debe aumentar.
+  - nota: línea base (2026-10-17, `2a6f200`, `php -d memory_limit=1G ./vendor/bin/pest` en serie: con el límite por defecto de 128 MB la suite se queda sin memoria): 1344 en verde, 15 omitidos, 1 fallo ajeno a la spec, `DeployScriptsBehaviourTest` ("records the version as verified…"), porque `git tag` agota su tiempo de 60 s en el contenedor local. No debe aumentar.
 
 Convenciones de esta spec:
 - **Suite en verde por tarea:** cada test Pest nuevo o cambiado se escribe, se comprueba que falla
@@ -135,6 +134,7 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: A18 — T029 se cierra con los casos de T016 que no dependen del diálogo de agendar; el de selectores ("shows the patient and doctor selectors…") sigue con `skip('018: pendiente de T040')`
   - nota: verificación manual hecha junto a la de T030, porque hasta T030 el JS no lee `data-agenda-can-complete` y la tarjeta no muestra "Completar"
   - nota: verificación manual OK 2026-10-17 (usuario)
+  - nota: corregido 2026-10-18 durante T033: al agrupar los diálogos bajo `@if ($canManageAgenda)`, la confirmación de cancelar quedó antes del detalle en el HTML y `status.js` escribe en el último `dialog[open]` del documento, así que los errores 409 y 500 de cancelar se anunciaban en el detalle (`ui-audit` `agenda-cita-cancelar` en 390/768/1440). La confirmación vuelve a ir después del detalle; caso nuevo en `AgendaScreenByRoleTest` ("places the cancel confirmation after the appointment detail…"), que falla con el orden anterior y pasa con el corregido; `agenda-cita-cancelar` pasa en los tres anchos
 - [x] T040 Renombrar el prop `isAdmin` del diálogo de agendar a `withSelectors` (`data-create-appointment-with-selectors`) en la vista y en su JS, sin cambiar el comportamiento del administrador — `resources/views/components/calendar/create-appointment-modal.blade.php`, `resources/js/pages/agenda/create-appointment.js` — hecho cuando: el caso de selectores del asistente de T016 pasa y `ui-audit` local pasa en `agenda-cita-crear` y `agenda-cita-crear-asistente`, con nota — cubre: CA2 — depende: T016, T019, T029
   - nota: hecha 2026-10-17: prop `withSelectors` y `data-create-appointment-with-selectors` en la vista y el JS (`hasAdminSelection` pasa a `hasSelectorValues`), sin cambiar el comportamiento. La agenda pasa `:with-selectors="$canManageAgenda"` (`resources/views/pages/agenda/index.blade.php`, archivo de T029: el cambio de una línea que T029 dejó para esta tarea). El caso de selectores de `AgendaScreenByRoleTest` falla antes del cambio (no existe el atributo) y pasa después, sin `skip`; tests de diseño en verde
   - nota: A18 — el caso de selectores de T016 se cierra aquí

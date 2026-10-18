@@ -46,6 +46,13 @@ it('gives the administrator and the assistant booking, rescheduling and cancelli
         ->assertSee('Consulta y organiza las citas de la clínica.');
 })->with(['Administrador', 'Asistente']);
 
+it('places the cancel confirmation after the appointment detail, where its errors are announced', function (string $role) {
+    actAsAgendaRole($this, $role);
+
+    $this->get('/agenda')->assertOk()
+        ->assertSeeInOrder(['data-view-appointment-modal', 'data-cancel-appointment-confirm'], false);
+})->with(['Administrador', 'Asistente']);
+
 it('shows the patient and doctor selectors of the booking dialog to the administrator and the assistant', function (string $role) {
     actAsAgendaRole($this, $role);
 

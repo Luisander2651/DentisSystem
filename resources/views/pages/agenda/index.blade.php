@@ -73,9 +73,12 @@
 @if ($canManageAgenda)
     <x-calendar.create-appointment-modal :with-selectors="$canManageAgenda" />
     <x-calendar.edit-appointment-modal />
-    <x-calendar.cancel-appointment-confirm />
 @endif
 <x-calendar.view-appointment-modal :tracking-scope="$trackingScope" :actor-id="(string) auth()->id()" />
+{{-- After the detail: status.js writes into the last open dialog of the page, and the confirmation opens over the detail. --}}
+@if ($canManageAgenda)
+    <x-calendar.cancel-appointment-confirm />
+@endif
 @if ($canCompleteAppointments)
     <x-calendar.complete-appointment-modal />
 @endif
