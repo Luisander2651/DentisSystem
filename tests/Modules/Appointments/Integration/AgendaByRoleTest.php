@@ -80,7 +80,8 @@ it('rejects the assistant booking an overlapping slot or a moment that already p
     $this->postJson($this->appointmentsUrl(), $this->validCreateAppointmentPayload([
         'treatment_id' => (string) $treatment->id,
         'time' => '10:15',
-    ]))->assertStatus(409);
+    ]))->assertConflict()
+        ->assertExactJson(['error' => 'La cita para la fecha 2026-09-01 y hora 10:15 ya está ocupada.']);
 
     $this->postJson($this->appointmentsUrl(), $this->validCreateAppointmentPayload(['date' => '2026-08-30']))
         ->assertUnprocessable()

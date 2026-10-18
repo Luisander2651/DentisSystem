@@ -122,7 +122,7 @@ it('refuses the doctor completing an appointment of another doctor and leaves it
     expect(clinicalSnapshot())->toEqual($before);
 });
 
-it('refuses the doctor and the assistant editing a follow-up or its prescriptions, even on the doctor\'s own appointment', function (string $role, string $method, string $route) {
+it('refuses the doctor and the assistant editing a follow-up or its prescriptions, even on the doctor\'s own appointment', function (string $role, string $method, string $route, string $body) {
     $doctor = $this->createUserWithRole('doctor');
     $appointment = $this->createAppointment(['user_id' => $doctor->id, 'status' => 'completada']);
     $tracking = trackingFor($appointment);
@@ -131,16 +131,22 @@ it('refuses the doctor and the assistant editing a follow-up or its prescription
     $before = clinicalSnapshot();
 
     $url = str_replace(['{tracking}', '{prescription}'], [$tracking->id, $prescriptionId], $route);
-    $payload = $method === 'deleteJson' ? [] : $this->validPrescriptionPayload(['diagnosis' => 'Otro diagnóstico']);
+    $payload = match ($body) {
+        'follow-up' => $this->validCompletePayload(['diagnosis' => 'Otro diagnóstico']),
+        'prescription' => $this->validPrescriptionPayload(['medication' => 'Otro medicamento']),
+        'none' => [],
+    };
 
-    $this->{$method}($url, $payload)->assertForbidden();
+    $this->{$method}($url, $payload)
+        ->assertForbidden()
+        ->assertExactJson(['error' => 'Only administrators can access this resource.']);
 
     expect(clinicalSnapshot())->toEqual($before);
 })->with(['Doctor', 'Asistente'])->with([
-    'edit the follow-up' => ['putJson', '/api/v1/appointment-tracking/{tracking}'],
-    'add a prescription' => ['postJson', '/api/v1/appointment-tracking/{tracking}/prescriptions'],
-    'edit a prescription' => ['putJson', '/api/v1/appointment-tracking/prescriptions/{prescription}'],
-    'delete a prescription' => ['deleteJson', '/api/v1/appointment-tracking/prescriptions/{prescription}'],
+    'edit the follow-up' => ['putJson', '/api/v1/appointment-tracking/{tracking}', 'follow-up'],
+    'add a prescription' => ['postJson', '/api/v1/appointment-tracking/{tracking}/prescriptions', 'prescription'],
+    'edit a prescription' => ['putJson', '/api/v1/appointment-tracking/prescriptions/{prescription}', 'prescription'],
+    'delete a prescription' => ['deleteJson', '/api/v1/appointment-tracking/prescriptions/{prescription}', 'none'],
 ]);
 
 it('refuses the assistant completing an appointment or reading its follow-up', function (string $method, string $permission) {
