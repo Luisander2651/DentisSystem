@@ -72,7 +72,7 @@ Auth guarda tokens de reset en Redis. Todos persisten en PostgreSQL.
 ## Módulos
 | Módulo | Ruta | Responsabilidad | Depende de |
 |---|---|---|---|
-| Core | `app/Core` | `CurrentActorAuthorizationService::assertCan` (mapa `permiso → roles`), middlewares `OnlyAdmin`, `EnsureActiveStaff` (alias `staff`) e `InjectSanctumTokenFromCookie`, `UnexpectedErrorResponse`, `UuidIdentifier`, `TrimsPasswordFields` | Users (modelo y roles) |
+| Core | `app/Core` | `CurrentActorAuthorizationService::assertCan` (mapa `permiso → roles`), `can()` (la misma comprobación sin lanzar) y `currentActorId()` (id del staff que actúa, para los permisos `*-own`), middlewares `OnlyAdmin`, `EnsureActiveStaff` (alias `staff`) e `InjectSanctumTokenFromCookie`, `UnexpectedErrorResponse`, `UuidIdentifier`, `TrimsPasswordFields` | Users (modelo y roles) |
 | Auth | `app/Modules/Auth` | Login unificado staff/paciente, registro público de pacientes, logout, reset de contraseña | Users, Patients, Core |
 | Users | `app/Modules/Users` | CRUD del personal (Administrador, Asistente, Doctor) y roles | Core |
 | Patients | `app/Modules/Patients` | Pacientes, contacto, dirección, datos médicos y expediente consolidado | Core |
@@ -118,7 +118,7 @@ Crear una cita:
 
 ## Backend
 - Contratos de API: no hay OpenAPI. El contrato implícito son los `JsonResource` de cada módulo; forma de respuesta `{"message"}` en escrituras, `{"error"}` en errores y `{"data": [...]}` en lecturas.
-- Autenticación y autorización: tokens personales de Sanctum en cookie `auth_token` (httpOnly). Dos capas (spec 014): middleware por tipo de actor (`only.admin`, o `staff` para cualquier staff activo y `staff:<roles>` en la web) y `assertCan` en cada caso de uso, con un mapa `permiso → roles` en `CurrentActorAuthorizationService` como única fuente de verdad (todo el staff lee pacientes y expedientes; administrador y asistente editan datos clínicos; el resto es solo del administrador). Detalle y riesgos en [security.md](security.md).
+- Autenticación y autorización: tokens personales de Sanctum en cookie `auth_token` (httpOnly). Dos capas (spec 014): middleware por tipo de actor (`only.admin`, o `staff` para cualquier staff activo y `staff:<roles>` en la web) y `assertCan` en cada caso de uso, con un mapa `permiso → roles` en `CurrentActorAuthorizationService` como única fuente de verdad (todo el staff lee pacientes y expedientes; administrador y asistente editan datos clínicos y gestionan la agenda; el resto es solo del administrador). Spec 018: los permisos "propios" del doctor (`appointments.view-own`, `appointment-tracking.create-own`, `.view-own`) se comprueban con `can()` y el caso de uso compara el dueño de la cita con `currentActorId()`; con `appointments.view-own` el listado se filtra por su id en el repositorio. Detalle y riesgos en [security.md](security.md).
 - Manejo de errores (spec 014): los controladores traducen las excepciones de negocio (400, 403, 404, 409, 422) y envían cualquier otra a `UnexpectedErrorResponse` (500 `{"error": "Internal server error"}`, log `unexpected_error` sin el mensaje). `withExceptions` en `bootstrap/app.php` hace de red para `api/*`: 401 siempre en JSON, `AuthorizationException` de Core → 403, lo no capturado → `UnexpectedErrorResponse`, y sin el reporte por defecto de Laravel para esas excepciones.
 - Tiempo (spec 017): la zona de toda la aplicación es la de la clínica, `America/Mexico_City`
   (`APP_TIMEZONE`, valor por defecto en `config/app.php`); rige el "ahora" de las citas, las citas de
