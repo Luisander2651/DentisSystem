@@ -51,7 +51,7 @@ it('lists every appointment of the clinic for the assistant', function () {
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(4);
-})->skip('018: pendiente de T023');
+});
 
 it('lists every appointment of today for the assistant', function () {
     twoDoctorsWithAppointments($this);
@@ -61,7 +61,7 @@ it('lists every appointment of today for the assistant', function () {
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(2);
-})->skip('018: pendiente de T023');
+});
 
 it('lets the assistant book an appointment with the same rules as the administrator', function () {
     $this->actingAsNonAdminUser('Asistente');
@@ -117,7 +117,7 @@ it('gives the doctor only their own appointments, whatever filter the request se
     'doctor_id de otro doctor' => [['doctor_id' => ':other']],
     'un día con citas de los dos' => [['date' => '2026-08-31']],
     'un estado' => [['status' => 'asignada']],
-])->skip('018: pendiente de T023');
+]);
 
 it('gives the doctor only their own appointments of today', function () {
     [$doctor, $otherDoctor] = twoDoctorsWithAppointments($this);
@@ -128,7 +128,7 @@ it('gives the doctor only their own appointments of today', function () {
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(1);
     expect(userIdsOf($response->json('data')))->toBe([$doctor->id]);
-})->skip('018: pendiente de T023');
+});
 
 it('answers an empty list, not an error, to a doctor without appointments', function () {
     twoDoctorsWithAppointments($this);

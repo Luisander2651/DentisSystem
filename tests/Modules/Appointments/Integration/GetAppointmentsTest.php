@@ -62,7 +62,7 @@ it('lets the assistant list appointments too (spec 018, CA1)', function () {
 
     $response->assertOk();
     $response->assertJsonCount(1, 'data');
-})->skip('018: pendiente de T023');
+});
 
 // -----------------------------------------------------------------
 // GetTodayAppointments - todo el staff (spec 018); el doctor recibe solo sus citas
@@ -82,7 +82,7 @@ it('gives today appointments to the assistant too (spec 018, replaces spec 014 C
     $response = $this->getJson($this->agendaTodayAppointmentsUrl());
 
     $response->assertOk();
-})->skip('018: pendiente de T023');
+});
 
 // -----------------------------------------------------------------
 // Catalogo agenda/treatments - administrador y asistente, para agendar (spec 018, D11)
