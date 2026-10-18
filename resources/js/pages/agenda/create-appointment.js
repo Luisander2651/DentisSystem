@@ -60,7 +60,7 @@ import { announce, announceError, failureMessage } from '../../ui/status';
         return;
     }
 
-    var isAdmin = modal.getAttribute('data-create-appointment-is-admin') === 'true';
+    var withSelectors = modal.getAttribute('data-create-appointment-with-selectors') === 'true';
     var form = modal.querySelector('[data-create-appointment-form]');
     var treatmentSelect = modal.querySelector('[data-create-appointment-treatment-select]');
     var dateInput = modal.querySelector('[data-create-appointment-date]');
@@ -272,10 +272,10 @@ import { announce, announceError, failureMessage } from '../../ui/status';
     }
 
     function isFormValid() {
-        var hasAdminSelection = !isAdmin || (!!patientSelect && !!doctorSelect && patientSelect.value.trim() !== '' && doctorSelect.value.trim() !== '');
-        var hasHiddenValues = isAdmin || ((patientHidden ? patientHidden.value.trim() !== '' : true) && (userHidden ? userHidden.value.trim() !== '' : true));
+        var hasSelectorValues = !withSelectors || (!!patientSelect && !!doctorSelect && patientSelect.value.trim() !== '' && doctorSelect.value.trim() !== '');
+        var hasHiddenValues = withSelectors || ((patientHidden ? patientHidden.value.trim() !== '' : true) && (userHidden ? userHidden.value.trim() !== '' : true));
 
-        return hasAdminSelection
+        return hasSelectorValues
             && hasHiddenValues
             && treatmentSelect.value.trim() !== ''
             && dateInput.value.trim() !== ''
@@ -290,7 +290,7 @@ import { announce, announceError, failureMessage } from '../../ui/status';
         hideModalError();
         form.reset();
 
-        if (isAdmin) {
+        if (withSelectors) {
             if (patientSelect) {
                 patientSelect.value = '';
             }
@@ -454,7 +454,7 @@ import { announce, announceError, failureMessage } from '../../ui/status';
     async function loadModalData() {
         var tasks = [loadTreatments(), loadTodayAppointments()];
 
-        if (isAdmin) {
+        if (withSelectors) {
             tasks.push(loadPatients(), loadDoctors());
         }
 
@@ -463,8 +463,8 @@ import { announce, announceError, failureMessage } from '../../ui/status';
 
     function buildPayload() {
         return {
-            patient_id: isAdmin ? patientSelect.value.trim() : (patientHidden ? patientHidden.value.trim() : ''),
-            user_id: isAdmin ? doctorSelect.value.trim() : (userHidden ? userHidden.value.trim() : ''),
+            patient_id: withSelectors ? patientSelect.value.trim() : (patientHidden ? patientHidden.value.trim() : ''),
+            user_id: withSelectors ? doctorSelect.value.trim() : (userHidden ? userHidden.value.trim() : ''),
             treatment_id: treatmentSelect.value.trim(),
             date: dateInput.value.trim(),
             time: timeSelect.value.trim(),
@@ -540,7 +540,7 @@ import { announce, announceError, failureMessage } from '../../ui/status';
         }
     }
 
-    if (isAdmin) {
+    if (withSelectors) {
         [patientSelect, doctorSelect].forEach(function (select) {
             if (!select) {
                 return;

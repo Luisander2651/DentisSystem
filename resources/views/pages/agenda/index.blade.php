@@ -71,7 +71,7 @@
 {{-- Modals --}}
 <x-calendar.day-details-modal />
 @if ($canManageAgenda)
-    <x-calendar.create-appointment-modal :is-admin="$canManageAgenda" />
+    <x-calendar.create-appointment-modal :with-selectors="$canManageAgenda" />
     <x-calendar.edit-appointment-modal />
     <x-calendar.cancel-appointment-confirm />
 @endif

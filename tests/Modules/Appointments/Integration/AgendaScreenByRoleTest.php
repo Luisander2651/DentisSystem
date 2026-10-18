@@ -54,7 +54,7 @@ it('shows the patient and doctor selectors of the booking dialog to the administ
         ->assertSee('data-create-appointment-patient-select', false)
         ->assertSee('data-create-appointment-doctor-select', false)
         ->assertDontSee('data-create-appointment-is-admin', false);
-})->with(['Administrador', 'Asistente'])->skip('018: pendiente de T040');
+})->with(['Administrador', 'Asistente']);
 
 it('gives completing to the administrator and the doctor, not to the assistant', function (string $role, bool $canComplete) {
     actAsAgendaRole($this, $role);
