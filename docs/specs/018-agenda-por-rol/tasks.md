@@ -191,7 +191,7 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 - [x] T096 Aprobación humana para producción
   - aprobado por Luisander2651 el 2026-10-18 11:36 (17:36 UTC) para v0.4.0 ("desplegar v0.4.0 a producción")
 - [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-  - nota: 2026-10-18, despliegue manual del usuario en el droplet con `docker/prod/deploy.sh v0.4.0`; la verificación local de `deploy.sh` y `verify.sh --remote` salieron correctas según el usuario. Producción sirve los assets de la imagen de v0.4.0. Vigilancia de 15 min (17:43–17:58 UTC): 75 peticiones a `/up`, `/`, `/login`, `/agenda` y la API sin sesión, sin 5xx (0,23–0,68 s); las 60 de `/up`, `/`, `/login` y la API con la respuesta esperada (200 y 401); las 15 de `/agenda` dieron 401 porque la sonda enviaba `Accept: application/json` (sin esa cabecera responde 302 a `/login`, comprobado antes de la ventana). Sin rollback
+  - nota: 2026-10-18, despliegue manual del usuario en el droplet con `docker/prod/deploy.sh v0.4.0` (verificación local 14/14; duración dentro de la media de 1,5–3 min, sin cifra exacta registrada) y `verify.sh --remote` 30/30, confirmados por el usuario. Producción sirve los assets de la imagen de v0.4.0. Vigilancia de 15 min (17:43–17:58 UTC): 75 peticiones a `/up`, `/`, `/login`, `/agenda` y la API sin sesión, sin 5xx (0,23–0,68 s); las 60 de `/up`, `/`, `/login` y la API con la respuesta esperada (200 y 401); las 15 de `/agenda` dieron 401 porque la sonda enviaba `Accept: application/json` (sin esa cabecera responde 302 a `/login`, comprobado antes de la ventana). Sin rollback
 - [x] T098 Marcar spec como `released`
 
 ## Cobertura
