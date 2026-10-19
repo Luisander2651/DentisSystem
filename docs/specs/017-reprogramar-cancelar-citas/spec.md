@@ -141,3 +141,4 @@ Diseño de la spec: [design.md](design.md) (sin composiciones; rojo solo al conf
 | 2026-10-16 | Implementada: CA1–CA11 con sus tests en verde (Pest y ui-audit) | /implement 017 |
 | 2026-10-16 | Correcciones de /review ronda 1 (R1, R2, R3, R11): T040–T045; vuelve a `implemented` | /implement 017 |
 | 2026-10-16 | Liberada en v0.3.0 | /release 017 |
+| 2026-10-18 | Comportamiento modificado por 018 en v0.4.0: CA10, el asistente reprograma y cancela citas; "Fuera de alcance: abrir la agenda a roles que no son administrador" pasa a comportamiento liberado | /release |

@@ -80,6 +80,7 @@ como completadas, y verlas en un calendario.
 | 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA1, CA3–CA6 y CA10 solo para el administrador; CA9 para todo el staff; CA12 y CA13 resueltos | /release |
 | 2026-10-16 | Comportamiento modificado por 017 (liberado en v0.3.0): CA3, fecha sin hora o al revés pasa de 409 a 422; CA4, un estado fuera de completada o cancelada pasa de 409 a 422 y completar una cita cancelada se rechaza (409); reprogramar y cambiar el estado no se mezclan en un `PUT`; CA14 cumplido (no se agenda ni se reprograma en el pasado); "citas de hoy" en la zona de la clínica | /implement 017 |
 | 2026-10-16 | Comportamiento modificado por 017 en v0.3.0 | /release |
+| 2026-10-18 | Comportamiento modificado por 018 en v0.4.0: CA1 y CA3–CA6 pasan de solo el administrador a administrador y asistente, y el doctor ve sus citas; el listado de citas vacío responde una lista vacía, no un error; el asistente ve "agenda" en su menú (antes "Fuera de alcance") | /release |
 
 ## Aclaraciones
 ### Sesión 2026-09-22

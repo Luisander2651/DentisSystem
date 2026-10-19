@@ -184,11 +184,15 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: hecha de nuevo 2026-10-18 tras T041–T043 (/review ronda 1): suite completa en serie 1452 en verde, 0 fallos; spec en `implemented` y README actualizado
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - Sin staging (`deploy.environments: [local, prod]`): la verificación se hace en producción tras T097, con cuentas de prueba. El asistente abre `/agenda` y agenda una cita (CA1, CA2); el doctor ve solo sus citas (CA5) y recibe 403 en `GET /api/v1/appointments/{id}/tracking` de una cita ajena (CA10); en Loki, sin 500 nuevos en `/api/v1/appointments*` ni en `/agenda`.
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-- [ ] T098 Marcar spec como `released`
+  - nota: 2026-10-18. No hay staging (P12): CI en verde en el PR #28 (runs 39148173093, 39148138110 y 39148173088: Pest en paralelo, build, ui-audit, Pint y seguridad del PR) y en `main` sobre su merge (`be560ae`, run 39149095628); suite local en serie 1452/1452. Verificación local con la imagen de la versión: `dentissa-app:v0.4.0` y `dentissa-web:v0.4.0` construidas desde `git archive v0.4.0`; usuario `www-data`, sin `.env`, `.git`, `public/hot`, Node ni Composer; casos de uso y permisos de la 018 presentes; manifiesto de Vite con los 5 scripts de la agenda y los mismos assets en `app` y `web`; zona por defecto `America/Mexico_City`. Sin migraciones, variables nuevas ni cambios en `docker/` o `docker-compose.prod.yml` desde v0.3.1. `composer audit` y `npm audit` con 0 vulnerabilidades
+  - nota: verificación en producción tras T097, confirmada por el usuario el 2026-10-19: el asistente ve la agenda de todos los doctores y agenda una cita, sin "Completar" (CA1, CA2); el doctor ve solo sus citas, completa una suya y ve su registro clínico, y recibe 403 en el seguimiento de una cita ajena (CA5, CA10); en Loki, sin 500 en `/api/v1/appointments*` ni en `/agenda` y sin errores de `dentissa-app`/`dentissa-queue`
+- [x] T096 Aprobación humana para producción
+  - aprobado por Luisander2651 el 2026-10-18 11:36 (17:36 UTC) para v0.4.0 ("desplegar v0.4.0 a producción")
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: 2026-10-18, despliegue manual del usuario en el droplet con `docker/prod/deploy.sh v0.4.0`; la verificación local de `deploy.sh` y `verify.sh --remote` salieron correctas según el usuario. Producción sirve los assets de la imagen de v0.4.0. Vigilancia de 15 min (17:43–17:58 UTC): 75 peticiones a `/up`, `/`, `/login`, `/agenda` y la API sin sesión, sin 5xx (0,23–0,68 s); las 60 de `/up`, `/`, `/login` y la API con la respuesta esperada (200 y 401); las 15 de `/agenda` dieron 401 porque la sonda enviaba `Accept: application/json` (sin esa cabecera responde 302 a `/login`, comprobado antes de la ventana). Sin rollback
+- [x] T098 Marcar spec como `released`
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

@@ -1,7 +1,8 @@
 ---
 id: 018
 slug: agenda-por-rol
-status: implemented
+status: released
+released: v0.4.0 (2026-10-18)
 created: 2026-10-17
 extends: [007, 008, 009, 014, 017]
 ---
@@ -183,3 +184,4 @@ Diseño de la spec: [design.md](design.md) (sin composiciones; cada rol ve solo 
 | 2026-10-17 | Aprobada | Aprobación del usuario |
 | 2026-10-17 | CA8 acotado a los listados de la agenda y con lista vacía; RNF de errores sobre el seguimiento; 008 en `extends` y criterios que cambian de cada spec extendida; vuelve a `draft` | /analyze 018 ronda 1 (A7, A8, A9, A15) |
 | 2026-10-17 | Reaprobada tras la edición | Aprobación del usuario |
+| 2026-10-18 | Liberada en v0.4.0 | /release 018 |
