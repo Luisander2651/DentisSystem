@@ -158,14 +158,14 @@ Ninguna.
 | 2026-10-19 | implícita | ¿En qué zona horaria se decide a qué mes pertenece una cita? | La de la clínica, `America/Mexico_City`, la de toda la aplicación | `docs/specs/017-reprogramar-cancelar-citas/spec.md` |
 | 2026-10-19 | implícita | ¿Qué es un paciente activo? | Ficha en estado activo | `docs/roadmap.md` (alcance del tablero, decisión del usuario 2026-10-17) |
 | 2026-10-19 | implícita | ¿Ver el reporte es una lectura de datos sensibles que se audita? | No: solo totales; los accesos denegados sí, cuando exista el registro (objetivo 5) | `docs/observability.md` → Registro de auditoría |
-| 2026-10-19 | supuesto | ¿Qué mes se muestra al abrir? | El último mes completo | agente |
-| 2026-10-19 | supuesto | ¿Cómo se calculan las tasas? | Asistencia: completadas entre no canceladas con fecha pasada; cancelación: canceladas entre el total del mes; un decimal; "Sin datos" con divisor en cero | agente |
-| 2026-10-19 | supuesto | ¿Las canceladas cuentan en tratamientos, carga y demanda? | No, solo citas no canceladas | agente |
-| 2026-10-19 | supuesto | ¿Qué cuenta como "pacientes nuevos"? | Fichas dadas de alta en el mes, por el staff o por autorregistro | agente |
-| 2026-10-19 | supuesto | ¿Quién aparece en la carga? | Cualquier miembro del staff con citas asignadas en el mes, también si hoy está inactivo | agente |
-| 2026-10-19 | supuesto | ¿Qué meses se aceptan? | Desde enero de 2020 hasta el mes en curso (marcado como parcial) | agente |
-| 2026-10-19 | supuesto | ¿Se limita la descarga? | Máximo 10 descargas por minuto por administrador; ver en pantalla no se limita | agente |
-| 2026-10-19 | supuesto | ¿Cuánto puede tardar? | Menos de 3 s para un mes con hasta 2 000 citas | agente |
+| 2026-10-19 | supuesto | ¿Qué mes se muestra al abrir? | El último mes completo | agente (confirmado por el usuario, 2026-10-20) |
+| 2026-10-19 | supuesto | ¿Cómo se calculan las tasas? | Asistencia: completadas entre no canceladas con fecha pasada; cancelación: canceladas entre el total del mes; un decimal; "Sin datos" con divisor en cero | agente (confirmado por el usuario, 2026-10-20) |
+| 2026-10-19 | supuesto | ¿Las canceladas cuentan en tratamientos, carga y demanda? | No, solo citas no canceladas | agente (confirmado por el usuario, 2026-10-20) |
+| 2026-10-19 | supuesto | ¿Qué cuenta como "pacientes nuevos"? | Fichas dadas de alta en el mes, por el staff o por autorregistro | agente (confirmado por el usuario, 2026-10-20) |
+| 2026-10-19 | supuesto | ¿Quién aparece en la carga? | Cualquier miembro del staff con citas asignadas en el mes, también si hoy está inactivo | agente (confirmado por el usuario, 2026-10-20) |
+| 2026-10-19 | supuesto | ¿Qué meses se aceptan? | Desde enero de 2020 hasta el mes en curso (marcado como parcial) | agente (confirmado por el usuario, 2026-10-20) |
+| 2026-10-19 | supuesto | ¿Se limita la descarga? | Máximo 10 descargas por minuto por administrador; ver en pantalla no se limita | agente (confirmado por el usuario, 2026-10-20) |
+| 2026-10-19 | supuesto | ¿Cuánto puede tardar? | Menos de 3 s para un mes con hasta 2 000 citas | agente (confirmado por el usuario, 2026-10-20) |
 | 2026-10-19 | diseño | ¿Cómo se ve la pantalla de reportes? | Composición C de `design.md`; el color del cambio dice si es favorable (verde) o desfavorable (ámbar) | /design-spec 019, usuario |
 
 ## Notas para /plan
