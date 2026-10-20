@@ -127,7 +127,8 @@ Excel", estados de carga, mes sin citas, mes en curso y error) y la entrada en e
 administrador. No debe parecerse a la agenda ni al tablero de inicio que vendrá después. El
 archivo de Excel también se diseña: encabezados, anchos de columna y formato de porcentajes y
 fechas legibles al abrirlo. Solo con componentes del sistema de diseño
-([docs/design/system.md](../../design/system.md)); las composiciones las genera `/design-spec 019`.
+([docs/design/system.md](../../design/system.md)).
+Diseño de la spec: [design.md](design.md) (composición C: cifras con indicador de cambio y semana del mes, más tratamientos y staff con barras).
 
 ## Requisitos no funcionales
 - El reporte de un mes con hasta 2 000 citas se muestra y se descarga en menos de 3 s.
@@ -165,6 +166,7 @@ Ninguna.
 | 2026-10-19 | supuesto | ¿Qué meses se aceptan? | Desde enero de 2020 hasta el mes en curso (marcado como parcial) | agente |
 | 2026-10-19 | supuesto | ¿Se limita la descarga? | Máximo 10 descargas por minuto por administrador; ver en pantalla no se limita | agente |
 | 2026-10-19 | supuesto | ¿Cuánto puede tardar? | Menos de 3 s para un mes con hasta 2 000 citas | agente |
+| 2026-10-19 | diseño | ¿Cómo se ve la pantalla de reportes? | Composición C de `design.md`; el color del cambio dice si es favorable (verde) o desfavorable (ámbar) | /design-spec 019, usuario |
 
 ## Notas para /plan
 - Formato `.xlsx`: el roadmap barajaba OpenSpout (ligera) o PhpSpreadsheet (más completa); la
