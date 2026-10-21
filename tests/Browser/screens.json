@@ -1589,6 +1589,291 @@
             "screen": "error-403",
             "path": "/usuarios",
             "role": "asistente"
+        },
+        {
+            "id": "reportes",
+            "screen": "reportes",
+            "path": "/reportes?mes=2026-07",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "error de carga",
+                    "answer": {
+                        "to": "/api/v1/reports/monthly",
+                        "status": 500,
+                        "body": {
+                            "error": "Internal server error"
+                        }
+                    },
+                    "do": [
+                        {
+                            "selectIndex": "[data-reports-month]",
+                            "index": 0
+                        }
+                    ],
+                    "expect": {
+                        "announcedOnce": "No se pudo cargar el reporte. No se perdió ningún dato. Revisa tu conexión e inténtalo de nuevo.",
+                        "visibleAfter": {
+                            "selector": "[data-reports-load-error]",
+                            "ms": 13000
+                        },
+                        "tabbable": "[data-reports-retry]"
+                    }
+                },
+                {
+                    "name": "reintentar tras el error de carga",
+                    "answer": {
+                        "to": "/api/v1/reports/monthly",
+                        "status": 500,
+                        "body": {
+                            "error": "Internal server error"
+                        },
+                        "times": 1
+                    },
+                    "do": [
+                        {
+                            "selectIndex": "[data-reports-month]",
+                            "index": 0
+                        },
+                        {
+                            "click": "[data-reports-retry]"
+                        }
+                    ],
+                    "expect": {
+                        "absent": [
+                            "[data-reports-load-error]:not([hidden])"
+                        ],
+                        "visibleAfter": {
+                            "selector": "[data-reports-figures]",
+                            "ms": 0
+                        }
+                    }
+                },
+                {
+                    "name": "nombre con HTML",
+                    "answer": {
+                        "to": "/api/v1/reports/monthly",
+                        "status": 200,
+                        "body": {
+                            "data": {
+                                "month": "2026-07",
+                                "label": "julio de 2026",
+                                "short_label": "julio",
+                                "previous_label": "junio de 2026",
+                                "previous_short_label": "junio",
+                                "is_current": false,
+                                "data_until": null,
+                                "appointments": {
+                                    "total": {
+                                        "value": 0,
+                                        "previous": 0,
+                                        "difference": 0,
+                                        "trend": "neutral"
+                                    },
+                                    "completed": {
+                                        "value": 0,
+                                        "previous": 0,
+                                        "difference": 0,
+                                        "trend": "neutral"
+                                    },
+                                    "cancelled": {
+                                        "value": 0,
+                                        "previous": 0,
+                                        "difference": 0,
+                                        "trend": "neutral"
+                                    },
+                                    "unclosed": {
+                                        "value": 0,
+                                        "previous": 0,
+                                        "difference": 0,
+                                        "trend": "neutral"
+                                    },
+                                    "rescheduled_pending": {
+                                        "value": 0,
+                                        "previous": 0,
+                                        "difference": 0,
+                                        "trend": "neutral"
+                                    },
+                                    "assigned_pending": {
+                                        "value": 0,
+                                        "previous": 0,
+                                        "difference": 0,
+                                        "trend": "neutral"
+                                    }
+                                },
+                                "rates": {
+                                    "attendance": {
+                                        "value": null,
+                                        "previous": null,
+                                        "difference": null,
+                                        "numerator": 0,
+                                        "denominator": 0,
+                                        "trend": "none"
+                                    },
+                                    "cancellation": {
+                                        "value": null,
+                                        "previous": null,
+                                        "difference": null,
+                                        "numerator": 0,
+                                        "denominator": 0,
+                                        "trend": "none"
+                                    }
+                                },
+                                "patients": {
+                                    "new": {
+                                        "value": 0,
+                                        "previous": 0,
+                                        "difference": 0,
+                                        "trend": "neutral"
+                                    },
+                                    "active": {
+                                        "value": 0,
+                                        "as_of": "2026-10-19"
+                                    }
+                                },
+                                "treatments": [
+                                    {
+                                        "name": "<img src=x onerror=\"window.__xss=1\">",
+                                        "appointments": 1,
+                                        "is_top": true
+                                    }
+                                ],
+                                "staff": [
+                                    {
+                                        "name": "<img src=x onerror=\"window.__xss=1\">",
+                                        "appointments": 1,
+                                        "completed": 0,
+                                        "is_top": true
+                                    }
+                                ],
+                                "demand": {
+                                    "hours": [
+                                        9
+                                    ],
+                                    "matrix": [
+                                        [
+                                            1,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            0
+                                        ]
+                                    ],
+                                    "by_weekday": [
+                                        1,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "by_hour": [
+                                        1
+                                    ],
+                                    "top_weekdays": [
+                                        0
+                                    ],
+                                    "top_hours": [
+                                        9
+                                    ],
+                                    "total": 1
+                                }
+                            }
+                        }
+                    },
+                    "do": [
+                        {
+                            "selectIndex": "[data-reports-month]",
+                            "index": 0
+                        }
+                    ],
+                    "expect": {
+                        "absent": [
+                            "[data-reports-treatments] img",
+                            "[data-reports-staff] img"
+                        ],
+                        "globalUndefined": [
+                            "__xss"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "reportes-sin-citas",
+            "screen": "reportes",
+            "path": "/reportes?mes=2026-08",
+            "role": "administrador"
+        },
+        {
+            "id": "reportes-mes-en-curso",
+            "screen": "reportes",
+            "path": "/reportes",
+            "role": "administrador",
+            "steps": [
+                {
+                    "selectIndex": "[data-reports-month]",
+                    "index": 0
+                },
+                {
+                    "waitFor": "[data-reports-current-notice]"
+                }
+            ]
+        },
+        {
+            "id": "reportes-descarga",
+            "screen": "reportes",
+            "path": "/reportes?mes=2026-07",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "descarga en curso",
+                    "answer": {
+                        "to": "/api/v1/reports/monthly/excel",
+                        "status": 200,
+                        "body": {},
+                        "hold": true
+                    },
+                    "do": [
+                        {
+                            "click": "[data-reports-download]"
+                        }
+                    ],
+                    "expect": {
+                        "announced": "Preparando el archivo…",
+                        "absent": [
+                            "[data-reports-download]:not([aria-disabled=\"true\"])"
+                        ]
+                    }
+                },
+                {
+                    "name": "límite de descargas",
+                    "answer": {
+                        "to": "/api/v1/reports/monthly/excel",
+                        "status": 429,
+                        "body": {
+                            "error": "Demasiadas descargas. Espera un momento e inténtalo de nuevo."
+                        }
+                    },
+                    "do": [
+                        {
+                            "click": "[data-reports-download]"
+                        }
+                    ],
+                    "expect": {
+                        "announcedOnce": "Demasiadas descargas. Espera un momento e inténtalo de nuevo."
+                    }
+                }
+            ]
+        },
+        {
+            "id": "error-403-asistente-reportes",
+            "screen": "error-403",
+            "path": "/reportes",
+            "role": "asistente"
         }
     ]
 }
