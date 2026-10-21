@@ -58,3 +58,15 @@ it('greets the doctor with a neutral message, not the patient one (spec 014, R4 
         ->assertDontSee('de tus pacientes')
         ->assertDontSee('Tu salud dental');
 });
+
+it('offers the administrator the monthly reports (spec 019, CA1)', function () {
+    $this->actingAsAdmin();
+
+    $this->get('/dashboard')->assertOk()->assertSee('href="/reportes"', false);
+})->skip('019: pendiente de T055');
+
+it('offers the reports to nobody but the administrator (spec 019, CA10)', function (string $actor) {
+    $actor === 'Paciente' ? $this->actingAsPatient() : $this->actingAsNonAdminUser($actor);
+
+    $this->get('/dashboard')->assertOk()->assertDontSee('href="/reportes"', false);
+})->with(['Asistente', 'Doctor', 'Paciente']);

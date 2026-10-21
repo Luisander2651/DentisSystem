@@ -29,15 +29,15 @@ beforeEach(function () {
 
 dataset('reports endpoints', REPORTS_ENDPOINTS);
 
-dataset('refused actors', [
-    'assistant' => fn () => fn () => $this->actingAsNonAdminUser('Asistente'),
-    'doctor' => fn () => fn () => $this->actingAsNonAdminUser('Doctor'),
-    'inactive administrator' => fn () => fn () => $this->actingAsInactiveAdmin(),
-    'patient' => fn () => fn () => $this->actingAsPatient(),
-]);
+dataset('refused actors', ['asistente', 'doctor', 'administrador inactivo', 'paciente']);
 
-it('refuses the report and its file to every actor but an active administrator (abuse)', function (Closure $actAs, string $url) {
-    $actAs->call($this);
+it('refuses the report and its file to every actor but an active administrator (abuse)', function (string $actor, string $url) {
+    match ($actor) {
+        'asistente' => $this->actingAsNonAdminUser('Asistente'),
+        'doctor' => $this->actingAsNonAdminUser('Doctor'),
+        'administrador inactivo' => $this->actingAsInactiveAdmin(),
+        'paciente' => $this->actingAsPatient(),
+    };
 
     $response = $this->getJson($url);
 
