@@ -33,7 +33,7 @@ it('accepts every month of the range, which comes after its previous one (proper
             ->and($reportMonth->previous()->value() < $value)->toBeTrue()
             ->and($reportMonth->firstDay()->lessThanOrEqualTo(reportPropertiesToday()))->toBeTrue();
     });
-})->skip('019: pendiente de T031');
+});
 
 it('refuses every month after the month in course (property)', function () {
     $this->forAll(Eris\Generator\choose(1, 500))->then(function (int $monthsAhead) {
@@ -41,7 +41,7 @@ it('refuses every month after the month in course (property)', function () {
 
         expect(fn () => ReportMonth::create($value, reportPropertiesToday()))->toThrow(ReportMonthException::class);
     });
-})->skip('019: pendiente de T031');
+});
 
 it('refuses every month before January 2020 (property)', function () {
     $this->forAll(Eris\Generator\choose(1, 1000))->then(function (int $monthsBefore) {
@@ -49,7 +49,7 @@ it('refuses every month before January 2020 (property)', function () {
 
         expect(fn () => ReportMonth::create($value, reportPropertiesToday()))->toThrow(ReportMonthException::class);
     });
-})->skip('019: pendiente de T031');
+});
 
 it('refuses every text that is not a month written AAAA-MM (property)', function () {
     $this->forAll(Eris\Generator\string())->then(function (string $text) {
@@ -59,4 +59,4 @@ it('refuses every text that is not a month written AAAA-MM (property)', function
 
         expect(fn () => ReportMonth::create($text, reportPropertiesToday()))->toThrow(ReportMonthException::class);
     });
-})->skip('019: pendiente de T031');
+});
