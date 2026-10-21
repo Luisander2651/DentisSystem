@@ -221,6 +221,13 @@ class AppServiceProvider extends ServiceProvider
                 : Limit::perMinute(10)->by($request->ip()); // 10 por min por IP
         });
 
+        // Spec 019 (CA14, TM5): each administrator downloads at most 10 reports a minute.
+        RateLimiter::for('report-downloads', function (Request $request) {
+            return Limit::perMinute(10)
+                ->by('report-downloads:'.$request->user()?->getAuthIdentifier())
+                ->response(fn () => response()->json(['error' => 'Demasiadas descargas. Espera un momento e inténtalo de nuevo.'], 429));
+        });
+
         View::composer(['layouts.admin', 'pages.agenda.index', 'pages.records.index'], function ($view) {
             $user = Auth::user();
 

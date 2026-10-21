@@ -153,7 +153,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             // Spec 019: the monthly report, only for the administrator.
             Route::prefix('reports')->group(function (): void {
                 Route::get('/monthly', GetMonthlyReportController::class);
-                Route::get('/monthly/excel', DownloadMonthlyReportController::class);
+                Route::get('/monthly/excel', DownloadMonthlyReportController::class)->middleware('throttle:report-downloads');
             });
         });
 

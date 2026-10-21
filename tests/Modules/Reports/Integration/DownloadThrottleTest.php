@@ -28,7 +28,7 @@ it('refuses the 11th download of a minute with the message of the spec, without 
     $refused->assertTooManyRequests()
         ->assertExactJson(['error' => 'Demasiadas descargas. Espera un momento e inténtalo de nuevo.']);
     expect($refused->headers->get('Content-Disposition'))->toBeNull();
-})->skip('019: pendiente de T042');
+});
 
 it('counts the downloads of each administrator apart', function () {
     $this->actingAsAdmin();
@@ -41,7 +41,7 @@ it('counts the downloads of each administrator apart', function () {
     $this->actingAsAdmin();
 
     $this->get($this->monthlyReportExcelUrl('2026-07'))->assertOk();
-})->skip('019: pendiente de T042');
+});
 
 it('lets the administrator download again once the minute has passed', function () {
     $this->actingAsAdmin();
@@ -53,7 +53,7 @@ it('lets the administrator download again once the minute has passed', function 
     $this->travel(61)->seconds();
 
     $this->get($this->monthlyReportExcelUrl('2026-07'))->assertOk();
-})->skip('019: pendiente de T042');
+});
 
 it('does not limit the report on screen with the limit of the downloads', function () {
     $this->actingAsAdmin();
@@ -61,4 +61,4 @@ it('does not limit the report on screen with the limit of the downloads', functi
     foreach (range(1, 11) as $request) {
         $this->getJson($this->monthlyReportUrl('2026-07'))->assertOk();
     }
-})->skip('019: pendiente de T042');
+});
