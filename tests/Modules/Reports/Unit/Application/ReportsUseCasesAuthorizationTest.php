@@ -131,7 +131,7 @@ it('refuses the report without reports.view before reading anything', function (
 
     expect(fn () => $useCase->execute(MonthlyReportDTO::create('2026-07')))->toThrow(AuthorizationException::class)
         ->and($log->calls)->toBe(['can:reports.view']);
-})->skip('019: pendiente de T035 y T039');
+});
 
 it('refuses the download without reports.export before reading or writing anything', function () {
     $log = new ReportsCallLog;
@@ -150,7 +150,7 @@ it('asks for its permission first and then reads the report', function () {
     expect($report)->toBeInstanceOf(MonthlyReport::class)
         ->and($log->calls[0])->toBe('can:reports.view')
         ->and(array_slice($log->calls, 1))->each->toBe('repository');
-})->skip('019: pendiente de T035 y T039');
+});
 
 it('asks for its permission first, then reads and writes the file, and names it by month', function () {
     $log = new ReportsCallLog;
