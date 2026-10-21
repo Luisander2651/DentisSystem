@@ -116,4 +116,5 @@
     </template>
 </div>
 
+@vite('resources/js/pages/reportes/index.js')
 @endsection

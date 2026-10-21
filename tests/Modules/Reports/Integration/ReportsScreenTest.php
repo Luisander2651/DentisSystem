@@ -88,4 +88,4 @@ it('loads its own script, registered in Vite', function () {
 
     expect(file_get_contents($root.'/resources/views/pages/reportes/index.blade.php'))->toContain("@vite('resources/js/pages/reportes/index.js')")
         ->and(file_get_contents($root.'/vite.config.js'))->toContain("'resources/js/pages/reportes/index.js'");
-})->skip('019: pendiente de T045');
+});
