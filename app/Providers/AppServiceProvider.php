@@ -225,7 +225,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('report-downloads', function (Request $request) {
             return Limit::perMinute(10)
                 ->by('report-downloads:'.$request->user()?->getAuthIdentifier())
-                ->response(fn () => response()->json(['error' => 'Demasiadas descargas. Espera un momento e inténtalo de nuevo.'], 429));
+                ->response(fn (Request $request, array $headers) => response()->json(['error' => 'Demasiadas descargas. Espera un momento e inténtalo de nuevo.'], 429, $headers));
         });
 
         View::composer(['layouts.admin', 'pages.agenda.index', 'pages.records.index'], function ($view) {

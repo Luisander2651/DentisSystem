@@ -257,8 +257,9 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 - [x] T070 [P] Afirmar que el 429 de la descarga lleva `Retry-After` con un número de segundos entre 1 y 60, `X-RateLimit-Limit: 10` y `X-RateLimit-Remaining: 0` — `tests/Modules/Reports/Integration/DownloadThrottleTest.php` — hecho cuando: el caso falla hoy porque la respuesta propia descarta las cabeceras — cubre: CA14
   - nota: añadida por /review: R30
   - nota: hecha 2026-10-21: tras 10 descargas, el 429 debe llevar `Retry-After` entre 1 y 60, `X-RateLimit-Limit: 10` y `X-RateLimit-Remaining: 0`; falla hoy porque no hay `Retry-After` (`0 is equal to 1 or is greater`)
-- [ ] T071 Conservar las cabeceras del limitador en la respuesta propia del 429 (`->response(fn ($request, array $headers) => response()->json([...], 429, $headers))`) — `app/Providers/AppServiceProvider.php` — hecho cuando: T070 pasa y `DownloadThrottleTest` sigue en verde — cubre: CA14 — depende: T070
+- [x] T071 Conservar las cabeceras del limitador en la respuesta propia del 429 (`->response(fn ($request, array $headers) => response()->json([...], 429, $headers))`) — `app/Providers/AppServiceProvider.php` — hecho cuando: T070 pasa y `DownloadThrottleTest` sigue en verde — cubre: CA14 — depende: T070
   - nota: añadida por /review: R30
+  - nota: hecha 2026-10-21: la respuesta propia de `report-downloads` recibe `$headers` del limitador y los pasa al JSON del 429; T070 pasa y `DownloadThrottleTest` 5 en verde
 - [ ] T072 Devolver el nombre raíz de `package-lock.json` a `DentissaApp` (en el carril de npm pasó a `html`, el nombre de la carpeta del contenedor), sin tocar ninguna versión — `package-lock.json` — hecho cuando: `git diff 909f3bf -- package-lock.json` solo muestra los cambios de `follow-redirects` y `vite` del carril y `npm audit --audit-level=high` da 0
   - nota: añadida por /review: R31
 
