@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel;
-use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Carbon\CarbonImmutable;
 use Tests\Modules\Reports\Integration\ReportsIntegrationTestCase;
 
@@ -20,50 +18,8 @@ beforeEach(function () {
     $this->actingAsAdmin();
 });
 
-function patientCreatedOn(object $test, string $createdAt, string $status = 'active'): PatientModel
-{
-    $patient = (fn () => $this->createPatient(['status' => $status]))->call($test);
-    PatientModel::query()->whereKey($patient->id)->update(['created_at' => $createdAt]);
-
-    return $patient;
-}
-
-/**
- * July 2026 of design.md: 8 appointments (2 completed, 1 cancelled, 5 unclosed) of two doctors
- * and three treatments; Monday 2, Tuesday 1, Wednesday 4; 9 h 2, 10 h 1, 11 h 1, 12 h 2, 16 h 1.
- *
- * @return array{daniela: UserModel, diego: UserModel}
- */
-function seedJuly2026(object $test): array
-{
-    $make = fn (string $method, array $arguments) => (fn () => $this->{$method}(...$arguments))->call($test);
-
-    $cleaning = $make('createTreatment', [['name' => 'Limpieza dental de prueba']]);
-    $orthodontics = $make('createTreatment', [['name' => 'Ortodoncia de prueba']]);
-    $resin = $make('createTreatment', [['name' => 'Resina de prueba']]);
-    $daniela = $make('createUserWithRole', ['doctor', ['first_name' => 'Daniela', 'last_name' => 'Prueba']]);
-    $diego = $make('createUserWithRole', ['doctor', ['first_name' => 'Diego', 'last_name' => 'Prueba']]);
-    $ana = patientCreatedOn($test, '2026-05-04 10:00:00');
-    $luis = patientCreatedOn($test, '2026-05-11 10:00:00');
-
-    foreach ([
-        ['2026-07-06', '09:00', $cleaning, $daniela, $ana, 'completada'],
-        ['2026-07-13', '12:00', $cleaning, $daniela, $luis, 'completada'],
-        ['2026-07-07', '10:00', $orthodontics, $daniela, $ana, 'asignada'],
-        ['2026-07-08', '09:00', $orthodontics, $daniela, $luis, 'reprogramada'],
-        ['2026-07-08', '11:00', $resin, $daniela, $ana, 'asignada'],
-        ['2026-07-15', '12:00', $resin, $diego, $luis, 'asignada'],
-        ['2026-07-15', '16:00', $cleaning, $diego, $ana, 'asignada'],
-        ['2026-07-09', '10:00', $resin, $diego, $luis, 'cancelada'],
-    ] as [$date, $time, $treatment, $doctor, $patient, $status]) {
-        $make('createAppointment', [['date' => $date, 'time' => $time, 'treatment_id' => $treatment->id, 'user_id' => $doctor->id, 'patient_id' => $patient->id, 'status' => $status]]);
-    }
-
-    return ['daniela' => $daniela, 'diego' => $diego];
-}
-
 it('gives the report of July 2026 with the figures of the design and the shape of the contract', function () {
-    seedJuly2026($this);
+    $this->seedJuly2026();
 
     $this->getJson($this->monthlyReportUrl('2026-07'))
         ->assertOk()
@@ -178,10 +134,10 @@ it('shows an inactive doctor with appointments in the month and hides one with o
 })->skip('019: pendiente de T038');
 
 it('counts new patients by the day they were registered, against the month before, and the active ones as of today', function () {
-    patientCreatedOn($this, '2026-06-30 23:00:00');
-    patientCreatedOn($this, '2026-07-01 08:00:00');
-    patientCreatedOn($this, '2026-07-31 20:00:00', 'inactive');
-    patientCreatedOn($this, '2026-08-01 09:00:00');
+    $this->patientCreatedOn('2026-06-30 23:00:00');
+    $this->patientCreatedOn('2026-07-01 08:00:00');
+    $this->patientCreatedOn('2026-07-31 20:00:00', 'inactive');
+    $this->patientCreatedOn('2026-08-01 09:00:00');
 
     $this->getJson($this->monthlyReportUrl('2026-07'))
         ->assertJsonPath('data.patients.new', ['value' => 2, 'previous' => 1, 'difference' => 1, 'trend' => 'favorable'])
