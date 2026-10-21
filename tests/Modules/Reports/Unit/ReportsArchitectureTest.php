@@ -18,6 +18,10 @@ function reportsImports(string $layer): array
     $root = dirname(__DIR__, 4).'/app/Modules/Reports/'.$layer;
     $imports = [];
 
+    if (! is_dir($root)) {
+        return $imports;
+    }
+
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS)) as $file) {
         if ($file->getExtension() !== 'php') {
             continue;
