@@ -87,10 +87,10 @@ it('writes the change indicator as the design says, with the arrow hidden from s
     'rate in points' => [['trend' => 'unfavorable', 'difference' => 3.2, 'unit' => 'points', 'current' => 12.5, 'previous' => 9.3], '+3.2 pts vs junio', ' (desfavorable)', ['text-warning'], '▲'],
     'last month without data' => [['trend' => 'none', 'difference' => null, 'unit' => 'points', 'current' => 28.6, 'previous' => null], 'junio: Sin datos', ' (sin comparación)', ['rounded-full', 'text-muted', 'border-line'], null],
     'this month without data' => [['trend' => 'none', 'difference' => null, 'unit' => 'points', 'current' => null, 'previous' => 28.6], 'junio: 28.6 %', '', ['text-muted'], null],
-])->skip('019: pendiente de T043');
+]);
 
 it('writes no pill when this month has no data and last month has', function () {
     $html = Blade::render('<x-ui.trend trend="none" :difference="null" unit="points" :current="null" :previous="28.6" previous-short-label="julio" />');
 
     expect($html)->not->toContain('rounded-full')->toContain('julio: 28.6 %');
-})->skip('019: pendiente de T043');
+});
