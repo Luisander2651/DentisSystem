@@ -45,10 +45,15 @@
             'url' => '/usuarios',
             'icon' => 'shield',
         ],
+        'reportes' => [
+            'label' => 'Reportes',
+            'url' => '/reportes',
+            'icon' => 'chart',
+        ],
     ];
 
     $roleTabs = [
-        'administrador' => ['inicio', 'agenda', 'tratamientos', 'pacientes', 'expedientes', 'contenido', 'usuarios'],
+        'administrador' => ['inicio', 'agenda', 'tratamientos', 'pacientes', 'expedientes', 'contenido', 'usuarios', 'reportes'],
         'asistente' => ['inicio', 'agenda', 'expedientes'],
         'doctor' => ['inicio', 'agenda', 'expedientes'],
         'paciente' => ['inicio'],
@@ -161,6 +166,13 @@
                                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                                     <circle cx="8.5" cy="8.5" r="1.5" />
                                     <path d="m21 15-5-5L5 21" />
+                                </svg>
+                            @elseif ($item['icon'] === 'chart')
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 3v18h18" />
+                                    <path d="M7 15v3" />
+                                    <path d="M12 10v8" />
+                                    <path d="M17 6v12" />
                                 </svg>
                             @else
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

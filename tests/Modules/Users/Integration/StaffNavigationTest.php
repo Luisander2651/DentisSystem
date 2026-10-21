@@ -63,7 +63,7 @@ it('offers the administrator the monthly reports (spec 019, CA1)', function () {
     $this->actingAsAdmin();
 
     $this->get('/dashboard')->assertOk()->assertSee('href="/reportes"', false);
-})->skip('019: pendiente de T055');
+});
 
 it('offers the reports to nobody but the administrator (spec 019, CA10)', function (string $actor) {
     $actor === 'Paciente' ? $this->actingAsPatient() : $this->actingAsNonAdminUser($actor);
