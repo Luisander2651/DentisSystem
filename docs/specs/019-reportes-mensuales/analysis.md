@@ -1,24 +1,25 @@
 ---
 result: pass
-round: 3
+round: 4
 mode: delta
 constitution_version: 1.2.0
 date: 2026-10-20
 spec_sha: 8b6e01c2b1aa
 plan_sha: 010f1175ebd6
-tasks_sha: 1042c86b593a
+tasks_sha: daae165c916d
 ---
 
 # Análisis · 019 Reportes mensuales
 
 ## Resumen
-`pass`. Los 13 hallazgos abiertos de la ronda 2 quedaron resueltos; seis traen un efecto nuevo.
-Los 9 hallazgos nuevos (A44–A52) son MEDIOS o BAJOS y ninguno cambia el diseño: el usuario los
-aceptó como notas de sus tareas para resolverlos en `/implement`. A48 lo decidió el usuario y ya
-está en `design.md`. Hizo el análisis un subagente independiente en modo delta (perfil `standard`,
-Sonnet), con un diff de más de 30 KB porque la base es el último commit (`d5ad717`): los
-artefactos aún no están commiteados. A46 y A47 se comprobaron en el código y en `tasks.md`.
-Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 5 · BAJA 4
+`pass`. Ronda delta pequeña, sin subagente: el único cambio desde la ronda 3 es la tarea T057
+(`MonthlyReportException`), añadida durante `/implement` por decisión del usuario, y la dependencia
+de T032 sobre ella. Se revisó desde cero ese diff: T057 toca 1 archivo, tiene criterio
+comprobable al cerrarse, no crea ciclos (T057 → T032 → T033), sale de una convención de
+`AGENTS.md` (excepción propia por value object) y no cambia el diseño ni el alcance. Las tablas de
+Cobertura la incluyen en CA2, CA5, CA6 y en Reports · Domain. Sin hallazgos nuevos. Siguen
+vigentes los aceptados de la ronda 3 (A44–A52) como notas de sus tareas.
+Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 0 (nuevos en esta ronda)
 
 ## Cobertura
 | Métrica | Valor |
@@ -28,6 +29,9 @@ Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 5 · BAJA 4
 | Principios de la constitución evaluados | 15 / 15 (sin cambios desde la ronda 2) |
 
 ## Seguimiento de rondas anteriores
+Sin cambios respecto a la ronda 3 ([history/analysis.r3.md](history/analysis.r3.md)); A44–A52 aceptados como notas.
+
+### Ronda 3
 | ID | Severidad | Estado | Evidencia |
 |---|---|---|---|
 | A23 | BAJA | resuelto (residuo → A51) | T016 sin la vista "Sin permiso"; `WebAccessDeniedPagesTest` recorre `DENIED_ADMIN_SCREENS` |

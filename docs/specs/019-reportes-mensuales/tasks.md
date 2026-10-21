@@ -115,7 +115,9 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 ## Implementación
 - [ ] T030 Añadir `reports.view` y `reports.export` a `$adminOnly` en el mapa de permisos — `app/Core/Authorization/CurrentActorAuthorizationService.php` — hecho cuando: los casos de T013 pasan sin `skip` — cubre: CA10 — depende: T013
 - [ ] T031 Crear `ReportMonth` (`create(string, CarbonInterface $today)` con `CarbonImmutable` por dentro, `previous()`, `firstDay()`, `lastDay()`, `isCurrent()`, `value()`, `label()` en español, `lastComplete()` y `selectable()`) y `ReportMonthException` con el mensaje del contrato — `app/Modules/Reports/Domain/ValueObjects/ReportMonth.php` (nuevo), `app/Modules/Reports/Domain/Exceptions/ReportMonthException.php` (nuevo) — hecho cuando: T010 pasa sin `skip` — cubre: CA9, CA11 — depende: T010
-- [ ] T032 Crear los valores del cálculo: `AppointmentCounts`, `Rate` (redondeo a un decimal, mitad hacia arriba, `null` con divisor cero) y `Comparison` (diferencia, también en puntos para tasas, y tendencia por tipo de indicador) — `app/Modules/Reports/Domain/ValueObjects/AppointmentCounts.php`, `app/Modules/Reports/Domain/ValueObjects/Rate.php`, `app/Modules/Reports/Domain/ValueObjects/Comparison.php` (nuevos) — hecho cuando: T025, T026 y T027 pasan sin `skip` — cubre: CA2, CA3 — depende: T025, T026, T027
+- [ ] T057 Crear `MonthlyReportException`, la excepción propia de los value objects del cálculo, con una fábrica por caso: conteo negativo (`negativeCount`), conteos que no cuadran (`inconsistentCounts`), nombre vacío (`emptyName`) y valor negativo (`negativeValue`), con mensajes en inglés sin datos de pacientes — `app/Modules/Reports/Domain/Exceptions/MonthlyReportException.php` (nuevo) — hecho cuando: `php -l` y Pint pasan y `ReportsArchitectureTest` sigue en verde — cubre: CA2, CA5, CA6
+  - nota: añadida durante /implement (2026-10-20): `AGENTS.md` pide que cada value object lance su excepción propia y el plan solo nombraba `ReportMonthException`; decisión del usuario
+- [ ] T032 Crear los valores del cálculo: `AppointmentCounts`, `Rate` (redondeo a un decimal, mitad hacia arriba, `null` con divisor cero) y `Comparison` (diferencia, también en puntos para tasas, y tendencia por tipo de indicador) — `app/Modules/Reports/Domain/ValueObjects/AppointmentCounts.php`, `app/Modules/Reports/Domain/ValueObjects/Rate.php`, `app/Modules/Reports/Domain/ValueObjects/Comparison.php` (nuevos) — hecho cuando: T025, T026 y T027 pasan sin `skip` — cubre: CA2, CA3 — depende: T025, T026, T027, T057
 - [ ] T033 Crear `RankedItem` (nombre, valor, extra opcional, `isTop`), `MonthlyReport` (el reporte completo, sin campos de pacientes, con los rankings ordenados y `isTop` en los máximos) y `MonthlyReportRepositoryInterface` con las seis consultas del plan, solo con tipos del dominio y escalares — `app/Modules/Reports/Domain/ValueObjects/RankedItem.php`, `app/Modules/Reports/Domain/ValueObjects/MonthlyReport.php`, `app/Modules/Reports/Domain/Repositories/MonthlyReportRepositoryInterface.php` (nuevos) — hecho cuando: T028 y T056 pasan sin `skip` — cubre: CA5, CA6, CA12 — depende: T028, T032, T056
 - [ ] T034 Crear `MonthlyReportService::build(ReportMonth, CarbonInterface $today)`: mes y anterior, tasas, diferencias, tendencia por indicador según la tabla de `design.md`, franjas de hora, totales y máximos con empates, con los índices de `demand` del contrato — `app/Modules/Reports/Domain/Service/MonthlyReportService.php` (nuevo) — hecho cuando: T011 y T012 pasan sin `skip` — cubre: CA2, CA3, CA4, CA7 — depende: T011, T012, T031, T033
 - [ ] T035 Crear `MonthlyReportDTO::create(string $month)` y `GetMonthlyReportUseCase` (`assertCan('reports.view')` primero, `ReportMonth::create($dto->month, now())`, `build`) — `app/Modules/Reports/Application/DTOs/MonthlyReportDTO.php`, `app/Modules/Reports/Application/UseCases/GetMonthlyReportUseCase.php` (nuevos) — hecho cuando: los casos de `GetMonthlyReportUseCase` de T029 pasan sin `skip` — cubre: CA10 — depende: T029, T030, T034
@@ -155,11 +157,11 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
 | CA1 | T014, T023, T024 | T037, T038, T044, T045, T055 |
-| CA2 | T011, T014, T024, T025, T027, T052 | T032, T034, T036, T037, T038, T043, T045, T053 |
+| CA2 | T011, T014, T024, T025, T027, T052 | T057, T032, T034, T036, T037, T038, T043, T045, T053 |
 | CA3 | T011, T014, T024, T026, T027 | T032, T034, T038, T045 |
 | CA4 | T011, T014 | T034, T037, T038, T045 |
-| CA5 | T014, T028, T056 | T033, T037, T038, T045 |
-| CA6 | T014, T028, T056 | T033, T037, T038, T045 |
+| CA5 | T014, T028, T056 | T057, T033, T037, T038, T045 |
+| CA6 | T014, T028, T056 | T057, T033, T037, T038, T045 |
 | CA7 | T011, T014, T024 | T034, T037, T038, T045 |
 | CA8 | T017, T024 | T039, T040, T041, T046 |
 | CA9 | T010, T014, T017, T023, T024, T052 | T031, T038, T040, T041, T044, T045, T053 |
@@ -183,7 +185,7 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 |---|---|
 | Dependencias | T002 |
 | Core · Autorización | T030 |
-| Reports · Domain (nuevo) | T031, T032, T033, T034 |
+| Reports · Domain (nuevo) | T031, T032, T033, T034, T057 |
 | Reports · Application (nuevo) | T035, T039 |
 | Reports · Infrastructure (nuevo) | T036, T037, T040, T041, T044 |
 | Providers | T038, T041, T042 |
@@ -212,3 +214,4 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | 2026-10-19 | Creación en `draft` | /tasks 019 |
 | 2026-10-20 | Nuevas T004 (flujos de navegador con `GET` y en páginas), T025–T028 (unidad y propiedades de los value objects), T029 (`assertCan` en los casos de uso), T052 (componentes), T053 (`x-ui.select` y contador comparado), T054 (texto propio en `status.js`) y T055 (menú, separado de T044); T049 pasa a escribir la línea base justo después de T045; T024 con los flujos de error, descarga, límite y XSS y con el motivo de falla corregido; T032, T033, T035, T036, T037, T039 y T040 se cierran con criterios comprobables en su momento; dependencias completas en T038, T041, T044 y T045; T041 acotada a T016 en el Excel; T016 sin el asistente y el doctor en la web (T023); TM7 con control en T043–T045; cifras con punto decimal; comando de capturas en T050; permisos en T051 y nota de `Estadisticas` en T090 | /tasks --fix A1, A2, A3, A4, A5, A6, A7, A11, A12, A14, A17, A19, A22, A23, A25, A30 |
 | 2026-10-20 | T004 también en `ui-audit.mjs` (respuestas `GET` y retenidas, `absent`, `globalUndefined`, `visibleAfter`, `tabbable`, 429 servido sin límite, paso `selectIndex`); entrada `reportes-descarga` con los flujos de descarga, exigida desde T046, y criterios de T045, T049 y T046 ajustados; error de carga como bloque persistente en T045; T028 dividida en T028 (`RankedItem`) y T056 nueva (`MonthlyReport` unidad y propiedades); T016 sin la vista "Sin permiso" (solo `WebAccessDeniedPagesTest`); T017 con el borrado del temporal tras `sendContent()` y diferencias con signo; T023 con el script registrado; T053 con la regresión de todas las vistas con `x-ui.stat`; etiquetas cortas en T014, T036 y T043; formato de diferencias en T040 | /tasks --fix A23, A31, A32, A39, A40, A41, A42, A43 (y lo arrastrado por /plan --fix A33, A34, A36) |
+| 2026-10-20 | Nueva T057 (`MonthlyReportException`) antes de T032; T032 depende de ella | /implement: excepción propia de los value objects del cálculo (decisión del usuario) |
