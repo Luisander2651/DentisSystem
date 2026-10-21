@@ -265,12 +265,18 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: hecha 2026-10-21: vuelven `"name": "DentissaApp"` en la raíz y en `packages[""]` (el carril los había cambiado o quitado). `git diff 909f3bf -- package-lock.json`: solo las 12 líneas de versión, `resolved` e `integrity` de `follow-redirects` 1.16.1 y `vite` 7.3.7; `npm audit --audit-level=high`: 0
   - nota: deriva de entorno: `package.json` no tiene `name`, así que un `npm install` dentro del contenedor (`/var/www/html`) vuelve a escribir `html`. Queda para el roadmap con R31 (añadir `name` a `package.json` sería un chore aparte)
 
+## Correcciones de /review (ronda 2)
+- [ ] T073 Aislar los tests del temporal y del contenido oculto: el test "leaves no temporary file behind…" crea una carpeta propia vacía, construye `new OpenSpoutMonthlyReportExporter($carpeta)`, comprueba que el Excel de julio se escribe dentro de esa carpeta y que, con la semana rota, se relanza el `TypeError` original y la carpeta queda vacía; el test de R11 exige el atributo `hidden` suelto en `data-reports-content` (sin casar con `aria-hidden` ni con la clase `hidden`) — `tests/Modules/Reports/Integration/DownloadMonthlyReportTest.php`, `tests/Modules/Reports/Integration/ReportsScreenTest.php` — hecho cuando: el test del temporal falla hoy porque el archivo se escribe en el directorio temporal del sistema y no en la carpeta, y el de R11 pasa y falla al cambiar a mano `hidden` por `aria-hidden="true"` en la vista (se restaura), con nota de la comprobación — cubre: CA1, CA8, CA12
+  - nota: añadida por /review: R37, R40
+- [ ] T074 Dar al exportador su directorio temporal y conservar la excepción original: el constructor recibe `?string $temporaryDirectory = null` (por defecto `sys_get_temp_dir()`, sin cambios en el binding), y en el `catch` el fallo de `close()` se ignora para relanzar siempre la excepción original — `app/Modules/Reports/Infrastructure/Export/OpenSpoutMonthlyReportExporter.php` — hecho cuando: T073 pasa, `tests/Modules/Reports` sigue en verde y `./vendor/bin/pest --parallel tests/Modules/Reports` pasa dos veces — cubre: CA8, CA12 — depende: T073
+  - nota: añadida por /review: R37, R39
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: módulo `Reports` en la tabla de módulos en lugar de `Estadisticas`, la nota de "`app/Modules/Estadisticas` … vacíos" corregida, dependencias Reports → Appointments, Patients y Users (solo lectura, [ADR 0006](../../adr/0006-modulo-reports-de-solo-lectura.md)) y OpenSpout ([ADR 0005](../../adr/0005-openspout-para-excel.md))
   - nota: hecha 2026-10-21: `architecture.md` cambia la fila `Estadisticas` (que nunca existió en el disco) por `Reports` con sus dependencias de solo lectura (ADR 0006), añade en Backend cómo calcula y exporta el reporte (agregación en PostgreSQL, un solo `MonthlyReport` para JSON y Excel, OpenSpout 5.12.0 tras un puerto, ADR 0005, y la excepción de P3 de `/reportes`), el limitador `report-downloads` en Seguridad, y corrige la nota de deuda que citaba `app/Modules/Estadisticas` (A25)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, el log `report.export_failed` (sin `request_id`, OB3.a pendiente) y el punto de emisión de los accesos denegados de la 019 para el objetivo 5 (OB1.a pendiente); sin cambios en `deployment.md` (la dependencia llega en la imagen, sin variables ni pasos nuevos)
   - nota: hecha 2026-10-21: `observability.md` describe el log `report.export_failed` (nivel, campos, sin mensaje, sin datos de pacientes y sin `request_id`: OB3.a pendiente) y el punto de emisión de los accesos denegados de la 019 (`OnlyAdmin` y el render de `AuthorizationException`; OB1.a pendiente, objetivo 5); OB1 y OB3 no cambian de estado. Sin cambios en `deployment.md`: OpenSpout llega en la imagen con `composer install`, sin variables, entornos ni pasos nuevos, y no hay migraciones
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - nota: hecha 2026-10-21: CA1–CA14 marcados (sus tests pasan en T048: suite completa en serie 1653/1653 y `ui-audit` dos veces sin fallos), spec en `implemented` con su fila de Historial, y fila del README actualizada
   - nota: hecha de nuevo 2026-10-21 tras T058–T072: `./vendor/bin/pest` completo en serie 1671 en verde, 0 fallos; Pint en verde; `npm run build` en verde; `npm run test:ui` completo: 278 visitas (95 entradas), 3 con fallos, todas de `contacto` (página pública, ajena a la 019) por "Se agotó la espera de la carga de la página": el mapa de Google Maps incrustado no carga desde el equipo (`curl` a google.com/maps sin respuesta en 20 s, google.com en 8 s, npm en 1 s); en T048 pasaba. `--only reportes` dos veces seguidas sin fallos (T067). CA1–CA14 siguen marcados
 
@@ -284,18 +290,18 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
-| CA1 | T014, T023, T024, T062, T066 | T037, T038, T044, T045, T055, T067 |
+| CA1 | T014, T023, T024, T062, T066, T073 | T037, T038, T044, T045, T055, T067 |
 | CA2 | T011, T014, T024, T025, T027, T052, T063 | T057, T032, T034, T036, T037, T038, T043, T045, T053, T059 |
 | CA3 | T011, T014, T024, T026, T027, T058, T060 | T032, T034, T038, T045, T059, T061 |
 | CA4 | T011, T014, T062 | T034, T037, T038, T045 |
 | CA5 | T014, T028, T056 | T057, T033, T037, T038, T045 |
 | CA6 | T014, T028, T056 | T057, T033, T037, T038, T045 |
 | CA7 | T011, T014, T024, T066 | T034, T037, T038, T045, T067 |
-| CA8 | T017, T024, T064, T066 | T039, T040, T041, T046, T065, T067 |
+| CA8 | T017, T024, T064, T066, T073 | T039, T040, T041, T046, T065, T067, T074 |
 | CA9 | T010, T014, T017, T023, T024, T052, T062 | T031, T038, T040, T041, T044, T045, T053 |
 | CA10 | T013, T016, T023, T024, T029 | T030, T035, T038, T039, T041, T044, T055 |
 | CA11 | T010, T015, T062, T068 | T031, T036, T038, T041, T069 |
-| CA12 | T018, T056, T064 | T033, T037, T040, T041, T065 |
+| CA12 | T018, T056, T064, T073 | T033, T037, T040, T041, T065, T074 |
 | CA13 | T019 | T040, T041 |
 | CA14 | T020, T024, T070 | T042, T046, T054, T071 |
 
@@ -315,7 +321,7 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | Core · Autorización | T030 |
 | Reports · Domain (nuevo) | T031, T032, T033, T034, T057, T059, T061, T069 |
 | Reports · Application (nuevo) | T035, T039 |
-| Reports · Infrastructure (nuevo) | T036, T037, T040, T041, T044, T059, T065, T069 |
+| Reports · Infrastructure (nuevo) | T036, T037, T040, T041, T044, T059, T065, T069, T074 |
 | Providers | T038, T041, T042, T071 |
 | Rutas | T038, T041, T042, T044 |
 | Interfaz · menú | T055 |
@@ -346,3 +352,4 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | 2026-10-20 | T016 añade `/reportes` a `GuestRedirectTest` (2 archivos) en lugar de repetir la redirección | /implement: hallazgo colateral, decisión del usuario |
 | 2026-10-20 | T045 añade el `@vite` a la vista de T044 (3 archivos) | /implement: sin el script en el manifiesto de Vite la vista daba 500 |
 | 2026-10-21 | Nuevas T058–T072 (correcciones de R1–R7, R9–R11, R24, R30 y R31); T092 desmarcada | /review 019 ronda 1: changes_requested |
+| 2026-10-21 | Nuevas T073–T074 (R37, R39, R40); T092 desmarcada | /review 019 ronda 2: changes_requested |
