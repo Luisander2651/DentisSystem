@@ -16,6 +16,17 @@
  *   flujos            017   with the API answered from here, what each of the entry's `flows`
  *                           sends and how the dialogs, the fields and the notices end up
  *
+ * A flow (`flows`, on a dialog or a page entry): `answer` answers what the page sends (not GET)
+ * with { status, body }; with `to` it answers instead any request whose path ends in `to`, GET
+ * included, and lets the rest through (spec 019); `times` answers only the first n of them and
+ * lets the next ones reach the API; `hold` keeps the answer waiting while the state is checked
+ * and gives it afterwards. Actions (`do`): `fill` + `value`, `fillAll`, `click`, `press`,
+ * `backdrop` and `selectIndex` + `index`. Expectations (`expect`): `requests`, `open`, `closed`,
+ * `values`, `dialogSays`, `unmarked`, `announced`, and since spec 019 `announcedOnce` (said by
+ * the regions exactly once), `absent` (selectors that must not exist), `globalUndefined`
+ * (names of `window` that must stay undefined), `visibleAfter` ({ selector, ms }: in sight after
+ * that wait) and `tabbable` (a selector Tab reaches from the top of the page).
+ *
  * It runs after the steps of a dialog entry, with the dialog open, and leaves it closed.
  */
 
@@ -267,6 +278,21 @@ function recordAnnouncementsInPage() {
     window.__flowAnnounced = said;
 }
 
+/** Picks the option at a position of a select, as a person would (spec 019). */
+export function selectIndexInPage(selector, index) {
+    const field = document.querySelector(selector);
+
+    if (!field || !field.options[index]) {
+        return false;
+    }
+
+    field.selectedIndex = index;
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    field.dispatchEvent(new Event('change', { bubbles: true }));
+
+    return true;
+}
+
 function fillInPage(selector, value) {
     const field = [...document.querySelectorAll(selector)].find(window.__audit.visible);
 
@@ -295,15 +321,62 @@ function flowStateInPage(expect) {
             .filter((element) => element.getAttribute('aria-invalid') === 'true' || (A.visible(element) && element.textContent.trim() !== ''))
             .map((element) => A.describe(element))),
         announced: (window.__flowAnnounced ?? []).join(' · '),
+        announcedTimes: expect.announcedOnce ? (window.__flowAnnounced ?? []).filter((said) => said.includes(expect.announcedOnce)).length : 0,
+        present: (expect.absent ?? []).filter((selector) => document.querySelector(selector) !== null),
+        defined: (expect.globalUndefined ?? []).filter((name) => window[name] !== undefined),
     };
+}
+
+function visibleInPage(selector) {
+    return [...document.querySelectorAll(selector)].some(window.__audit.visible);
+}
+
+/** Tab from the top of the page until the focus reaches the selector, or comes back round. */
+async function reachesWithTab(page, selector) {
+    await page.evaluate(() => {
+        document.activeElement?.blur();
+        window.scrollTo(0, 0);
+    });
+
+    for (let press = 0; press < 80; press++) {
+        await page.press('Tab');
+
+        if (await page.evaluate((target) => document.activeElement !== null && document.activeElement.matches(target), selector)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 async function reenter(page, entry, baseUrl) {
     await page.goto(baseUrl + entry.path);
 
     for (const step of entry.steps ?? []) {
-        await page.click(step.click);
+        if (step.click) {
+            await page.click(step.click);
+        } else if (step.waitFor) {
+            await page.waitFor(visibleInPage, { args: [step.waitFor], what: `"${step.waitFor}" visible` });
+        } else if (step.fill) {
+            await page.evaluate(fillInPage, step.fill, step.value ?? '');
+            await page.settle();
+        } else if (step.press) {
+            await page.press(step.press);
+            await page.settle();
+        } else if (step.selectIndex) {
+            await page.evaluate(selectIndexInPage, step.selectIndex, step.index ?? 0);
+            await page.settle();
+        }
     }
+}
+
+/** Whether a flow answers this request: by its path (`to`), or anything sent that is not a GET. */
+function answers(flow, request) {
+    if (!flow.answer) {
+        return request.method !== 'GET';
+    }
+
+    return flow.answer.to ? new URL(request.url).pathname.endsWith(flow.answer.to) : request.method !== 'GET';
 }
 
 /**
@@ -317,14 +390,23 @@ async function runFlows(page, entry, baseUrl) {
 
     for (const flow of entry.flows ?? []) {
         const sent = [];
+        let answered = 0;
         await reenter(page, entry, baseUrl);
         await page.evaluate(recordAnnouncementsInPage);
         const stop = await page.intercept((request) => {
-            if (request.method === 'GET') {
+            if (!answers(flow, request)) {
                 return null;
             }
 
-            sent.push({ method: request.method, url: request.url, body: request.postData ? JSON.parse(request.postData) : {} });
+            if (flow.answer?.times !== undefined && answered >= flow.answer.times) {
+                return null;
+            }
+
+            answered++;
+
+            if (request.method !== 'GET') {
+                sent.push({ method: request.method, url: request.url, body: request.postData ? JSON.parse(request.postData) : {} });
+            }
 
             return flow.answer ?? { status: 200, body: { message: 'ok', data: {} } };
         });
@@ -344,6 +426,10 @@ async function runFlows(page, entry, baseUrl) {
                 } else if (action.backdrop) {
                     await page.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: 2, y: 2, button: 'left', clickCount: 1 });
                     await page.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: 2, y: 2, button: 'left', clickCount: 1 });
+                } else if (action.selectIndex) {
+                    if (!(await page.evaluate(selectIndexInPage, action.selectIndex, action.index ?? 0))) {
+                        throw new Error(`${action.selectIndex} no tiene la opción ${action.index ?? 0}`);
+                    }
                 }
 
                 await page.settle();
@@ -388,6 +474,25 @@ async function runFlows(page, entry, baseUrl) {
 
             if (expect.announced && !state.announced.includes(expect.announced)) {
                 fail(`se anunció "${state.announced || 'nada'}" y debía anunciarse "${expect.announced}"`);
+            }
+
+            if (expect.announcedOnce && state.announcedTimes !== 1) {
+                fail(`"${expect.announcedOnce}" se anunció ${state.announcedTimes} veces y debía anunciarse una (${state.announced || 'nada'})`);
+            }
+
+            state.present.forEach((selector) => fail(`${selector} existe y no debía`));
+            state.defined.forEach((name) => fail(`window.${name} quedó definido`));
+
+            if (expect.visibleAfter) {
+                await new Promise((done) => setTimeout(done, expect.visibleAfter.ms));
+
+                if (!(await page.evaluate(visibleInPage, expect.visibleAfter.selector))) {
+                    fail(`${expect.visibleAfter.selector} ya no está a la vista tras ${expect.visibleAfter.ms} ms`);
+                }
+            }
+
+            if (expect.tabbable && !(await reachesWithTab(page, expect.tabbable))) {
+                fail(`${expect.tabbable} no se alcanza con Tab`);
             }
         } catch (error) {
             failures.push({ rule: `flujo "${flow.name}"`, message: error.message });

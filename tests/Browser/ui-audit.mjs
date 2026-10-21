@@ -18,6 +18,12 @@
  * It exits with 1 when a check reports a failure or an entry cannot be opened, and with 2
  * when it cannot run at all. The data comes from `php artisan ui:audit-data` and the
  * sessions from `php artisan ui:audit-session {rol}`: no password lives in the repository.
+ *
+ * Steps of an entry (`steps`): `click`, `waitFor` (a selector in sight), `fill` + `value`,
+ * `press` and, since spec 019, `selectIndex` + `index` (picks an option of a select by its
+ * position, for values that change with the date). A 429 answered from here (a flow of
+ * checks-dialogs) is not the API limiting the visit; an answer with `hold` waits until the flow
+ * releases it, and `settle()` does not wait for it.
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -26,6 +32,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { IN_PAGE_LIBRARY, decodePng, toneRange } from './audit-lib.mjs';
+import { selectIndexInPage } from './checks-dialogs.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 // checks-dialogs goes last: it closes the dialog the others measure.
@@ -106,6 +113,12 @@ class Page {
 
     #responder = null;
 
+    /** Requests answered from here (Network ids): a 429 among them is not the API limiting. */
+    #served = new Set();
+
+    /** Requests kept waiting (`answer.hold`): Fetch id => { networkId, answer }. */
+    #held = new Map();
+
     consoleErrors = [];
 
     /** Seconds the API asked to wait (429), or null when it never limited this page. */
@@ -131,7 +144,7 @@ class Page {
                     this.#lastActivity = Date.now();
                 }
             } else if (method === 'Network.responseReceived') {
-                if (params.response.status === 429 && params.response.url.startsWith(origin)) {
+                if (params.response.status === 429 && params.response.url.startsWith(origin) && !this.#served.has(params.requestId)) {
                     const headers = Object.fromEntries(Object.entries(params.response.headers).map(([name, value]) => [name.toLowerCase(), value]));
                     this.rateLimited = Number(headers['retry-after']) || 60;
                 }
@@ -145,13 +158,11 @@ class Page {
                     this.send('Fetch.continueRequest', { requestId: params.requestId }).catch(() => {});
                 } else if (answer.fail) {
                     this.send('Fetch.failRequest', { requestId: params.requestId, errorReason: 'InternetDisconnected' }).catch(() => {});
+                } else if (answer.hold) {
+                    // Kept waiting until `release()`: the state while it waits is what is checked.
+                    this.#held.set(params.requestId, { networkId: params.networkId, answer });
                 } else {
-                    this.send('Fetch.fulfillRequest', {
-                        requestId: params.requestId,
-                        responseCode: answer.status,
-                        responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
-                        body: Buffer.from(JSON.stringify(answer.body)).toString('base64'),
-                    }).catch(() => {});
+                    this.#fulfill(params.requestId, params.networkId, answer);
                 }
             } else if (method === 'Page.frameNavigated' && !params.frame.parentId) {
                 // A page that leaves on its own (cerrar sesión) takes its unfinished requests with it.
@@ -167,6 +178,33 @@ class Page {
 
     send(method, params = {}) {
         return this.#cdp.send(method, params, this.#sessionId);
+    }
+
+    #fulfill(requestId, networkId, answer) {
+        if (networkId) {
+            this.#served.add(networkId);
+        }
+
+        this.send('Fetch.fulfillRequest', {
+            requestId,
+            responseCode: answer.status,
+            responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, ...Object.entries(answer.headers ?? {}).map(([name, value]) => ({ name, value }))],
+            body: Buffer.from(JSON.stringify(answer.body ?? {})).toString('base64'),
+        }).catch(() => {});
+    }
+
+    /** Answers every request kept waiting by `answer.hold`, with its status and body. */
+    async release() {
+        const held = [...this.#held];
+        this.#held.clear();
+
+        for (const [requestId, { networkId, answer }] of held) {
+            this.#fulfill(requestId, networkId, answer);
+        }
+
+        if (held.length > 0) {
+            await this.settle();
+        }
     }
 
     /** Runs a function (or an expression) inside the page and returns its JSON value. */
@@ -205,12 +243,14 @@ class Page {
         }
     }
 
-    /** No request in flight and none started in the last 300 ms. */
+    /** No request in flight (besides those kept waiting on purpose) and none started in the last 300 ms. */
     async settle() {
         const deadline = Date.now() + SETTLE_TIMEOUT;
 
         while (Date.now() < deadline) {
-            if (this.#inflight.size === 0 && Date.now() - this.#lastActivity > 300) {
+            const waiting = new Set([...this.#held.values()].map((held) => held.networkId));
+
+            if ([...this.#inflight].every((id) => waiting.has(id)) && Date.now() - this.#lastActivity > 300) {
                 return;
             }
 
@@ -331,6 +371,7 @@ class Page {
         await this.send('Fetch.enable', { patterns: [{ urlPattern: '*/api/*', requestStage: 'Request' }] });
 
         return async () => {
+            await this.release();
             this.#responder = null;
             await this.send('Fetch.disable');
         };
@@ -561,6 +602,12 @@ async function runStep(page, step) {
         await page.settle();
     } else if (step.press) {
         await page.press(step.press);
+        await page.settle();
+    } else if (step.selectIndex) {
+        if (!(await page.evaluate(selectIndexInPage, step.selectIndex, step.index ?? 0))) {
+            throw new Error(`${step.selectIndex} no tiene la opción ${step.index ?? 0}`);
+        }
+
         await page.settle();
     } else {
         throw new Error(`Paso desconocido en screens.json: ${JSON.stringify(step)}`);
