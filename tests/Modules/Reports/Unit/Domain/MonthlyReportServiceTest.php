@@ -80,7 +80,7 @@ function fakeReportRepository(array $counts, array $newPatients = [], array $dem
 
 function julyCounts(): AppointmentCounts
 {
-    return AppointmentCounts::create(total: 8, completed: 2, cancelled: 1, rescheduledPending: 0, assignedPending: 0, unclosed: 5, notCancelledPast: 7);
+    return AppointmentCounts::create(total: 8, completed: 2, cancelled: 1, rescheduledPending: 0, assignedPending: 0, unclosed: 5, notCancelledPast: 7, completedPast: 2);
 }
 
 /** July 2026 of design.md: Monday 2, Tuesday 1, Wednesday 4; 9 h 2, 10 h 1, 11 h 1, 12 h 2, 16 h 1. */
@@ -109,7 +109,7 @@ it('gives the rates with one decimal and compares the counts with the month befo
 });
 
 it('compares the rates in points when both months have them', function () {
-    $june = AppointmentCounts::create(total: 4, completed: 1, cancelled: 0, rescheduledPending: 0, assignedPending: 0, unclosed: 3, notCancelledPast: 4);
+    $june = AppointmentCounts::create(total: 4, completed: 1, cancelled: 0, rescheduledPending: 0, assignedPending: 0, unclosed: 3, notCancelledPast: 4, completedPast: 1);
     $report = (new MonthlyReportService(fakeReportRepository(['2026-07' => julyCounts(), '2026-06' => $june])))
         ->build(ReportMonth::create('2026-07', serviceToday()), serviceToday());
 

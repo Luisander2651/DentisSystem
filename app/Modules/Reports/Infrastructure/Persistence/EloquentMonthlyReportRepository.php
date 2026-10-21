@@ -37,8 +37,9 @@ final class EloquentMonthlyReportRepository implements MonthlyReportRepositoryIn
                 count(*) filter (where status = 'reprogramada' and date >= ?) as rescheduled_pending,
                 count(*) filter (where status = 'asignada' and date >= ?) as assigned_pending,
                 count(*) filter (where status in ('asignada', 'reprogramada') and date < ?) as unclosed,
-                count(*) filter (where status <> 'cancelada' and date < ?) as not_cancelled_past",
-                [$day, $day, $day, $day],
+                count(*) filter (where status <> 'cancelada' and date < ?) as not_cancelled_past,
+                count(*) filter (where status = 'completada' and date < ?) as completed_past",
+                [$day, $day, $day, $day, $day],
             )
             ->first();
 
@@ -50,6 +51,7 @@ final class EloquentMonthlyReportRepository implements MonthlyReportRepositoryIn
             assignedPending: (int) $counts->assigned_pending,
             unclosed: (int) $counts->unclosed,
             notCancelledPast: (int) $counts->not_cancelled_past,
+            completedPast: (int) $counts->completed_past,
         );
     }
 

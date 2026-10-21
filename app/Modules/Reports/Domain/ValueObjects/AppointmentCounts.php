@@ -10,7 +10,7 @@ use App\Modules\Reports\Domain\Exceptions\MonthlyReportException;
  * Spec 019 (CA2): the appointments of a month by state. Each appointment is in exactly one of
  * completed, cancelled, pending (assigned or rescheduled, today or later) or unclosed (assigned or
  * rescheduled, on a day already gone; D7). The not cancelled ones on a past day are the base of
- * the attendance rate.
+ * the attendance rate, and the completed ones on a past day its numerator (CA3, R1).
  */
 final readonly class AppointmentCounts
 {
@@ -22,6 +22,7 @@ final readonly class AppointmentCounts
         public int $assignedPending,
         public int $unclosed,
         public int $notCancelledPast,
+        public int $completedPast,
     ) {}
 
     /**
@@ -35,8 +36,9 @@ final readonly class AppointmentCounts
         int $assignedPending,
         int $unclosed,
         int $notCancelledPast,
+        int $completedPast,
     ): self {
-        foreach (compact('total', 'completed', 'cancelled', 'rescheduledPending', 'assignedPending', 'unclosed', 'notCancelledPast') as $name => $count) {
+        foreach (compact('total', 'completed', 'cancelled', 'rescheduledPending', 'assignedPending', 'unclosed', 'notCancelledPast', 'completedPast') as $name => $count) {
             if ($count < 0) {
                 throw MonthlyReportException::negativeCount($name);
             }
@@ -50,11 +52,19 @@ final readonly class AppointmentCounts
             throw MonthlyReportException::inconsistentCounts('more unclosed appointments than not cancelled ones on past days');
         }
 
-        return new self($total, $completed, $cancelled, $rescheduledPending, $assignedPending, $unclosed, $notCancelledPast);
+        if ($completedPast > $completed) {
+            throw MonthlyReportException::inconsistentCounts('more completed appointments on past days than completed ones');
+        }
+
+        if ($unclosed + $completedPast > $notCancelledPast) {
+            throw MonthlyReportException::inconsistentCounts('more completed or unclosed appointments on past days than not cancelled ones on past days');
+        }
+
+        return new self($total, $completed, $cancelled, $rescheduledPending, $assignedPending, $unclosed, $notCancelledPast, $completedPast);
     }
 
     public static function empty(): self
     {
-        return new self(0, 0, 0, 0, 0, 0, 0);
+        return new self(0, 0, 0, 0, 0, 0, 0, 0);
     }
 }

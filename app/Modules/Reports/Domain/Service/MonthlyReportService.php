@@ -54,10 +54,10 @@ final readonly class MonthlyReportService
         );
     }
 
-    /** Completed among the not cancelled appointments on a day already gone. */
+    /** Completed among the not cancelled appointments on a day already gone, both on a past day (R1). */
     private static function attendance(AppointmentCounts $counts): Rate
     {
-        return Rate::of($counts->completed, $counts->notCancelledPast);
+        return Rate::of($counts->completedPast, $counts->notCancelledPast);
     }
 
     /** Cancelled among all the appointments of the month. */

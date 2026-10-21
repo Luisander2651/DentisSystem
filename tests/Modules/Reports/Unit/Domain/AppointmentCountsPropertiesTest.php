@@ -34,6 +34,7 @@ it('accepts every split of the appointments whose total adds up (property)', fun
             assignedPending: $assignedPending,
             unclosed: $unclosed,
             notCancelledPast: $notCancelledPast,
+            completedPast: $completed - $completedToday,
         );
 
         expect($counts->total)->toBeGreaterThanOrEqual($counts->completed + $counts->cancelled)
@@ -52,6 +53,7 @@ it('refuses every total that does not add up (property)', function () {
                 assignedPending: 0,
                 unclosed: 0,
                 notCancelledPast: $completed,
+                completedPast: $completed,
             ))->toThrow(MonthlyReportException::class);
         });
 });
