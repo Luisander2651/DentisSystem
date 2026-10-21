@@ -9,6 +9,10 @@ import { trendElement } from '../../ui/trend';
 
 const LOAD_ERROR = 'No se pudo cargar el reporte. No se perdió ningún dato. Revisa tu conexión e inténtalo de nuevo.';
 const LOADING = 'Cargando el reporte…';
+const PREPARING = 'Preparando el archivo…';
+
+/** CA14: el texto propio del límite de descargas; nunca el que responda la API (design.md, D14). */
+const OWN_FAILURES = { busy: 'Demasiadas descargas. Espera un momento e inténtalo de nuevo.' };
 
 const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
@@ -43,6 +47,8 @@ const INTENSITY = [
     window.__reportsIndexInit = true;
 
     const monthSelect = root.querySelector('[data-reports-month]');
+    const downloadButton = root.querySelector('[data-reports-download]');
+    const downloadSpinner = root.querySelector('[data-reports-download-spinner]');
     const notice = root.querySelector('[data-reports-current-notice]');
     const loadError = root.querySelector('[data-reports-load-error]');
     const retryButton = root.querySelector('[data-reports-retry]');
@@ -281,6 +287,63 @@ const INTENSITY = [
     });
 
     retryButton.addEventListener('click', () => load(chosenMonth()));
+
+    /** The name the server gives the file (Content-Disposition), or the one it would give. */
+    function fileName(response, month) {
+        const disposition = response.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+
+        return match ? decodeURIComponent(match[1]) : `reporte-dentissa-${month}.xlsx`;
+    }
+
+    function setDownloading(downloading) {
+        downloadButton.setAttribute('aria-disabled', downloading ? 'true' : 'false');
+        downloadSpinner.classList.toggle('hidden', !downloading);
+    }
+
+    /*
+     * CA8 and D5: the file is asked for with fetch and saved from a Blob, so a refusal (429, 403,
+     * 422) is announced in the status region instead of opening a JSON in a tab.
+     */
+    async function download() {
+        if (downloadButton.getAttribute('aria-disabled') === 'true') {
+            return;
+        }
+
+        const month = chosenMonth();
+        setDownloading(true);
+        announce(PREPARING);
+
+        try {
+            const response = await fetch(`/api/v1/reports/monthly/excel?month=${encodeURIComponent(month)}`, {
+                credentials: 'include',
+                headers: { Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/json' },
+            });
+
+            if (!response.ok) {
+                const payload = await response.json().catch(() => null);
+                announceFailure(response.status, payload, OWN_FAILURES);
+
+                return;
+            }
+
+            const blob = await response.blob();
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName(response, month);
+            document.body.append(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+            clearAnnouncements();
+        } catch {
+            announceFailure(0, null, OWN_FAILURES);
+        } finally {
+            setDownloading(false);
+        }
+    }
+
+    downloadButton.addEventListener('click', download);
 
     window.reportsPage = { load, chosenMonth };
 
