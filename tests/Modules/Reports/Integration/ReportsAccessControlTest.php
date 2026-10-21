@@ -45,7 +45,7 @@ it('refuses the report and its file to every actor but an active administrator (
     expect($response->headers->get('Content-Disposition'))->toBeNull()
         ->and($response->json('data'))->toBeNull()
         ->and(array_keys($response->json()))->toBe(['error']);
-})->with('refused actors')->with('reports endpoints')->skip('019: pendiente de T038 y T041');
+})->with('refused actors')->with('reports endpoints');
 
 it('asks a visitor without a session to sign in, with neither figures nor a file (abuse)', function (string $url) {
     $response = $this->getJson($url);
@@ -53,11 +53,11 @@ it('asks a visitor without a session to sign in, with neither figures nor a file
     $response->assertUnauthorized();
     expect($response->headers->get('Content-Disposition'))->toBeNull()
         ->and($response->json('data'))->toBeNull();
-})->with('reports endpoints')->skip('019: pendiente de T038 y T041');
+})->with('reports endpoints');
 
 it('gives the report and its file to an active administrator', function () {
     $this->actingAsAdmin();
 
     $this->getJson(REPORTS_ENDPOINTS['report, valid month'])->assertOk()->assertJsonPath('data.appointments.total.value', 1);
     $this->get(REPORTS_ENDPOINTS['file, valid month'])->assertOk()->assertDownload('reporte-dentissa-2026-07.xlsx');
-})->skip('019: pendiente de T038 y T041');
+});

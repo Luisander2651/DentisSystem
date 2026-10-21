@@ -77,4 +77,4 @@ it('writes in the file the same figures the screen shows', function () {
         ->toEqual($json['demand']['matrix'])
         ->and(array_slice(end($workbook['Demanda']), 1, 7))->toEqual($json['demand']['by_weekday'])
         ->and(end($workbook['Demanda'])[8])->toEqual($json['demand']['total']);
-})->skip('019: pendiente de T041');
+});

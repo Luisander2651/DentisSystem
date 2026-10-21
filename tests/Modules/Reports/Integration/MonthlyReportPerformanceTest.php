@@ -57,4 +57,4 @@ it('gives the report and the file of a month with 2 000 appointments in less tha
 
     expect($report)->toBeLessThan(3.0, "the report took {$report} s")
         ->and($file)->toBeLessThan(3.0, "the file took {$file} s");
-})->skip('019: pendiente de T038 y T041');
+});

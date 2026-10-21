@@ -54,7 +54,8 @@ it('leaves every personal and health detail of the patients out of the report an
         $this->createAppointment(['date' => $date, 'patient_id' => $patient->id, 'treatment_id' => $treatment->id, 'user_id' => $doctor->id, 'status' => $index === 0 ? 'completada' : 'asignada']);
     }
 
-    $json = $this->getJson($this->monthlyReportUrl('2026-07'))->assertOk()->getContent();
+    // Without escaping, so an accented name is found as it is written ("Zacarías", not "Zacarías").
+    $json = json_encode($this->getJson($this->monthlyReportUrl('2026-07'))->assertOk()->json(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $response = $this->get($this->monthlyReportExcelUrl('2026-07'))->assertOk();
     $cells = everyCellOf($response->baseResponse->getFile()->getPathname());
 
@@ -65,4 +66,4 @@ it('leaves every personal and health detail of the patients out of the report an
 
     expect($json)->toContain('Limpieza dental de prueba')->toContain('Daniela Prueba')
         ->and($cells)->toContain('Limpieza dental de prueba')->toContain('Daniela Prueba');
-})->skip('019: pendiente de T041');
+});

@@ -57,6 +57,7 @@ use App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData\DeleteMedic
 use App\Modules\Patients\Infrastructure\Http\Controllers\MedicalData\UpdateMedicalDataController;
 use App\Modules\Patients\Infrastructure\Http\Controllers\PatientRecord\GetPatientRecordByPatientIdController;
 use App\Modules\Patients\Infrastructure\Http\Controllers\UpdatePatientController;
+use App\Modules\Reports\Infrastructure\Http\Controllers\DownloadMonthlyReportController;
 use App\Modules\Reports\Infrastructure\Http\Controllers\GetMonthlyReportController;
 use App\Modules\Users\Infrastructure\Http\Controllers\DeleteUserByIdController;
 use App\Modules\Users\Infrastructure\Http\Controllers\GetUsersByRoleAndStatusController;
@@ -152,6 +153,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             // Spec 019: the monthly report, only for the administrator.
             Route::prefix('reports')->group(function (): void {
                 Route::get('/monthly', GetMonthlyReportController::class);
+                Route::get('/monthly/excel', DownloadMonthlyReportController::class);
             });
         });
 

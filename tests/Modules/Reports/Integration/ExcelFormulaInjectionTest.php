@@ -83,4 +83,4 @@ it('writes names that look like formulas as plain text, with no formula in the f
             expect(cellHolding($sheets[$sheet], $text))->toBe(['type' => 'inlineStr', 'text' => $text]);
         }
     }
-})->skip('019: pendiente de T041');
+});

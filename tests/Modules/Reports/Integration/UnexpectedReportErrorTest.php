@@ -35,7 +35,7 @@ it('answers the generic 500 when reading the report fails unexpectedly', functio
 
     $response->assertStatus(500)->assertExactJson(['error' => 'Internal server error']);
     expect($response->getContent())->not->toContain('RuntimeException')->not->toContain('Zacarías');
-})->with(['/api/v1/reports/monthly?month=2026-07', '/api/v1/reports/monthly/excel?month=2026-07'])->skip('019: pendiente de T038 y T041');
+})->with(['/api/v1/reports/monthly?month=2026-07', '/api/v1/reports/monthly/excel?month=2026-07']);
 
 it('answers the generic 500 and logs report.export_failed without the message when the file cannot be written', function () {
     $this->mock(MonthlyReportExporterInterface::class)
@@ -52,4 +52,4 @@ it('answers the generic 500 and logs report.export_failed without the message wh
         ->and($failures->first()->context)->toMatchArray(['month' => '2026-07', 'exception' => RuntimeException::class])
         ->and($this->logged->map(fn (MessageLogged $entry): string => $entry->message.' '.json_encode($entry->context))->implode("\n"))
         ->not->toContain('Zacarías')->not->toContain('detalle interno');
-})->skip('019: pendiente de T038 y T041');
+});

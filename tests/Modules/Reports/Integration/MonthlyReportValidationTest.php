@@ -46,13 +46,13 @@ it('refuses an invalid month in the download, without a file', function (string 
     $response->assertUnprocessable()
         ->assertExactJson(['message' => REPORT_MONTH_MESSAGE, 'errors' => ['month' => [REPORT_MONTH_MESSAGE]]]);
     expect($response->headers->get('Content-Disposition'))->toBeNull();
-})->with('invalid report months')->skip('019: pendiente de T038 y T041');
+})->with('invalid report months');
 
 it('refuses a request without the month', function (string $url) {
     $this->getJson($url)
         ->assertUnprocessable()
         ->assertJsonPath('errors.month', [REPORT_MONTH_MESSAGE]);
-})->with(['/api/v1/reports/monthly', '/api/v1/reports/monthly/excel'])->skip('019: pendiente de T038 y T041');
+})->with(['/api/v1/reports/monthly', '/api/v1/reports/monthly/excel']);
 
 it('answers the same refusal when the month stops being valid after the request was checked', function (string $url) {
     $this->app->bind(MonthlyReportRepositoryInterface::class, fn () => new class implements MonthlyReportRepositoryInterface
@@ -91,4 +91,4 @@ it('answers the same refusal when the month stops being valid after the request 
     $this->getJson($url)
         ->assertUnprocessable()
         ->assertExactJson(['message' => REPORT_MONTH_MESSAGE, 'errors' => ['month' => [REPORT_MONTH_MESSAGE]]]);
-})->with(['/api/v1/reports/monthly?month=2026-10', '/api/v1/reports/monthly/excel?month=2026-10'])->skip('019: pendiente de T038 y T041');
+})->with(['/api/v1/reports/monthly?month=2026-10', '/api/v1/reports/monthly/excel?month=2026-10']);

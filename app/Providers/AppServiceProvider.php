@@ -41,7 +41,9 @@ use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentContactInfo
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentMedicalDataRepository;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentPatientRepository;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\PatientRecordRepository as EloquentPatientRecordRepository;
+use App\Modules\Reports\Application\Contracts\MonthlyReportExporterInterface;
 use App\Modules\Reports\Domain\Repositories\MonthlyReportRepositoryInterface;
+use App\Modules\Reports\Infrastructure\Export\OpenSpoutMonthlyReportExporter;
 use App\Modules\Reports\Infrastructure\Persistence\EloquentMonthlyReportRepository;
 use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
@@ -141,6 +143,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             MonthlyReportRepositoryInterface::class,
             EloquentMonthlyReportRepository::class,
+        );
+
+        // Spec 019: the Excel file of the report, with OpenSpout (ADR 0005).
+        $this->app->bind(
+            MonthlyReportExporterInterface::class,
+            OpenSpoutMonthlyReportExporter::class,
         );
 
         // Contextual binding for the certifications module: when the SaveCertificationUseCase

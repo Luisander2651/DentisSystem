@@ -22,7 +22,8 @@ beforeEach(function () {
 });
 
 /**
- * Every row of every sheet of the file, by sheet name, keeping empty rows.
+ * Every row of every sheet of the file, by sheet name, keeping empty rows and without the empty
+ * cells the reader adds at the end of a short row.
  *
  * @return array<string, list<list<mixed>>>
  */
@@ -34,7 +35,14 @@ function downloadedWorkbook(string $path): array
 
     foreach ($reader->getSheetIterator() as $sheet) {
         foreach ($sheet->getRowIterator() as $row) {
-            $sheets[$sheet->getName()][] = $row->toArray();
+            $cells = $row->toArray();
+
+            // The reader pads a short row with empty cells up to the widest row of the sheet.
+            while ($cells !== [] && end($cells) === '') {
+                array_pop($cells);
+            }
+
+            $sheets[$sheet->getName()][] = $cells;
         }
     }
 
@@ -91,7 +99,7 @@ it('sends an Excel file named after the month', function () {
         ->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         ->assertDownload('reporte-dentissa-2026-07.xlsx');
     expect($response->headers->get('Content-Disposition'))->toStartWith('attachment;')->toContain('reporte-dentissa-2026-07.xlsx');
-})->skip('019: pendiente de T041');
+});
 
 it('has the four sheets in order, and the summary of July 2026 as the design shows it', function () {
     $this->seedJuly2026();
@@ -137,7 +145,7 @@ it('has the four sheets in order, and the summary of July 2026 as the design sho
             ['16:00', 0, 0, 1, 0, 0, 0, 0, 1],
             ['Total', 2, 1, 4, 0, 0, 0, 0, 7],
         ]);
-})->skip('019: pendiente de T041');
+});
 
 it('writes rates as numbers in percent with one decimal and differences as signed numbers', function () {
     $this->seedJuly2026();
@@ -146,7 +154,7 @@ it('writes rates as numbers in percent with one decimal and differences as signe
     expect(downloadedCellFormat($path, 1, 'B11'))->toBe('0.0%')
         ->and(downloadedCellFormat($path, 1, 'B12'))->toBe('0.0%')
         ->and(downloadedCellFormat($path, 1, 'D5'))->toBe('+0;"−"0;0');
-})->skip('019: pendiente de T041');
+});
 
 it('writes a fall as a negative number and a rate difference in points', function () {
     $this->seedJuly2026();
@@ -159,7 +167,7 @@ it('writes a fall as a negative number and a rate difference in points', functio
         ->and($summary[10])->toEqual(['Tasa de asistencia', 0.5, 0.286, 21.4])
         ->and(downloadedCellFormat($path, 1, 'D5'))->toBe('+0;"−"0;0')
         ->and(downloadedCellFormat($path, 1, 'D11'))->toBe('+0.0;"−"0.0;0.0');
-})->skip('019: pendiente de T041');
+});
 
 it('writes no data as text in a month without appointments', function () {
     $workbook = downloadedWorkbook(downloadReport($this, '2026-08'));
@@ -168,7 +176,7 @@ it('writes no data as text in a month without appointments', function () {
         ->and($workbook['Tratamientos'])->toBe([['N.º', 'Tratamiento', 'Citas']])
         ->and($workbook['Staff'])->toBe([['N.º', 'Nombre', 'Citas', 'Completadas']])
         ->and($workbook['Demanda'])->toBe([['Hora', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom', 'Total']]);
-})->skip('019: pendiente de T041');
+});
 
 it('warns in the summary that the month in course only has data until today', function () {
     $current = downloadedWorkbook(downloadReport($this, '2026-10'));
@@ -176,7 +184,7 @@ it('warns in the summary that the month in course only has data until today', fu
 
     expect($current['Resumen'][2])->toBe(['Mes en curso: datos hasta hoy, 19/10/2026.'])
         ->and($past['Resumen'][2])->toBe([]);
-})->skip('019: pendiente de T041');
+});
 
 it('deletes the temporary file once it has been sent (D10)', function () {
     $response = $this->get($this->monthlyReportExcelUrl('2026-07'));
@@ -191,4 +199,4 @@ it('deletes the temporary file once it has been sent (D10)', function () {
     ob_end_clean();
 
     expect(file_exists($path))->toBeFalse();
-})->skip('019: pendiente de T041');
+});
