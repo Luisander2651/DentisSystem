@@ -25,7 +25,10 @@
  * `values`, `dialogSays`, `unmarked`, `announced`, and since spec 019 `announcedOnce` (said by
  * the regions exactly once), `absent` (selectors that must not exist), `globalUndefined`
  * (names of `window` that must stay undefined), `visibleAfter` ({ selector, ms }: in sight after
- * that wait) and `tabbable` (a selector Tab reaches from the top of the page).
+ * that wait) and `tabbable` (a selector Tab reaches from the top of the page); since the review of
+ * spec 019, `focused` (the selector that holds the focus at the end), `textIn` ({ selector: text }
+ * found in the text of the element, screen-reader-only text included) and `notAnnounced` (a text
+ * the regions must never say).
  *
  * It runs after the steps of a dialog entry, with the dialog open, and leaves it closed.
  */
@@ -324,6 +327,9 @@ function flowStateInPage(expect) {
         announcedTimes: expect.announcedOnce ? (window.__flowAnnounced ?? []).filter((said) => said.includes(expect.announcedOnce)).length : 0,
         present: (expect.absent ?? []).filter((selector) => document.querySelector(selector) !== null),
         defined: (expect.globalUndefined ?? []).filter((name) => window[name] !== undefined),
+        focused: expect.focused ? document.activeElement?.matches(expect.focused) === true : true,
+        focusedOn: document.activeElement ? A.describe(document.activeElement) : 'nada',
+        texts: Object.fromEntries(Object.keys(expect.textIn ?? {}).map((selector) => [selector, document.querySelector(selector)?.textContent.replace(/\s+/g, ' ').trim() ?? null])),
     };
 }
 
@@ -482,6 +488,17 @@ async function runFlows(page, entry, baseUrl) {
 
             state.present.forEach((selector) => fail(`${selector} existe y no debía`));
             state.defined.forEach((name) => fail(`window.${name} quedó definido`));
+
+            if (!state.focused) {
+                fail(`el foco quedó en ${state.focusedOn} y debía estar en ${expect.focused}`);
+            }
+
+            Object.entries(expect.textIn ?? {}).filter(([selector, text]) => !(state.texts[selector] ?? '').includes(text))
+                .forEach(([selector, text]) => fail(`${selector} dice "${state.texts[selector] ?? 'nada (no existe)'}" y debía incluir "${text}"`));
+
+            if (expect.notAnnounced && state.announced.includes(expect.notAnnounced)) {
+                fail(`se anunció "${state.announced}" y no debía anunciarse "${expect.notAnnounced}"`);
+            }
 
             if (expect.visibleAfter) {
                 await new Promise((done) => setTimeout(done, expect.visibleAfter.ms));

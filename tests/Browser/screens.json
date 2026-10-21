@@ -1646,7 +1646,8 @@
                         "visibleAfter": {
                             "selector": "[data-reports-figures]",
                             "ms": 0
-                        }
+                        },
+                        "focused": "[data-reports-month]"
                     }
                 },
                 {
@@ -1799,6 +1800,18 @@
                             "__xss"
                         ]
                     }
+                },
+                {
+                    "name": "contenido de julio",
+                    "do": [],
+                    "expect": {
+                        "textIn": {
+                            "[data-reports-week] tfoot .ring-2": "más citas"
+                        },
+                        "globalUndefined": [
+                            "reportsPage"
+                        ]
+                    }
                 }
             ]
         },
@@ -1865,6 +1878,25 @@
                     ],
                     "expect": {
                         "announcedOnce": "Demasiadas descargas. Espera un momento e inténtalo de nuevo."
+                    }
+                },
+                {
+                    "name": "nombre de archivo mal codificado",
+                    "answer": {
+                        "to": "/api/v1/reports/monthly/excel",
+                        "status": 200,
+                        "body": {},
+                        "headers": {
+                            "Content-Disposition": "attachment; filename*=UTF-8''%E0%A4%A.xlsx"
+                        }
+                    },
+                    "do": [
+                        {
+                            "click": "[data-reports-download]"
+                        }
+                    ],
+                    "expect": {
+                        "notAnnounced": "No hay conexión"
                     }
                 }
             ]
