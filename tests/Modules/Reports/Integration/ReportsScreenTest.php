@@ -53,19 +53,19 @@ it('opens the screen with the months from the one in course back to January 2020
         ->and(array_key_last($months))->toBe('2020-01')
         ->and($months)->toHaveCount(82)
         ->and($months)->not->toHaveKey('2026-11');
-})->skip('019: pendiente de T044');
+});
 
 it('chooses the last complete month by default', function () {
     expect(chosenReportMonth($this->get($this->reportsScreenUrl())))->toBe('2026-09');
-})->skip('019: pendiente de T044');
+});
 
 it('chooses the month of the address when it is one of the list', function () {
     expect(chosenReportMonth($this->get($this->reportsScreenUrl('2026-07'))))->toBe('2026-07');
-})->skip('019: pendiente de T044');
+});
 
 it('ignores a month of the address that is not one of the list', function (string $month) {
     expect(chosenReportMonth($this->get($this->reportsScreenUrl($month))))->toBe('2026-09');
-})->with(['month 13' => '2026-13', 'a month to come' => '2030-01', 'a word' => 'julio'])->skip('019: pendiente de T044');
+})->with(['month 13' => '2026-13', 'a month to come' => '2030-01', 'a word' => 'julio']);
 
 it('does not write an injected month back into the page (abuse)', function () {
     $response = $this->get('/reportes?mes='.rawurlencode('<script>alert(1)</script>'));
@@ -73,7 +73,7 @@ it('does not write an injected month back into the page (abuse)', function () {
     $response->assertOk()
         ->assertDontSee('<script>alert(1)</script>', false)
         ->assertDontSee('alert(1)', false);
-})->skip('019: pendiente de T044');
+});
 
 it('offers the download and has the status region of the frame', function () {
     $this->get($this->reportsScreenUrl())
@@ -81,7 +81,7 @@ it('offers the download and has the status region of the frame', function () {
         ->assertSee('data-reports-download', false)
         ->assertSee('Descargar Excel')
         ->assertSee('data-ui-status-region', false);
-})->skip('019: pendiente de T044');
+});
 
 it('loads its own script, registered in Vite', function () {
     $root = dirname(__DIR__, 4);

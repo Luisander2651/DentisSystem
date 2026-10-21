@@ -92,7 +92,7 @@ it('covers every protected web route of the application', function () {
     sort($covered);
 
     expect($protected)->toBe($covered);
-})->skip('019: pendiente de T044');
+});
 
 it('shows the "Sin permiso" page to an actor without permission (abuse)', function (string $actor, string $screen) {
     config(['app.debug' => false]);
@@ -106,7 +106,7 @@ it('shows the "Sin permiso" page to an actor without permission (abuse)', functi
     $response->assertSee('href="'.route('dashboard').'"', false);
     $response->assertSee('lang="es"', false);
     expectNoAccessDeniedDetails($response, $screen);
-})->with(deniedScreensByActor())->skip('019: pendiente de T044');
+})->with(deniedScreensByActor());
 
 it('answers a fixed Spanish body when an actor without permission asks for JSON (abuse)', function (string $actor, string $screen) {
     config(['app.debug' => false]);
@@ -116,7 +116,7 @@ it('answers a fixed Spanish body when an actor without permission asks for JSON 
 
     $response->assertForbidden();
     $response->assertExactJson(['message' => 'No tienes permiso para ver esta pantalla.']);
-})->with(deniedScreensByActor())->skip('019: pendiente de T044');
+})->with(deniedScreensByActor());
 
 it('still lets each role into the screens it may see', function (string $role, array $screens) {
     $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
@@ -128,4 +128,4 @@ it('still lets each role into the screens it may see', function (string $role, a
     'administrador' => ['Administrador', [...DENIED_ADMIN_SCREENS, '/expedientes-clinicos', '/agenda']],
     'asistente' => ['Asistente', ['/expedientes-clinicos', '/dashboard']],
     'doctor' => ['Doctor', ['/expedientes-clinicos', '/dashboard']],
-])->skip('019: pendiente de T044');
+]);

@@ -41,8 +41,8 @@ it('covers every web route that asks for a session', function () {
     sort($covered);
 
     expect($protected)->toBe($covered);
-})->skip('019: pendiente de T044');
+});
 
 it('sends a visitor without a session to sign in', function (string $screen) {
     $this->get($screen)->assertRedirect(route('login'));
-})->with(GUEST_PROTECTED_SCREENS)->skip('019: pendiente de T044');
+})->with(GUEST_PROTECTED_SCREENS);

@@ -1,25 +1,24 @@
 ---
 result: pass
-round: 5
+round: 6
 mode: delta
 constitution_version: 1.2.0
 date: 2026-10-20
 spec_sha: 8b6e01c2b1aa
 plan_sha: 010f1175ebd6
-tasks_sha: b653ddb9596f
+tasks_sha: c2ea23c0ad3a
 ---
 
 # Análisis · 019 Reportes mensuales
 
 ## Resumen
-`pass`. Ronda delta pequeña, sin subagente: desde la ronda 4 solo cambió T016, que añade
-`tests/Modules/Core/Integration/GuestRedirectTest.php` (2 archivos) por un hallazgo colateral de
-`/implement` decidido por el usuario: ese test exige que toda ruta web con sesión esté en su lista
-y ya prueba la redirección a `/login`, así que es la única fuente para `/reportes` sin sesión.
-Revisado desde cero: T016 sigue en 3 archivos o menos, su criterio es comprobable al cerrarla, no
-crea dependencias nuevas (T044 la activa) y refuerza TM2 sin cambiar el diseño. Además, las
-tareas hechas desde la ronda 4 solo añadieron notas y marcas. Sin hallazgos nuevos; siguen
-vigentes los aceptados A44–A52 como notas de sus tareas.
+`pass`. Ronda delta pequeña, sin subagente: desde la ronda 5 solo cambió T045, que suma la vista
+de T044 a sus archivos (3 en total) para añadir el `@vite` del script en el mismo paso en que se
+registra en `vite.config.js`; antes, la vista del administrador daba 500 por no encontrar el
+script en el manifiesto de Vite. Revisado desde cero: T045 sigue en 3 archivos, su criterio no
+cambia, no crea dependencias nuevas (ya dependía de T044) y no cambia el diseño ni el alcance; el
+caso de Vite de `ReportsScreenTest` ya estaba pendiente de T045. Las tareas hechas desde la ronda 5
+solo añadieron notas y marcas. Sin hallazgos nuevos; siguen vigentes A44–A52 como notas.
 Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 0 (nuevos en esta ronda)
 
 ## Cobertura
@@ -30,7 +29,7 @@ Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 0 (nuevos en esta ronda)
 | Principios de la constitución evaluados | 15 / 15 (sin cambios desde la ronda 2) |
 
 ## Seguimiento de rondas anteriores
-Sin cambios respecto a la ronda 3 ([history/analysis.r3.md](../history/analysis.r3.md)); A44–A52 aceptados como notas.
+Sin cambios respecto a la ronda 3 ([history/analysis.r3.md](../../history/analysis.r3.md)); A44–A52 aceptados como notas.
 
 ### Ronda 3
 | ID | Severidad | Estado | Evidencia |

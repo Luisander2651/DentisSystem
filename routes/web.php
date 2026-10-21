@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\ContentManagement\Infrastructure\HTTP\Controllers\ShowLandingPageController;
+use App\Modules\Reports\Infrastructure\Http\Controllers\ShowReportsPageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', ShowLandingPageController::class)->name('inicio');
@@ -76,4 +77,7 @@ Route::middleware(['auth:sanctum', 'only.admin'])->group(function () {
     Route::get('/pacientes', function () {
         return view('pages.patients.index');
     })->name('patients.index');
+
+    // Spec 019: the monthly reports of the clinic.
+    Route::get('/reportes', ShowReportsPageController::class)->name('reportes.index');
 });
