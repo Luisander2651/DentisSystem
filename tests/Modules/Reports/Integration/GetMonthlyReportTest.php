@@ -190,3 +190,16 @@ it('marks the month in course with its data until today and counts the appointme
         ->assertJsonPath('data.appointments.rescheduled_pending.value', 1)
         ->assertJsonPath('data.appointments.unclosed.value', 1);
 });
+
+it('counts as attendance only the appointments completed on a day already gone, in the month in course (R1)', function () {
+    $this->createAppointment(['date' => '2026-10-10', 'status' => 'asignada']);
+    $this->createAppointment(['date' => '2026-10-19', 'status' => 'completada']);
+    $this->createAppointment(['date' => '2026-10-22', 'status' => 'completada']);
+
+    $this->getJson($this->monthlyReportUrl('2026-10'))
+        ->assertOk()
+        ->assertJsonPath('data.appointments.completed.value', 2)
+        ->assertJsonPath('data.rates.attendance.numerator', 0)
+        ->assertJsonPath('data.rates.attendance.denominator', 1)
+        ->assertJsonPath('data.rates.attendance.value', 0);
+});
