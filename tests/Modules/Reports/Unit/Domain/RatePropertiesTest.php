@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Modules\Reports\Domain\Exceptions\MonthlyReportException;
 use App\Modules\Reports\Domain\ValueObjects\Rate;
 use Tests\Support\UsesEris;
 
@@ -27,5 +28,11 @@ it('stays between 0 and 100 with one decimal (property)', function () {
 it('has no data only when the denominator is zero (property)', function () {
     $this->forAll(Eris\Generator\choose(0, 2000))->then(function (int $denominator) {
         expect(Rate::of(0, $denominator)->hasData())->toBe($denominator > 0);
+    });
+});
+
+it('refuses every numerator above its denominator (property, R1)', function () {
+    $this->forAll(Eris\Generator\choose(0, 2000), Eris\Generator\choose(1, 500))->then(function (int $denominator, int $excess) {
+        expect(fn () => Rate::of($denominator + $excess, $denominator))->toThrow(MonthlyReportException::class);
     });
 });

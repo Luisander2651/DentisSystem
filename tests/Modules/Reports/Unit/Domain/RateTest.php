@@ -35,3 +35,7 @@ it('has no data when there is nothing to divide by', function () {
 it('refuses negative counts', function (int $numerator, int $denominator) {
     expect(fn () => Rate::of($numerator, $denominator))->toThrow(MonthlyReportException::class);
 })->with([[-1, 4], [1, -4]]);
+
+it('refuses a numerator above its denominator (R1)', function (int $numerator, int $denominator) {
+    expect(fn () => Rate::of($numerator, $denominator))->toThrow(MonthlyReportException::class);
+})->with(['two of one' => [2, 1], 'one of none' => [1, 0]]);
