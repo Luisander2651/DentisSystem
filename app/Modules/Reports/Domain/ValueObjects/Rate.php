@@ -19,7 +19,7 @@ final readonly class Rate
     ) {}
 
     /**
-     * @throws MonthlyReportException when a count is negative
+     * @throws MonthlyReportException when a count is negative or the numerator is above the denominator (R1)
      */
     public static function of(int $numerator, int $denominator): self
     {
@@ -29,6 +29,10 @@ final readonly class Rate
 
         if ($denominator < 0) {
             throw MonthlyReportException::negativeCount('denominator');
+        }
+
+        if ($numerator > $denominator) {
+            throw MonthlyReportException::numeratorAboveDenominator();
         }
 
         $value = $denominator === 0 ? null : round($numerator * 100 / $denominator, 1, PHP_ROUND_HALF_UP);

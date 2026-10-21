@@ -22,6 +22,11 @@ final class MonthlyReportException extends Exception
         return new self("The counts of a monthly report do not add up: {$reason}.");
     }
 
+    public static function numeratorAboveDenominator(): self
+    {
+        return new self('The numerator of a rate of a monthly report cannot be above its denominator.');
+    }
+
     public static function emptyName(): self
     {
         return new self('A line of a ranking needs a name.');
