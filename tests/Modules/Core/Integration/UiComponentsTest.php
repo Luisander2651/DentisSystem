@@ -45,11 +45,12 @@ it('links the help and the error of the select to it', function () {
 });
 
 it('renders the comparison stat as a pair of term and description, wide when asked', function () {
-    $html = Blade::render('<dl><x-ui.stat variant="comparison" label="Citas del mes" wide>8<x-slot:trend><span data-trend>+8 vs junio</span></x-slot:trend></x-ui.stat><x-ui.stat variant="comparison" label="Completadas">2</x-ui.stat></dl>');
+    $wide = trim(Blade::render('<x-ui.stat variant="comparison" label="Citas del mes" wide>8<x-slot:trend><span data-trend>+8 vs junio</span></x-slot:trend></x-ui.stat>'));
+    $narrow = trim(Blade::render('<x-ui.stat variant="comparison" label="Completadas">2</x-ui.stat>'));
 
-    expect($html)->toMatch('/<div[^>]*col-span-2[^>]*>\s*<dt[^>]*>Citas del mes<\/dt>\s*<dd[^>]*>.*8.*<span data-trend>\+8 vs junio<\/span>.*<\/dd>\s*<\/div>/s')
-        ->and(substr_count($html, 'col-span-2'))->toBe(1)
-        ->and(substr_count($html, '<dt'))->toBe(2);
+    expect($wide)->toMatch('/^<div class="[^"]*\bcol-span-2\b[^"]*">\s*<dt class="[^"]*">Citas del mes<\/dt>\s*<dd class="[^"]*">\s*<span class="[^"]*">8<\/span>\s*<span data-trend>\+8 vs junio<\/span>\s*<\/dd>\s*<\/div>$/')
+        ->and($narrow)->toMatch('/^<div class="[^"]*">\s*<dt class="[^"]*">Completadas<\/dt>\s*<dd class="[^"]*">\s*<span class="[^"]*">2<\/span>\s*<\/dd>\s*<\/div>$/')
+        ->and($narrow)->not->toContain('col-span-2');
 });
 
 it('keeps the compact stat as it was', function () {
