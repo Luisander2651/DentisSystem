@@ -1,24 +1,25 @@
 ---
 result: pass
-round: 4
+round: 5
 mode: delta
 constitution_version: 1.2.0
 date: 2026-10-20
 spec_sha: 8b6e01c2b1aa
 plan_sha: 010f1175ebd6
-tasks_sha: daae165c916d
+tasks_sha: b653ddb9596f
 ---
 
 # Análisis · 019 Reportes mensuales
 
 ## Resumen
-`pass`. Ronda delta pequeña, sin subagente: el único cambio desde la ronda 3 es la tarea T057
-(`MonthlyReportException`), añadida durante `/implement` por decisión del usuario, y la dependencia
-de T032 sobre ella. Se revisó desde cero ese diff: T057 toca 1 archivo, tiene criterio
-comprobable al cerrarse, no crea ciclos (T057 → T032 → T033), sale de una convención de
-`AGENTS.md` (excepción propia por value object) y no cambia el diseño ni el alcance. Las tablas de
-Cobertura la incluyen en CA2, CA5, CA6 y en Reports · Domain. Sin hallazgos nuevos. Siguen
-vigentes los aceptados de la ronda 3 (A44–A52) como notas de sus tareas.
+`pass`. Ronda delta pequeña, sin subagente: desde la ronda 4 solo cambió T016, que añade
+`tests/Modules/Core/Integration/GuestRedirectTest.php` (2 archivos) por un hallazgo colateral de
+`/implement` decidido por el usuario: ese test exige que toda ruta web con sesión esté en su lista
+y ya prueba la redirección a `/login`, así que es la única fuente para `/reportes` sin sesión.
+Revisado desde cero: T016 sigue en 3 archivos o menos, su criterio es comprobable al cerrarla, no
+crea dependencias nuevas (T044 la activa) y refuerza TM2 sin cambiar el diseño. Además, las
+tareas hechas desde la ronda 4 solo añadieron notas y marcas. Sin hallazgos nuevos; siguen
+vigentes los aceptados A44–A52 como notas de sus tareas.
 Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 0 (nuevos en esta ronda)
 
 ## Cobertura
@@ -29,7 +30,7 @@ Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 0 (nuevos en esta ronda)
 | Principios de la constitución evaluados | 15 / 15 (sin cambios desde la ronda 2) |
 
 ## Seguimiento de rondas anteriores
-Sin cambios respecto a la ronda 3 ([history/analysis.r3.md](history/analysis.r3.md)); A44–A52 aceptados como notas.
+Sin cambios respecto a la ronda 3 ([history/analysis.r3.md](../history/analysis.r3.md)); A44–A52 aceptados como notas.
 
 ### Ronda 3
 | ID | Severidad | Estado | Evidencia |
