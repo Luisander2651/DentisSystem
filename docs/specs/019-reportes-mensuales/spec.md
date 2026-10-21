@@ -1,7 +1,7 @@
 ---
 id: 019
 slug: reportes-mensuales
-status: approved
+status: implemented
 created: 2026-10-19
 extends: []
 ---
@@ -25,53 +25,53 @@ inicio (roadmap → Pendientes y deuda).
   y que el archivo no lleve datos de pacientes, para no sacar datos personales del sistema.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dado un administrador, cuando abre "Reportes" desde su menú, entonces ve el reporte
+- [x] CA1 · Dado un administrador, cuando abre "Reportes" desde su menú, entonces ve el reporte
   del último mes completo y puede elegir otro mes (mes y año); al cambiarlo, todos los
   indicadores se recalculan para ese mes. Cada cita cuenta en el mes de su fecha actual (la de
   después de reprogramarla), en la zona horaria de la clínica.
-- [ ] CA2 · Dado un mes elegido, cuando se muestra el reporte, entonces aparecen el total de citas
+- [x] CA2 · Dado un mes elegido, cuando se muestra el reporte, entonces aparecen el total de citas
   del mes y cuántas hay en cada estado (completadas, canceladas, reprogramadas pendientes de
   atender, asignadas pendientes de atender y sin cerrar, que son las de fecha ya pasada que
   siguen asignadas o reprogramadas), y junto a cada número el del mes anterior y la diferencia
   (p. ej. "42 · +6 respecto a septiembre").
-- [ ] CA3 · Dado un mes con citas, cuando se muestra el reporte, entonces aparecen la tasa de
+- [x] CA3 · Dado un mes con citas, cuando se muestra el reporte, entonces aparecen la tasa de
   asistencia (completadas entre el total de citas no canceladas cuya fecha ya pasó) y la tasa de
   cancelación (canceladas entre el total del mes), en porcentaje con un decimal, con las del mes
   anterior. Dado un mes sin citas o un divisor en cero, la tasa se muestra como "Sin datos", no
   como 0 % ni como error, y la comparación con un mes anterior sin citas también dice "Sin datos".
-- [ ] CA4 · Dado un mes elegido, cuando se muestra el reporte, entonces aparecen los pacientes
+- [x] CA4 · Dado un mes elegido, cuando se muestra el reporte, entonces aparecen los pacientes
   nuevos del mes (dados de alta en ese mes) con los del mes anterior y su diferencia, y los
   pacientes activos (ficha en estado activo) al momento de consultar.
-- [ ] CA5 · Dado un mes elegido, cuando se muestra el reporte, entonces aparece la lista de
+- [x] CA5 · Dado un mes elegido, cuando se muestra el reporte, entonces aparece la lista de
   tratamientos con su número de citas no canceladas del mes, de mayor a menor (empate por
   nombre); los tratamientos sin citas en el mes no aparecen.
-- [ ] CA6 · Dado un mes elegido, cuando se muestra el reporte, entonces aparece cada miembro del
+- [x] CA6 · Dado un mes elegido, cuando se muestra el reporte, entonces aparece cada miembro del
   staff con citas asignadas en el mes (aunque hoy esté inactivo) con su total de citas no
   canceladas y cuántas completó, de mayor a menor carga.
-- [ ] CA7 · Dado un mes elegido, cuando se muestra el reporte, entonces aparece cuántas citas no
+- [x] CA7 · Dado un mes elegido, cuando se muestra el reporte, entonces aparece cuántas citas no
   canceladas hubo por día de la semana (lunes a domingo) y por hora de inicio (franjas de una
   hora), con la franja y el día de más citas destacados.
-- [ ] CA8 · Dado el reporte de un mes en pantalla, cuando el administrador pulsa "Descargar
+- [x] CA8 · Dado el reporte de un mes en pantalla, cuando el administrador pulsa "Descargar
   Excel", entonces recibe un archivo de Excel llamado `reporte-dentissa-AAAA-MM` con una hoja de
   resumen (mes, fecha de generación, citas por estado, tasas y pacientes, con el mes anterior) y
   una hoja por cada lista (tratamientos, staff y demanda por día y hora), con los mismos números
   que la pantalla; se abre en Excel sin avisos de reparación.
-- [ ] CA9 · Dado el mes en curso, cuando el administrador lo elige, entonces el reporte se muestra
+- [x] CA9 · Dado el mes en curso, cuando el administrador lo elige, entonces el reporte se muestra
   y se descarga con el aviso "Mes en curso: datos hasta hoy" en pantalla y en el archivo. Dado un
   mes futuro, no se puede elegir.
-- [ ] CA10 · (abuso) Como asistente, doctor, staff inactivo, paciente o sin sesión, intento ver
+- [x] CA10 · (abuso) Como asistente, doctor, staff inactivo, paciente o sin sesión, intento ver
   el reporte o descargarlo, por la pantalla o por otra vía → se rechaza con acceso denegado, no
   se genera ningún archivo y la entrada "Reportes" no aparece en mi menú.
-- [ ] CA11 · (abuso) Como administrador, pido el reporte de un mes inválido (mes 13, formato
+- [x] CA11 · (abuso) Como administrador, pido el reporte de un mes inválido (mes 13, formato
   incorrecto, un mes futuro o anterior a enero de 2020) por otra vía → se rechaza con un mensaje
   en español que dice qué mes se acepta, sin archivo y sin error interno.
-- [ ] CA12 · (abuso) Como administrador, descargo el reporte de un mes con citas → el archivo no
+- [x] CA12 · (abuso) Como administrador, descargo el reporte de un mes con citas → el archivo no
   contiene nombres, teléfonos, emails, direcciones ni datos clínicos o médicos de ningún paciente;
   solo totales, nombres de tratamientos y nombres del staff.
-- [ ] CA13 · (abuso) Dado un tratamiento o un miembro del staff cuyo nombre empieza por `=`, `+`,
+- [x] CA13 · (abuso) Dado un tratamiento o un miembro del staff cuyo nombre empieza por `=`, `+`,
   `-` o `@`, cuando se descarga el reporte → el nombre aparece como texto tal cual y Excel no lo
   interpreta como fórmula.
-- [ ] CA14 · (abuso) Como administrador, pido más de 10 descargas del reporte en un minuto → las
+- [x] CA14 · (abuso) Como administrador, pido más de 10 descargas del reporte en un minuto → las
   siguientes se rechazan con el mensaje "Demasiadas descargas. Espera un momento e inténtalo de
   nuevo." hasta que pase el minuto; ver el reporte en pantalla no se limita.
 
@@ -181,3 +181,4 @@ Ninguna.
 |---|---|---|
 | 2026-10-19 | Creación en `draft` | /specify, desde el pendiente del roadmap |
 | 2026-10-19 | Aprobada | Aprobación del usuario |
+| 2026-10-21 | Implementada | /implement: T001–T091 hechas; CA1–CA14 con sus tests en verde (suite completa 1653/1653, `ui-audit` dos veces sin fallos) |

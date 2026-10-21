@@ -216,7 +216,8 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: hecha 2026-10-21: `architecture.md` cambia la fila `Estadisticas` (que nunca existió en el disco) por `Reports` con sus dependencias de solo lectura (ADR 0006), añade en Backend cómo calcula y exporta el reporte (agregación en PostgreSQL, un solo `MonthlyReport` para JSON y Excel, OpenSpout 5.12.0 tras un puerto, ADR 0005, y la excepción de P3 de `/reportes`), el limitador `report-downloads` en Seguridad, y corrige la nota de deuda que citaba `app/Modules/Estadisticas` (A25)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, el log `report.export_failed` (sin `request_id`, OB3.a pendiente) y el punto de emisión de los accesos denegados de la 019 para el objetivo 5 (OB1.a pendiente); sin cambios en `deployment.md` (la dependencia llega en la imagen, sin variables ni pasos nuevos)
   - nota: hecha 2026-10-21: `observability.md` describe el log `report.export_failed` (nivel, campos, sin mensaje, sin datos de pacientes y sin `request_id`: OB3.a pendiente) y el punto de emisión de los accesos denegados de la 019 (`OnlyAdmin` y el render de `AuthorizationException`; OB1.a pendiente, objetivo 5); OB1 y OB3 no cambian de estado. Sin cambios en `deployment.md`: OpenSpout llega en la imagen con `composer install`, sin variables, entornos ni pasos nuevos, y no hay migraciones
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
+  - nota: hecha 2026-10-21: CA1–CA14 marcados (sus tests pasan en T048: suite completa en serie 1653/1653 y `ui-audit` dos veces sin fallos), spec en `implemented` con su fila de Historial, y fila del README actualizada
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
