@@ -62,3 +62,17 @@ it('does not limit the report on screen with the limit of the downloads', functi
         $this->getJson($this->monthlyReportUrl('2026-07'))->assertOk();
     }
 });
+
+it('tells how long to wait on the refused download (R30)', function () {
+    $this->actingAsAdmin();
+
+    foreach (range(1, 10) as $download) {
+        $this->get($this->monthlyReportExcelUrl('2026-07'))->assertOk();
+    }
+
+    $refused = $this->getJson($this->monthlyReportExcelUrl('2026-07'))->assertTooManyRequests();
+
+    expect((int) $refused->headers->get('Retry-After'))->toBeGreaterThanOrEqual(1)->toBeLessThanOrEqual(60)
+        ->and($refused->headers->get('X-RateLimit-Limit'))->toBe('10')
+        ->and($refused->headers->get('X-RateLimit-Remaining'))->toBe('0');
+});
