@@ -260,8 +260,10 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 - [x] T071 Conservar las cabeceras del limitador en la respuesta propia del 429 (`->response(fn ($request, array $headers) => response()->json([...], 429, $headers))`) — `app/Providers/AppServiceProvider.php` — hecho cuando: T070 pasa y `DownloadThrottleTest` sigue en verde — cubre: CA14 — depende: T070
   - nota: añadida por /review: R30
   - nota: hecha 2026-10-21: la respuesta propia de `report-downloads` recibe `$headers` del limitador y los pasa al JSON del 429; T070 pasa y `DownloadThrottleTest` 5 en verde
-- [ ] T072 Devolver el nombre raíz de `package-lock.json` a `DentissaApp` (en el carril de npm pasó a `html`, el nombre de la carpeta del contenedor), sin tocar ninguna versión — `package-lock.json` — hecho cuando: `git diff 909f3bf -- package-lock.json` solo muestra los cambios de `follow-redirects` y `vite` del carril y `npm audit --audit-level=high` da 0
+- [x] T072 Devolver el nombre raíz de `package-lock.json` a `DentissaApp` (en el carril de npm pasó a `html`, el nombre de la carpeta del contenedor), sin tocar ninguna versión — `package-lock.json` — hecho cuando: `git diff 909f3bf -- package-lock.json` solo muestra los cambios de `follow-redirects` y `vite` del carril y `npm audit --audit-level=high` da 0
   - nota: añadida por /review: R31
+  - nota: hecha 2026-10-21: vuelven `"name": "DentissaApp"` en la raíz y en `packages[""]` (el carril los había cambiado o quitado). `git diff 909f3bf -- package-lock.json`: solo las 12 líneas de versión, `resolved` e `integrity` de `follow-redirects` 1.16.1 y `vite` 7.3.7; `npm audit --audit-level=high`: 0
+  - nota: deriva de entorno: `package.json` no tiene `name`, así que un `npm install` dentro del contenedor (`/var/www/html`) vuelve a escribir `html`. Queda para el roadmap con R31 (añadir `name` a `package.json` sería un chore aparte)
 
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: módulo `Reports` en la tabla de módulos en lugar de `Estadisticas`, la nota de "`app/Modules/Estadisticas` … vacíos" corregida, dependencias Reports → Appointments, Patients y Users (solo lectura, [ADR 0006](../../adr/0006-modulo-reports-de-solo-lectura.md)) y OpenSpout ([ADR 0005](../../adr/0005-openspout-para-excel.md))
