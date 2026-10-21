@@ -106,7 +106,7 @@ it('gives the rates with one decimal and compares the counts with the month befo
         ->and($report->appointments['rescheduled_pending']->trend)->toBe('neutral')
         ->and($report->appointments['assigned_pending']->trend)->toBe('neutral')
         ->and($repository->asked)->toBe(['2026-07', '2026-06']);
-})->skip('019: pendiente de T034');
+});
 
 it('compares the rates in points when both months have them', function () {
     $june = AppointmentCounts::create(total: 4, completed: 1, cancelled: 0, rescheduledPending: 0, assignedPending: 0, unclosed: 3, notCancelledPast: 4);
@@ -118,7 +118,7 @@ it('compares the rates in points when both months have them', function () {
         ->and($report->rates['attendance']['comparison']->trend)->toBe('favorable')
         ->and($report->rates['cancellation']['comparison']->difference)->toBe(12.5)
         ->and($report->rates['cancellation']['comparison']->trend)->toBe('unfavorable');
-})->skip('019: pendiente de T034');
+});
 
 it('has no rates in a month without appointments', function () {
     $report = (new MonthlyReportService(fakeReportRepository([])))->build(ReportMonth::create('2026-08', serviceToday()), serviceToday());
@@ -130,7 +130,7 @@ it('has no rates in a month without appointments', function () {
         ->and($report->demand['top_weekdays'])->toBe([])
         ->and($report->demand['top_hours'])->toBe([])
         ->and($report->demand['total'])->toBe(0);
-})->skip('019: pendiente de T034');
+});
 
 it('lays out the week from the first to the last hour with appointments, with totals and the highest ones', function () {
     $report = (new MonthlyReportService(fakeReportRepository(['2026-07' => julyCounts()], demand: ['2026-07' => julyDemand()])))
@@ -154,7 +154,7 @@ it('lays out the week from the first to the last hour with appointments, with to
         'top_hours' => [9, 12],
         'total' => 7,
     ]);
-})->skip('019: pendiente de T034');
+});
 
 it('marks every weekday that ties for the highest', function () {
     $report = (new MonthlyReportService(fakeReportRepository([], demand: ['2026-07' => [1 => [10 => 2], 5 => [10 => 1, 11 => 1]]])))
@@ -162,7 +162,7 @@ it('marks every weekday that ties for the highest', function () {
 
     expect($report->demand['top_weekdays'])->toBe([0, 4])
         ->and($report->demand['top_hours'])->toBe([10]);
-})->skip('019: pendiente de T034');
+});
 
 it('compares the new patients with the month before and keeps the active ones as of today', function () {
     $report = (new MonthlyReportService(fakeReportRepository([], newPatients: ['2026-07' => 1, '2026-06' => 3], active: 12)))
@@ -173,7 +173,7 @@ it('compares the new patients with the month before and keeps the active ones as
         ->and($report->newPatients->trend)->toBe('unfavorable')
         ->and($report->activePatients)->toBe(12)
         ->and($report->activeAsOf->toDateString())->toBe('2026-10-19');
-})->skip('019: pendiente de T034');
+});
 
 it('passes the rankings through ordered', function () {
     $repository = fakeReportRepository([], treatments: [RankedItem::create('Resina de prueba', 2), RankedItem::create('Limpieza dental de prueba', 3)], staff: [RankedItem::create('Daniela Prueba', 5, 2)]);
@@ -182,11 +182,11 @@ it('passes the rankings through ordered', function () {
     expect($report->treatments[0]->name)->toBe('Limpieza dental de prueba')
         ->and($report->treatments[0]->isTop)->toBeTrue()
         ->and($report->staff[0]->extra)->toBe(2);
-})->skip('019: pendiente de T034');
+});
 
 it('says until when the month in course has data', function () {
     $service = new MonthlyReportService(fakeReportRepository([]));
 
     expect($service->build(ReportMonth::create('2026-10', serviceToday()), serviceToday())->dataUntil?->toDateString())->toBe('2026-10-19')
         ->and($service->build(ReportMonth::create('2026-09', serviceToday()), serviceToday())->dataUntil)->toBeNull();
-})->skip('019: pendiente de T034');
+});

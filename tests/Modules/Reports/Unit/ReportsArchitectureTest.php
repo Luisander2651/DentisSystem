@@ -56,12 +56,12 @@ function reportsForbiddenImports(array $imports, string $pattern): array
 it('has a Domain with classes', function () {
     expect(is_dir(dirname(__DIR__, 4).'/app/Modules/Reports/Domain'))->toBeTrue()
         ->and(reportsImports('Domain'))->not->toBeEmpty();
-})->skip('019: pendiente de T034');
+});
 
 it('keeps the Domain free of Eloquent, facades, Infrastructure and the spreadsheet library', function () {
     expect(reportsForbiddenImports(reportsImports('Domain'), '/^(App\\\\Modules\\\\[^\\\\]+\\\\Infrastructure|Illuminate\\\\Support\\\\Facades|Illuminate\\\\Database\\\\Eloquent|OpenSpout)/'))->toBe([]);
-})->skip('019: pendiente de T034');
+});
 
 it('keeps Application free of Eloquent and the spreadsheet library', function () {
     expect(reportsForbiddenImports(reportsImports('Application'), '/^(Illuminate\\\\Database\\\\Eloquent|OpenSpout|App\\\\Modules\\\\[^\\\\]+\\\\Infrastructure)/'))->toBe([]);
-})->skip('019: pendiente de T034');
+});
