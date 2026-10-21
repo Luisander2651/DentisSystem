@@ -67,6 +67,14 @@ usuario (indicado en cada caso).
   clínico por el doctor en `GetAppointmentTrackingByAppointmentIdUseCase`, escritura de seguimiento y
   recetas en `CompleteAppointmentUseCase`, y cambios de cita por el asistente (y cualquier actor) en
   `CreateAppointmentUseCase` y `UpdateAppointmentUseCase`. Hoy no se registran (P14 aceptado).
+- Spec 019 (reportes mensuales): `report.export_failed` (nivel `error`) cuando falla la generación del
+  Excel, con `month` y la clase de la excepción; sin el mensaje, sin datos de pacientes y sin
+  `request_id` (OB3.a pendiente, objetivo 5; P14 ❌ aceptado). Lo escribe
+  `DownloadMonthlyReportController`, además del `unexpected_error` de siempre. Punto de emisión para
+  el objetivo 5: los accesos denegados a `/reportes` y `/api/v1/reports/monthly*` (CA10) pasan por
+  `OnlyAdmin` y por el render de `AuthorizationException`, los mismos puntos de arriba; hoy no se
+  registran (OB1.a pendiente). Ver o descargar el reporte no es lectura de datos sensibles (solo
+  agregados) y no se audita.
 
 ## Correlación
 - Identificador por petición: cabecera `X-Request-Id` (propuesta); se acepta del cliente si es
