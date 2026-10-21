@@ -372,10 +372,10 @@ cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas qued
 | Página no encontrada, con sesión | ruta inexistente · `errors/404.blade.php` | Asistente | [390](capturas/error-404-con-sesion-390.png) · [1440](capturas/error-404-con-sesion-1440.png) | capturada |
 | Acceso denegado (paciente en ruta de staff) | `/expedientes-clinicos` · `errors/403.blade.php` | Paciente | [390](capturas/error-403-staff-390.png) · [1440](capturas/error-403-staff-1440.png) | capturada |
 | Acceso denegado (asistente en ruta de administrador) | `/usuarios` · `errors/403.blade.php` | Asistente | [390](capturas/error-403-admin-390.png) · [1440](capturas/error-403-admin-1440.png) | capturada |
-| Reportes, mes con citas (julio de 2026) | `/reportes?mes=2026-07` · `pages/reportes/index.blade.php` | Administrador | [390](capturas/reportes-390.png) · [1440](capturas/reportes-1440.png) | sin captura (la pantalla se construye en la spec 019; captura en su T050) |
-| Reportes, mes sin citas (agosto de 2026) | `/reportes?mes=2026-08` | Administrador | [390](capturas/reportes-sin-citas-390.png) · [1440](capturas/reportes-sin-citas-1440.png) | sin captura (spec 019, T050) |
-| Reportes, mes en curso | `/reportes` (mes en curso elegido) | Administrador | [390](capturas/reportes-mes-en-curso-390.png) · [1440](capturas/reportes-mes-en-curso-1440.png) | sin captura (spec 019, T050) |
-| Acceso denegado (asistente en Reportes) | `/reportes` · `errors/403.blade.php` | Asistente | [390](capturas/error-403-asistente-reportes-390.png) · [1440](capturas/error-403-asistente-reportes-1440.png) | sin captura (spec 019, T050) |
+| Reportes, mes con citas (julio de 2026) | `/reportes?mes=2026-07` · `pages/reportes/index.blade.php` | Administrador | [390](capturas/reportes-390.png) · [1440](capturas/reportes-1440.png) | capturada en local el 2026-10-21 (spec 019, T050); julio muestra además una cita de desarrollo de la base local ("Limpieza 2"), que en CI no existe |
+| Reportes, mes sin citas (agosto de 2026) | `/reportes?mes=2026-08` | Administrador | [390](capturas/reportes-sin-citas-390.png) · [1440](capturas/reportes-sin-citas-1440.png) | capturada en local el 2026-10-21 (spec 019, T050) |
+| Reportes, mes en curso | `/reportes` (mes en curso elegido) | Administrador | [390](capturas/reportes-mes-en-curso-390.png) · [1440](capturas/reportes-mes-en-curso-1440.png) | capturada en local el 2026-10-21 (spec 019, T050) |
+| Acceso denegado (asistente en Reportes) | `/reportes` · `errors/403.blade.php` | Asistente | [390](capturas/error-403-asistente-reportes-390.png) · [1440](capturas/error-403-asistente-reportes-1440.png) | capturada en local el 2026-10-21 (spec 019, T050) |
 
 Estados: `capturada` · `sin captura (motivo)` · `no accesible (motivo)`. Los diálogos se capturan
 al tamaño de la ventana y caben en ella. Solo se provocó un error de validación (completar cita sin motivo); "completar
