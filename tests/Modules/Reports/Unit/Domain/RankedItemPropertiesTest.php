@@ -25,4 +25,4 @@ it('keeps every non-empty name and figure as they are (property)', function () {
                 ->and($item->extra)->toBe($extra)
                 ->and($item->asTop()->value)->toBe($value);
         });
-})->skip('019: pendiente de T033');
+});

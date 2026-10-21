@@ -19,7 +19,7 @@ it('keeps the name, the figure and the extra figure', function () {
         ->and($doctor->extra)->toBe(2)
         ->and($doctor->isTop)->toBeFalse()
         ->and($treatment->extra)->toBeNull();
-})->skip('019: pendiente de T033');
+});
 
 it('marks the line as one of the top ones without changing the rest', function () {
     $top = RankedItem::create('Daniela Prueba', 5, 2)->asTop();
@@ -28,16 +28,16 @@ it('marks the line as one of the top ones without changing the rest', function (
         ->and($top->name)->toBe('Daniela Prueba')
         ->and($top->value)->toBe(5)
         ->and($top->extra)->toBe(2);
-})->skip('019: pendiente de T033');
+});
 
 it('keeps a name that would be a formula in a spreadsheet as it is', function () {
     expect(RankedItem::create('=HYPERLINK("http://x","y")', 1)->name)->toBe('=HYPERLINK("http://x","y")');
-})->skip('019: pendiente de T033');
+});
 
 it('refuses an empty name', function (string $name) {
     expect(fn () => RankedItem::create($name, 1))->toThrow(MonthlyReportException::class);
-})->with(['empty' => '', 'only spaces' => '   '])->skip('019: pendiente de T033');
+})->with(['empty' => '', 'only spaces' => '   ']);
 
 it('refuses a negative figure', function (int $value, ?int $extra) {
     expect(fn () => RankedItem::create('Daniela Prueba', $value, $extra))->toThrow(MonthlyReportException::class);
-})->with(['figure' => [-1, null], 'extra figure' => [3, -1]])->skip('019: pendiente de T033');
+})->with(['figure' => [-1, null], 'extra figure' => [3, -1]]);

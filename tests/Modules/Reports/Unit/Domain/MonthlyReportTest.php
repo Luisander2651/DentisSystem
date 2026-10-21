@@ -66,7 +66,7 @@ it('keeps the figures of the month', function () {
         ->and($report->newPatients->trend)->toBe('neutral')
         ->and($report->activePatients)->toBe(2)
         ->and($report->demand['top_hours'])->toBe([9, 12]);
-})->skip('019: pendiente de T033');
+});
 
 it('orders the rankings from most to least and by name on a tie, marking the top ones', function () {
     $report = julyReport(
@@ -78,17 +78,17 @@ it('orders the rankings from most to least and by name on a tie, marking the top
         ->and(array_map(fn (RankedItem $item): bool => $item->isTop, $report->treatments))->toBe([true, false, false])
         ->and(array_map(fn (RankedItem $item): string => $item->name, $report->staff))->toBe(['Daniela Prueba', 'Diego Prueba'])
         ->and($report->staff[0]->isTop)->toBeTrue();
-})->skip('019: pendiente de T033');
+});
 
 it('orders names on a tie without minding capitals or accents', function () {
     $report = julyReport(treatments: [RankedItem::create('beatriz', 1), RankedItem::create('Ángel', 1), RankedItem::create('Zoe', 1)]);
 
     expect(array_map(fn (RankedItem $item): string => $item->name, $report->treatments))->toBe(['Ángel', 'beatriz', 'Zoe'])
         ->and(array_map(fn (RankedItem $item): bool => $item->isTop, $report->treatments))->toBe([true, true, true]);
-})->skip('019: pendiente de T033');
+});
 
 it('has nothing about a patient but counts', function () {
     $properties = array_map(fn (ReflectionProperty $property): string => $property->getName(), (new ReflectionClass(MonthlyReport::class))->getProperties());
 
     expect($properties)->toEqualCanonicalizing(['month', 'dataUntil', 'appointments', 'rates', 'newPatients', 'activePatients', 'activeAsOf', 'treatments', 'staff', 'demand']);
-})->skip('019: pendiente de T033');
+});

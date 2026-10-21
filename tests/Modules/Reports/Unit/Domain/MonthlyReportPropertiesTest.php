@@ -70,4 +70,4 @@ it('orders every ranking and marks only its highest lines (property)', function 
                 }
             }
         });
-})->skip('019: pendiente de T033');
+});
