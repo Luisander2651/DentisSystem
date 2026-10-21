@@ -30,7 +30,7 @@ it('renders the select with its label, its options and the chosen one', function
         ->toContain('h-control')->toContain('rounded-control')->toContain('border-field')->toContain('text-control')
         ->and(preg_match('/<option value="2026-07"[^>]*selected[^>]*>\s*Julio de 2026\s*<\/option>/', $html))->toBe(1)
         ->and(preg_match('/<option value="2026-10"(?![^>]*selected)[^>]*>\s*Octubre de 2026\s*<\/option>/', $html))->toBe(1);
-})->skip('019: pendiente de T053');
+});
 
 it('links the help and the error of the select to it', function () {
     $html = Blade::render('<x-ui.select name="mes" id="report-month" label="Mes" :options="[\'2026-07\' => \'Julio de 2026\']" hint="Del mes en curso a enero de 2020." error-text="Elige un mes de la lista." />');
@@ -42,7 +42,7 @@ it('links the help and the error of the select to it', function () {
         ->toContain('id="report-month-error"')
         ->toContain('Elige un mes de la lista.')
         ->toContain('border-danger');
-})->skip('019: pendiente de T053');
+});
 
 it('renders the comparison stat as a pair of term and description, wide when asked', function () {
     $html = Blade::render('<dl><x-ui.stat variant="comparison" label="Citas del mes" wide>8<x-slot:trend><span data-trend>+8 vs junio</span></x-slot:trend></x-ui.stat><x-ui.stat variant="comparison" label="Completadas">2</x-ui.stat></dl>');
@@ -50,7 +50,7 @@ it('renders the comparison stat as a pair of term and description, wide when ask
     expect($html)->toMatch('/<div[^>]*col-span-2[^>]*>\s*<dt[^>]*>Citas del mes<\/dt>\s*<dd[^>]*>.*8.*<span data-trend>\+8 vs junio<\/span>.*<\/dd>\s*<\/div>/s')
         ->and(substr_count($html, 'col-span-2'))->toBe(1)
         ->and(substr_count($html, '<dt'))->toBe(2);
-})->skip('019: pendiente de T053');
+});
 
 it('keeps the compact stat as it was', function () {
     expect(normalizedHtml(Blade::render('<x-ui.stat label="Citas del mes">8</x-ui.stat>')))
