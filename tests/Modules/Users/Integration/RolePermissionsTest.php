@@ -81,7 +81,7 @@ it('grants each permission exactly to the active staff roles of the table', func
             expect($call)->toThrow(AuthorizationException::class);
         }
     }
-})->with(rolePermissionMatrix())->skip('019: pendiente de T030');
+})->with(rolePermissionMatrix());
 
 it('refuses every permission to an inactive administrator', function (string $permission) {
     $this->actingAsInactiveAdmin();
@@ -101,7 +101,7 @@ it('covers every permission of the map, so the matrix cannot drift from it', fun
     $permissions = (fn (): array => $this->permissions())->call(new CurrentActorAuthorizationService);
 
     expect(array_keys($permissions))->toEqualCanonicalizing(array_keys(rolePermissionMatrix()));
-})->skip('019: pendiente de T030');
+});
 
 it('denies by default a permission that is not in the map', function (string $role) {
     $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
