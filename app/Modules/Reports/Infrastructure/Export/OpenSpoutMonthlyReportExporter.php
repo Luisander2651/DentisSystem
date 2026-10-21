@@ -22,7 +22,8 @@ use OpenSpout\Writer\XLSX\Writer;
  *
  * Every text goes in a StringCell and every number in a NumericCell, written one by one. The
  * factories of Row and Cell that guess the type of a cell from its value are never used: they turn
- * a name that starts with "=" into a formula (TM4).
+ * a name that starts with "=" into a formula (TM4). A file that fails half written is deleted
+ * before the error goes on (R4).
  */
 final class OpenSpoutMonthlyReportExporter implements MonthlyReportExporterInterface
 {
@@ -58,20 +59,31 @@ final class OpenSpoutMonthlyReportExporter implements MonthlyReportExporterInter
     {
         $path = (string) tempnam(sys_get_temp_dir(), 'reporte-dentissa-');
         $writer = new Writer;
-        $writer->openToFile($path);
 
-        $this->summary($writer, $report);
+        try {
+            $writer->openToFile($path);
 
-        $writer->addNewSheetAndMakeItCurrent();
-        $this->ranking($writer, 'Tratamientos', ['N.º', 'Tratamiento', 'Citas'], $report->treatments, false);
+            $this->summary($writer, $report);
 
-        $writer->addNewSheetAndMakeItCurrent();
-        $this->ranking($writer, 'Staff', ['N.º', 'Nombre', 'Citas', 'Completadas'], $report->staff, true);
+            $writer->addNewSheetAndMakeItCurrent();
+            $this->ranking($writer, 'Tratamientos', ['N.º', 'Tratamiento', 'Citas'], $report->treatments, false);
 
-        $writer->addNewSheetAndMakeItCurrent();
-        $this->demand($writer, $report->demand);
+            $writer->addNewSheetAndMakeItCurrent();
+            $this->ranking($writer, 'Staff', ['N.º', 'Nombre', 'Citas', 'Completadas'], $report->staff, true);
 
-        $writer->close();
+            $writer->addNewSheetAndMakeItCurrent();
+            $this->demand($writer, $report->demand);
+
+            $writer->close();
+        } catch (\Throwable $e) {
+            try {
+                $writer->close();
+            } finally {
+                @unlink($path);
+            }
+
+            throw $e;
+        }
 
         return $path;
     }
