@@ -203,3 +203,24 @@ it('counts as attendance only the appointments completed on a day already gone, 
         ->assertJsonPath('data.rates.attendance.denominator', 1)
         ->assertJsonPath('data.rates.attendance.value', 0);
 });
+
+it('keeps the month of the clinic in course on its last evening, when it is already the next month in UTC (R2)', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-10-31 20:00:00', 'America/Mexico_City'));
+
+    $this->getJson($this->monthlyReportUrl('2026-10'))
+        ->assertOk()
+        ->assertJsonPath('data.is_current', true)
+        ->assertJsonPath('data.data_until', '2026-10-31');
+});
+
+it('starts the next month of the clinic after its midnight, with the patients registered then (R2)', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-11-01 00:30:00', 'America/Mexico_City'));
+    $this->createPatient();
+
+    $this->getJson($this->monthlyReportUrl('2026-11'))
+        ->assertOk()
+        ->assertJsonPath('data.is_current', true)
+        ->assertJsonPath('data.data_until', '2026-11-01')
+        ->assertJsonPath('data.patients.new.value', 1);
+    $this->getJson($this->monthlyReportUrl('2026-10'))->assertJsonPath('data.patients.new.value', 0);
+});

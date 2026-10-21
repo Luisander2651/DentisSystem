@@ -92,3 +92,11 @@ it('answers the same refusal when the month stops being valid after the request 
         ->assertUnprocessable()
         ->assertExactJson(['message' => REPORT_MONTH_MESSAGE, 'errors' => ['month' => [REPORT_MONTH_MESSAGE]]]);
 })->with(['/api/v1/reports/monthly?month=2026-10', '/api/v1/reports/monthly/excel?month=2026-10']);
+
+it('refuses the next month of the clinic on its last evening, when it is already that month in UTC (R2)', function (string $url) {
+    $this->travelTo(CarbonImmutable::parse('2026-10-31 20:00:00', 'America/Mexico_City'));
+
+    $this->getJson($url.'?month=2026-11')
+        ->assertUnprocessable()
+        ->assertExactJson(['message' => REPORT_MONTH_MESSAGE, 'errors' => ['month' => [REPORT_MONTH_MESSAGE]]]);
+})->with(['the report' => '/api/v1/reports/monthly', 'the download' => '/api/v1/reports/monthly/excel']);

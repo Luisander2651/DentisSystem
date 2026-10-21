@@ -89,3 +89,14 @@ it('loads its own script, registered in Vite', function () {
     expect(file_get_contents($root.'/resources/views/pages/reportes/index.blade.php'))->toContain("@vite('resources/js/pages/reportes/index.js')")
         ->and(file_get_contents($root.'/vite.config.js'))->toContain("'resources/js/pages/reportes/index.js'");
 });
+
+it('still lists and chooses by the month of the clinic on its last evening, when it is already the next month in UTC (R2)', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-10-31 20:00:00', 'America/Mexico_City'));
+
+    $response = $this->get($this->reportsScreenUrl());
+    $months = reportMonthOptions($response->assertOk());
+
+    expect(array_key_first($months))->toBe('2026-10')
+        ->and($months)->not->toHaveKey('2026-11')
+        ->and(chosenReportMonth($response))->toBe('2026-09');
+});
