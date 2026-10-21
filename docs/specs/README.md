@@ -38,4 +38,3 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 ## Pendientes sin spec
 - **Dashboard por rol** (`/dashboard`, accesos rápidos): tablero de inicio por crear después de la 018; alcance en `docs/roadmap.md` → Pendientes y deuda (decisión del usuario, 2026-10-17).
 - **Portal del paciente**: layout `patient.blade.php` sin pantallas funcionales.
-- **Estadísticas**: `app/Modules/Estadisticas` vacío, sin alcance definido.
