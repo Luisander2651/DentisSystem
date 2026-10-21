@@ -211,12 +211,44 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: hecha 2026-10-21: en `docs/security.md`, el modelo de autorización incluye `reports.view` y `reports.export` entre lo que es solo del administrador; la superficie de ataque gana la fila de `GET /api/v1/reports/monthly` y `/excel` (solo admin, validación de `month`, límite de 10 descargas por minuto por administrador además del general, solo agregados, OpenSpout 5.12.0 con celdas explícitas sin fórmulas y temporal borrado al enviarlo) y `/reportes` en la fila de pantallas web del administrador. En `docs/specs/README.md` sale "Estadísticas" de "Pendientes sin spec". `aidd.py validate` sin errores
   - nota: A25 — incluido el mapa de permisos de "Autenticación y autorización" de `security.md`; la línea de `Estadisticas` de `architecture.md` va en T090
 
+## Correcciones de /review (ronda 1)
+- [ ] T058 Añadir los tests de la asistencia del mes en curso: con hoy 2026-10-19, una cita de octubre con fecha pasada sin cerrar, una completada el 2026-10-19 y otra completada el 2026-10-22 → la asistencia de octubre es 0 de 1 (0.0 %, nunca 2 de 1 ni más de 100 %); y en `AppointmentCountsTest`, `create()` rechaza con `MonthlyReportException` unas completadas con fecha pasada mayores que las no canceladas con fecha pasada — `tests/Modules/Reports/Integration/GetMonthlyReportTest.php`, `tests/Modules/Reports/Unit/Domain/AppointmentCountsTest.php` — hecho cuando: los casos nuevos fallan hoy por la razón esperada (la asistencia sale 200 % y `create()` no conoce el argumento `completedPast`) — cubre: CA3
+  - nota: añadida por /review: R1
+- [ ] T059 Contar como asistencia solo las completadas con fecha pasada: el repositorio cuenta `completed_past` (`status = 'completada' and date < hoy`), `AppointmentCounts` lo recibe con el invariante `completedPast <= notCancelledPast` y `MonthlyReportService::attendance()` lo usa como numerador; `completed` sigue contando todas las completadas del mes (CA2) — `app/Modules/Reports/Infrastructure/Persistence/EloquentMonthlyReportRepository.php`, `app/Modules/Reports/Domain/ValueObjects/AppointmentCounts.php`, `app/Modules/Reports/Domain/Service/MonthlyReportService.php` — hecho cuando: T058 pasa y `tests/Modules/Reports` sigue en verde — cubre: CA2, CA3 — depende: T058
+  - nota: añadida por /review: R1
+- [ ] T060 Añadir los tests de `Rate` con un numerador mayor que el divisor: `Rate::of(2, 1)` lanza `MonthlyReportException`, y una propiedad genera pares con `numerator > denominator > 0` y comprueba que todos se rechazan; la propiedad "stays between 0 and 100" sigue igual — `tests/Modules/Reports/Unit/Domain/RateTest.php`, `tests/Modules/Reports/Unit/Domain/RatePropertiesTest.php` — hecho cuando: los casos nuevos fallan hoy porque `Rate::of(2, 1)` devuelve 200.0 — cubre: CA3
+  - nota: añadida por /review: R1 (y R24)
+- [ ] T061 Rechazar en `Rate::of` un numerador mayor que el divisor con una fábrica nueva de `MonthlyReportException` (`numeratorAboveDenominator`, mensaje en inglés) — `app/Modules/Reports/Domain/ValueObjects/Rate.php`, `app/Modules/Reports/Domain/Exceptions/MonthlyReportException.php` — hecho cuando: T060 pasa y `tests/Modules/Reports` sigue en verde — cubre: CA3 — depende: T059, T060
+  - nota: añadida por /review: R1 (y R24)
+- [ ] T062 Añadir los tests del cambio de mes en la zona horaria de la clínica: con `travelTo` a 2026-10-31 20:00 de `America/Mexico_City` (2026-11-01 en UTC), `/reportes` elige por defecto septiembre de 2026 y no lista noviembre, `GET /api/v1/reports/monthly?month=2026-10` da `is_current: true` y `data_until` 2026-10-31, y `month=2026-11` da 422; con 2026-11-01 00:30 de `America/Mexico_City`, `month=2026-11` da 200 con `is_current: true`, y un paciente dado de alta en ese momento cuenta en noviembre — `tests/Modules/Reports/Integration/GetMonthlyReportTest.php`, `tests/Modules/Reports/Integration/MonthlyReportValidationTest.php`, `tests/Modules/Reports/Integration/ReportsScreenTest.php` — hecho cuando: los casos pasan y fallan al cambiar a mano `now()` por `now('UTC')` en `GetMonthlyReportUseCase`, `MonthlyReportRequest` y `ShowReportsPageController` (se restaura), con nota de la comprobación — cubre: CA1, CA4, CA9, CA11 — depende: T058
+  - nota: añadida por /review: R2
+- [ ] T063 Afirmar cada `x-ui.stat variant="comparison"` por separado: renderizar el que lleva `trend` solo y comprobar que su `dd` contiene `8` seguido del `span data-trend`, con el `trend` dentro del `dd`, con regex sin `/s` ni `.*` que crucen etiquetas — `tests/Modules/Core/Integration/UiComponentsTest.php` — hecho cuando: el test pasa y falla al mover a mano el slot `trend` fuera del `dd` en `resources/views/components/ui/stat.blade.php` (se restaura), con nota de la comprobación — cubre: CA2
+  - nota: añadida por /review: R3
+- [ ] T064 Añadir el test del temporal de un Excel que falla a mitad: el exportador recibe un `MonthlyReport` con un tratamiento de 32 768 caracteres (más que `MAX_CHARACTERS_PER_CELL` de OpenSpout), lanza la excepción, y en el directorio temporal no queda ningún archivo `reporte-dentissa-*` nuevo — `tests/Modules/Reports/Integration/DownloadMonthlyReportTest.php` — hecho cuando: el caso falla hoy porque el archivo parcial queda en el directorio temporal — cubre: CA8, CA12
+  - nota: añadida por /review: R4
+- [ ] T065 Borrar el temporal cuando la escritura del Excel falla: la escritura va en `try`, y ante cualquier `Throwable` se cierra el writer, se borra el archivo y se relanza la excepción — `app/Modules/Reports/Infrastructure/Export/OpenSpoutMonthlyReportExporter.php` — hecho cuando: T064 pasa y `DownloadMonthlyReportTest` y `UnexpectedReportErrorTest` siguen en verde — cubre: CA8, CA12 — depende: T064
+  - nota: añadida por /review: R4
+- [ ] T066 Añadir a la herramienta de navegador y a los flujos de Reportes lo que falta: en `checks-dialogs.mjs`, las expectativas `focused` (selector que tiene el foco al terminar) y `textIn` ({ selector: texto } que debe estar en el texto del elemento, `sr-only` incluido); en `screens.json`, el flujo "reintentar tras el error de carga" espera `focused: "[data-reports-month]"`, la entrada `reportes` espera `textIn` con "más citas" en la celda de total del día con más citas y `globalUndefined: ["reportsPage"]`, y `reportes-descarga` gana un flujo que responde con un `Content-Disposition` con `filename*` mal codificado (`%E0%A4%A.xlsx`) y espera que no se anuncie el error de conexión; en `ReportsScreenTest`, el contenedor `data-reports-content` sale con `hidden` en el HTML del servidor — `tests/Browser/checks-dialogs.mjs`, `tests/Browser/screens.json`, `tests/Modules/Reports/Integration/ReportsScreenTest.php` — hecho cuando: `npm run test:ui -- --only reportes` falla hoy en exactamente esas expectativas, el caso de Pest falla por la falta de `hidden` y las demás entradas siguen en verde — cubre: CA1, CA7, CA8 — depende: T062
+  - nota: añadida por /review: R5, R6, R9, R10, R11
+- [ ] T067 Corregir la pantalla de Reportes: tras "Intentar de nuevo" el foco pasa al selector del mes antes de ocultar el bloque; cada total destacado con contorno lleva un `span.sr-only` " (más citas)"; se elimina `window.reportsPage`; `fileName()` protege `decodeURIComponent` y cae al nombre por defecto; el contenedor del reporte empieza con `hidden` y se muestra tras el primer `render` — `resources/js/pages/reportes/index.js`, `resources/views/pages/reportes/index.blade.php` — hecho cuando: T066 pasa, `npm run test:ui -- --only reportes` en verde dos veces, `tests/Modules/Reports` en verde y revisión de accesibilidad (foco tras reintentar, nombre accesible de las celdas destacadas) sin hallazgos — cubre: CA1, CA7, CA8 — depende: T066
+  - nota: añadida por /review: R5, R6, R9, R10, R11
+- [ ] T068 Añadir `"2026-07\n"` (salto de línea final) a los meses inválidos de `ReportMonthTest` (lanza `ReportMonthException`) y de `MonthlyReportValidationTest` (422 con el mensaje de la spec, en pantalla y en descarga) — `tests/Modules/Reports/Unit/Domain/ReportMonthTest.php`, `tests/Modules/Reports/Integration/MonthlyReportValidationTest.php` — hecho cuando: los casos nuevos fallan hoy porque `2026-07\n` se acepta — cubre: CA11 — depende: T062
+  - nota: añadida por /review: R7
+- [ ] T069 Anclar el formato del mes al final del texto con `\z` en `ReportMonth::create` y en `MonthlyReportRequest` — `app/Modules/Reports/Domain/ValueObjects/ReportMonth.php`, `app/Modules/Reports/Infrastructure/Http/Requests/MonthlyReportRequest.php` — hecho cuando: T068 pasa y `tests/Modules/Reports` sigue en verde — cubre: CA11 — depende: T068
+  - nota: añadida por /review: R7
+- [ ] T070 [P] Afirmar que el 429 de la descarga lleva `Retry-After` con un número de segundos entre 1 y 60, `X-RateLimit-Limit: 10` y `X-RateLimit-Remaining: 0` — `tests/Modules/Reports/Integration/DownloadThrottleTest.php` — hecho cuando: el caso falla hoy porque la respuesta propia descarta las cabeceras — cubre: CA14
+  - nota: añadida por /review: R30
+- [ ] T071 Conservar las cabeceras del limitador en la respuesta propia del 429 (`->response(fn ($request, array $headers) => response()->json([...], 429, $headers))`) — `app/Providers/AppServiceProvider.php` — hecho cuando: T070 pasa y `DownloadThrottleTest` sigue en verde — cubre: CA14 — depende: T070
+  - nota: añadida por /review: R30
+- [ ] T072 Devolver el nombre raíz de `package-lock.json` a `DentissaApp` (en el carril de npm pasó a `html`, el nombre de la carpeta del contenedor), sin tocar ninguna versión — `package-lock.json` — hecho cuando: `git diff 909f3bf -- package-lock.json` solo muestra los cambios de `follow-redirects` y `vite` del carril y `npm audit --audit-level=high` da 0
+  - nota: añadida por /review: R31
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: módulo `Reports` en la tabla de módulos en lugar de `Estadisticas`, la nota de "`app/Modules/Estadisticas` … vacíos" corregida, dependencias Reports → Appointments, Patients y Users (solo lectura, [ADR 0006](../../adr/0006-modulo-reports-de-solo-lectura.md)) y OpenSpout ([ADR 0005](../../adr/0005-openspout-para-excel.md))
   - nota: hecha 2026-10-21: `architecture.md` cambia la fila `Estadisticas` (que nunca existió en el disco) por `Reports` con sus dependencias de solo lectura (ADR 0006), añade en Backend cómo calcula y exporta el reporte (agregación en PostgreSQL, un solo `MonthlyReport` para JSON y Excel, OpenSpout 5.12.0 tras un puerto, ADR 0005, y la excepción de P3 de `/reportes`), el limitador `report-downloads` en Seguridad, y corrige la nota de deuda que citaba `app/Modules/Estadisticas` (A25)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, el log `report.export_failed` (sin `request_id`, OB3.a pendiente) y el punto de emisión de los accesos denegados de la 019 para el objetivo 5 (OB1.a pendiente); sin cambios en `deployment.md` (la dependencia llega en la imagen, sin variables ni pasos nuevos)
   - nota: hecha 2026-10-21: `observability.md` describe el log `report.export_failed` (nivel, campos, sin mensaje, sin datos de pacientes y sin `request_id`: OB3.a pendiente) y el punto de emisión de los accesos denegados de la 019 (`OnlyAdmin` y el render de `AuthorizationException`; OB1.a pendiente, objetivo 5); OB1 y OB3 no cambian de estado. Sin cambios en `deployment.md`: OpenSpout llega en la imagen con `composer install`, sin variables, entornos ni pasos nuevos, y no hay migraciones
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - nota: hecha 2026-10-21: CA1–CA14 marcados (sus tests pasan en T048: suite completa en serie 1653/1653 y `ui-audit` dos veces sin fallos), spec en `implemented` con su fila de Historial, y fila del README actualizada
 
 ## Despliegue (lo ejecuta `/release`)
@@ -229,20 +261,20 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
-| CA1 | T014, T023, T024 | T037, T038, T044, T045, T055 |
-| CA2 | T011, T014, T024, T025, T027, T052 | T057, T032, T034, T036, T037, T038, T043, T045, T053 |
-| CA3 | T011, T014, T024, T026, T027 | T032, T034, T038, T045 |
-| CA4 | T011, T014 | T034, T037, T038, T045 |
+| CA1 | T014, T023, T024, T062, T066 | T037, T038, T044, T045, T055, T067 |
+| CA2 | T011, T014, T024, T025, T027, T052, T063 | T057, T032, T034, T036, T037, T038, T043, T045, T053, T059 |
+| CA3 | T011, T014, T024, T026, T027, T058, T060 | T032, T034, T038, T045, T059, T061 |
+| CA4 | T011, T014, T062 | T034, T037, T038, T045 |
 | CA5 | T014, T028, T056 | T057, T033, T037, T038, T045 |
 | CA6 | T014, T028, T056 | T057, T033, T037, T038, T045 |
-| CA7 | T011, T014, T024 | T034, T037, T038, T045 |
-| CA8 | T017, T024 | T039, T040, T041, T046 |
-| CA9 | T010, T014, T017, T023, T024, T052 | T031, T038, T040, T041, T044, T045, T053 |
+| CA7 | T011, T014, T024, T066 | T034, T037, T038, T045, T067 |
+| CA8 | T017, T024, T064, T066 | T039, T040, T041, T046, T065, T067 |
+| CA9 | T010, T014, T017, T023, T024, T052, T062 | T031, T038, T040, T041, T044, T045, T053 |
 | CA10 | T013, T016, T023, T024, T029 | T030, T035, T038, T039, T041, T044, T055 |
-| CA11 | T010, T015 | T031, T036, T038, T041 |
-| CA12 | T018, T056 | T033, T037, T040, T041 |
+| CA11 | T010, T015, T062, T068 | T031, T036, T038, T041, T069 |
+| CA12 | T018, T056, T064 | T033, T037, T040, T041, T065 |
 | CA13 | T019 | T040, T041 |
-| CA14 | T020, T024 | T042, T046, T054 |
+| CA14 | T020, T024, T070 | T042, T046, T054, T071 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
@@ -256,20 +288,20 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 
 | Cambio del plan (módulo) | Tarea(s) |
 |---|---|
-| Dependencias | T002 |
+| Dependencias | T002, T072 |
 | Core · Autorización | T030 |
-| Reports · Domain (nuevo) | T031, T032, T033, T034, T057 |
+| Reports · Domain (nuevo) | T031, T032, T033, T034, T057, T059, T061, T069 |
 | Reports · Application (nuevo) | T035, T039 |
-| Reports · Infrastructure (nuevo) | T036, T037, T040, T041, T044 |
-| Providers | T038, T041, T042 |
+| Reports · Infrastructure (nuevo) | T036, T037, T040, T041, T044, T059, T065, T069 |
+| Providers | T038, T041, T042, T071 |
 | Rutas | T038, T041, T042, T044 |
 | Interfaz · menú | T055 |
 | Interfaz · componentes (nuevos o ampliados) | T043, T053 |
-| Interfaz · pantalla (nueva) | T044 |
-| Interfaz · JS (nuevo) | T043, T045, T046 |
+| Interfaz · pantalla (nueva) | T044, T067 |
+| Interfaz · JS (nuevo) | T043, T045, T046, T067 |
 | Interfaz · región de estado | T054 |
 | Datos de prueba de la interfaz | T024 (sin cambios en `UiAuditSeeder`: comprueba julio y agosto de 2026) |
-| Tests de navegador | T004, T024, T049 |
+| Tests de navegador | T004, T024, T049, T066 |
 | Sistema de diseño | T001, T050 |
 | Documentación | T051, T090, T091 |
 
@@ -290,3 +322,4 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | 2026-10-20 | Nueva T057 (`MonthlyReportException`) antes de T032; T032 depende de ella | /implement: excepción propia de los value objects del cálculo (decisión del usuario) |
 | 2026-10-20 | T016 añade `/reportes` a `GuestRedirectTest` (2 archivos) en lugar de repetir la redirección | /implement: hallazgo colateral, decisión del usuario |
 | 2026-10-20 | T045 añade el `@vite` a la vista de T044 (3 archivos) | /implement: sin el script en el manifiesto de Vite la vista daba 500 |
+| 2026-10-21 | Nuevas T058–T072 (correcciones de R1–R7, R9–R11, R24, R30 y R31); T092 desmarcada | /review 019 ronda 1: changes_requested |

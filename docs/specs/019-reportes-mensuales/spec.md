@@ -1,7 +1,7 @@
 ---
 id: 019
 slug: reportes-mensuales
-status: implemented
+status: approved
 created: 2026-10-19
 extends: []
 ---
@@ -182,3 +182,4 @@ Ninguna.
 | 2026-10-19 | Creación en `draft` | /specify, desde el pendiente del roadmap |
 | 2026-10-19 | Aprobada | Aprobación del usuario |
 | 2026-10-21 | Implementada | /implement: T001–T091 hechas; CA1–CA14 con sus tests en verde (suite completa 1653/1653, `ui-audit` dos veces sin fallos) |
+| 2026-10-21 | Vuelve a `approved` | /review ronda 1: changes_requested (R1 incumple CA3 en el mes en curso); correcciones en T058–T072 |
