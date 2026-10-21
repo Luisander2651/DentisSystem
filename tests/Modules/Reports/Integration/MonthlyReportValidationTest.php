@@ -32,6 +32,8 @@ dataset('invalid report months', [
     'the next month' => '2026-11',
     'empty' => '',
     'an injection' => "2026-07' OR 1=1",
+    'with a line break at the end (R7)' => "2026-07
+",
 ]);
 
 it('refuses an invalid month in the report', function (string $month) {

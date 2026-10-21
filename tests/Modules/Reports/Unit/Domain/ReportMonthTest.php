@@ -32,6 +32,8 @@ it('refuses a month that is not a valid month of the range', function (string $v
     'before January 2020' => '2019-12',
     'the next month' => '2026-11',
     'with spaces' => ' 2026-07',
+    'with a line break at the end (R7)' => "2026-07
+",
     'with an injection' => "2026-07' OR 1=1",
 ]);
 
