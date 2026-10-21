@@ -75,21 +75,21 @@ it('gives the report of July 2026 with the figures of the design and the shape o
                 'total' => 7,
             ],
         ]]);
-})->skip('019: pendiente de T038');
+});
 
 it('counts a rescheduled appointment in the month of its current date, not the one it left', function () {
     $this->createAppointment(['date' => '2026-07-20', 'status' => 'reprogramada']);
 
     $this->getJson($this->monthlyReportUrl('2026-07'))->assertJsonPath('data.appointments.total.value', 1);
     $this->getJson($this->monthlyReportUrl('2026-06'))->assertJsonPath('data.appointments.total.value', 0);
-})->skip('019: pendiente de T038');
+});
 
 it('counts an appointment on the last evening of the month in that month, in the time of the clinic', function () {
     $this->createAppointment(['date' => '2026-07-31', 'time' => '23:30']);
 
     $this->getJson($this->monthlyReportUrl('2026-07'))->assertJsonPath('data.appointments.total.value', 1);
     $this->getJson($this->monthlyReportUrl('2026-08'))->assertJsonPath('data.appointments.total.value', 0);
-})->skip('019: pendiente de T038');
+});
 
 it('leaves cancelled appointments out of treatments, staff and the week', function () {
     $treatment = $this->createTreatment(['name' => 'Solo cancelada']);
@@ -102,7 +102,7 @@ it('leaves cancelled appointments out of treatments, staff and the week', functi
         ->assertJsonPath('data.staff', [])
         ->assertJsonPath('data.demand.total', 0)
         ->assertJsonPath('data.demand.hours', []);
-})->skip('019: pendiente de T038');
+});
 
 it('orders tied treatments and staff by name and lists no treatment without appointments', function () {
     $this->createTreatment(['name' => 'Sin citas']);
@@ -121,7 +121,7 @@ it('orders tied treatments and staff by name and lists no treatment without appo
         ->assertJsonPath('data.staff.1.name', 'Zoe Prueba')
         ->assertJsonPath('data.staff.0.is_top', true)
         ->assertJsonPath('data.staff.1.is_top', true);
-})->skip('019: pendiente de T038');
+});
 
 it('shows an inactive doctor with appointments in the month and hides one with only cancelled ones', function () {
     $inactive = $this->createUserWithRole('doctor', ['first_name' => 'Ines', 'last_name' => 'Inactiva', 'status' => 'inactive']);
@@ -131,7 +131,7 @@ it('shows an inactive doctor with appointments in the month and hides one with o
 
     $this->getJson($this->monthlyReportUrl('2026-07'))
         ->assertJsonPath('data.staff', [['name' => 'Ines Inactiva', 'appointments' => 1, 'completed' => 1, 'is_top' => true]]);
-})->skip('019: pendiente de T038');
+});
 
 it('counts new patients by the day they were registered, against the month before, and the active ones as of today', function () {
     $this->patientCreatedOn('2026-06-30 23:00:00');
@@ -142,7 +142,7 @@ it('counts new patients by the day they were registered, against the month befor
     $this->getJson($this->monthlyReportUrl('2026-07'))
         ->assertJsonPath('data.patients.new', ['value' => 2, 'previous' => 1, 'difference' => 1, 'trend' => 'favorable'])
         ->assertJsonPath('data.patients.active', ['value' => 3, 'as_of' => '2026-10-19']);
-})->skip('019: pendiente de T038');
+});
 
 it('compares the rates in points, rounding half up', function () {
     foreach (range(1, 16) as $day) {
@@ -160,7 +160,7 @@ it('compares the rates in points, rounding half up', function () {
         ->assertJsonPath('data.rates.attendance.trend', 'favorable')
         ->assertJsonPath('data.rates.cancellation.difference', 6.3)
         ->assertJsonPath('data.rates.cancellation.trend', 'unfavorable');
-})->skip('019: pendiente de T038');
+});
 
 it('has no rates, lists or week in a month without appointments', function () {
     $this->getJson($this->monthlyReportUrl('2026-08'))
@@ -174,7 +174,7 @@ it('has no rates, lists or week in a month without appointments', function () {
         ->assertJsonPath('data.demand.matrix', [])
         ->assertJsonPath('data.demand.top_weekdays', [])
         ->assertJsonPath('data.demand.top_hours', []);
-})->skip('019: pendiente de T038');
+});
 
 it('marks the month in course with its data until today and counts the appointments of today as pending', function () {
     $this->createAppointment(['date' => '2026-10-19', 'time' => '08:00', 'status' => 'asignada']);
@@ -189,4 +189,4 @@ it('marks the month in course with its data until today and counts the appointme
         ->assertJsonPath('data.appointments.assigned_pending.value', 2)
         ->assertJsonPath('data.appointments.rescheduled_pending.value', 1)
         ->assertJsonPath('data.appointments.unclosed.value', 1);
-})->skip('019: pendiente de T038');
+});

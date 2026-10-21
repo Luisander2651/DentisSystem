@@ -38,7 +38,7 @@ it('refuses an invalid month in the report', function (string $month) {
     $this->getJson('/api/v1/reports/monthly?month='.rawurlencode($month))
         ->assertUnprocessable()
         ->assertExactJson(['message' => REPORT_MONTH_MESSAGE, 'errors' => ['month' => [REPORT_MONTH_MESSAGE]]]);
-})->with('invalid report months')->skip('019: pendiente de T038 y T041');
+})->with('invalid report months');
 
 it('refuses an invalid month in the download, without a file', function (string $month) {
     $response = $this->getJson('/api/v1/reports/monthly/excel?month='.rawurlencode($month));

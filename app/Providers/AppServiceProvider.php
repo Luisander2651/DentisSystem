@@ -41,6 +41,8 @@ use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentContactInfo
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentMedicalDataRepository;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentPatientRepository;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\PatientRecordRepository as EloquentPatientRecordRepository;
+use App\Modules\Reports\Domain\Repositories\MonthlyReportRepositoryInterface;
+use App\Modules\Reports\Infrastructure\Persistence\EloquentMonthlyReportRepository;
 use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -133,6 +135,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             TestimonialRepositoryInterface::class,
             EloquentTestimonialRepository::class,
+        );
+
+        // Spec 019: the monthly report reads aggregates of Appointments, Patients and Users (ADR 0006).
+        $this->app->bind(
+            MonthlyReportRepositoryInterface::class,
+            EloquentMonthlyReportRepository::class,
         );
 
         // Contextual binding for the certifications module: when the SaveCertificationUseCase
