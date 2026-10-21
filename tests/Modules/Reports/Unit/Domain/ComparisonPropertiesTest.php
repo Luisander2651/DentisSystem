@@ -17,7 +17,7 @@ it('takes the difference as current minus previous (property)', function () {
     $this->forAll(Eris\Generator\choose(0, 2000), Eris\Generator\choose(0, 2000))->then(function (int $current, int $previous) {
         expect(Comparison::between($current, $previous, Comparison::UP_IS_GOOD)->difference)->toBe($current - $previous);
     });
-})->skip('019: pendiente de T032');
+});
 
 it('turns the trend around when the change goes the other way (property)', function () {
     $opposite = ['favorable' => 'unfavorable', 'unfavorable' => 'favorable', 'neutral' => 'neutral'];
@@ -29,10 +29,10 @@ it('turns the trend around when the change goes the other way (property)', funct
 
             expect($back)->toBe($opposite[$forth]);
         });
-})->skip('019: pendiente de T032');
+});
 
 it('keeps a neutral indicator neutral whatever it does (property)', function () {
     $this->forAll(Eris\Generator\choose(0, 2000), Eris\Generator\choose(0, 2000))->then(function (int $current, int $previous) {
         expect(Comparison::between($current, $previous, Comparison::NEUTRAL)->trend)->toBe('neutral');
     });
-})->skip('019: pendiente de T032');
+});

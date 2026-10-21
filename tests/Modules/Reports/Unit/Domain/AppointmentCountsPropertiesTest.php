@@ -39,7 +39,7 @@ it('accepts every split of the appointments whose total adds up (property)', fun
         expect($counts->total)->toBeGreaterThanOrEqual($counts->completed + $counts->cancelled)
             ->and($counts->unclosed)->toBeLessThanOrEqual($counts->notCancelledPast);
     });
-})->skip('019: pendiente de T032');
+});
 
 it('refuses every total that does not add up (property)', function () {
     $this->forAll(Eris\Generator\choose(0, 500), Eris\Generator\choose(0, 500), Eris\Generator\choose(1, 50))
@@ -54,4 +54,4 @@ it('refuses every total that does not add up (property)', function () {
                 notCancelledPast: $completed,
             ))->toThrow(MonthlyReportException::class);
         });
-})->skip('019: pendiente de T032');
+});

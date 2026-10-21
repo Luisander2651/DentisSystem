@@ -29,26 +29,26 @@ it('keeps the counts of the month by state', function () {
         ->and($counts->assignedPending)->toBe(0)
         ->and($counts->unclosed)->toBe(5)
         ->and($counts->notCancelledPast)->toBe(7);
-})->skip('019: pendiente de T032');
+});
 
 it('takes a month without appointments', function () {
     expect(AppointmentCounts::empty()->total)->toBe(0)
         ->and(AppointmentCounts::empty()->notCancelledPast)->toBe(0);
-})->skip('019: pendiente de T032');
+});
 
 it('refuses a negative count', function (string $field) {
     $values = ['total' => 1, 'completed' => 1, 'cancelled' => 0, 'rescheduledPending' => 0, 'assignedPending' => 0, 'unclosed' => 0, 'notCancelledPast' => 1];
     $values[$field] = -1;
 
     expect(fn () => AppointmentCounts::create(...$values))->toThrow(MonthlyReportException::class);
-})->with(['total', 'completed', 'cancelled', 'rescheduledPending', 'assignedPending', 'unclosed', 'notCancelledPast'])->skip('019: pendiente de T032');
+})->with(['total', 'completed', 'cancelled', 'rescheduledPending', 'assignedPending', 'unclosed', 'notCancelledPast']);
 
 it('refuses a total that is not the sum of the states', function () {
     expect(fn () => AppointmentCounts::create(total: 9, completed: 2, cancelled: 1, rescheduledPending: 0, assignedPending: 0, unclosed: 5, notCancelledPast: 7))
         ->toThrow(MonthlyReportException::class);
-})->skip('019: pendiente de T032');
+});
 
 it('refuses more unclosed appointments than not cancelled ones on past days', function () {
     expect(fn () => AppointmentCounts::create(total: 5, completed: 0, cancelled: 0, rescheduledPending: 0, assignedPending: 0, unclosed: 5, notCancelledPast: 4))
         ->toThrow(MonthlyReportException::class);
-})->skip('019: pendiente de T032');
+});

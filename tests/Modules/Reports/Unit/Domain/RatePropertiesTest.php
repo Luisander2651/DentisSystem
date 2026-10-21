@@ -22,10 +22,10 @@ it('stays between 0 and 100 with one decimal (property)', function () {
             ->and(round($value, 1))->toBe($value)
             ->and(abs($value - $numerator / $denominator * 100))->toBeLessThanOrEqual(0.05 + 1e-9);
     });
-})->skip('019: pendiente de T032');
+});
 
 it('has no data only when the denominator is zero (property)', function () {
     $this->forAll(Eris\Generator\choose(0, 2000))->then(function (int $denominator) {
         expect(Rate::of(0, $denominator)->hasData())->toBe($denominator > 0);
     });
-})->skip('019: pendiente de T032');
+});

@@ -22,7 +22,7 @@ it('gives the percentage with one decimal', function (int $numerator, int $denom
     'half up' => [1, 16, 6.3],
     'all of them' => [3, 3, 100.0],
     'none of them' => [0, 4, 0.0],
-])->skip('019: pendiente de T032');
+]);
 
 it('has no data when there is nothing to divide by', function () {
     $rate = Rate::of(0, 0);
@@ -30,8 +30,8 @@ it('has no data when there is nothing to divide by', function () {
     expect($rate->value)->toBeNull()
         ->and($rate->hasData())->toBeFalse()
         ->and(Rate::of(2, 7)->hasData())->toBeTrue();
-})->skip('019: pendiente de T032');
+});
 
 it('refuses negative counts', function (int $numerator, int $denominator) {
     expect(fn () => Rate::of($numerator, $denominator))->toThrow(MonthlyReportException::class);
-})->with([[-1, 4], [1, -4]])->skip('019: pendiente de T032');
+})->with([[-1, 4], [1, -4]]);

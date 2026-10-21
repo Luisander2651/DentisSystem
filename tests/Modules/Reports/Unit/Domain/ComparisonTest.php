@@ -28,7 +28,7 @@ it('says whether each indicator changed for the better or the worse', function (
     'pending go down' => ['neutral', 0, 4, -4, 'neutral'],
     'no change' => ['up_is_good', 4, 4, 0, 'neutral'],
     'no change in a bad one' => ['up_is_bad', 4, 4, 0, 'neutral'],
-])->skip('019: pendiente de T032');
+]);
 
 it('compares rates in points with one decimal', function () {
     $attendance = Comparison::between(28.6, 25.3, Comparison::UP_IS_GOOD);
@@ -38,7 +38,7 @@ it('compares rates in points with one decimal', function () {
         ->and($attendance->trend)->toBe('favorable')
         ->and($cancellation->difference)->toBe(3.3)
         ->and($cancellation->trend)->toBe('unfavorable');
-})->skip('019: pendiente de T032');
+});
 
 it('has no comparison when a side has no data', function (?float $current, ?float $previous) {
     $comparison = Comparison::between($current, $previous, Comparison::UP_IS_GOOD);
@@ -49,8 +49,8 @@ it('has no comparison when a side has no data', function (?float $current, ?floa
     'no data last month' => [28.6, null],
     'no data this month' => [null, 28.6],
     'no data in either' => [null, null],
-])->skip('019: pendiente de T032');
+]);
 
 it('names its directions as the dataset above does', function () {
     expect([Comparison::UP_IS_GOOD, Comparison::UP_IS_BAD, Comparison::NEUTRAL])->toBe(['up_is_good', 'up_is_bad', 'neutral']);
-})->skip('019: pendiente de T032');
+});
