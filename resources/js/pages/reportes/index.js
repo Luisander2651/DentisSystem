@@ -146,8 +146,18 @@ const INTENSITY = [
         return element;
     }
 
+    /** Un total; el más alto lleva contorno y lo dice también al lector de pantalla (R6). */
     function sumCell(value, isTop) {
-        return cell('td', String(value), 'h-10 rounded-control text-sm font-bold text-ink' + (isTop ? ' ring-2 ring-inset ring-ink' : ''));
+        const total = cell('td', String(value), 'h-10 rounded-control text-sm font-bold text-ink' + (isTop ? ' ring-2 ring-inset ring-ink' : ''));
+
+        if (isTop) {
+            const spoken = document.createElement('span');
+            spoken.className = 'sr-only';
+            spoken.textContent = ' (más citas)';
+            total.append(spoken);
+        }
+
+        return total;
     }
 
     function renderWeek(report) {
@@ -286,14 +296,28 @@ const INTENSITY = [
         load(chosenMonth());
     });
 
-    retryButton.addEventListener('click', () => load(chosenMonth()));
+    /* R5: el bloque que se oculta contiene el botón; el foco vuelve al selector del mes antes. */
+    retryButton.addEventListener('click', () => {
+        monthSelect.focus();
+        load(chosenMonth());
+    });
 
     /** The name the server gives the file (Content-Disposition), or the one it would give. */
     function fileName(response, month) {
         const disposition = response.headers.get('Content-Disposition') || '';
         const match = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
 
-        return match ? decodeURIComponent(match[1]) : `reporte-dentissa-${month}.xlsx`;
+        const fallback = `reporte-dentissa-${month}.xlsx`;
+
+        if (!match) {
+            return fallback;
+        }
+
+        try {
+            return decodeURIComponent(match[1]);
+        } catch {
+            return fallback;
+        }
     }
 
     function setDownloading(downloading) {
@@ -344,8 +368,6 @@ const INTENSITY = [
     }
 
     downloadButton.addEventListener('click', download);
-
-    window.reportsPage = { load, chosenMonth };
 
     load(chosenMonth());
 })();

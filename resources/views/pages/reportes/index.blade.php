@@ -41,7 +41,7 @@
         <x-ui.button variant="secondary" data-reports-retry>Intentar de nuevo</x-ui.button>
     </div>
 
-    <div class="space-y-6" data-reports-content>
+    <div hidden class="space-y-6" data-reports-content>
         <div class="grid gap-6 min-[880px]:grid-cols-12">
             <section class="rounded-card border border-line bg-surface p-4 shadow-sm md:p-6 min-[880px]:col-span-5" aria-labelledby="reports-figures-title">
                 <h2 id="reports-figures-title" class="text-lg font-bold text-ink md:text-xl" data-reports-figures-title>Cifras del mes</h2>
