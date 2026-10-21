@@ -32,8 +32,6 @@ dataset('invalid report months', [
     'the next month' => '2026-11',
     'empty' => '',
     'an injection' => "2026-07' OR 1=1",
-    'with a line break at the end (R7)' => "2026-07
-",
 ]);
 
 it('refuses an invalid month in the report', function (string $month) {
@@ -102,3 +100,11 @@ it('refuses the next month of the clinic on its last evening, when it is already
         ->assertUnprocessable()
         ->assertExactJson(['message' => REPORT_MONTH_MESSAGE, 'errors' => ['month' => [REPORT_MONTH_MESSAGE]]]);
 })->with(['the report' => '/api/v1/reports/monthly', 'the download' => '/api/v1/reports/monthly/excel']);
+
+it('reads a month with a line break at the end as that month, because the request trims it (R7)', function (string $month, bool $isCurrent) {
+    $this->getJson('/api/v1/reports/monthly?month='.rawurlencode($month."
+"))
+        ->assertOk()
+        ->assertJsonPath('data.month', $month)
+        ->assertJsonPath('data.is_current', $isCurrent);
+})->with(['a past month' => ['2026-07', false], 'the month in course' => ['2026-10', true]]);

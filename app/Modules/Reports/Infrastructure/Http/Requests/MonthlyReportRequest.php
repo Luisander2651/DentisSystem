@@ -27,7 +27,7 @@ final class MonthlyReportRequest extends FormRequest
                 'bail',
                 'required',
                 'string',
-                'regex:/^\d{4}-\d{2}$/',
+                'regex:/^\d{4}-\d{2}\z/',
                 function (string $attribute, mixed $value, Closure $fail): void {
                     try {
                         ReportMonth::create((string) $value, now());

@@ -33,7 +33,7 @@ final readonly class ReportMonth
      */
     public static function create(string $value, CarbonInterface $today): self
     {
-        if (preg_match('/^(\d{4})-(\d{2})$/', $value, $parts) !== 1) {
+        if (preg_match('/^(\d{4})-(\d{2})\z/', $value, $parts) !== 1) {
             throw ReportMonthException::outOfRange();
         }
 
