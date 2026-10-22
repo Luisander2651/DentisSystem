@@ -41,6 +41,10 @@ use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentContactInfo
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentMedicalDataRepository;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\EloquentPatientRepository;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\PatientRecordRepository as EloquentPatientRecordRepository;
+use App\Modules\Reports\Application\Contracts\MonthlyReportExporterInterface;
+use App\Modules\Reports\Domain\Repositories\MonthlyReportRepositoryInterface;
+use App\Modules\Reports\Infrastructure\Export\OpenSpoutMonthlyReportExporter;
+use App\Modules\Reports\Infrastructure\Persistence\EloquentMonthlyReportRepository;
 use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -135,6 +139,18 @@ class AppServiceProvider extends ServiceProvider
             EloquentTestimonialRepository::class,
         );
 
+        // Spec 019: the monthly report reads aggregates of Appointments, Patients and Users (ADR 0006).
+        $this->app->bind(
+            MonthlyReportRepositoryInterface::class,
+            EloquentMonthlyReportRepository::class,
+        );
+
+        // Spec 019: the Excel file of the report, with OpenSpout (ADR 0005).
+        $this->app->bind(
+            MonthlyReportExporterInterface::class,
+            OpenSpoutMonthlyReportExporter::class,
+        );
+
         // Contextual binding for the certifications module: when the SaveCertificationUseCase
         // requires StorageProviderInterface, provide a StorageProvider configured for this module.
         $this->app->when(SaveCertificationUseCase::class)
@@ -203,6 +219,13 @@ class AppServiceProvider extends ServiceProvider
             return $request->user()
                 ? Limit::perMinute(100)->by($request->user()->id) // 100 por min por usuario
                 : Limit::perMinute(10)->by($request->ip()); // 10 por min por IP
+        });
+
+        // Spec 019 (CA14, TM5): each administrator downloads at most 10 reports a minute.
+        RateLimiter::for('report-downloads', function (Request $request) {
+            return Limit::perMinute(10)
+                ->by('report-downloads:'.$request->user()?->getAuthIdentifier())
+                ->response(fn (Request $request, array $headers) => response()->json(['error' => 'Demasiadas descargas. Espera un momento e inténtalo de nuevo.'], 429, $headers));
         });
 
         View::composer(['layouts.admin', 'pages.agenda.index', 'pages.records.index'], function ($view) {

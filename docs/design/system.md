@@ -7,7 +7,7 @@ html: docs/design/system.html
 canvas: null
 widths: [390, 768, 1440]
 created: 2026-10-04
-updated: 2026-10-15
+updated: 2026-10-20
 ---
 
 # Sistema de diseño de Dentissa
@@ -57,10 +57,10 @@ iconos).
 | `--color-field` | `#7c8aa0` | `border-field` | Borde de campo y de control | 3.50:1 sobre `--color-surface` · 3.35:1 sobre `--color-canvas` |
 | `--color-overlay` | `rgb(11 17 32 / 0.55)` | `bg-overlay` | Capa tras un diálogo | — |
 | `--color-danger` | `#b91c1c` | `bg-danger`, `text-danger` | Eliminar, cancelar una cita y errores | 5.91:1 sobre `--color-danger-soft` · 6.47:1 sobre `--color-surface` |
-| `--color-danger-soft` | `#fef2f2` | `bg-danger-soft` | Fondo de errores y de "Cancelada" | `--color-danger` encima 5.91:1 |
-| `--color-success` | `#047857` | `text-success` | "Activo", "Completada" | 5.21:1 sobre `--color-success-soft` |
+| `--color-danger-soft` | `#fef2f2` | `bg-danger-soft` | Fondo de errores y de "Cancelada" | `--color-danger` encima 5.91:1 · `--color-ink` encima 17.21:1 |
+| `--color-success` | `#047857` | `text-success` | "Activo", "Completada" y cambio favorable de un indicador | 5.21:1 sobre `--color-success-soft` |
 | `--color-success-soft` | `#ecfdf5` | `bg-success-soft` | Fondo de esos estados | `--color-success` encima 5.21:1 |
-| `--color-warning` | `#b45309` | `text-warning` | "Asignada" | 4.84:1 sobre `--color-warning-soft` |
+| `--color-warning` | `#b45309` | `text-warning` | "Asignada" y cambio desfavorable de un indicador | 4.84:1 sobre `--color-warning-soft` |
 | `--color-warning-soft` | `#fffbeb` | `bg-warning-soft` | Fondo de ese estado | `--color-warning` encima 4.84:1 |
 | `--color-info` | `#1d4ed8` | `text-info` | "Reprogramada" | 6.16:1 sobre `--color-info-soft` |
 | `--color-info-soft` | `#eff6ff` | `bg-info-soft` | Fondo de ese estado | `--color-info` encima 6.16:1 |
@@ -78,6 +78,11 @@ Reglas de color:
   (`bg-surface/90`, `border-on-dark/20`, `shadow-primary/20`), nunca en texto.
 - Degradados: solo entre tokens y decorativos; ningún texto se apoya en un degradado sin que
   `ui-audit` mida su contraste sobre el tono más desfavorable.
+- Indicadores de cambio (spec 019): el verde (`success` sobre `success-soft`) marca un cambio
+  favorable para la clínica y el ámbar (`warning` sobre `warning-soft`) uno desfavorable, según el
+  significado del indicador y no según la dirección; un cambio neutro, nulo o sin comparación va en
+  `muted` sobre `surface` con borde `line`. Siempre con flecha y texto, nunca solo color. El rojo
+  no se usa para tendencias.
 - Modo oscuro: no aplica.
 
 ## Tipografía
@@ -152,6 +157,13 @@ bajo el campo y enlazado con `aria-describedby` (borde de 2 px en `danger`). El 
 contraseña mide 44 px y tiene nombre. Los campos de correo, nombre, contraseña y teléfono declaran
 su propósito con `autocomplete`.
 
+### Selector · `x-ui.select`
+El `<select>` del sistema (spec 019), con las medidas de `x-ui.input`: 44 px de alto, letra
+`text-control` (16 px) en tinta, borde `field`, radio `control`, etiqueta visible asociada
+(14px / 600), texto de ayuda en `muted` y error en `danger` enlazado con `aria-describedby`. Recibe
+las opciones como pares de valor y etiqueta, y la elegida. Los `<select>` escritos a mano en los
+diálogos podrán pasar a él.
+
 ### Marca · `x-ui.brand`
 En las barras, el icono (blanco sobre rosa) junto a "Dentissa"; el logo completo en el pie del sitio,
 el acceso y las páginas de error. Siempre con texto alternativo. Archivos en `public/images/brand/`
@@ -166,11 +178,35 @@ cuerpo desplazable y el pie de acciones fijo. Radio `card`. Lleva su propia regi
 Una por marco, siempre montada y vacía (`role="status"`); los errores de guardado usan
 `role="alert"`. El módulo anuncia en la región del diálogo abierto si lo hay y, si no, en la del
 marco. Muestra un texto propio en español por tipo de error y solo deja pasar los mensajes de
-validación.
+validación. Una pantalla puede pedir un texto propio para un caso concreto, escrito en su código y
+nunca tomado de la respuesta (spec 019: el 429 de la descarga del reporte dice "Demasiadas
+descargas. Espera un momento e inténtalo de nuevo." en lugar del texto general de `busy`).
 
 ### Contador · `x-ui.stat`
 Tarjeta compacta de radio `box`: etiqueta en mayúsculas de 12 px en `muted` y cifra de 20px / 700.
 Tres por fila a 390 px.
+
+Variante **contador comparado** (spec 019), para cifras con indicador de cambio: va dentro de una
+lista de términos (`dl`) en rejilla de dos columnas a cualquier ancho; cada contador es un par `dt`
+(etiqueta en mayúsculas de 12 px en `muted`) / `dd` (cifra de 20 px / 700 y debajo el indicador de
+cambio). La opción `wide` ocupa las dos columnas.
+
+### Indicador de cambio · `x-ui.trend` y `resources/js/ui/trend.js`
+Píldora `rounded-full` de 12 px / 700, que puede partirse en dos líneas, con flecha decorativa
+(`aria-hidden`), texto visible y un texto solo para lectores de pantalla. El módulo de navegador
+pinta el mismo marcado desde los datos. Textos (spec 019), con el mes anterior en minúsculas:
+
+| Caso | Flecha | Texto visible | Para lectores de pantalla | Colores |
+|---|---|---|---|---|
+| Cambio favorable | ▲ o ▼ | `+8 vs junio` · `−8 vs julio` | ` (favorable)` | `success` sobre `success-soft` |
+| Cambio desfavorable | ▲ o ▼ | `+1 vs junio` | ` (desfavorable)` | `warning` sobre `warning-soft` |
+| Cambio en un indicador neutro | ▲ o ▼ | `+1 vs junio` | — | `muted` sobre `surface`, borde `line` |
+| Sin cambio | = | `sin cambio` | ` (sin cambio)` | `muted` sobre `surface`, borde `line` |
+| El mes anterior no tiene dato | — | `junio: Sin datos` | ` (sin comparación)` | `muted` sobre `surface`, borde `line` |
+| El mes elegido no tiene dato y el anterior sí | — | `julio: 28.6 %`, texto en `muted` sin píldora | — | — |
+
+Las diferencias de porcentajes se escriben en puntos con un decimal (`+3.2 pts vs junio`); el signo
+negativo es `−` (U+2212).
 
 ### Filtro · `x-ui.chip`
 Botón de 44 px de alto, `rounded-full`, borde `field`, texto en tinta; el elegido
@@ -208,6 +244,13 @@ negrita, la fecha y la hora, advertencia en `danger` ("Esta acción no se puede 
 ### Estados de pantalla
 Vacío: texto centrado y completo, sin recortes. Carga: `animate-spin` en el botón que envía. Error:
 mensaje en la región de estado y, si es de un campo, bajo el campo.
+
+**Error de carga de la pantalla** (spec 019): cuando falla la carga de toda la pantalla (no un
+guardado), además del anuncio en la región de estado, un bloque ocupa el lugar del contenido que no
+cargó: borde de 1 px `danger`, fondo `danger-soft`, radio `box`, relleno de 12 × 16 px, texto de
+14 px en tinta con el título en `danger` y 700, la explicación y un botón `secondary` "Intentar de
+nuevo" dentro. No caduca: se queda hasta que se reintenta. No lleva `role="alert"`: solo la región
+de estado anuncia, una vez. El foco no se mueve al aparecer.
 
 ## Movimiento
 
@@ -329,6 +372,10 @@ cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas qued
 | Página no encontrada, con sesión | ruta inexistente · `errors/404.blade.php` | Asistente | [390](capturas/error-404-con-sesion-390.png) · [1440](capturas/error-404-con-sesion-1440.png) | capturada |
 | Acceso denegado (paciente en ruta de staff) | `/expedientes-clinicos` · `errors/403.blade.php` | Paciente | [390](capturas/error-403-staff-390.png) · [1440](capturas/error-403-staff-1440.png) | capturada |
 | Acceso denegado (asistente en ruta de administrador) | `/usuarios` · `errors/403.blade.php` | Asistente | [390](capturas/error-403-admin-390.png) · [1440](capturas/error-403-admin-1440.png) | capturada |
+| Reportes, mes con citas (julio de 2026) | `/reportes?mes=2026-07` · `pages/reportes/index.blade.php` | Administrador | [390](capturas/reportes-390.png) · [1440](capturas/reportes-1440.png) | capturada en local el 2026-10-21 (spec 019, T050); julio muestra además una cita de desarrollo de la base local ("Limpieza 2"), que en CI no existe |
+| Reportes, mes sin citas (agosto de 2026) | `/reportes?mes=2026-08` | Administrador | [390](capturas/reportes-sin-citas-390.png) · [1440](capturas/reportes-sin-citas-1440.png) | capturada en local el 2026-10-21 (spec 019, T050) |
+| Reportes, mes en curso | `/reportes` (mes en curso elegido) | Administrador | [390](capturas/reportes-mes-en-curso-390.png) · [1440](capturas/reportes-mes-en-curso-1440.png) | capturada en local el 2026-10-21 (spec 019, T050) |
+| Acceso denegado (asistente en Reportes) | `/reportes` · `errors/403.blade.php` | Asistente | [390](capturas/error-403-asistente-reportes-390.png) · [1440](capturas/error-403-asistente-reportes-1440.png) | capturada en local el 2026-10-21 (spec 019, T050) |
 
 Estados: `capturada` · `sin captura (motivo)` · `no accesible (motivo)`. Los diálogos se capturan
 al tamaño de la ventana y caben en ella. Solo se provocó un error de validación (completar cita sin motivo); "completar
@@ -340,6 +387,8 @@ cita" se recorrió hasta el paso 2 sin enviarlo, así que no escribió nada.
 - El texto nunca va en rosa; enlaces y elemento activo en tinta, con el rosa como acento.
 - Ningún color, radio ni tamaño de control fuera de los tokens (P15 de la constitución, que añade la
   spec 016): lo verifican `OnlyDesignTokensTest`, `DesignTokensTest` y `npm run test:ui`.
+- Verde y ámbar también marcan si el cambio de un indicador es favorable o desfavorable (spec 019),
+  siempre con flecha y texto; el rojo nunca marca tendencias.
 - Rojo solo para eliminar, cancelar una cita y errores; en cancelar, solo dentro de la
   confirmación (el botón que confirma y la advertencia de que no se puede deshacer): el botón
   "Cancelar cita" del detalle es `secondary`. Verde, ámbar, azul y rojo para estados de cita, siempre con
@@ -402,3 +451,5 @@ lo nuevo a partir del último.
 | 2026-10-11 | diseño | A 768 px el panel y el menú del sitio público se desbordaban. ¿Qué anchos se comprueban? | 390, 768 y 1440 px; los menús se despliegan desde 1024 px | usuario |
 | 2026-10-15 | contradicción | Cancelar una cita es destructivo y la regla reservaba el rojo para eliminar y errores | El rojo se amplía a cancelar una cita, solo dentro de la confirmación (botón y advertencia); "Editar cita" pasa a "Reprogramar cita" y se añade la confirmación como componente propio | usuario (docs/specs/017-reprogramar-cancelar-citas/design.md) |
 | 2026-10-17 | diseño | La agenda deja de ser solo del administrador: ¿qué vistas se inventarían? | Agenda, agendar y detalle de cita como asistente y como doctor; el acceso denegado del asistente se captura en `/usuarios`, porque `/agenda` ya no lo rechaza | usuario (docs/specs/018-agenda-por-rol/design.md) |
+| 2026-10-20 | contradicción | El verde y el ámbar eran solo de estados de cita, y el reporte necesita marcar si un cambio es bueno o malo para la clínica | Verde favorable, ámbar desfavorable, gris neutro, siempre con flecha y texto; el rojo sigue reservado | usuario (docs/specs/019-reportes-mensuales/design.md) |
+| 2026-10-20 | diseño | Piezas nuevas del reporte mensual | Indicador de cambio (`x-ui.trend`), selector (`x-ui.select`), contador comparado (variante de `x-ui.stat`), bloque de error de carga de la pantalla y texto propio de un caso en la región de estado; cuatro vistas de Reportes en el inventario | usuario (docs/specs/019-reportes-mensuales/design.md, T001) |

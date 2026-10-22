@@ -26,6 +26,7 @@ const GUEST_PROTECTED_SCREENS = [
     '/tratamientos',
     '/pacientes',
     '/agenda',
+    '/reportes',
 ];
 
 it('covers every web route that asks for a session', function () {

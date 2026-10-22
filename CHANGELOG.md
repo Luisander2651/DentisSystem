@@ -5,6 +5,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-22
+Reportes mensuales: el administrador ve cómo le fue a la clínica en un mes y lo descarga en Excel (spec 019).
+
+### Added
+- El administrador tiene "Reportes" en su menú: ve el último mes completo y puede elegir otro mes, con el total de citas y cuántas hay en cada estado, comparados con el mes anterior (spec 019).
+- El reporte muestra la tasa de asistencia y la de cancelación con un decimal ("Sin datos" cuando no hay citas), los pacientes nuevos del mes y los pacientes activos (spec 019).
+- El reporte lista los tratamientos más pedidos, la carga de cada miembro del staff y las citas por día de la semana y por hora, con el día y la franja de más citas destacados (spec 019).
+- "Descargar Excel" baja el reporte del mes como `reporte-dentissa-AAAA-MM`, con una hoja de resumen y una por cada lista, con los mismos números que la pantalla; el mes en curso lleva el aviso "Mes en curso: datos hasta hoy" (spec 019).
+
+### Security
+- Solo el administrador puede ver o descargar los reportes; el archivo no contiene datos de pacientes, los nombres que empiezan por `=`, `+`, `-` o `@` quedan como texto y las descargas se limitan a 10 por minuto (spec 019).
+- Actualizadas dos dependencias del navegador y del entorno de desarrollo con vulnerabilidades altas publicadas (chore 2026-10-21-chore-npm-audit).
+
 ## [0.4.0] - 2026-10-18
 Agenda por rol: el asistente gestiona la agenda y cada doctor trabaja con sus propias citas (spec 018).
 

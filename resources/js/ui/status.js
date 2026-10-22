@@ -148,41 +148,58 @@ function validationMessage(payload) {
     return typeof payload?.message === 'string' && payload.message.trim() !== '' ? payload.message : null;
 }
 
-/**
- * El mensaje que se muestra por una respuesta fallida de la API. `status` es su código HTTP,
- * o 0 cuando ni siquiera hubo respuesta.
- */
-export function failureMessage(status, payload = null) {
+/** El tipo de fallo de un código HTTP (0 cuando ni siquiera hubo respuesta). */
+function failureKind(status) {
     if (status === 422) {
-        return validationMessage(payload) ?? FAILURES.invalid;
+        return 'invalid';
     }
 
     if (status === 0) {
-        return FAILURES.offline;
+        return 'offline';
     }
 
     if (status === 401 || status === 403) {
-        return FAILURES.forbidden;
+        return 'forbidden';
     }
 
     if (status === 404) {
-        return FAILURES.missing;
+        return 'missing';
     }
 
     if (status === 409) {
-        return FAILURES.conflict;
+        return 'conflict';
     }
 
     if (status === 429) {
-        return FAILURES.busy;
+        return 'busy';
     }
 
-    return FAILURES.server;
+    return 'server';
 }
 
-/** Anuncia el fallo de una petición y devuelve el mensaje mostrado. */
-export function announceFailure(status, payload = null) {
-    const message = failureMessage(status, payload);
+/**
+ * El mensaje que se muestra por una respuesta fallida de la API. `status` es su código HTTP,
+ * o 0 cuando ni siquiera hubo respuesta. `own` deja que una pantalla ponga su propio texto a un
+ * tipo de fallo (spec 019: `{ busy: 'Demasiadas descargas…' }` en la descarga del reporte); es
+ * texto escrito en el código de la pantalla, nunca lo que responde la API.
+ */
+export function failureMessage(status, payload = null, own = {}) {
+    const kind = failureKind(status);
+
+    if (own[kind]) {
+        return own[kind];
+    }
+
+    if (kind === 'invalid') {
+        return validationMessage(payload) ?? FAILURES.invalid;
+    }
+
+    return FAILURES[kind];
+}
+
+/** Anuncia el fallo de una petición y devuelve el mensaje mostrado; `own` como en failureMessage. */
+export function announceFailure(status, payload = null, own = {}) {
+    const message = failureMessage(status, payload, own);
     announceError(message);
 
     return message;

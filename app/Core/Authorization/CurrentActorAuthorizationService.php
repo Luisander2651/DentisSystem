@@ -117,6 +117,9 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
             'appointment-tracking.prescriptions.create' => $adminOnly,
             'appointment-tracking.prescriptions.update' => $adminOnly,
             'appointment-tracking.prescriptions.delete' => $adminOnly,
+            // Spec 019: the monthly report and its download.
+            'reports.view' => $adminOnly,
+            'reports.export' => $adminOnly,
         ];
     }
 }

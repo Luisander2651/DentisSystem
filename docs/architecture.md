@@ -81,7 +81,7 @@ Auth guarda tokens de reset en Redis. Todos persisten en PostgreSQL.
 | ContentManagement | `app/Modules/ContentManagement` | Landing y CRUD de certificaciones, galería, promociones y testimonios (submódulos en `Modules/`) | Core |
 | Email | `app/Modules/Email` | Correo transaccional de reset vía Brevo (listener en cola) | Auth (evento) |
 | whatsApp | `app/Modules/whatsApp` | Confirmación de cita por plantilla Twilio (listener en cola) | Appointments (evento) |
-| Estadisticas | `app/Modules/Estadisticas` | Vacío: sin código | — |
+| Reports | `app/Modules/Reports` | Reporte mensual de la clínica (spec 019): indicadores agregados en pantalla y en Excel, de solo lectura ([ADR 0006](adr/0006-modulo-reports-de-solo-lectura.md)) | Appointments, Patients, Users (solo lectura y solo en `Infrastructure/`), Core |
 
 ## Flujo principal
 Crear una cita:
@@ -127,7 +127,14 @@ Crear una cita:
   anterior; `reschedule()` y `cancel()` rechazan una cita completada o cancelada, y `complete()` una cancelada.
 - Errores de las pantallas web (spec 016): `only.admin` y `staff` responden `abort(403)` sin mensaje fuera de `api/*`. Un render propio en `withExceptions` devuelve para los 403, 404, 405 y 419 de rutas web la vista de `errors/` correspondiente, o un JSON fijo en español (`{"message"}`) cuando se pide JSON; `api/*` conserva sus respuestas.
 - Observabilidad: logs de Laravel en el canal `stderr` (nivel `info`), recogidos por Alloy → Loki → Grafana; health check `/up` que también comprueba PostgreSQL y Redis (`App\Core\Health\CheckDependenciesOnHealth`, escuchando `DiagnosingHealth`); sin métricas, correlación ni auditoría. Detalle en [observability.md](observability.md).
-- Seguridad: rate limiting `throttle:api` (10/min por IP sin autenticar, 100/min por usuario) sobre la IP real del visitante (`App\Core\Middlewares\TrustCloudflareProxies` sustituye a `TrustProxies` y confía solo en los rangos de Cloudflare de `config/security.php`); `App\Core\Middlewares\SecurityHeaders` añade CSP con nonce (`Vite::useCspNonce`), `X-Frame-Options`, `nosniff` y `Referrer-Policy`; CORS limitado a `APP_URL` sin credenciales. Ver [security.md](security.md).
+- Reportes (spec 019, [ADR 0006](adr/0006-modulo-reports-de-solo-lectura.md)): `Reports` lee con consultas de agregación
+  de PostgreSQL sobre los modelos de Appointments, Patients y Users (`EloquentMonthlyReportRepository`)
+  y nunca carga filas ni columnas de pacientes; `MonthlyReportService` calcula tasas, diferencias y
+  tendencias, y el mismo `MonthlyReport` alimenta el JSON y el Excel. El Excel lo escribe
+  `openspout/openspout` 5.12.0 ([ADR 0005](adr/0005-openspout-para-excel.md)) solo con celdas de texto o número
+  explícitas, detrás del puerto `MonthlyReportExporterInterface` de Application. La pantalla `/reportes`
+  llama a `ReportMonth` sin caso de uso para la lista de meses (excepción de P3 aceptada en el plan).
+- Seguridad: rate limiting `throttle:api` (10/min por IP sin autenticar, 100/min por usuario) y `throttle:report-downloads` (10 descargas del reporte por minuto por administrador, spec 019) sobre la IP real del visitante (`App\Core\Middlewares\TrustCloudflareProxies` sustituye a `TrustProxies` y confía solo en los rangos de Cloudflare de `config/security.php`); `App\Core\Middlewares\SecurityHeaders` añade CSP con nonce (`Vite::useCspNonce`), `X-Frame-Options`, `nosniff` y `Referrer-Policy`; CORS limitado a `APP_URL` sin credenciales. Ver [security.md](security.md).
 
 ## Contrato entre capas
 - Fuente de verdad: los `JsonResource` y las rutas de `routes/api.php`; no hay tipos compartidos con el JS. Desde esta constitución (P4), el contrato de cada endpoint nuevo o modificado se escribe en su spec o plan.
@@ -172,6 +179,6 @@ con backups diarios por cron y un registro de operaciones en `deploys.log`. El d
 - 48 controladores devuelven `$e->getMessage()` en respuestas 500.
 - No hay scheduler (`schedule:work`) en ninguno de los dos Compose; los backups usan el cron del host. Los listeners `ShouldQueue` sí tienen worker (`queue`, spec 015).
 - Los cuatro `Get*Controller` de ContentManagement devuelven un objeto en vez de una lista cuando hay un solo registro; la galería pública falla con una imagen (roadmap, Pendientes y deuda).
-- `app/Modules/Estadisticas` y `Modules/` en la raíz están vacíos; `DatabaseSeeder` referencia `App\Models\User`, que no existe.
+- `Modules/` en la raíz está vacío; `DatabaseSeeder` referencia `App\Models\User`, que no existe. (`app/Modules/Estadisticas`, que se citaba aquí, nunca existió en el disco; su lugar lo ocupa `Reports`, spec 019.)
 - README y `ARCHITECTURE.md` declaran PHP 8.2 y PHPUnit; el proyecto usa PHP 8.4 y Pest 3.
 - Interfaz (tras la spec 016): sigue sin alternativa para quien pide menos movimiento (`DS12` de [design/system.md](design/system.md)); `npm run test:ui` necesita Chrome en el equipo y, en local, los datos de `ui:audit-data`; las fuentes son las del sistema, así que el ancho de los textos cambia entre equipos; y la página 500 de las pantallas web sigue siendo la genérica de Laravel.

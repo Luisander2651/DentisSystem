@@ -58,6 +58,9 @@ function rolePermissionMatrix(): array
         'appointment-tracking.prescriptions.create' => ['appointment-tracking.prescriptions.create', ['Administrador']],
         'appointment-tracking.prescriptions.update' => ['appointment-tracking.prescriptions.update', ['Administrador']],
         'appointment-tracking.prescriptions.delete' => ['appointment-tracking.prescriptions.delete', ['Administrador']],
+        // Spec 019: the monthly report and its download, only for the administrator.
+        'reports.view' => ['reports.view', ['Administrador']],
+        'reports.export' => ['reports.export', ['Administrador']],
     ];
 }
 

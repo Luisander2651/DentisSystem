@@ -20,7 +20,7 @@ uses(CoreIntegrationTestCase::class);
 
 const DENIED_PATIENT_ID = '11111111-2222-4333-8444-555555555555';
 
-const DENIED_ADMIN_SCREENS = ['/usuarios', '/contenido', '/tratamientos', '/pacientes'];
+const DENIED_ADMIN_SCREENS = ['/usuarios', '/contenido', '/tratamientos', '/pacientes', '/reportes'];
 
 // Spec 018: the agenda is a staff screen, denied only to patients and inactive staff.
 const DENIED_STAFF_SCREENS = ['/expedientes-clinicos', '/expedientes-clinicos/'.DENIED_PATIENT_ID, '/agenda'];

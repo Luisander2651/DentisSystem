@@ -1,0 +1,428 @@
+<!doctype html>
+<!--
+  /design-spec 019 · composición C (B + A, pedida por el usuario). Autocontenida: sin fuentes, scripts ni imágenes externas.
+  Datos: los de `php artisan ui:audit-data` (UiAuditSeeder), mes 2026-07, calculados con las
+  reglas de la spec 019 (CA2–CA7). Junio de 2026 no tiene citas en esos datos.
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dentissa — Opción C · La semana del mes con el parte</title>
+
+<style id="viewer">
+  :root {
+    --ui-bg: #f6f7f8; --ui-panel: #ffffff; --ui-text: #1d2125; --ui-muted: #5b636b;
+    --ui-line: #d9dde1; --ui-focus: #1f5fd1; color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-viewer="light"]) {
+      --ui-bg: #17191c; --ui-panel: #1f2226; --ui-text: #e8eaed; --ui-muted: #a3a9b0;
+      --ui-line: #343940; --ui-focus: #8ab4ff; color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ui-bg); color: var(--ui-text);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .v-wrap { max-width: 1520px; margin: 0 auto; padding: 0 20px 64px; }
+  .v-head { padding: 40px 0 24px; border-bottom: 1px solid var(--ui-line); max-width: 1180px; }
+  .v-project { margin: 0 0 4px; color: var(--ui-muted); }
+  .v-head h1 { margin: 0 0 12px; font-size: 28px; line-height: 1.2; }
+  .v-head p { margin: 0 0 8px; max-width: 75ch; }
+  .v-head dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 16px 0 0; max-width: 90ch; }
+  .v-head dt { font-weight: 600; } .v-head dd { margin: 0; }
+  .v-toc { position: sticky; top: 0; z-index: 5; background: var(--ui-bg); border-bottom: 1px solid var(--ui-line); }
+  .v-toc ul { display: flex; gap: 20px; margin: 0; padding: 12px 0; list-style: none; overflow-x: auto; }
+  .v-toc a { color: var(--ui-muted); text-decoration: none; white-space: nowrap; }
+  .v-section { padding: 32px 0; border-bottom: 1px solid var(--ui-line); }
+  .v-section > h2 { margin: 0 0 6px; font-size: 22px; }
+  .v-section > p { margin: 0 0 20px; color: var(--ui-muted); max-width: 80ch; }
+  .v-frames { display: flex; flex-direction: column; gap: 28px; }
+  .v-frame { overflow-x: auto; }
+  .v-frame > figcaption { margin: 0 0 8px; font-weight: 600; }
+  .v-screen { border: 1px solid var(--ui-line); border-radius: 12px; overflow: hidden; }
+  .v-row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  :focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
+</style>
+
+<style id="tokens">
+  /* Valores de docs/design/system.md 2.0.0 (sin cambios). */
+  .opt {
+    --color-primary: #d75078; --color-primary-hover: #dc6588; --color-primary-soft: #fbe9ee;
+    --color-secondary: #f2b0a6; --color-ink: #0b1120; --color-muted: #556274;
+    --color-canvas: #f8fafc; --color-surface: #ffffff; --color-on-dark: #ffffff;
+    --color-line: #e2e8f0; --color-field: #7c8aa0; --color-danger: #b91c1c;
+    --color-danger-soft: #fef2f2; --color-success: #047857; --color-success-soft: #ecfdf5;
+    --color-warning: #b45309; --color-warning-soft: #fffbeb; --color-info: #1d4ed8;
+    --color-info-soft: #eff6ff;
+    --radius-control: 12px; --radius-box: 16px; --radius-card: 24px; --spacing-control: 44px;
+    --text-min: 12px; --text-control: 16px;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color-scheme: light;
+  }
+</style>
+
+<style id="components">
+  .opt { container-type: inline-size; background: var(--color-canvas); color: var(--color-ink);
+         font: 16px/1.5 var(--font-sans); }
+  .opt *, .opt *::before, .opt *::after { box-sizing: border-box; }
+  .opt :focus-visible { outline: 3px solid var(--color-ink); outline-offset: 2px; }
+  .opt h1, .opt h2, .opt h3, .opt p { margin: 0; }
+
+  /* Marco del panel: barra plegable por debajo de 1024 px, menú lateral de 320 px desde 1024 px. */
+  .c-shell { display: grid; grid-template-columns: 1fr; min-height: 100%; }
+  .c-side { background: var(--color-surface); border-bottom: 1px solid var(--color-line); padding: 12px 16px;
+            display: flex; align-items: center; justify-content: space-between; }
+  .c-brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+
+  .c-brand { font-size: 18px; }
+  .c-brand small { font-weight: 600; color: var(--color-muted); font-size: 14px; }
+  .c-menu { display: none; }
+  .c-menu-btn { width: var(--spacing-control); height: var(--spacing-control); border: 1px solid var(--color-field);
+                border-radius: var(--radius-control); background: var(--color-surface); }
+  .c-main { padding: 16px; display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+  @container (min-width: 1024px) {
+    .c-shell { grid-template-columns: 320px 1fr; }
+    .c-side { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 16px;
+              border-bottom: 0; border-right: 1px solid var(--color-line); padding: 24px; }
+    .c-menu-btn { display: none; }
+    .c-menu { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
+    .c-menu li { min-height: var(--spacing-control); display: flex; align-items: center; padding: 0 12px;
+                 border-radius: var(--radius-control); font-weight: 600; font-size: 14px; }
+    .c-menu li[aria-current] { background: var(--color-primary-soft); }
+    .c-main { padding: 24px; gap: 32px; }
+  }
+
+  /* x-ui.page-hero, x-ui.input, x-ui.button */
+  .c-hero { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-card);
+            padding: 16px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 1px 2px rgb(11 17 32 / 0.05); }
+  .c-badge-brand { align-self: flex-start; display: inline-flex; gap: 8px; align-items: center; border: 1px solid var(--color-secondary);
+                   background: var(--color-primary-soft); border-radius: 999px; padding: 4px 12px; font-size: var(--text-min); font-weight: 700; }
+  .c-hero h1 { font-size: 30px; font-weight: 600; line-height: 1.2; }
+  .c-hero p { color: var(--color-muted); }
+  .c-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+  .c-field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; }
+  .c-field label { font-size: 14px; font-weight: 600; }
+  .c-select { height: var(--spacing-control); border: 1px solid var(--color-field); border-radius: var(--radius-control);
+              background: var(--color-surface); font: inherit; font-size: var(--text-control); color: var(--color-ink); padding: 0 12px; width: 100%; }
+  .c-btn { height: var(--spacing-control); border-radius: var(--radius-control); padding: 0 16px; font: inherit; font-size: 14px; font-weight: 600;
+           display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; color: var(--color-ink); }
+  .c-btn--primary { background: var(--color-primary); }
+  .c-btn--secondary { background: var(--color-surface); border-color: var(--color-field); }
+  .c-btn--grow { flex: 1 1 200px; }
+  @container (min-width: 768px) {
+    .c-hero { padding: 24px; }
+    .c-btn--grow { flex: 0 0 auto; }
+  }
+  @container (min-width: 1024px) {
+    .c-hero { padding: 32px; flex-direction: row; align-items: flex-end; justify-content: space-between; }
+    .c-hero .c-controls { flex-wrap: nowrap; }
+    .c-hero .c-field { flex: 0 0 240px; }
+  }
+
+  /* Tarjeta, x-ui.section-title, x-ui.badge */
+  .c-card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-card);
+            padding: 16px; box-shadow: 0 1px 2px rgb(11 17 32 / 0.05); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  @container (min-width: 768px) { .c-card { padding: 24px; } }
+  .c-card h2 { font-size: 18px; font-weight: 700; line-height: 1.4; }
+  @container (min-width: 1024px) { .c-card h2 { font-size: 20px; } }
+  .c-card h3 { font-size: 16px; font-weight: 600; }
+  .c-note { font-size: 14px; color: var(--color-muted); }
+  .c-pill { display: inline-flex; border-radius: 999px; padding: 2px 10px; font-size: var(--text-min); font-weight: 700; border: 1px solid transparent; white-space: nowrap; }
+  .c-pill--ok { color: var(--color-success); background: var(--color-success-soft); }
+  .c-pill--danger { color: var(--color-danger); background: var(--color-danger-soft); }
+  .c-pill--warn { color: var(--color-warning); background: var(--color-warning-soft); }
+  .c-pill--info { color: var(--color-info); background: var(--color-info-soft); }
+  .c-pill--brand { color: var(--color-ink); background: var(--color-primary-soft); border-color: var(--color-secondary); }
+
+  /* EXCLUSIVO · titular del parte: el mes como fecha de periódico y una frase con las cifras. */
+  .c-lead { display: flex; flex-direction: column; gap: 8px; padding: 4px 0 0; border-top: 2px solid var(--color-ink); }
+  .c-lead__date { font-size: var(--text-min); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-muted);
+                  display: flex; justify-content: space-between; gap: 12px; padding-top: 8px; }
+  .c-lead__text { font-size: 22px; font-weight: 700; line-height: 1.3; max-width: 38ch; }
+  .c-lead__text b { font-weight: 800; text-decoration: underline; text-decoration-color: var(--color-primary); text-decoration-thickness: 3px; text-underline-offset: 4px; }
+  @container (min-width: 1024px) { .c-lead__text { font-size: 30px; } }
+
+  /* EXCLUSIVO · libro de cuentas: estado · este mes · mes anterior · diferencia. */
+  .c-ledger { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .c-ledger caption { text-align: left; }
+  .c-ledger th, .c-ledger td { padding: 10px 8px; border-bottom: 1px solid var(--color-line); text-align: right; white-space: nowrap; }
+  .c-ledger th:first-child, .c-ledger td:first-child { text-align: left; padding-left: 0; white-space: normal; }
+  .c-ledger thead th { font-size: var(--text-min); text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-muted); font-weight: 700; }
+  .c-ledger tbody td:nth-child(2) { font-size: 20px; font-weight: 700; }
+  .c-ledger tr.is-total td { border-bottom: 2px solid var(--color-ink); }
+  .c-delta { font-weight: 600; }
+  .c-delta--none { color: var(--color-muted); font-weight: 400; }
+
+  /* x-ui.record para tasas y pacientes */
+  .c-records { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0; }
+  .c-record { border-bottom: 1px solid var(--color-line); padding: 10px 0; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .c-record dt { font-size: var(--text-min); text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-muted); font-weight: 700; }
+  .c-record dd { margin: 0; text-align: right; }
+  .c-record dd strong { font-size: 20px; }
+  .c-record dd span { display: block; font-size: 14px; color: var(--color-muted); }
+
+  /* EXCLUSIVO · lista ordenada con barra fina (una serie, un tono: el primario como acento). */
+  .c-rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .c-rank li { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: baseline; }
+  .c-rank__name { font-size: 14px; font-weight: 600; }
+  .c-rank__value { font-size: 14px; font-weight: 700; text-align: right; }
+  .c-rank__value small { font-weight: 400; color: var(--color-muted); }
+  .c-rank__bar { grid-column: 1 / -1; height: 8px; border-radius: 999px; background: var(--color-line); overflow: hidden; }
+  .c-rank__bar i { display: block; height: 100%; border-radius: 999px; background: var(--color-primary); }
+  .c-rank li.is-top .c-rank__name::after { content: " · más citas"; font-weight: 400; color: var(--color-muted); }
+  .c-rank--zero .c-rank__bar i { background: transparent; }
+
+  /* Rejilla de la página: libro 7 · tasas 5; luego listas 7 · 5. */
+  .c-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @container (min-width: 880px) { .c-grid { grid-template-columns: 7fr 5fr; gap: 24px; } }
+  .c-split { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @container (min-width: 560px) { .c-split { grid-template-columns: 1fr 1fr; gap: 24px; } }
+
+  /* Avisos y estados */
+  .c-notice { border: 1px solid var(--color-secondary); background: var(--color-primary-soft); border-radius: var(--radius-box); padding: 12px 16px; font-size: 14px; }
+  .c-alert { border: 1px solid var(--color-danger); background: var(--color-danger-soft); border-radius: var(--radius-box); padding: 12px 16px; font-size: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .c-alert strong { color: var(--color-danger); }
+  .c-empty { text-align: center; color: var(--color-muted); padding: 24px 8px; }
+  .c-spin { width: 16px; height: 16px; border-radius: 999px; border: 2px solid var(--color-ink); border-right-color: transparent; display: inline-block; }
+
+  /* Archivo de Excel (vista de las hojas) */
+  .x-book { border: 1px solid var(--ui-line); border-radius: 8px; overflow: hidden; background: #fff; color: #1f1f1f; font: 13px/1.4 Calibri, 'Segoe UI', sans-serif; max-width: 760px; }
+  .x-book table { border-collapse: collapse; width: 100%; }
+  .x-book td, .x-book th { border: 1px solid #d4d4d4; padding: 3px 8px; text-align: left; white-space: nowrap; }
+  .x-book th { background: #f3f3f3; font-weight: 400; color: #555; text-align: center; width: 28px; }
+  .x-book .h { font-weight: 700; background: #fbe9ee; }
+  .x-book .t { font-weight: 700; font-size: 15px; }
+  .x-book .n { text-align: right; }
+  .x-tabs { display: flex; gap: 2px; background: #f3f3f3; border-top: 1px solid #d4d4d4; padding: 0 8px; }
+  .x-tabs span { padding: 4px 12px; }
+  .x-tabs span[aria-current] { background: #fff; border-bottom: 2px solid #d75078; font-weight: 700; }
+
+  /* EXCLUSIVO · semana del mes: tabla hora × día con intensidad de un solo tono y cifra en cada celda. */
+  .c-week { width: 100%; border-collapse: separate; border-spacing: 2px; font-size: 14px; table-layout: fixed; }
+  .c-week th { font-size: var(--text-min); font-weight: 700; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.04em; padding: 4px 0; }
+  .c-week thead th { text-align: center; }
+  .c-week tbody th, .c-week tfoot th { text-align: left; width: 48px; text-transform: none; letter-spacing: 0; }
+  .c-week td { height: 40px; text-align: center; border-radius: var(--radius-control); font-weight: 700; }
+  .c-week .l0 { background: var(--color-surface); box-shadow: inset 0 0 0 1px var(--color-line); color: var(--color-muted); font-weight: 400; }
+  .c-week .l1 { background: rgb(215 80 120 / 0.25); }
+  .c-week .l2 { background: rgb(215 80 120 / 0.55); }
+  .c-week .l3 { background: var(--color-primary); }
+  .c-week .sum { background: transparent; color: var(--color-ink); font-weight: 700; }
+  .c-week .is-max { box-shadow: inset 0 0 0 2px var(--color-ink); }
+  .c-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .c-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 14px; color: var(--color-muted); align-items: center; margin: 0; }
+  .c-legend i { display: inline-block; width: 16px; height: 16px; border-radius: 999px; vertical-align: -3px; margin-right: 4px; }
+
+  /* x-ui.stat en columna de cifras, con la comparación debajo. */
+  .c-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+  .c-stat { border: 1px solid var(--color-line); border-radius: var(--radius-box); background: var(--color-surface); padding: 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .c-stat dt { font-size: var(--text-min); font-weight: 700; text-transform: uppercase; color: var(--color-muted); letter-spacing: 0.04em; }
+  .c-stat dd { margin: 0; }
+  .c-stat dd strong { font-size: 20px; font-weight: 700; }
+  .c-stat dd span { display: block; font-size: 12px; color: var(--color-muted); }
+  .c-stat--wide { grid-column: 1 / -1; }
+
+  /* Tabla compacta numerada (tratamientos y staff). */
+  .c-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .c-table th, .c-table td { padding: 10px 6px; border-bottom: 1px solid var(--color-line); text-align: right; }
+  .c-table th:nth-child(2), .c-table td:nth-child(2) { text-align: left; }
+  .c-table th:first-child, .c-table td:first-child { width: 40px; text-align: left; color: var(--color-muted); padding-left: 0; }
+  .c-table thead th { font-size: var(--text-min); text-transform: uppercase; color: var(--color-muted); font-weight: 700; letter-spacing: 0.04em; }
+
+  .c-grid-b { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @container (min-width: 880px) { .c-grid-b { grid-template-columns: 5fr 7fr; gap: 24px; align-items: start; } }
+
+  /* Comparación con el mes anterior: el color dice si el cambio es favorable, la flecha la dirección. */
+  .c-trend { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; border-radius: 999px; padding: 2px 8px;
+             font-size: var(--text-min); font-weight: 700; border: 1px solid transparent; align-self: flex-start; }
+  .c-trend--good { color: var(--color-success); background: var(--color-success-soft); }
+  .c-trend--bad { color: var(--color-warning); background: var(--color-warning-soft); }
+  .c-trend--flat { color: var(--color-muted); background: var(--color-surface); border-color: var(--color-line); font-weight: 600; }
+  .c-stat dd .c-trend { display: inline-flex; font-size: var(--text-min); }
+  .c-trend-key { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; color: var(--color-muted); margin: 0; }
+</style>
+</head>
+<body>
+<div class="v-wrap">
+  <header class="v-head">
+    <p class="v-project">Dentissa · spec 019 Reportes mensuales · /design-spec 019</p>
+    <h1>Opción C · La semana del mes, con el parte</h1>
+    <p><strong>Combinación pedida:</strong> de la opción B, la columna de cifras y la tabla de hora por día de la semana; de la opción A, las tarjetas de tratamientos más solicitados y carga por miembro del staff, con sus barras. Además, cada cifra comparable lleva un indicador del cambio respecto al mes anterior.</p>
+    <dl>
+      <dt>Color del cambio</dt><dd>Según si es bueno o malo para la clínica, no según la dirección: <strong>verde</strong> favorable, <strong>ámbar</strong> desfavorable y <strong>gris</strong> sin cambio, sin datos o neutro. Siempre con flecha y número; el rojo sigue reservado para eliminar, cancelar una cita y errores.</dd>
+      <dt>Qué es favorable</dt><dd>Subir es favorable en citas del mes, completadas, asistencia y pacientes nuevos. Subir es desfavorable en canceladas, sin cerrar y cancelación. Reprogramadas y asignadas pendientes son neutras.</dd>
+      <dt>Vecino más parecido</dt><dd>Agenda → la rejilla es de hora × día de la semana, no de fechas, y las cifras van en columna con su tendencia.</dd>
+      <dt>Riesgo asumido</dt><dd>La tabla con intensidad roza el cliché del "mapa de calor" (cifra en cada casilla, leyenda, totales en los márgenes y contorno en el máximo). Los indicadores de cambio añaden un uso nuevo del verde y del ámbar: se escribe en el sistema antes de usarlo.</dd>
+      <dt>Datos</dt><dd>Los de <code>ui:audit-data</code>, julio de 2026, calculados con las reglas de la spec. Junio de 2026 no tiene citas.</dd>
+    </dl>
+  </header>
+
+  <nav class="v-toc" aria-label="Secciones"><ul>
+    <li><a href="#pantallas">Pantallas</a></li>
+    <li><a href="#estados">Estados</a></li>
+    <li><a href="#excel">Archivo de Excel</a></li>
+    <li><a href="#movimiento">Movimiento</a></li>
+  </ul></nav>
+
+  <section class="v-section" id="pantallas">
+    <h2>Pantallas · Reportes, julio de 2026</h2>
+    <p>Anchos 390, 900 (intermedio, porque hay filas) y 1440 px. El menú lateral aparece desde 1024 px.</p>
+    <div class="v-frames">
+      <template id="tpl-report">
+        <div class="c-shell">
+          <aside class="c-side">
+            <span class="c-brand"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAQAElEQVR4nOxaCXQUZbauqt73JUl3p7MH0AiExQVkR0UfCCLbU54+j/IEkQmoIM7TNzNvnNHZRBEFPILjGRxnQFl0QAdGQMMqDPu+ZyNLp7uT7k7va9V81Q2xu7rSSTDMHM+Ze+CcTvXf/3/v/9//3u9+t4Tnp7xM/JCFIn7g8oM3QEjcDCFJgiIh7AcIwwpBM/hA9LT0pAGi3Cz16EGasbeLjDoyrjoT17j9c8Tmcu853rb7eKSxheghIb/nJWZIQj2sPPvxB4RaZaSlzb3nhPfw+Zjbx0RjRIxmaJpdg6IIAUUKBZRKrryjTDN2sChHF/P4WtbuaNt3kqS/17HcuAHQxjRnsqy8NFTT1LqxMnzVFvMG4DkCrUpakivtnScyZVFSCUbSwVDE6gheaQzWWGJON3yJUsjEBTlZ08ZK+xQEztVYV2+JtXmJG5IbMYCUSwxPTFAN6+f4Yr9778mozSnQKrX/MVRWViQuMBDRGBSFVVGnhw6GWVOlIqFWJYFVJXmkWBi6ag1ernduOxBzeoU5WvXIAbrJI72HL9g/2kr7gkQ3pXsGwI91E4bpp4/x7D3V+vlurKcaUa659w5Jsalt55HAhauBC7U4h4TTp/8Wzym5RFZWLL2lQPvAkFC9ta3ymGfvSUom0T88CvO0fr7H9eV+ojvSDQOweab5M0QGbfOqzeHaZuWdZXD9mC8A1d27jl9zdz7V0y1JjFSNHqgddxcOx752u/fv50R5OaZ5U2JtPsuy9Uw4QnRNumqAUKcuWrrAf+Ky5d0NOHfj05Pg4rY1W/3HLhGd65xJZOW9jLMmRl0e6wdbwpbW3PnTVXf3r1n4TsTu6srEgvllIzsdJDJnl76/2Pb7LS3rdsjLexW9Psd94EzTm2ujzY7vqT0EV8j5t4NCvcq88NFQdZNj896IzVn42hzvobPRNl+n03dyAjhscV52ydLnap5bhkhimD0Zd7fuf9+LtrQRPS0Cnar4jQrficvNKzcJc3Qly1+oe/n9UK0lsw2dQAmhTlXyzsKa55eFrY7CJRWqu/tVPf2bm6E9JOb0VM35rXxQn+IViyJ2Z81zbxe/WSHK0Wb+VSYDcGuLly7AfkSaHUVLKiihoGru74ibLNVYIhQpfmtB1O6yvLOheEkFKRFlGN+hAXCe3PkzfCeuuCuPwXNEOnXtSyuRXImbLTRT+9IKSio2PjsVeR2XzbxwZgYM1SEW0o4fKjRor76yClECfg/P4R2GmCjUqwUKWeLPqMNN+wJEx8EU45E0smbcK9QoSQG7fXQgGLhU7/hsN4s+rttQU/FmyXsvKe+6zbpqc+EvZ+unjHJu3ss7IX8UQroxL5rZtGw9KRIi5tS+uJz2h9J0IZTD+uX/5EnWAJVMZNSL83OQj3OeHC/K0oQb7HQgxBkvG9gL0+qnjPafvIJkDBARrLVEnB5pkck4bxp23X+m+vpo0nPwTMGrT3sPnfMdv2SaO6Xt6yNMJJquKn8UMs6dEgsEWz7+Ku/l/w5UNbZ++jU3QzGMYlh/YKGrP10dsbSmfCUUqIaXq0eUxzx+5xf7QnXWuPJE1tQxAEju/ae8B85ycDWORaCSG56eJC0xs456XVHdlFHyAb0bX1uj/897JOZsJLh0VXlOQKCWG5+ZbFn6qXxAL9XwAYj36fmVUsqLfj23/tUPw/U27pQ0E65r9uw7FWq04/LIygrDDS24iIGztZ49J3jGx7MyE456/n4OhpoXzHBuO5hYL3C+Tj95JO0PevacROp0fXOMCUU6N8BUMd176Lz/VFXeS4/ZPtrGZqs00Yy7E3vm2FiZwd1pjx8QI9Rgz62YLu2VF7U74VR0fHd5EQcehaoalUP7CZWy4MWr7CCSjFhaDE9OcHy5H+ACeAnAifMr7iUGvkeutf/pK6A04Bz/8UvpK+HE5QP7IGsSXUA+sL/+Zx+wHgLsXVaEKw6fDF1pjLS4Apfr6TYfZ7z1vc9Klj3v3HqQiIMr36kqjNTcMxiOl/3oOKhHMhkNUA8vZ5GwzamdNxUojVcnbIy8b1HD67uILgvug2XpJ+2/z1Bbhm1OQoDSR5awDWu5th/WPzTCvfNo4EKdZvQg9+4TyeO5eSD7sQdaNnxDaZQIdnAA/kUYBpVKhM+1uiQZK2OcqeOLfVC0/Yn34FmEOAAN+9odOU8+yEFfXAMAbhEBdeOHunYeSSBkvkUwB0mHwsTNEIZx7zqmmzTiuwc07fzrt/qHR0atDiQcUpSSmFMMQFUOh8Plk91aiOqk4yXAL9BduQA8IqCQHzMNIEmAUFG2JukBiUwnu7UIMSDcZEe2IToyAJwCsjcKJ3GhEbVVhuqEDoRRRhHdFGG2Bokvxrm4KKN1KiLVBs7uIDqJTHqMdH19FEkm5dfJf4ARAacABIq6lq3QOxZAa3FuFtEdoZQy47yp+JAcyym5NP+nTyEJtD9hsYlKxkRTkm7MH8SWCfRqpGfU0CnTfveRJGElGBFwCqjKM2w/vvKfr1XccSvRDfXJrOljYw63Z//p756p5EVvzQ9WNbLwKWlyoK9wGnEUvFIv65VHewOibC0hoPgMoFiVgaikvfND1Y1ERsEJSAqMTNeYNgzTTx0N/kJSmte2Jx4EGQIeaH5xpkAhde85wRmMQtm14zDXgEsNuAYJrokUCHgMuLblMRrnEHV1wtIAdQo0CqJrIikysTsqFIQbbQmcQ4oE5leecG7ZBxwFliV5MNTAeBZWpD6MOt0icxYRpyhJ/hOIG0DHYgKpJMHnZJDAuVqcAEl1KRABmSOWa8YMBkJJPDHMntTw/x/mLpxpWbGJ46ugmNjI6ePeQKjEKobIDiYvad2US8x0mXyNxslDkUHX6UggK6BazIvQnNhX1ehBtj9sFRq10CLcaOeMhwG400wHSSZOGKc8oZLVZ/8WCGLBEKA5kVEwEXxXN3lUhjGYD/ERaRXxGzgZugKQyfoWh+utCETmF/+r6e1PCJqLq7Mfuc9z+DyTRphCJRzCNcY76Vsq+cfs1xSFCyrQKInOBPSBrHc+0fGZUWIhMj/UxWfN/XeCukIeAJsUrG5C9EQR4z9dzfkJ7oZyyG22D7Zw/IotGAARUHhQLHGfDBGSTiBuFqYACystNROdSbipBZmbEAvA1FIKKe4oZ4B24jBASybeFoCp/nM1QIruyqNsoOxfguSaXmFJSswso8rHkMr65Acv1rFHDwPai88UNMowYasTuDdUY8GJXzsQXmEIoUmvued26A3oC9ARsTlibj9gCKIKSHYmGJb0zkM3AD7DrqiQRhxuxe23gsFlT4wiDbMmNry2hrMEvgFhimqTd03w2PY/b0c2jLS6k7mFFDiN7gP4e3BjIFQQoXnq4LgvZj1yn/b+u5AUPd+eQdpuXr6RO0YlR8yxffhl4k+wSYEzNaSQCltaoDESqkCtiDTaufFHIUXr4NLjv+BZVCZBmQ4+Sjv+bve3Z1K+Sv6jbfcJ9djBOArEZnDI6UEJMB0EkbSssPqFZc0rP0PJKykyclcjSd2Eu+0f/639gWrEAHi2e++phMayWwqi8Oa041UO7csWSWGeyh0FXcTqhD6oBD37T3VoAHYFvRP4NCgDLMOdRkAV/Wae9+jF+ldWxXCOuAYNdoFMKk0aiTVUIweAXEiGN8IsjWv7IeY6SaEeM9i16xh3cpIAWwGamkgTzAlwAJVw+JJ8QyIq8BsAibm9wKuo6OCOnCMufnM+kIx9zdb2SIya03vsYuFrz7RnFqwErOI/W5P8Q5SO3uuZlZSKlYP6oGznrCvv3wvRFjwakSZQA6U9WgdIOxjDpB4R1wD7JztZ1OXyhOptqlEDk1aQADvY1+3gTN2MkCcSiAz6hHJwd8fnuzmWW1dsag848e6Yn0gKIwnRTRqOlhlv2FAMuQ1UO4Bg9sxx9o+3cQo6rgGAXLjv6AC4Ko9o7r8rcQ3wv/AXs+v+b1X69PAlxBzzokdxCFigdf03REZhgRaI/1RFAWzpcNR38jLvT+ALaOQgJ8r7l7oqub7HNQA9w8DZGmBuNJFQXioG9Cbidaqs1IyFeaaP0Q1L1sJzTAumg//iJc+SRahRIKQmPwHRkP3EePsft5F8vQbZbcXi3GzQC6qhfXEN0luaPOQuOiXouiFytazdnjNrYuIQwOfwl8gkgF0NoAEaeJwqhGXv0moG5KBkIzG58X8mubYeQFMjfW58a3hqQuv6r9EmBKcC5Jc+hscAdDxRlwHn4ObhMuinjoEF1pWfqYb3Tw+siH2wtu4nq8WmrKyZ41KmVsoBjDkuG6prBt/BxN0S/zA5fKNt+yFe79dNHE6HovBq4Fnf6So0ENLH8JO7QMu5FdO8Ry/4jlxA56et8jg4Ge39Q9iSAgEnGqPUcsQNxZ1loas2EIawE2kYOAwujmRMByOyWwqzZ96HXMbRDLsj71eqBbEnE5t+NA0eZXn7U17WHuAn78ePgdiEL5iendrw+hom3GVyF6J9aIRqaL/6n60GCWeqmFY9h21t4ASgmaTQGKxrDlY1cEgyQDTj3IeFKPliMdScret28s6M4KWfNlpamufYsg/7wt+TJYjSFYtAEKKQyP/5LP+5WseGSv7JOjIAU+T9+HEQq5blG9FdVQzqU/3sG/+MBgdWJqmSd18AA2l5e71xzkNik77+9TVkB+3EDjs0GA46Gx1P9aiB1pWbQGMVvVFxg1xQt4Skit74EdjF5newel9AxsYl68iOm6GZemTAkujXmp9/RGjQ1c5fiiclKxYRN1cY7D2wTE3FWygeUPTULl7BZKQAO+lSIvbXLF6OSZHa6hYvD5ypLnlvsSBLQ9wEwa0tWfEiWBb0l4RZanRHkTq53ZP0X3Xa6AaRBhxf8u5CgOHWjbtBXBe8Ogu3Gd0Hsoc8in0FY+JwxBzb779s3bQLOavwV8+i9xO80vB9G93tghMAkPYcPGt9/y/ivBxkHxYafbQ1vSzsriDXGp56EHfM+sEXQJqG2Q/B7+E5KCC7sj3dedlDIgIRIpBLAOAiDXZ0QLIfvQ/hH/w9gt0NvOwBlAacA6SAXItsJTTqTc9MZmJ005J1TJep726/L6R7eBTAreurQ86/7gdNoL7ndu29d4C/BwMevFSP2McEQpnWk4qlvczS3gWYBBizrfIocA4pEaMGghc5tx5o3VDZLce8kReeUOMa50xGZkArBJ0flqXTqdDAAvODTAwWFjwmmEBwaUjJ2HEUIrigqMqBc1EZojMC5wa+j8V/iFiJFO47XW1dvZnOyCj3mAHXzFArchfMYDsJ5+ta1m0HGmNraJJEAEE7FQlbbM4m46+cAW/DoQMX6xBhUPKTbINHLDTo4YHy8lIYg1zJi3NurgEJARjWjBqUM+tBgVyG7gP4exT77EYiZzMMHb8YFEXF+RwKR6ca0g91rTTfEAuEbB9vA9D/l730lzoNCCWRON+Am40WtyhLC+VZRghMMnrAcTIHNkRb3Z4Dp937TrPk7H4hJQAAADlJREFUHJBZT7xGSvb4u9NQCuwxGHCWQ07UyjR7FokXMYmelp5/c5dVGSx+jO6B7e2C/Pvl73+1/AMAAP//PX+L/wAAAAZJREFUAwBLFzLXFtkSoQAAAABJRU5ErkJggg==" alt="Logo de Dentissa" width="40" height="40" style="border-radius:var(--radius-control)">Dentissa <small>Administrador</small></span>
+            <button class="c-menu-btn" type="button" aria-label="Abrir o cerrar el menú"></button>
+            <ul class="c-menu"><li>Inicio</li><li>Agenda</li><li>Tratamientos</li><li>Pacientes</li><li>Expedientes clínicos</li><li>Contenido</li><li>Usuarios</li><li aria-current="page">Reportes</li></ul>
+          </aside>
+          <main class="c-main">
+            <section class="c-hero">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <span class="c-badge-brand">Panel de administración</span>
+                <h1>Reportes</h1>
+                <p>Indicadores de la clínica por mes, comparados con el mes anterior.</p>
+              </div>
+              <div class="c-controls">
+                <div class="c-field"><label for="m">Mes</label><select class="c-select" id="m"><option>Julio de 2026</option></select></div>
+                <button class="c-btn c-btn--primary c-btn--grow" type="button">Descargar Excel</button>
+              </div>
+            </section>
+
+            <div class="c-grid-b">
+              <section class="c-card" aria-labelledby="t-cifras">
+                <h2 id="t-cifras">Julio de 2026 en cifras</h2>
+                <dl class="c-stats">
+                  <div class="c-stat c-stat--wide"><dt>Citas del mes</dt><dd><strong>8</strong> <span class="c-trend c-trend--good"><span aria-hidden="true">▲</span> +8 vs junio<span class="c-sr"> (favorable)</span></span></dd></div>
+                  <div class="c-stat"><dt>Completadas</dt><dd><strong>2</strong> <span class="c-trend c-trend--good"><span aria-hidden="true">▲</span> +2 vs junio<span class="c-sr"> (favorable)</span></span></dd></div>
+                  <div class="c-stat"><dt>Canceladas</dt><dd><strong>1</strong> <span class="c-trend c-trend--bad"><span aria-hidden="true">▲</span> +1 vs junio<span class="c-sr"> (desfavorable)</span></span></dd></div>
+                  <div class="c-stat"><dt>Sin cerrar</dt><dd><strong>5</strong> <span class="c-trend c-trend--bad"><span aria-hidden="true">▲</span> +5 vs junio<span class="c-sr"> (desfavorable)</span></span></dd></div>
+                  <div class="c-stat"><dt>Pacientes nuevos</dt><dd><strong>0</strong> <span class="c-trend c-trend--flat">= sin cambio<span class="c-sr"> (sin cambio)</span></span></dd></div>
+                  <div class="c-stat"><dt>Reprogramadas pendientes</dt><dd><strong>0</strong> <span class="c-trend c-trend--flat">= sin cambio<span class="c-sr"> (sin cambio)</span></span></dd></div>
+                  <div class="c-stat"><dt>Asignadas pendientes</dt><dd><strong>0</strong> <span class="c-trend c-trend--flat">= sin cambio<span class="c-sr"> (sin cambio)</span></span></dd></div>
+                  <div class="c-stat"><dt>Asistencia</dt><dd><strong>28.6 %</strong> <span class="c-trend c-trend--flat">junio: Sin datos<span class="c-sr"> (sin comparación)</span></span></dd></div>
+                  <div class="c-stat"><dt>Cancelación</dt><dd><strong>12.5 %</strong> <span class="c-trend c-trend--flat">junio: Sin datos<span class="c-sr"> (sin comparación)</span></span></dd></div>
+                  <div class="c-stat c-stat--wide"><dt>Pacientes activos</dt><dd><strong>2</strong><span>al 19 de octubre de 2026</span></dd></div>
+                </dl>
+                <p class="c-trend-key" aria-hidden="true"><span class="c-trend c-trend--good">▲ favorable</span><span class="c-trend c-trend--bad">▲ desfavorable</span><span class="c-trend c-trend--flat">= sin cambio</span></p>
+                <p class="c-note">"Sin cerrar": fecha ya pasada y siguen asignadas o reprogramadas. Asistencia: 2 de 7 citas con fecha pasada.</p>
+              </section>
+
+              <section class="c-card" aria-labelledby="t-semana">
+                <h2 id="t-semana">Cuándo llegan las citas</h2>
+                <table class="c-week">
+                  <caption class="c-sr">Citas no canceladas de julio de 2026 por hora de inicio y día de la semana, con totales por hora y por día</caption>
+                  <thead><tr><th scope="col"><span class="c-sr">Hora</span></th><th scope="col"><abbr title="lunes">Lun</abbr></th><th scope="col"><abbr title="martes">Mar</abbr></th><th scope="col"><abbr title="miércoles">Mié</abbr></th><th scope="col"><abbr title="jueves">Jue</abbr></th><th scope="col"><abbr title="viernes">Vie</abbr></th><th scope="col"><abbr title="sábado">Sáb</abbr></th><th scope="col"><abbr title="domingo">Dom</abbr></th><th scope="col">Total</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row">9:00</th><td class="l1">1</td><td class="l0">0</td><td class="l1">1</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="sum is-max">2</td></tr>
+                    <tr><th scope="row">10:00</th><td class="l0">0</td><td class="l0">0</td><td class="l1">1</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="sum">1</td></tr>
+                    <tr><th scope="row">11:00</th><td class="l1">1</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="sum">1</td></tr>
+                    <tr><th scope="row">12:00</th><td class="l0">0</td><td class="l1">1</td><td class="l1">1</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="sum is-max">2</td></tr>
+                    <tr><th scope="row">13:00</th><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="sum">0</td></tr>
+                    <tr><th scope="row">14:00</th><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="sum">0</td></tr>
+                    <tr><th scope="row">15:00</th><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="sum">0</td></tr>
+                    <tr><th scope="row">16:00</th><td class="l0">0</td><td class="l0">0</td><td class="l1">1</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="l0">0</td><td class="sum">1</td></tr>
+                  </tbody>
+                  <tfoot><tr><th scope="row">Total</th><td class="sum">2</td><td class="sum">1</td><td class="sum is-max">4</td><td class="sum">0</td><td class="sum">0</td><td class="sum">0</td><td class="sum">0</td><td class="sum">7</td></tr></tfoot>
+                </table>
+                <p class="c-legend" aria-hidden="true"><span><i style="background:var(--color-surface);box-shadow:inset 0 0 0 1px var(--color-line)"></i>0</span><span><i style="background:rgb(215 80 120 / 0.25)"></i>1</span><span><i style="background:rgb(215 80 120 / 0.55)"></i>2</span><span><i style="background:var(--color-primary)"></i>3 o más</span><span>Contorno: el día y la hora con más citas</span></p>
+                <p class="c-note">Sin contar canceladas. Las horas van de la primera a la última franja con citas del mes.</p>
+              </section>
+            </div>
+
+            <div class="c-grid">
+              <section class="c-card" aria-labelledby="t-trat">
+                <h2 id="t-trat">Tratamientos más solicitados</h2>
+                <ol class="c-rank">
+                  <li class="is-top"><span class="c-rank__name">Limpieza dental de prueba</span><span class="c-rank__value">3 citas</span><span class="c-rank__bar" aria-hidden="true"><i style="width:100%"></i></span></li>
+                  <li><span class="c-rank__name">Ortodoncia de prueba</span><span class="c-rank__value">2 citas</span><span class="c-rank__bar" aria-hidden="true"><i style="width:66.7%"></i></span></li>
+                  <li><span class="c-rank__name">Resina de prueba</span><span class="c-rank__value">2 citas</span><span class="c-rank__bar" aria-hidden="true"><i style="width:66.7%"></i></span></li>
+                </ol>
+                <p class="c-note">Sin contar canceladas.</p>
+              </section>
+              <section class="c-card" aria-labelledby="t-staff">
+                <h2 id="t-staff">Carga por miembro del staff</h2>
+                <ol class="c-rank">
+                  <li class="is-top"><span class="c-rank__name">Daniela Prueba</span><span class="c-rank__value">5 citas <small>· 2 completadas</small></span><span class="c-rank__bar" aria-hidden="true"><i style="width:100%"></i></span></li>
+                  <li><span class="c-rank__name">Diego Prueba</span><span class="c-rank__value">2 citas <small>· 0 completadas</small></span><span class="c-rank__bar" aria-hidden="true"><i style="width:40%"></i></span></li>
+                </ol>
+              </section>
+            </div>
+          </main>
+        </div>
+      </template>
+
+      <figure class="v-frame" id="reporte-m"><figcaption>390 px</figcaption><div class="v-screen" style="width:390px"><div class="opt" data-fill="tpl-report"></div></div></figure>
+      <figure class="v-frame" id="reporte-i"><figcaption>900 px (intermedio)</figcaption><div class="v-screen" style="width:900px"><div class="opt" data-fill="tpl-report"></div></div></figure>
+      <figure class="v-frame" id="reporte-d"><figcaption>1440 px</figcaption><div class="v-screen" style="width:1440px"><div class="opt" data-fill="tpl-report"></div></div></figure>
+    </div>
+  </section>
+
+  <section class="v-section" id="estados">
+    <h2>Estados (390 px)</h2>
+    <p>Mes sin citas, mes en curso, descarga en curso, límite de descargas y error de carga. La región de estado del marco está siempre montada; el texto llega después.</p>
+    <div class="v-row">
+      <figure class="v-frame" id="vacio-m"><figcaption>Agosto de 2026 · sin citas (CA3)</figcaption>
+        <div class="v-screen" style="width:390px"><div class="opt"><main class="c-main">
+          <section class="c-card"><h2>Agosto de 2026 en cifras</h2><dl class="c-stats"><div class="c-stat c-stat--wide"><dt>Citas del mes</dt><dd><strong>0</strong> <span class="c-trend c-trend--bad"><span aria-hidden="true">▼</span> −8 vs julio<span class="c-sr"> (desfavorable)</span></span></dd></div><div class="c-stat"><dt>Asistencia</dt><dd><strong>Sin datos</strong><span>julio: 28.6 %</span></dd></div><div class="c-stat"><dt>Cancelación</dt><dd><strong>Sin datos</strong><span>julio: 12.5 %</span></dd></div></dl></section>
+          <section class="c-card"><h2>Cuándo llegan las citas</h2><p class="c-empty">No hubo citas en agosto de 2026.</p></section>
+        </main></div></div></figure>
+
+      <figure class="v-frame" id="encurso-m"><figcaption>Octubre de 2026 · mes en curso (CA9)</figcaption>
+        <div class="v-screen" style="width:390px"><div class="opt"><main class="c-main">
+          <p class="c-notice" role="note"><strong>Mes en curso:</strong> datos hasta hoy, 19 de octubre de 2026.</p>
+          <section class="c-card"><h2>Octubre de 2026 en cifras</h2><p class="c-empty">No hay citas en octubre de 2026 hasta hoy.</p></section>
+          <div class="c-controls"><button class="c-btn c-btn--primary c-btn--grow" type="button">Descargar Excel</button></div>
+        </main></div></div></figure>
+
+      <figure class="v-frame" id="descarga-m"><figcaption>Descarga en curso y límite (CA8, CA14)</figcaption>
+        <div class="v-screen" style="width:390px"><div class="opt"><main class="c-main">
+          <div class="c-controls"><button class="c-btn c-btn--primary c-btn--grow" type="button" aria-disabled="true"><span class="c-spin" aria-hidden="true"></span>Preparando el archivo…</button></div>
+          <div class="c-alert" role="alert"><strong>Demasiadas descargas.</strong><span>Espera un momento e inténtalo de nuevo.</span></div>
+        </main></div></div></figure>
+
+      <figure class="v-frame" id="error-m"><figcaption>Error al cargar el reporte</figcaption>
+        <div class="v-screen" style="width:390px"><div class="opt"><main class="c-main">
+          <div class="c-alert" role="alert"><strong>No se pudo cargar el reporte.</strong><span>No se perdió ningún dato. Revisa tu conexión e inténtalo de nuevo.</span>
+            <button class="c-btn c-btn--secondary" type="button">Intentar de nuevo</button></div>
+        </main></div></div></figure>
+    </div>
+  </section>
+
+  <section class="v-section" id="excel">
+    <h2>Archivo de Excel · <code>reporte-dentissa-2026-07.xlsx</code></h2>
+    <p>Igual que en las opciones A y B. En la hoja Resumen, la diferencia se escribe con signo y sin color (Excel no hereda el significado). Cuatro hojas: Resumen, Tratamientos, Staff y Demanda. Encabezados en negrita sobre el rosa suave de la marca, la primera fila fija, porcentajes con formato de porcentaje y un decimal, y anchos de columna ajustados al texto. Los nombres van como texto, nunca como fórmula (CA13).</p>
+    <div class="x-book" role="img" aria-label="Vista de la hoja Resumen del archivo de Excel">
+      <table>
+        <tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+        <tr><th>1</th><td class="t" colspan="4">Dentissa · Reporte de julio de 2026</td></tr>
+        <tr><th>2</th><td colspan="4">Generado el 19/10/2026 10:42 · Comparado con junio de 2026</td></tr>
+        <tr><th>3</th><td colspan="4"></td></tr>
+        <tr><th>4</th><td class="h">Indicador</td><td class="h n">Julio de 2026</td><td class="h n">Junio de 2026</td><td class="h n">Diferencia</td></tr>
+        <tr><th>5</th><td>Total de citas</td><td class="n">8</td><td class="n">0</td><td class="n">+8</td></tr>
+        <tr><th>6</th><td>Completadas</td><td class="n">2</td><td class="n">0</td><td class="n">+2</td></tr>
+        <tr><th>7</th><td>Canceladas</td><td class="n">1</td><td class="n">0</td><td class="n">+1</td></tr>
+        <tr><th>8</th><td>Sin cerrar</td><td class="n">5</td><td class="n">0</td><td class="n">+5</td></tr>
+        <tr><th>9</th><td>Reprogramadas pendientes</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+        <tr><th>10</th><td>Asignadas pendientes</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+        <tr><th>11</th><td>Tasa de asistencia</td><td class="n">28.6%</td><td class="n">Sin datos</td><td class="n">—</td></tr>
+        <tr><th>12</th><td>Tasa de cancelación</td><td class="n">12.5%</td><td class="n">Sin datos</td><td class="n">—</td></tr>
+        <tr><th>13</th><td>Pacientes nuevos</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+        <tr><th>14</th><td>Pacientes activos (al 19/10/2026)</td><td class="n">2</td><td class="n">—</td><td class="n">—</td></tr>
+      </table>
+      <div class="x-tabs"><span aria-current="true">Resumen</span><span>Tratamientos</span><span>Staff</span><span>Demanda</span></div>
+    </div>
+  </section>
+
+  <section class="v-section" id="movimiento">
+    <h2>Movimiento</h2>
+    <p>Ninguno. Al cambiar de mes los números se sustituyen sin animación: es una pantalla de lectura y no tiene momento protagonista. La única señal de espera es el giro del botón de descarga, que ya está en el sistema.</p>
+  </section>
+</div>
+<script>
+  document.querySelectorAll('[data-fill]').forEach(function (el) {
+    el.appendChild(document.getElementById(el.dataset.fill).content.cloneNode(true));
+  });
+</script>
+</body>
+</html>

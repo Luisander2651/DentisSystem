@@ -237,6 +237,22 @@
 .opt .footer-logo img { width: 260px; max-width: 100%; display: block; }
 
 .opt .pill.brand { display: inline-flex; font-weight: 700; }
+
+/* Spec 019 · indicador de cambio, contador comparado, selector y error de carga */
+.opt .trend { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; border: 1px solid transparent; font-size: var(--text-min); font-weight: 700; line-height: 16px; }
+.opt .trend.good { color: var(--color-success); background: var(--color-success-soft); }
+.opt .trend.bad { color: var(--color-warning); background: var(--color-warning-soft); }
+.opt .trend.flat { color: var(--color-muted); background: var(--color-surface); border-color: var(--color-line); }
+.opt .trend-text { color: var(--color-muted); font-size: var(--text-min); }
+.opt .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.opt .cmp { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 0; }
+.opt .cmp div { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-box); padding: 10px 12px; }
+.opt .cmp .wide { grid-column: span 2; }
+.opt .cmp dt { font-size: var(--text-min); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); }
+.opt .cmp dd { margin: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.opt .cmp dd b { font-size: 20px; }
+.opt .loaderror { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; border: 1px solid var(--color-danger); background: var(--color-danger-soft); border-radius: var(--radius-box); padding: 12px 16px; font-size: var(--text-small); color: var(--color-ink); }
+.opt .loaderror strong { color: var(--color-danger); }
 </style>
 </head>
 <body>
@@ -285,9 +301,10 @@
       <li class="v-pair" data-fg="--color-primary" data-bg="--color-surface" data-min="3">Rosa como acento (subrayado, borde activo, icono)</li>
       <li class="v-pair" data-fg="--color-on-dark" data-bg="--color-danger" data-min="4.5">Texto sobre el botón de eliminar o de cancelar una cita</li>
       <li class="v-pair" data-fg="--color-danger" data-bg="--color-danger-soft" data-min="4.5">Estado "Cancelada" y aviso de error</li>
+      <li class="v-pair" data-fg="--color-ink" data-bg="--color-danger-soft" data-min="4.5">Texto del bloque de error de carga</li>
       <li class="v-pair" data-fg="--color-danger" data-bg="--color-surface" data-min="4.5">Mensaje de error de campo</li>
-      <li class="v-pair" data-fg="--color-success" data-bg="--color-success-soft" data-min="4.5">Estado "Completada" / "Activo"</li>
-      <li class="v-pair" data-fg="--color-warning" data-bg="--color-warning-soft" data-min="4.5">Estado "Asignada"</li>
+      <li class="v-pair" data-fg="--color-success" data-bg="--color-success-soft" data-min="4.5">Estado "Completada" / "Activo" y cambio favorable</li>
+      <li class="v-pair" data-fg="--color-warning" data-bg="--color-warning-soft" data-min="4.5">Estado "Asignada" y cambio desfavorable</li>
       <li class="v-pair" data-fg="--color-info" data-bg="--color-info-soft" data-min="4.5">Estado "Reprogramada"</li>
       <li class="v-pair" data-fg="--color-ink" data-bg="--color-whatsapp" data-min="4.5">Texto del botón de WhatsApp</li>
     </ul>
@@ -313,7 +330,7 @@
 
   <section class="v-section" id="componentes">
     <h2>Componentes</h2>
-    <p class="v-note">Dibujados con los tokens de esta página, tal como los fija la variante B de la propuesta. Cómo quedan en cada pantalla se ve en las capturas de "Pantallas". Componentes Blade: <code>x-ui.button</code>, <code>x-ui.input</code>, <code>x-ui.brand</code>, <code>x-ui.dialog</code>, <code>x-ui.status</code>, <code>x-ui.stat</code>, <code>x-ui.chip</code>, <code>x-ui.badge</code>, <code>x-ui.record</code> y <code>x-ui.section-title</code>.</p>
+    <p class="v-note">Dibujados con los tokens de esta página, tal como los fija la variante B de la propuesta. Cómo quedan en cada pantalla se ve en las capturas de "Pantallas". Componentes Blade: <code>x-ui.button</code>, <code>x-ui.input</code>, <code>x-ui.brand</code>, <code>x-ui.dialog</code>, <code>x-ui.status</code>, <code>x-ui.stat</code>, <code>x-ui.chip</code>, <code>x-ui.badge</code>, <code>x-ui.record</code>, <code>x-ui.section-title</code>, <code>x-ui.select</code> y <code>x-ui.trend</code>.</p>
     <h3 class="v-group">Botones, enlaces y menú</h3>
     <p class="v-note">Una sola acción principal y un solo aspecto al pasar el cursor (CA3). Texto oscuro sobre el rosa (CA4). Enlaces y elemento activo en tinta, con el rosa como acento (CA5). Todos miden 44 px de alto (CA9, CA10).</p>
     <div class="v-stage"><div class="opt">
@@ -344,6 +361,39 @@
             </div>
         </div>
     </div></div>
+    <h3 class="v-group">Indicadores de un reporte</h3>
+    <p class="v-note">Spec 019. El color dice si el cambio es bueno o malo para la clínica, no si sube o baja: verde favorable, ámbar desfavorable, gris neutro o sin comparación. Siempre con flecha y texto; el rojo no marca tendencias. Contador comparado en dos columnas a cualquier ancho, y bloque de error cuando no carga la pantalla entera. Datos de julio de 2026 de los datos de prueba.</p>
+    <div class="v-stage"><div class="opt">
+        <div class="grid2">
+            <div class="card">
+                <h3>Indicador de cambio · los seis casos</h3>
+                <div class="row" style="gap:8px">
+                    <span class="trend good"><span aria-hidden="true">▲</span> +8 vs junio<span class="sr"> (favorable)</span></span>
+                    <span class="trend bad"><span aria-hidden="true">▲</span> +1 vs junio<span class="sr"> (desfavorable)</span></span>
+                    <span class="trend flat"><span aria-hidden="true">▲</span> +1 vs junio</span>
+                    <span class="trend flat"><span aria-hidden="true">=</span> sin cambio<span class="sr"> (sin cambio)</span></span>
+                    <span class="trend flat">junio: Sin datos<span class="sr"> (sin comparación)</span></span>
+                    <span class="trend-text">julio: 28.6 %</span>
+                </div>
+                <p class="note" style="margin-top:12px">Diferencia de porcentajes en puntos: <span class="trend bad"><span aria-hidden="true">▲</span> +3.2 pts vs junio<span class="sr"> (desfavorable)</span></span></p>
+            </div>
+            <div class="card">
+                <h3>Contador comparado</h3>
+                <dl class="cmp">
+                    <div class="wide"><dt>Citas del mes</dt><dd><b>8</b><span class="trend good"><span aria-hidden="true">▲</span> +8 vs junio<span class="sr"> (favorable)</span></span></dd></div>
+                    <div><dt>Completadas</dt><dd><b>2</b><span class="trend good"><span aria-hidden="true">▲</span> +2 vs junio<span class="sr"> (favorable)</span></span></dd></div>
+                    <div><dt>Canceladas</dt><dd><b>1</b><span class="trend bad"><span aria-hidden="true">▲</span> +1 vs junio<span class="sr"> (desfavorable)</span></span></dd></div>
+                    <div><dt>Asistencia</dt><dd><b>28.6 %</b><span class="trend flat">junio: Sin datos<span class="sr"> (sin comparación)</span></span></dd></div>
+                    <div><dt>Pacientes nuevos</dt><dd><b>0</b><span class="trend flat"><span aria-hidden="true">=</span> sin cambio<span class="sr"> (sin cambio)</span></span></dd></div>
+                </dl>
+            </div>
+            <div class="card">
+                <h3>Error de carga de la pantalla</h3>
+                <div class="loaderror"><strong>No se pudo cargar el reporte.</strong><span>No se perdió ningún dato. Revisa tu conexión e inténtalo de nuevo.</span><button class="btn btn-secondary" type="button">Intentar de nuevo</button></div>
+                <p class="note" style="margin-top:12px">Ocupa el lugar del contenido que no cargó y no caduca. No es una región viva: el texto lo anuncia una vez la región de estado.</p>
+            </div>
+        </div>
+    </div></div>
     <h3 class="v-group">Formularios</h3>
     <p class="v-note">Un solo campo: 44 px de alto, letra de 16 px (CA29), borde con contraste suficiente (CA7), etiqueta siempre visible.</p>
     <div class="v-stage"><div class="opt">
@@ -353,6 +403,7 @@
                 <label class="field"><span>Contraseña</span><input type="password" value="12345678"><small>Mínimo 8 caracteres.</small></label>
                 <label class="field error"><span>Motivo de la consulta</span><input type="text" value=""><small>El motivo de la consulta es obligatorio.</small></label>
                 <label class="field"><span>Rol</span><select><option>Administrador</option><option>Asistente</option><option>Doctor</option></select></label>
+                <label class="field"><span>Mes</span><select><option>Octubre de 2026</option><option>Septiembre de 2026</option><option>Agosto de 2026</option><option selected>Julio de 2026</option></select><small><code>x-ui.select</code> (spec 019): las mismas medidas que el campo.</small></label>
             </div>
             <div class="card">
                 <h3>Logo</h3>
@@ -541,6 +592,13 @@
           <div class="v-pairing"><a class="v-img v-img-390" href="capturas/usuarios-editar-390.png"><img src="capturas/usuarios-editar-390.png" alt="Usuarios, editar a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/usuarios-editar-1440.png"><img src="capturas/usuarios-editar-1440.png" alt="Usuarios, editar a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
         <figure class="v-shot"><figcaption><strong>Usuarios, confirmar eliminación</strong> · Administrador<br><span>components/ui/confirm-delete-modal.blade.php</span></figcaption>
           <div class="v-pairing"><a class="v-img v-img-390" href="capturas/usuarios-eliminar-390.png"><img src="capturas/usuarios-eliminar-390.png" alt="Usuarios, confirmar eliminación a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/usuarios-eliminar-1440.png"><img src="capturas/usuarios-eliminar-1440.png" alt="Usuarios, confirmar eliminación a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+      <h3 class="v-group" id="g-reportes">Reportes</h3>
+        <figure class="v-shot"><figcaption><strong>Reportes, mes con citas (julio de 2026)</strong> · Administrador<br><span>/reportes?mes=2026-07 · pages/reportes/index.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/reportes-390.png"><img src="capturas/reportes-390.png" alt="Reportes, mes con citas (julio de 2026) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/reportes-1440.png"><img src="capturas/reportes-1440.png" alt="Reportes, mes con citas (julio de 2026) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Reportes, mes sin citas (agosto de 2026)</strong> · Administrador<br><span>/reportes?mes=2026-08</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/reportes-sin-citas-390.png"><img src="capturas/reportes-sin-citas-390.png" alt="Reportes, mes sin citas (agosto de 2026) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/reportes-sin-citas-1440.png"><img src="capturas/reportes-sin-citas-1440.png" alt="Reportes, mes sin citas (agosto de 2026) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Reportes, mes en curso</strong> · Administrador<br><span>/reportes (mes en curso elegido)</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/reportes-mes-en-curso-390.png"><img src="capturas/reportes-mes-en-curso-390.png" alt="Reportes, mes en curso a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/reportes-mes-en-curso-1440.png"><img src="capturas/reportes-mes-en-curso-1440.png" alt="Reportes, mes en curso a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
       <h3 class="v-group" id="g-errores">Rechazos y errores</h3>
         <figure class="v-shot"><figcaption><strong>Página no encontrada</strong> · público<br><span>ruta inexistente · errors/404.blade.php</span></figcaption>
           <div class="v-pairing"><a class="v-img v-img-390" href="capturas/error-404-390.png"><img src="capturas/error-404-390.png" alt="Página no encontrada a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/error-404-1440.png"><img src="capturas/error-404-1440.png" alt="Página no encontrada a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
@@ -550,6 +608,8 @@
           <div class="v-pairing"><a class="v-img v-img-390" href="capturas/error-403-staff-390.png"><img src="capturas/error-403-staff-390.png" alt="Acceso denegado (paciente en ruta de staff) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/error-403-staff-1440.png"><img src="capturas/error-403-staff-1440.png" alt="Acceso denegado (paciente en ruta de staff) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
         <figure class="v-shot"><figcaption><strong>Acceso denegado (asistente en ruta de administrador)</strong> · Asistente<br><span>/usuarios · errors/403.blade.php</span></figcaption>
           <div class="v-pairing"><a class="v-img v-img-390" href="capturas/error-403-admin-390.png"><img src="capturas/error-403-admin-390.png" alt="Acceso denegado (asistente en ruta de administrador) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/error-403-admin-1440.png"><img src="capturas/error-403-admin-1440.png" alt="Acceso denegado (asistente en ruta de administrador) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Acceso denegado (asistente en Reportes)</strong> · Asistente<br><span>/reportes · errors/403.blade.php</span></figcaption>
+          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/error-403-asistente-reportes-390.png"><img src="capturas/error-403-asistente-reportes-390.png" alt="Acceso denegado (asistente en Reportes) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/error-403-asistente-reportes-1440.png"><img src="capturas/error-403-asistente-reportes-1440.png" alt="Acceso denegado (asistente en Reportes) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
   </section>
 
   <section class="v-section" id="movimiento">
