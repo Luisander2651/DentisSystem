@@ -5,6 +5,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+### Changed — flujo AI-DD actualizado a 1.18.1
+- Validador `.ai/bin/aidd.py` 1.18.1, plantilla de spec con "Criterios de diseño", bloque `models`
+  y criterios de diseño (`threshold`, `floor`, `budget`) en `.ai/project.yaml`, y `.ai/inspect/`
+  en `.gitignore`.
+
 ## [0.5.0] - 2026-10-22
 Reportes mensuales: el administrador ve cómo le fue a la clínica en un mes y lo descarga en Excel (spec 019).
 

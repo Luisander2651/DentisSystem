@@ -47,7 +47,7 @@ import re
 import subprocess
 import sys
 
-VERSION = "1.14.0"
+VERSION = "1.18.1"
 
 SPEC_STATES = {"draft", "inferred", "approved", "implemented", "released"}
 PLAN_STATES = {"draft", "approved", "blocked"}
@@ -80,6 +80,8 @@ VOCAB = {
     "deferred": ["Aceptados sin tarea", "Accepted without task"],
     "decisions": ["Decisiones", "Decisions"],
     "design": ["Diseño", "Design"],
+    "design_criteria": ["Criterios de diseño", "Design criteria"],
+    "candidates": ["Candidatos", "Candidates"],
     "color": ["Color", "Colour"],
     "design_debt": ["Deuda de diseño", "Design debt"],
     "view_inventory": ["Inventario de vistas", "View inventory"],
@@ -99,8 +101,15 @@ DESIGN_SOURCES = {"chosen", "extracted", "null", ""}
 SEO_STATES = {"none", "declined", "proposed", "inferred", "approved"}
 # Diseño de una spec (docs/specs/NNN-<slug>/design.md, /design-spec NNN).
 SPEC_DESIGN_STATES = {"draft", "approved"}
-SPEC_DESIGN_EXPLORATION = {"options", "none"}
+SPEC_DESIGN_EXPLORATION = {"loop", "options", "none"}   # options: actas anteriores a 1.17.0
+KPI_TYPES = {"above_fold", "above_fold_all", "visible", "order", "max_bytes", "max_js_bytes", "max_lcp_ms",
+             "max_cls", "max_heading_lines", "max_page_screens", "fonts_loaded", "scenes", "moving_elements",
+             "custom_background", "max_samples"}
+RUBRIC_KEYS = {"jerarquia", "primera_pantalla", "sistema", "lectura", "plantilla", "riqueza"}
 SEO_RENDERING = {"static", "ssr", "spa", "hybrid"}
+# Modelo de cada perfil de subagente (shared/contract.md → "Modelo de cada subagente").
+MODEL_PROFILES = ("critical", "standard", "mechanical", "implementation")
+MODEL_ALIASES = {"opus", "sonnet", "haiku", "fable", "inherit"}
 # Tipos de "Decisiones" (shared/contract.md → "Decisiones").
 DECISION_TYPES = {
     "brecha": "gap", "gap": "gap",
@@ -219,7 +228,7 @@ def design_config(root):
     block = yaml_block(read(p), "design") if p and os.path.isfile(p) else None
     if block is None:
         return None
-    return {k: (yaml_scalar(block, k) or "") for k in ("status", "source", "system", "html")}
+    return {k: (yaml_scalar(block, k) or "") for k in ("status", "source", "system", "html", "threshold", "floor", "budget")}
 
 
 def seo_config(root):
@@ -305,6 +314,76 @@ def spec_design_state(s):
     """Estado del design.md de la spec: None si no existe."""
     return frontmatter(s["design"]).get("status") if s.get("design") else None
 
+
+
+def dfm_exploration(s):
+    return frontmatter(s["design"]).get("exploration") if s.get("design") else None
+
+
+def validate_design_loop(rep, s, dfm):
+    """Acta de un ciclo por criterios: umbral, presupuesto, aceptado y criterios.json coherentes."""
+    nums = {}
+    for k, lo, hi in (("threshold", 0, 100), ("floor", 0, 5), ("budget", 1, 20)):
+        v = str(dfm.get(k, "")).strip()
+        if not re.fullmatch(r"\d+", v) or not lo <= int(v) <= hi:
+            rep.err(f"design.md: {k} inválido o ausente ({v!r}; entero de {lo} a {hi})")
+        else:
+            nums[k] = int(v)
+    acc = str(dfm.get("accepted", "")).strip()
+    decided = re.search(r"umbral|threshold", section(body(s["design"]), "decisions") or "", re.I) \
+        and re.search(W["user"], section(body(s["design"]), "decisions") or "", re.I)
+    if not re.fullmatch(r"c\d+|none", acc):
+        rep.err(f"design.md: accepted inválido o ausente ({acc!r}; cN o none)")
+    score = str(dfm.get("score", "")).strip()
+    if re.fullmatch(r"c\d+", acc) and "threshold" in nums:
+        if not re.fullmatch(r"\d+(?:\.\d+)?", score):
+            rep.err(f"design.md: score inválido o ausente ({score!r}) con un candidato aceptado")
+        elif float(score) < nums["threshold"] and not decided:
+            rep.err(f"design.md: {acc} aceptado con {score} por debajo del umbral {nums['threshold']} sin decisión del usuario")
+    rows = table_rows(section(body(s["design"]), "candidates"))
+    if not rows:
+        rep.err("design.md: sin sección 'Candidatos' (una fila por candidato del ciclo)")
+    elif "budget" in nums and len(rows) > nums["budget"] and not re.search(r"presupuesto|budget", section(body(s["design"]), "decisions") or "", re.I):
+        rep.warn(f"design.md: {len(rows)} candidatos con presupuesto {nums['budget']} y sin decisión que lo amplíe")
+    if re.fullmatch(r"c\d+", acc) and rows and not any(acc in " ".join(c) and re.search(r"aceptad|accepted", " ".join(c), re.I) for _, c in rows):
+        rep.err(f"design.md: accepted es {acc} pero 'Candidatos' no lo marca como aceptado")
+    if dfm.get("status") == "approved" and acc == "none" and not decided:
+        rep.err("design.md: aprobado sin candidato aceptado y sin decisión del usuario sobre el umbral")
+    cj = os.path.join(s["dir"], "design", "criterios.json") if s.get("dir") else ""
+    if not cj or not os.path.isfile(cj):
+        rep.err("design.md: exploration loop sin design/criterios.json (criterios que lee evaluate.mjs)")
+        return
+    try:
+        crit = json.loads(read(cj))
+    except ValueError as exc:
+        rep.err(f"design/criterios.json: no es JSON válido ({exc})")
+        return
+    kpis = crit.get("kpis") or []
+    if not kpis:
+        rep.err("design/criterios.json: sin KPIs")
+    seen = set()
+    for k in kpis:
+        kid = k.get("id")
+        if not kid or kid in seen:
+            rep.err(f"design/criterios.json: KPI sin id o repetido ({kid!r})")
+        seen.add(kid)
+        if k.get("type") not in KPI_TYPES:
+            rep.err(f"design/criterios.json: {kid}: type desconocido ({k.get('type')!r})")
+    weights = ((crit.get("rubric") or {}).get("weights")) or {}
+    if weights:
+        unknown = sorted(set(weights) - RUBRIC_KEYS)
+        if unknown:
+            rep.err(f"design/criterios.json: puntos de rúbrica desconocidos {unknown} ({', '.join(sorted(RUBRIC_KEYS))})")
+        try:
+            total = sum(float(v) for v in weights.values())
+        except (TypeError, ValueError):
+            total = -1
+        if total != 100:
+            rep.err(f"design/criterios.json: los pesos de la rúbrica suman {total:g}, deben sumar 100")
+    spec_ids = set(re.findall(r"\bK\d+\b", section(body(s["spec"] or ""), "design_criteria") or ""))
+    missing = sorted(spec_ids - seen, key=lambda x: int(x[1:]))
+    if missing:
+        rep.warn(f"design/criterios.json: faltan KPIs de 'Criterios de diseño' de la spec: {missing}")
 
 def spec_cas(spec_text):
     sec = section(body(spec_text), "criteria") or ""
@@ -660,6 +739,11 @@ def validate_spec_dir(d, root):
             rep.err(f"design.md: exploration inválido o ausente ({dfm.get('exploration')!r}; options, none)")
         if PLACEHOLDER_RE.search(COMMENT_RE.sub("", s["design"])):
             rep.err("design.md: quedan {{placeholders}} sin sustituir")
+        if dfm.get("exploration") == "loop":
+            validate_design_loop(rep, s, dfm)
+    if needs_design(s, root) and section(body(text), "design_criteria") is None \
+            and dfm_exploration(s) != "options":
+        rep.warn("spec: tiene interfaz pero no tiene sección 'Criterios de diseño' (/design-spec NNN la propone)")
     if s["plan"] and needs_design(s, root) and spec_design_state(s) != "approved":
         rep.warn("plan: la spec tiene interfaz y su design.md no está aprobado (/design-spec NNN)")
     for header, cells in table_rows(section(body(text), "decisions")):
@@ -943,6 +1027,10 @@ def validate_design(root):
         rep.err(f"project.yaml: design.status inválido ({dcfg['status']!r}; none, declined, draft, approved)")
     if dcfg["source"].lower() not in DESIGN_SOURCES:
         rep.err(f"project.yaml: design.source inválido ({dcfg['source']!r}; chosen, extracted)")
+    for k, lo, hi in (("threshold", 0, 100), ("floor", 0, 5), ("budget", 1, 20)):
+        v = dcfg.get(k, "").strip()
+        if v and (not re.fullmatch(r"\d+", v) or not lo <= int(v) <= hi):
+            rep.err(f"project.yaml: design.{k} inválido ({v!r}; entero de {lo} a {hi})")
     if st in {"draft", "approved"}:
         sp = os.path.join(root, dcfg["system"] or "docs/design/system.md")
         hp = os.path.join(root, dcfg["html"] or "docs/design/system.html")
@@ -968,6 +1056,25 @@ def validate_design(root):
             check_design_debt(rep, root, txt, os.path.dirname(sp))
         if not os.path.isfile(hp):
             rep.warn(f"falta la vista {os.path.relpath(hp, root).replace(os.sep, '/')} (HTML del sistema, se abre sin red)")
+    if rep.errors or rep.warnings:
+        rep.print()
+    return len(rep.errors)
+
+
+def validate_models(root):
+    """Bloque `models` de project.yaml: perfiles conocidos y modelos válidos (falta = por defecto)."""
+    p = os.path.join(root, ".ai", "project.yaml")
+    block = yaml_block(read(p), "models") if os.path.isfile(p) else None
+    if block is None:
+        return 0
+    rep = Report(".ai/project.yaml")
+    for m in re.finditer(r"^[ \t]+([A-Za-z_][\w-]*):[ \t]*([^#\n]*)", block, re.M):
+        key, val = m.group(1), m.group(2).strip().strip('"').strip("'")
+        if key not in MODEL_PROFILES:
+            rep.warn(f"models: perfil desconocido {key!r} (se ignora; {', '.join(MODEL_PROFILES)})")
+        elif val and val.lower() not in {"null", "~"} and val.lower() not in MODEL_ALIASES \
+                and not re.match(r"^claude-[a-z0-9.-]+$", val):
+            rep.err(f"models.{key} inválido ({val!r}; opus, sonnet, haiku, fable, inherit o un ID claude-…)")
     if rep.errors or rep.warnings:
         rep.print()
     return len(rep.errors)
@@ -1106,7 +1213,7 @@ def cmd_validate(args):
             continue  # ficha de cambio: se valida abajo
         a = os.path.abspath(a)
         targets.append(os.path.dirname(a) if os.path.isfile(a) else a)
-    design_errors = (validate_design(root) + validate_seo(root)) if not args else 0
+    design_errors = (validate_design(root) + validate_seo(root) + validate_models(root)) if not args else 0
     if not targets and not args:
         targets = spec_dirs(root)
         if not targets and not change_files(root):
@@ -2216,6 +2323,7 @@ def template_sha(path):
     """Huella de una plantilla, sin depender de finales de línea ni espacios finales."""
     lines = [l.rstrip() for l in read(path).replace("\r\n", "\n").split("\n")]
     return hashlib.sha256("\n".join(lines).strip().encode("utf-8")).hexdigest()[:12]
+
 
 
 def cmd_templates(args):
