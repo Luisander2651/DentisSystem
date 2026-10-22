@@ -238,4 +238,4 @@ it('writes the file in its own folder and leaves nothing there when the file can
         array_map('unlink', glob($folder.'/*') ?: []);
         rmdir($folder);
     }
-})->skip('019: pendiente de T074');
+});

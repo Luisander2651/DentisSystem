@@ -23,7 +23,8 @@ use OpenSpout\Writer\XLSX\Writer;
  * Every text goes in a StringCell and every number in a NumericCell, written one by one. The
  * factories of Row and Cell that guess the type of a cell from its value are never used: they turn
  * a name that starts with "=" into a formula (TM4). A file that fails half written is deleted
- * before the error goes on (R4).
+ * before the error goes on, and that error is always the original one, even if closing fails too
+ * (R4, R39).
  */
 final class OpenSpoutMonthlyReportExporter implements MonthlyReportExporterInterface
 {
@@ -55,9 +56,11 @@ final class OpenSpoutMonthlyReportExporter implements MonthlyReportExporterInter
 
     private const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
+    public function __construct(private ?string $temporaryDirectory = null) {}
+
     public function export(MonthlyReport $report): string
     {
-        $path = (string) tempnam(sys_get_temp_dir(), 'reporte-dentissa-');
+        $path = (string) tempnam($this->temporaryDirectory ?? sys_get_temp_dir(), 'reporte-dentissa-');
         $writer = new Writer;
 
         try {
@@ -78,9 +81,10 @@ final class OpenSpoutMonthlyReportExporter implements MonthlyReportExporterInter
         } catch (\Throwable $e) {
             try {
                 $writer->close();
-            } finally {
-                @unlink($path);
+            } catch (\Throwable) {
             }
+
+            @unlink($path);
 
             throw $e;
         }
