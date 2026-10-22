@@ -103,5 +103,5 @@ it('still lists and chooses by the month of the clinic on its last evening, when
 
 it('keeps the report out of sight until its figures arrive (R11)', function () {
     expect($this->get($this->reportsScreenUrl())->assertOk()->getContent())
-        ->toMatch('/<div[^>]*\\bdata-reports-content\\b[^>]*\\bhidden\\b[^>]*>|<div[^>]*\\bhidden\\b[^>]*\\bdata-reports-content\\b[^>]*>/');
+        ->toMatch('/<div(?=[^>]*\\sdata-reports-content[\\s>=])(?=[^>]*\\shidden(?:[\\s>]|=""))[^>]*>/');
 });

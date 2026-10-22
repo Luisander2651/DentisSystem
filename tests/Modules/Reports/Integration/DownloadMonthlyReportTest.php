@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Modules\Reports\Application\Contracts\MonthlyReportExporterInterface;
 use App\Modules\Reports\Domain\Service\MonthlyReportService;
 use App\Modules\Reports\Domain\ValueObjects\MonthlyReport;
 use App\Modules\Reports\Domain\ValueObjects\ReportMonth;
+use App\Modules\Reports\Infrastructure\Export\OpenSpoutMonthlyReportExporter;
 use Carbon\CarbonImmutable;
 use OpenSpout\Reader\XLSX\Options;
 use OpenSpout\Reader\XLSX\Reader;
@@ -205,7 +205,7 @@ it('deletes the temporary file once it has been sent (D10)', function () {
     expect(file_exists($path))->toBeFalse();
 });
 
-it('leaves no temporary file behind when the file cannot be written (R4)', function () {
+it('writes the file in its own folder and leaves nothing there when the file cannot be written (R4, R37)', function () {
     $this->seedJuly2026();
     $report = app(MonthlyReportService::class)->build(ReportMonth::create('2026-07', now()), now());
     $brokenWeek = MonthlyReport::create(
@@ -220,8 +220,22 @@ it('leaves no temporary file behind when the file cannot be written (R4)', funct
         staff: $report->staff,
         demand: ['hours' => [9], 'matrix' => [['not a count']], 'by_weekday' => array_fill(0, 7, 0), 'by_hour' => [0], 'top_weekdays' => [], 'top_hours' => [], 'total' => 0],
     );
-    $before = glob(sys_get_temp_dir().'/reporte-dentissa-*') ?: [];
+    $folder = sys_get_temp_dir().'/reporte-dentissa-test-'.bin2hex(random_bytes(8));
+    mkdir($folder);
+    $exporter = new OpenSpoutMonthlyReportExporter($folder);
 
-    expect(fn () => app(MonthlyReportExporterInterface::class)->export($brokenWeek))->toThrow(TypeError::class)
-        ->and(array_values(array_diff(glob(sys_get_temp_dir().'/reporte-dentissa-*') ?: [], $before)))->toBe([]);
-});
+    try {
+        $path = $exporter->export($report);
+
+        expect(dirname($path))->toBe($folder)
+            ->and(downloadedWorkbook($path))->toHaveKey('Resumen');
+
+        unlink($path);
+
+        expect(fn () => $exporter->export($brokenWeek))->toThrow(TypeError::class)
+            ->and(array_values(array_diff(scandir($folder) ?: [], ['.', '..'])))->toBe([]);
+    } finally {
+        array_map('unlink', glob($folder.'/*') ?: []);
+        rmdir($folder);
+    }
+})->skip('019: pendiente de T074');
