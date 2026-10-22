@@ -1,7 +1,8 @@
 ---
 id: 019
 slug: reportes-mensuales
-status: implemented
+status: released
+released: v0.5.0 (2026-10-22)
 created: 2026-10-19
 extends: []
 ---
@@ -184,5 +185,7 @@ Ninguna.
 | 2026-10-21 | Implementada | /implement: T001–T091 hechas; CA1–CA14 con sus tests en verde (suite completa 1653/1653, `ui-audit` dos veces sin fallos) |
 | 2026-10-21 | Vuelve a `approved` | /review ronda 1: changes_requested (R1 incumple CA3 en el mes en curso); correcciones en T058–T072 |
 | 2026-10-21 | Implementada de nuevo | /implement: T058–T072 de la review ronda 1 (R1–R7, R9–R11, R24, R30, R31); suite completa 1671/1671 |
+| 2026-10-22 | Liberada en v0.5.0 | /release: review ronda 3 aprobada y firmada; desplegada en producción y verificada |
 | 2026-10-21 | Vuelve a `approved` | /review ronda 2: changes_requested (R37, test inestable en paralelo); correcciones en T073–T074 |
 | 2026-10-22 | Implementada de nuevo | /implement: T073–T074 de la review ronda 2 (R37, R39, R40); suite completa 1671/1671 |
+| 2026-10-22 | Liberada en v0.5.0 | /release: review ronda 3 aprobada y firmada; desplegada en producción y verificada |

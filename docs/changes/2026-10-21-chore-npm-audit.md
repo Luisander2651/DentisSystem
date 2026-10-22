@@ -1,6 +1,7 @@
 ---
 lane: chore
-status: done                 # open → done → released · escalated (→ escalated_to)
+status: released             # open → done → released · escalated (→ escalated_to)
+released: v0.5.0 (2026-10-22)
 base: 5596109                # commit de partida; lo registra la skill al empezar (lo usa lane-check)
 relates: []                  # specs cuyo comportamiento toca ([] si ninguna)
 covers: []

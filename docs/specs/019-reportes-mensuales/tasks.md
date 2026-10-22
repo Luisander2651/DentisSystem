@@ -284,11 +284,15 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: hecha de nuevo 2026-10-22 tras T073–T074: `./vendor/bin/pest` completo en serie 1671 en verde, 0 fallos; Pint en verde; `npm run build` en verde; gitleaks (2 commits) sin hallazgos y semgrep sobre `app/Modules/Reports` 0 hallazgos. Sin `test:ui`: T073–T074 no tocan la interfaz (la vista solo se cambió a mano y se restauró). CA1–CA14 siguen marcados
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - Sin staging (`deploy.environments: [local, prod]`): la verificación se hace en producción tras T097, con cuentas de prueba. El administrador abre `/reportes`, ve el último mes completo y descarga `reporte-dentissa-AAAA-MM.xlsx`, que abre sin aviso de reparación (CA1, CA8); el asistente no ve "Reportes" en el menú y recibe 403 en `GET /api/v1/reports/monthly` (CA10); en Loki, sin 500 en `/api/v1/reports*` ni `report.export_failed`.
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-- [ ] T098 Marcar spec como `released`
+  - nota: 2026-10-22. No hay staging (P12): CI en verde en el PR #30 (Pest en paralelo, build, ui-audit, Pint, artefactos y seguridad del PR) y en `main` sobre su merge (`fe51fcb`, run 39823861958); suite local en serie 1671/1671. Verificación local con la imagen de la versión: `dentissa-app:v0.5.0` y `dentissa-web:v0.5.0` construidas desde `git archive v0.5.0` (el primer build de `app` falló al descargar del mirror de Alpine y pasó al repetirlo); usuario `www-data`, sin `.env`, `.git`, `public/hot`, `node_modules`, tests, Node ni Composer; `expose_php` Off y `zend.exception_ignore_args` On; OpenSpout v5.12.0 con zip, xmlwriter, dom y xmlreader, y la imagen escribe un .xlsx; manifiesto de Vite con `reportes/index.js` y los mismos 29 assets en `app` y `web`. Sin migraciones, variables nuevas ni cambios en `docker/` o `docker-compose.prod.yml` desde v0.4.0. `composer audit` y `npm audit` con 0 vulnerabilidades sobre `fe51fcb`
+- [x] T096 Aprobación humana para producción
+  - aprobado por Luisander2651 el 2026-10-22 12:14 (18:14 UTC) para v0.5.0 ("desplegar v0.5.0 a producción")
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: 2026-10-22, despliegue manual del usuario en el droplet con `docker/prod/deploy.sh v0.5.0` (14 min 44 s: el build recompiló las extensiones de PHP sin caché; sin migraciones; backup `pre-v0.5.0-20261022T183119Z.dump`; verificación local 14/14) y `verify.sh --remote` 30/30, confirmados por el usuario. Vigilancia de 15 min (18:33–18:48 UTC): 70 peticiones a `/up`, `/`, `/login`, `/reportes` y `/api/v1/reports/monthly` sin sesión, sin 5xx (máximo 1,5 s), todas con la respuesta esperada (200, 200, 200, 302 a `/login` y 401). Sin rollback
+  - nota: verificación en producción confirmada por el usuario el 2026-10-22: el administrador ve el reporte en `/reportes` y el Excel abre sin aviso de reparación (CA1, CA8); "todo bien" en el resto de la lista de T095 (asistente sin "Reportes" y con acceso denegado, CA10; en Loki, sin 500 en `/api/v1/reports*` ni `report.export_failed`)
+- [x] T098 Marcar spec como `released`
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
