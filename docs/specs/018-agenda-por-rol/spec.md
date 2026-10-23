@@ -185,3 +185,4 @@ Diseño de la spec: [design.md](design.md) (sin composiciones; cada rol ve solo 
 | 2026-10-17 | CA8 acotado a los listados de la agenda y con lista vacía; RNF de errores sobre el seguimiento; 008 en `extends` y criterios que cambian de cada spec extendida; vuelve a `draft` | /analyze 018 ronda 1 (A7, A8, A9, A15) |
 | 2026-10-17 | Reaprobada tras la edición | Aprobación del usuario |
 | 2026-10-18 | Liberada en v0.4.0 | /release 018 |
+| 2026-10-23 | Corregido por la ficha 2026-10-23-fix-completar-cita-sin-instrucciones en v0.5.1 (CA12) | /release |

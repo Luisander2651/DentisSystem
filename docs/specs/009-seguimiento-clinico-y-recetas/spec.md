@@ -78,6 +78,7 @@ diagnóstico, procedimiento, observaciones, recomendaciones) y las recetas emiti
 | 2026-09-22 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
 | 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA8 resuelto | /release |
 | 2026-10-18 | Comportamiento modificado por 018 en v0.4.0: CA7, el doctor completa sus citas con seguimiento clínico y lee el seguimiento de las suyas; CA9 se cumple salvo editar el seguimiento y las recetas; CA10 sigue cumpliéndose para el asistente | /release |
+| 2026-10-23 | Corregido por la ficha 2026-10-23-fix-completar-cita-sin-instrucciones en v0.5.1 (CA1) | /release |
 
 ## Aclaraciones
 ### Sesión 2026-09-22

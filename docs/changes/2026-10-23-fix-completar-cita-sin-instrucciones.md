@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done                 # open → done → released · escalated (→ escalated_to)
+status: released             # open → done → released · escalated (→ escalated_to)
+released: v0.5.1 (2026-10-23)
 base: 5395762                # commit de partida; lo registra la skill al empezar (lo usa lane-check)
 relates: [009, 018]          # specs cuyo comportamiento toca ([] si ninguna)
 covers: [CA1, CA12]          # 009 CA1 (completar con recetas en línea) · 018 CA12 (el doctor completa)
@@ -62,6 +63,21 @@ Commit `fix(fix-completar-cita-sin-instrucciones): …` con `Ficha:` en el cuerp
   arreglo la ataca, el texto no vacío se conserva igual y no hay otra clase `readonly` en `app/`
   que reasigne una propiedad promovida en su constructor. No toca contrato, datos, seguridad,
   diseño ni dependencias.
+- Release v0.5.1: CI en verde en `main` sobre `316a495` (run 40002681640); imágenes
+  `dentissa-app:v0.5.1` y `dentissa-web:v0.5.1` construidas desde `git archive 316a495` y
+  verificadas en local (arreglo presente, `www-data`, sin `.env`, `.git`, `public/hot`,
+  `node_modules`, tests, Node ni Composer; mismos 29 assets de Vite en `app` y `web`);
+  `composer audit` y `npm audit` con 0 vulnerabilidades. Tag `v0.5.1` sobre `316a495`.
+- Aprobado por Luisander2651 el 2026-10-23 12:39 (18:39 UTC) para v0.5.1 ("desplegar v0.5.1 a
+  producción").
+- Producción: despliegue manual del usuario en el droplet con `docker/prod/deploy.sh v0.5.1`
+  (3 min 11 s; sin migraciones; verificación local 14/14) y `verify.sh --remote` 30/30,
+  confirmados por el usuario. Verificación manual del usuario el 2026-10-23: completar una cita
+  con una receta sin instrucciones se guarda correctamente.
+- Vigilancia de 15 min (19:23–19:38 UTC): 140 peticiones a `/up`, `/`, `/login`, `/agenda` y
+  `/api/v1/appointments` sin sesión, sin 5xx (máximo 3,4 s). Todas con la respuesta esperada
+  (200, 200, 200, 401 y 401); `/agenda` dio 401 porque la sonda mandaba `Accept: application/json`
+  (sin esa cabecera redirige a `/login`, comprobado). Sin rollback.
 
 ## Decisiones
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |

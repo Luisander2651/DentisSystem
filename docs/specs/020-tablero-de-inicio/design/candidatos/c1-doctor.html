@@ -1,0 +1,200 @@
+<!doctype html>
+<!--
+  Candidato c1 · spec 020 tablero de inicio · Doctor. Solo tokens de docs/design/system.md 2.0.0;
+  ningún token nuevo. Datos de prueba (personas "… Prueba", como UiAuditSeeder). Hoy: jueves 22 de
+  octubre de 2026, 11:40 (hora de la clínica).
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inicio - Dentissa</title>
+<style id="tokens">
+:root{
+  --color-primary:#d75078;--color-primary-hover:#dc6588;--color-primary-soft:#fbe9ee;--color-secondary:#f2b0a6;
+  --color-ink:#0b1120;--color-muted:#556274;--color-canvas:#f8fafc;--color-surface:#ffffff;--color-on-dark:#ffffff;
+  --color-line:#e2e8f0;--color-field:#7c8aa0;--color-danger:#b91c1c;--color-danger-soft:#fef2f2;
+  --color-success:#047857;--color-success-soft:#ecfdf5;--color-warning:#b45309;--color-warning-soft:#fffbeb;
+  --color-info:#1d4ed8;--color-info-soft:#eff6ff;
+  --radius-control:12px;--radius-box:16px;--radius-card:24px;--spacing-control:44px;
+  --font-sans:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--color-canvas);color:var(--color-ink);font-family:var(--font-sans);font-size:16px;line-height:1.5}
+:focus-visible{outline:3px solid var(--color-ink);outline-offset:2px}
+h1,h2,h3,p,dl,dd,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:inherit}
+.shell{display:grid;gap:16px;padding:16px;max-width:1440px;margin:0 auto}
+.card{background:var(--color-surface);border:1px solid var(--color-line);border-radius:var(--radius-card);box-shadow:0 1px 2px rgb(11 17 32 / .05)}
+/* barra móvil y menú lateral */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:40px;height:40px;border-radius:var(--radius-control)}
+.brand b{display:block;font-size:16px;line-height:1.2}
+.brand small{display:block;font-size:12px;font-weight:600;color:var(--color-muted)}
+.iconbtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--color-field);border-radius:var(--radius-control);background:var(--color-surface);color:var(--color-ink)}
+.side{display:none}
+.side nav{display:grid;gap:4px;margin-top:20px;padding-top:20px;border-top:1px solid var(--color-line)}
+.side nav a{display:flex;align-items:center;gap:16px;min-height:44px;padding:0 20px;border-radius:var(--radius-box);font-size:14px;font-weight:600;text-decoration:none;color:var(--color-muted)}
+.side nav a[aria-current]{background:var(--color-primary-soft);color:var(--color-ink);box-shadow:inset 3px 0 0 var(--color-primary)}
+.side nav svg{width:20px;height:20px;flex:none}
+.side .logout{margin-top:12px;padding-top:12px;border-top:1px solid var(--color-line)}
+main{display:grid;gap:16px;min-width:0}
+/* encabezado */
+.hero{padding:24px}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;border:1px solid var(--color-secondary);background:var(--color-primary-soft);font-size:12px;font-weight:700}
+.hero h1{margin-top:12px;font-size:30px;font-weight:600;line-height:1.2}
+.hero .today{margin-top:4px;color:var(--color-muted)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:var(--radius-control);font:inherit;font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;border:1px solid var(--color-field);background:var(--color-surface);color:var(--color-ink);white-space:nowrap}
+.btn svg{width:16px;height:16px;flex:none}
+.btn.primary{background:var(--color-primary);border-color:var(--color-primary)}
+.actions .btn.primary{grid-column:1/-1}
+/* rejillas */
+.row{display:grid;gap:16px}
+.panel{padding:20px}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.panel h2{font-size:18px;font-weight:700;line-height:1.4}
+.panel .sub{font-size:14px;color:var(--color-muted)}
+.count{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:24px;padding:0 8px;border-radius:999px;background:var(--color-warning-soft);color:var(--color-warning);font-size:12px;font-weight:700}
+/* siguiente cita */
+.next{background:var(--color-primary-soft);border-color:var(--color-secondary)}
+.next .when{display:flex;align-items:center;gap:12px;margin-top:16px}
+.next .time{font-size:36px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.next .who{margin-top:12px;font-size:20px;font-weight:700;line-height:1.3}
+.next .what{margin-top:2px;color:var(--color-ink)}
+.next .what span{color:var(--color-muted)}
+.next .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.next .btns .btn{flex:1 1 140px}
+/* cifras */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.stat{padding:12px 14px;border:1px solid var(--color-line);border-radius:var(--radius-box)}
+.stat dt{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--color-muted)}
+.stat dd{margin-top:4px;font-size:24px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+.bar{display:flex;height:8px;margin-top:16px;border-radius:999px;overflow:hidden;background:var(--color-line)}
+.bar i{display:block}
+.bar .ok{background:var(--color-success)}.bar .wait{background:var(--color-warning)}.bar .no{background:var(--color-danger)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:8px;font-size:12px;color:var(--color-muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:8px;height:8px;border-radius:999px}
+.jump{display:grid;gap:8px;margin-top:16px}
+.jump a{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:8px 14px;border-radius:var(--radius-box);border:1px solid var(--color-secondary);background:var(--color-warning-soft);font-size:14px;font-weight:600;text-decoration:none}
+.jump a b{color:var(--color-warning)}
+/* listas */
+.list{margin-top:12px;display:grid}
+.item{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;padding:12px 0;border-top:1px solid var(--color-line);align-items:start}
+.item:first-child{border-top:0}
+.item .t{font-weight:700;font-variant-numeric:tabular-nums;min-width:52px}
+.item .p{font-weight:600}
+.item .m{font-size:14px;color:var(--color-muted)}
+.item .b{grid-column:2}
+.item.is-next{background:var(--color-primary-soft);border-radius:var(--radius-box);padding:12px;margin:0 -12px;border-top-color:transparent}
+.item.is-next + .item{border-top-color:transparent}
+.tag{display:inline-block;margin-left:6px;font-size:12px;font-weight:700;color:var(--color-ink)}
+.badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;line-height:1.5}
+.b-asig{background:var(--color-warning-soft);color:var(--color-warning)}
+.b-rep{background:var(--color-info-soft);color:var(--color-info)}
+.b-comp{background:var(--color-success-soft);color:var(--color-success)}
+.b-canc{background:var(--color-danger-soft);color:var(--color-danger)}
+.pend{display:grid;gap:8px;padding:12px 0;border-top:1px solid var(--color-line)}
+.pend:first-child{border-top:0}
+.pend .info{display:grid;gap:2px}
+.pend .d{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.pend .ops{display:flex;flex-wrap:wrap;gap:8px}
+.pend .ops .btn{flex:1 1 120px}
+.more{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;padding-top:12px;border-top:1px solid var(--color-line);font-size:14px;color:var(--color-muted)}
+.link{display:inline-flex;align-items:center;min-height:44px;font-size:14px;font-weight:600;color:var(--color-ink);text-decoration:underline;text-decoration-color:var(--color-primary);text-decoration-thickness:2px;text-underline-offset:4px}
+/* mes */
+.month dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.month .wide{grid-column:1/-1}
+.trend{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.trend.up{background:var(--color-success-soft);color:var(--color-success)}
+.note{margin-top:12px;padding:10px 14px;border-radius:var(--radius-box);border:1px solid var(--color-secondary);background:var(--color-primary-soft);font-size:14px}
+.as-of{display:block;margin-top:6px;font-size:12px;color:var(--color-muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+footer{padding:24px 16px;text-align:center;font-size:14px;color:var(--color-muted);border-top:1px solid var(--color-line);background:var(--color-surface)}
+@media (min-width:768px){
+  .shell{padding:24px;gap:24px}
+  main{gap:24px}
+  .actions{display:flex;flex-wrap:wrap}
+  .row.top{grid-template-columns:7fr 5fr}
+  .pend{grid-template-columns:1fr auto;align-items:center}
+  .pend .ops .btn{flex:0 0 auto}
+}
+@media (min-width:1024px){
+  .shell{grid-template-columns:320px minmax(0,1fr);align-items:start}
+  .topbar{display:none}
+  .side{display:block;padding:24px;position:sticky;top:24px}
+  .row.mid{grid-template-columns:7fr 5fr;align-items:start}
+  .hero-in{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .actions{margin-top:0}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="card topbar"><div class="brand"><img src="../../../../../public/images/brand/icon-64.png" alt="Logo de Dentissa" width="40" height="40" data-origen="propia"><div><b>Dentissa</b><small>Doctor</small></div></div><button class="iconbtn" type="button" aria-label="Abrir menú"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></header>
+  <aside class="card side" aria-label="Menú principal"><div class="brand"><img src="../../../../../public/images/brand/icon-64.png" alt="Logo de Dentissa" width="40" height="40" data-origen="propia"><div><b>Dentissa</b><small>Doctor</small></div></div><nav><a href="#" aria-current="page"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-7h6v7"/></svg>Inicio</a><a href="#"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Agenda</a><a href="#"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Expedientes clínicos</a><a class="logout" href="#"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>Cerrar sesión</a></nav></aside>
+  <main>
+    <section class="card hero" aria-labelledby="titulo">
+      <div class="hero-in">
+        <div>
+          <span class="eyebrow"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z"/></svg>Panel clínico</span>
+          <h1 id="titulo">¡Hola, Daniela!</h1>
+          <p class="today">Jueves 22 de octubre · 11:40</p>
+        </div>
+        <nav class="actions" aria-label="Acciones rápidas"><a class="btn" href="#"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h4"/></svg>Registrar seguimiento</a><a class="btn" href="#"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Buscar paciente</a><a class="btn" href="#"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Agenda de hoy</a></nav>
+      </div>
+    </section>
+
+    <div class="row top">
+      <section class="card panel next" aria-labelledby="sig">
+        <h2 id="sig">Siguiente cita</h2>
+        <div class="when"><span class="time">13:15</span><span class="badge b-rep">Reprogramada</span></div>
+        <p class="who">Javier Prueba</p>
+        <p class="what">Resina de prueba <span>· Daniela Prueba</span></p>
+        <div class="btns"><button class="btn primary" type="button">Completar</button><button class="btn" type="button">Ver detalle</button></div>
+      </section>
+      <section class="card panel" aria-labelledby="cifras">
+        <h2 id="cifras">Hoy en cifras</h2>
+        <dl class="stats">
+          <div class="stat"><dt>Citas</dt><dd>4</dd></div>
+          <div class="stat"><dt>Completadas</dt><dd>2</dd></div>
+          <div class="stat"><dt>Por atender</dt><dd>2</dd></div>
+          <div class="stat"><dt>Canceladas</dt><dd>0</dd></div>
+        </dl>
+        <div class="bar" aria-hidden="true"><i class="ok" style="width:50.0%"></i><i class="wait" style="width:50.0%"></i><i class="no" style="width:0.0%"></i></div>
+        <div class="jump">
+          <a href="#sin-cerrar"><span>Citas sin cerrar</span><b>3</b></a>
+          <a href="#sin-seguimiento"><span>Completadas sin seguimiento</span><b>3</b></a>
+        </div>
+      </section>
+    </div>
+
+    <div class="row mid">
+      <section class="card panel" aria-labelledby="agenda">
+        <div class="panel-head"><h2 id="agenda">Agenda de hoy</h2><a class="link" href="#">Abrir la agenda</a></div>
+        <ol class="list"><li class="item"><span class="t">09:45</span><div><span class="p">Mario Prueba</span><div class="m">Resina de prueba · Daniela Prueba</div></div><div class="b"><span class="badge b-comp">Completada</span></div></li><li class="item"><span class="t">11:15</span><div><span class="p">Andrés Prueba</span><div class="m">Limpieza dental de prueba · Daniela Prueba</div></div><div class="b"><span class="badge b-comp">Completada</span></div></li><li class="item is-next"><span class="t">13:15</span><div><span class="p">Javier Prueba</span><span class="tag">· Siguiente</span><div class="m">Resina de prueba · Daniela Prueba</div></div><div class="b"><span class="badge b-rep">Reprogramada</span></div></li><li class="item"><span class="t">17:30</span><div><span class="p">Elena Prueba</span><div class="m">Extracción de prueba · Daniela Prueba</div></div><div class="b"><span class="badge b-asig">Asignada</span></div></li></ol>
+      </section>
+      
+    </div>
+
+    <section class="card panel" id="sin-cerrar" aria-labelledby="h-sin-cerrar">
+      <div class="panel-head"><h2 id="h-sin-cerrar">Citas sin cerrar <span class="count">3</span></h2>
+      <p class="sub">De días anteriores, siguen asignadas o reprogramadas.</p></div>
+      <ul class="list"><li class="pend"><div class="info"><span class="d">Mié 21 oct · 10:00</span><span><b>Lucía Prueba</b> <span class="badge b-rep">Reprogramada</span></span><span class="m">Limpieza dental de prueba · Daniela Prueba</span></div><div class="ops"><button class="btn" type="button">Completar</button></div></li><li class="pend"><div class="info"><span class="d">Lun 19 oct · 09:15</span><span><b>Inés Prueba</b> <span class="badge b-asig">Asignada</span></span><span class="m">Ortodoncia de prueba · Daniela Prueba</span></div><div class="ops"><button class="btn" type="button">Completar</button></div></li><li class="pend"><div class="info"><span class="d">Vie 16 oct · 11:45</span><span><b>Rosa Prueba</b> <span class="badge b-asig">Asignada</span></span><span class="m">Resina de prueba · Daniela Prueba</span></div><div class="ops"><button class="btn" type="button">Completar</button></div></li></ul>
+      
+    </section>
+
+    <section class="card panel" id="sin-seguimiento" aria-labelledby="h-sin-seg">
+      <div class="panel-head"><h2 id="h-sin-seg">Completadas sin seguimiento <span class="count">3</span></h2>
+      <p class="sub">Falta registrar el seguimiento clínico.</p></div>
+      <ul class="list"><li class="pend"><div class="info"><span class="d">Mié 21 oct · 12:00</span><span><b>Bruno Prueba</b></span><span class="m">Limpieza dental de prueba · Daniela Prueba</span></div><div class="ops"><button class="btn" type="button">Registrar seguimiento</button></div></li><li class="pend"><div class="info"><span class="d">Jue 15 oct · 16:00</span><span><b>Eva Prueba</b></span><span class="m">Extracción de prueba · Daniela Prueba</span></div><div class="ops"><button class="btn" type="button">Registrar seguimiento</button></div></li><li class="pend"><div class="info"><span class="d">Jue 8 oct · 12:45</span><span><b>Gloria Prueba</b></span><span class="m">Resina de prueba · Daniela Prueba</span></div><div class="ops"><button class="btn" type="button">Registrar seguimiento</button></div></li></ul>
+    </section>
+  </main>
+</div>
+<footer>© 2026 Dentissa. Todos los derechos reservados.</footer>
+</body>
+</html>
