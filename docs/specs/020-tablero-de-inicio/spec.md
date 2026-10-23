@@ -92,8 +92,9 @@ cómo va el mes.
   CA4 y CA9). El asistente y el doctor no ven esta sección.
 - [ ] CA11 · Dado el inicio de cualquier rol del staff, cuando se muestra, entonces ya no hay
   contadores con "-", ni la tarjeta "Estado: En línea", ni "Actividad reciente", ni la acción
-  "Nuevo usuario". El título de la pestaña es "Inicio - Dentissa" (cierra 016/R42) y la inicial
-  del nombre se muestra completa aunque lleve acento (cierra 016/R43).
+  "Nuevo usuario", ni la tarjeta del encabezado con la inicial, el correo y el rol (el rol sigue
+  en el menú lateral), así que no queda ninguna inicial recortada (cierra 016/R43). El título de la
+  pestaña es "Inicio - Dentissa" (cierra 016/R42).
 - [ ] CA12 · Dado que una sección del inicio no se puede cargar, cuando falla, entonces esa
   sección muestra "No se pudo cargar esta sección." con un botón "Reintentar" y las demás
   secciones se siguen viendo y usando. Mientras carga, cada sección indica que está cargando.
@@ -245,6 +246,7 @@ Ninguna.
 | 2026-10-22 | implícita | ¿Qué es un paciente activo y un paciente nuevo del mes? | Ficha en estado activo; ficha dada de alta en el mes, como en "Reportes" | `docs/specs/019-reportes-mensuales/spec.md` CA4 |
 | 2026-10-22 | implícita | ¿Quién completa y quién cancela? | Completar: administrador y doctor (sus citas); cancelar: administrador y asistente | `docs/specs/018-agenda-por-rol/spec.md` → Seguridad y privacidad |
 | 2026-10-22 | implícita | ¿Las listas del inicio auditan una lectura de datos de salud? | No: no muestran datos clínicos; los registros de seguimiento y los accesos denegados sí, cuando exista el registro (objetivo 5) | `docs/observability.md` → Registro de auditoría |
+| 2026-10-23 | contradicción | CA11 pedía la inicial completa, pero el diseño aprobado (c5) quitó la tarjeta con la inicial, el correo y el rol | CA11 dice que esa tarjeta ya no está; 016/R43 se cierra porque no queda ninguna inicial recortada | usuario (/plan 020) |
 | 2026-10-22 | supuesto | ¿Cuántas citas se ven en las listas de pendientes? | Hasta 10, de la más reciente a la más antigua, con el total pendiente | agente; aceptado por el usuario, 2026-10-22 |
 | 2026-10-22 | supuesto | ¿Qué hace "Registrar seguimiento" en las acciones rápidas? | Abre el diálogo de completar de la siguiente cita; si no hay, no aparece | agente; aceptado por el usuario, 2026-10-22 |
 | 2026-10-22 | supuesto | ¿El tablero se actualiza solo? | No; se recarga al entrar y tras una acción hecha desde él | agente; aceptado por el usuario, 2026-10-22 |
@@ -279,3 +281,5 @@ Ninguna.
 |---|---|---|
 | 2026-10-22 | Creación en `draft` | /specify, desde el pendiente del roadmap |
 | 2026-10-22 | Aprobada | Aprobación del usuario |
+| 2026-10-23 | CA11: el inicio ya no muestra la tarjeta con inicial, correo y rol; vuelve a `draft` | Contradicción con `design.md` (c5) detectada en /plan 020 |
+| 2026-10-23 | Reaprobada tras la edición de CA11 | Aprobación del usuario |
