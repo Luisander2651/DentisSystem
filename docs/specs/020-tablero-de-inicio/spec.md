@@ -40,9 +40,10 @@ cómo va el mes.
   hay citas para hoy.".
 - [ ] CA2 · Dada la agenda de hoy, cuando se muestra, entonces la siguiente cita aparece
   destacada: la primera de hoy en estado asignada o reprogramada cuya hora de inicio es igual o
-  posterior a la hora actual de la clínica. Desde ella se abre su detalle con las acciones que
-  el rol tiene en la agenda (018). Si no queda ninguna, se indica "No quedan citas por atender
-  hoy.".
+  posterior a la hora actual de la clínica. Desde ella se abre su detalle con las mismas acciones
+  que el rol tiene en la agenda (018), incluido "Reprogramar" con el mismo diálogo y las mismas
+  reglas (017); ningún rol ve una acción que no funcione. Si no queda ninguna, se indica "No
+  quedan citas por atender hoy.".
 - [ ] CA3 · Dada la agenda de hoy, cuando se muestra, entonces aparecen cuatro contadores de hoy:
   citas (todas, también las canceladas), completadas, por atender (asignadas o reprogramadas, sea
   cual sea su hora) y canceladas. Completadas, por atender y canceladas suman el total de citas,
@@ -85,16 +86,18 @@ cómo va el mes.
   | Registrar seguimiento | sí | no | sí | abre el diálogo de completar de la siguiente cita (CA2); si no hay siguiente cita, no aparece |
 
 - [ ] CA10 · Dado un administrador, cuando abre el inicio, entonces ve las citas del mes en curso
-  hasta hoy, los pacientes nuevos del mes y los pacientes activos (ficha en estado activo). Las
-  citas y los pacientes nuevos se comparan con el mes anterior y su diferencia (p. ej. "42 · +6
-  respecto a septiembre"), con el aviso "Mes en curso: datos hasta hoy" y un enlace a
-  "Reportes". Los números son los mismos que muestra "Reportes" para el mes en curso (019 CA2,
-  CA4 y CA9). El asistente y el doctor no ven esta sección.
+  (todas las del mes, también las ya agendadas para días que vienen, como en "Reportes"), los
+  pacientes nuevos del mes y los pacientes activos (ficha en estado activo). Las citas y los
+  pacientes nuevos se comparan con el mes anterior y su diferencia (p. ej. "42 citas · +6 respecto
+  a septiembre (36)"), con el aviso "Mes en curso: datos hasta hoy" y un enlace a "Reportes". Los
+  números son los mismos que muestra "Reportes" para el mes en curso (019 CA2, CA4 y CA9). El
+  asistente y el doctor no ven esta sección.
 - [ ] CA11 · Dado el inicio de cualquier rol del staff, cuando se muestra, entonces ya no hay
   contadores con "-", ni la tarjeta "Estado: En línea", ni "Actividad reciente", ni la acción
   "Nuevo usuario", ni la tarjeta del encabezado con la inicial, el correo y el rol (el rol sigue
-  en el menú lateral), así que no queda ninguna inicial recortada (cierra 016/R43). El título de la
-  pestaña es "Inicio - Dentissa" (cierra 016/R42).
+  en el menú lateral). El título de la pestaña es "Inicio - Dentissa" (cierra 016/R42). En el
+  inicio del paciente, el título es también "Inicio - Dentissa" y su inicial se muestra completa
+  aunque lleve acento; así no queda ninguna inicial recortada (cierra 016/R43).
 - [ ] CA12 · Dado que una sección del inicio no se puede cargar, cuando falla, entonces esa
   sección muestra "No se pudo cargar esta sección." con un botón "Reintentar" y las demás
   secciones se siguen viendo y usando. Mientras carga, cada sección indica que está cargando.
@@ -108,10 +111,13 @@ cómo va el mes.
   paciente → se rechaza con acceso denegado y no cambia nada.
 - [ ] CA15 · (abuso) Como staff, intento registrar un seguimiento en una cita que ya lo tiene, que
   está cancelada o que todavía no está completada, por otra vía → se rechaza con un mensaje en
-  español, la cita no cambia y no se guarda ningún seguimiento.
+  español, la cita no cambia y no se guarda ningún seguimiento. Lo mismo al completar una cita que
+  ya tiene seguimiento o está cancelada: el rechazo va en español y sin el identificador de la
+  cita (cambia 009 CA3 y CA4 solo en el texto del mensaje).
 - [ ] CA16 · (abuso) Como paciente, staff inactivo o visitante sin sesión, intento obtener
-  cualquier dato del tablero por otra vía → se rechaza igual que la agenda (014, 018 CA11); el
-  paciente sigue viendo su inicio actual sin cambios.
+  cualquier dato del tablero por otra vía → se rechaza igual que la agenda (014, 018 CA11). Si
+  el staff inactivo entra a `/dashboard`, ve la página "Sin permiso", como en la agenda. El
+  paciente sigue viendo su inicio, sin más cambios que los de CA11.
 
 ## Fuera de alcance
 - El recordatorio de WhatsApp de las citas de mañana y la confirmación por WhatsApp.
@@ -119,10 +125,10 @@ cómo va el mes.
   por día y hora y tendencias de varios meses: están en "Reportes" (019) o fuera de él.
 - Pacientes que no vuelven, ingresos, estado "no asistió", ocupación del sillón y origen del
   paciente.
-- El inicio del paciente (portal del paciente sin pantallas): no cambia.
+- El inicio del paciente (portal del paciente sin pantallas): no cambia, salvo el título y la
+  inicial (CA11).
 - Corregir un seguimiento o unas recetas ya registrados (009 CA11): solo se registra el que falta.
 - Que el asistente complete citas, registre seguimiento o dé de alta pacientes.
-- Reprogramar desde el inicio: se hace desde el detalle de la cita en la agenda.
 - Limitar el historial de citas del expediente a las del doctor (spec por crear del roadmap).
 - Actualización automática del tablero mientras está abierto: se recarga al volver a entrar o
   tras una acción hecha desde él.
@@ -247,6 +253,11 @@ Ninguna.
 | 2026-10-22 | implícita | ¿Quién completa y quién cancela? | Completar: administrador y doctor (sus citas); cancelar: administrador y asistente | `docs/specs/018-agenda-por-rol/spec.md` → Seguridad y privacidad |
 | 2026-10-22 | implícita | ¿Las listas del inicio auditan una lectura de datos de salud? | No: no muestran datos clínicos; los registros de seguimiento y los accesos denegados sí, cuando exista el registro (objetivo 5) | `docs/observability.md` → Registro de auditoría |
 | 2026-10-23 | contradicción | CA11 pedía la inicial completa, pero el diseño aprobado (c5) quitó la tarjeta con la inicial, el correo y el rol | CA11 dice que esa tarjeta ya no está; 016/R43 se cierra porque no queda ninguna inicial recortada | usuario (/plan 020) |
+| 2026-10-23 | contradicción | CA2 ofrecía las acciones de la agenda, pero "Reprogramar desde el inicio" estaba fuera de alcance (/analyze A1) | El detalle del inicio ofrece Reprogramar con el diálogo y las reglas de la agenda | usuario |
+| 2026-10-23 | brecha | ¿El mes del administrador cuenta hasta hoy o todo el mes? (/analyze A10) | Todo el mes, como Reportes; texto "42 citas · +6 respecto a septiembre (36)" | usuario |
+| 2026-10-23 | brecha | ¿Completar también responde en español al rechazar una cita con seguimiento o cancelada? (/analyze A9) | Sí, en español y sin el identificador de la cita | usuario |
+| 2026-10-23 | contradicción | El paciente comparte la vista y su inicial salía recortada, lo que dejaba 016/R43 abierto (/analyze A16) | El paciente ve "Inicio - Dentissa" y su inicial completa; el resto de su inicio no cambia | usuario |
+| 2026-10-23 | brecha | ¿Qué ve el staff inactivo en `/dashboard`? (/analyze A17) | La página "Sin permiso", como en la agenda | usuario |
 | 2026-10-22 | supuesto | ¿Cuántas citas se ven en las listas de pendientes? | Hasta 10, de la más reciente a la más antigua, con el total pendiente | agente; aceptado por el usuario, 2026-10-22 |
 | 2026-10-22 | supuesto | ¿Qué hace "Registrar seguimiento" en las acciones rápidas? | Abre el diálogo de completar de la siguiente cita; si no hay, no aparece | agente; aceptado por el usuario, 2026-10-22 |
 | 2026-10-22 | supuesto | ¿El tablero se actualiza solo? | No; se recarga al entrar y tras una acción hecha desde él | agente; aceptado por el usuario, 2026-10-22 |
@@ -283,3 +294,5 @@ Ninguna.
 | 2026-10-22 | Aprobada | Aprobación del usuario |
 | 2026-10-23 | CA11: el inicio ya no muestra la tarjeta con inicial, correo y rol; vuelve a `draft` | Contradicción con `design.md` (c5) detectada en /plan 020 |
 | 2026-10-23 | Reaprobada tras la edición de CA11 | Aprobación del usuario |
+| 2026-10-23 | CA2 (Reprogramar en el detalle), CA10 (todo el mes, texto), CA11 (paciente: título e inicial), CA15 (también completar), CA16 (staff inactivo), "Fuera de alcance"; vuelve a `draft` | /analyze 020 ronda 1 (A1, A9, A10, A16, A17) |
+| 2026-10-23 | Reaprobada tras la edición de /analyze ronda 1 | Aprobación del usuario |
