@@ -192,20 +192,27 @@ Recursos de marca: logo y paleta del sistema de diseño
 ([docs/design/system.md](../../design/system.md)). Solo con componentes del sistema de diseño.
 El diálogo de completar, la confirmación de cancelar y el diálogo de agendar se reutilizan de la
 agenda (017, 018).
+Diseño de la spec: [design.md](design.md) (candidato c5, 80/100: siguiente cita con franja rosa, barra del
+día con sus cuatro cifras, agenda con la línea "Ahora" y pendientes agrupados por día).
 
 ## Criterios de diseño
-Modo: operar · umbral 80 · mínimo por punto 3 · presupuesto 5 candidatos.
+Modo: operar · umbral 80 · mínimo por punto 3 · presupuesto 5 candidatos. Cada candidato son dos
+páginas, administrador (todas las secciones) y doctor, medidas con
+[design/criterios.json](design/criterios.json) y [design/criterios-doctor.json](design/criterios-doctor.json).
 
 | ID | Qué se mide | Objetivo | Sale de |
 |---|---|---|---|
-| K1 | La siguiente cita en la primera pantalla | Visible sin desplazarse a 390 y 1440 px para los tres roles | CA2 |
-| K2 | Contadores de hoy | Los cuatro legibles a 390 px sin cortar números ni etiquetas | CA3 |
-| K3 | Pendientes por cerrar | "Citas sin cerrar" y "Completadas sin seguimiento" se distinguen de la agenda de hoy por título y posición | CA4, CA7 |
-| K4 | Acciones por rol | Cada rol ve solo sus acciones; ninguna acción oculta tras un menú a 1440 px | CA5, CA6, CA9 |
-| K5 | Indicadores del mes | Cifra, mes anterior y diferencia legibles juntos, con el mismo indicador de cambio que "Reportes" | CA10 |
-| K6 | Estados de carga, vacío y error | Cada sección los muestra sin romper la composición de las demás | CA1, CA4, CA7, CA12 |
+| K1 | "Siguiente cita" en la primera pantalla | A la vista a 390 y 1440 px, administrador y doctor | CA2 |
+| K2 | Contadores de hoy en la primera pantalla | "Citas", "Completadas", "Por atender" y "Canceladas" a la vista a 1440 px | CA3 |
+| K3 | Literales del administrador | "Citas sin cerrar", "Completadas sin seguimiento", "Completar", "Cancelar cita", "Registrar seguimiento", "Nueva cita", "Nuevo paciente", "Buscar paciente", "Agenda de hoy", "Mes en curso: datos hasta hoy", "Ver reportes" y "y 5 más" presentes | CA4–CA10 |
+| K4 | Literales del doctor | "Completar", "Registrar seguimiento", "Buscar paciente" y "Agenda de hoy" presentes | CA5, CA8, CA9 |
+| K5 | Títulos | `h1`–`h3` en 2 líneas como máximo | modo operar |
+| K6 | Estabilidad visual | CLS ≤ 0.1 | modo operar |
 
-Puertas: las de `design-spec/references/criterios.md` §2. Rúbrica: pesos por defecto.
+Puertas: las de `design-spec/references/criterios.md` §2, sin cambios. Rúbrica: pesos por defecto.
+No se miden en el diseño, porque dependen de los datos o del rol en el servidor: los estados de
+carga, vacío y error (CA1, CA4, CA7, CA12), la vista del asistente y que ningún rol vea acciones de
+otro (CA9, CA11). Los verifican las tareas que construyen el inicio, con `npm run test:ui`.
 
 ## Requisitos no funcionales
 - El inicio completo se muestra en menos de 2 s con hasta 50 citas hoy, 200 sin cerrar y 2 000
@@ -242,6 +249,8 @@ Ninguna.
 | 2026-10-22 | supuesto | ¿Qué hace "Registrar seguimiento" en las acciones rápidas? | Abre el diálogo de completar de la siguiente cita; si no hay, no aparece | agente; aceptado por el usuario, 2026-10-22 |
 | 2026-10-22 | supuesto | ¿El tablero se actualiza solo? | No; se recarga al entrar y tras una acción hecha desde él | agente; aceptado por el usuario, 2026-10-22 |
 | 2026-10-22 | supuesto | ¿Cuánto puede tardar? | Menos de 2 s con hasta 50 citas hoy, 200 sin cerrar y 2 000 en el mes | agente; aceptado por el usuario, 2026-10-22 |
+| 2026-10-22 | diseño | ¿Con qué criterios se acepta el diseño? | Los de "Criterios de diseño" (K1–K6, puertas por defecto); dos páginas por candidato, administrador y doctor | usuario (/design-spec 020) |
+| 2026-10-22 | diseño | ¿Cómo se ve el inicio? | Candidato c5 de [design.md](design.md), aceptado con 80/100 en la quinta vuelta | /design-spec 020 |
 | 2026-10-22 | supuesto | ¿Cómo se ve un fallo de carga? | Por sección, con "Reintentar"; las demás siguen visibles | agente; aceptado por el usuario, 2026-10-22 |
 
 ## Notas para /plan
