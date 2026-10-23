@@ -5,6 +5,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-10-23
+Corrección: completar una cita con recetas sin instrucciones.
+
+### Fixed
+- Completar una cita con una receta sin instrucciones ya no da error: la cita queda completada con su seguimiento y sus recetas, y la receta se guarda sin instrucciones (fix 2026-10-23-fix-completar-cita-sin-instrucciones).
+
 ### Changed — flujo AI-DD actualizado a 1.18.1
 - Validador `.ai/bin/aidd.py` 1.18.1, plantilla de spec con "Criterios de diseño", bloque `models`
   y criterios de diseño (`threshold`, `floor`, `budget`) en `.ai/project.yaml`, y `.ai/inspect/`

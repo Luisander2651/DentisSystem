@@ -53,6 +53,26 @@ it('completes appointment with one prescription', function () {
     $response->assertJsonPath('data.prescriptions.0.daily_frequency', 3);
 });
 
+it('completes appointment with a prescription without instructions', function (array $prescription) {
+    $this->actingAsAdmin();
+    $appointment = $this->createAppointment();
+
+    $response = $this->postJson(
+        $this->completeAppointmentUrl($appointment->id),
+        $this->validCompletePayload([
+            'prescriptions' => [$prescription],
+        ]),
+    );
+
+    $response->assertStatus(201);
+    $response->assertJsonCount(1, 'data.prescriptions');
+    $response->assertJsonPath('data.prescriptions.0.instructions', null);
+})->with([
+    'instructions key omitted' => fn () => array_diff_key($this->validPrescriptionPayload(), ['instructions' => true]),
+    'instructions null' => fn () => $this->validPrescriptionPayload(['instructions' => null]),
+    'instructions blank' => fn () => $this->validPrescriptionPayload(['instructions' => '   ']),
+]);
+
 it('completes appointment with multiple prescriptions', function () {
     $this->actingAsAdmin();
     $appointment = $this->createAppointment();
