@@ -8,19 +8,19 @@ final readonly class Instructions
 {
     private function __construct(
         public ?string $value,
-    ) {
-        if ($value === null || trim($value) === '') {
-            $this->value = null;
-        }
-    }
+    ) {}
 
     public static function create(?string $instructions): self
     {
-        return new self($instructions);
+        return self::fromNullable($instructions);
     }
 
     public static function fromNullable(?string $instructions): self
     {
+        if ($instructions === null || trim($instructions) === '') {
+            return new self(null);
+        }
+
         return new self($instructions);
     }
 }
