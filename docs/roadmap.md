@@ -1,10 +1,10 @@
 ---
-updated: 2026-10-04
+updated: 2026-10-22
 ---
 
 # Roadmap
 
-**Etapa actual:** prototipo en producción (`dentissapp.com`, v0.1.0 desde el 2026-10-04). Sin usuarios ni datos reales de pacientes.
+**Etapa actual:** prototipo en producción (`dentissapp.com` desde el 2026-10-04 con v0.1.0; versión actual v0.5.0, del 2026-10-22). Sin usuarios ni datos reales de pacientes.
 
 ## Objetivos
 | # | Objetivo | Criterio de éxito | Spec | Estado |
