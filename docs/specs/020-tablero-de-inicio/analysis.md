@@ -1,53 +1,38 @@
 ---
 result: pass
-round: 3
+round: 4
 mode: delta
 constitution_version: 1.2.0
-date: 2026-10-24
-spec_sha: 4455acdc1983
-plan_sha: 51e6b6527cd7
-tasks_sha: f15b69e3ad3a
+date: 2026-10-25
+spec_sha: 9e67e23b4bcd
+plan_sha: 4b0e1980bf50
+tasks_sha: bbbb0165211b
 ---
 
 # Análisis · 020 Tablero de inicio
 
 ## Resumen
-Pasa. Los nueve hallazgos de la ronda 2 (A25–A33) quedaron resueltos; tres con un efecto nuevo,
-que se registra como hallazgo. No hay CRÍTICOS ni ALTOS. Los 2 MEDIOS y los 5 BAJOS nuevos no
-cambian el diseño y el usuario los aceptó como notas de sus tareas. Delta hecho por un subagente
-independiente (diff de ~55 KB); cada hallazgo se verificó en el código.
-Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 2 · BAJA 5
+Pasa. La ronda revisa solo la edición de CA2 (decisión del usuario del 2026-10-25: la siguiente cita
+es la primera de hoy por atender, aunque su hora haya pasado) y sus efectos en el plan (D25,
+`TodayAgenda`, estrategia de pruebas, Trazabilidad) y en T010 y T013. Delta pequeño, hecho sin
+subagente releyendo las secciones afectadas. Sin cambio estructural: ni módulos, ni contratos, ni
+criterios nuevos; los campos del contrato (`next`, `after`, `is_next`) no cambian de forma.
+Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 1
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
-| Criterios con tarea de test e implementación | 16 / 16 |
-| Amenazas con control y test | 9 / 9 (TM9 con un control que funciona en la web real) |
-| Principios de la constitución evaluados | 6 / 15 en esta delta (P2, P4, P5, P6, P11, P15) más la Definición de terminado; el resto no cambia desde la ronda 2 |
+| Criterios con tarea de test e implementación | 16 / 16 (CA2: T010, T013 → T030, T033) |
+| Amenazas con control y test | 9 / 9 (sin cambios) |
+| Principios de la constitución evaluados | 2 / 15 en esta delta (P2: T010 y T013 fallan antes de T030; P13: la regla vive en `TodayAgenda`, en el servidor); el resto no cambia |
 
 ## Seguimiento de rondas anteriores
-| ID | Severidad | Estado | Evidencia |
-|---|---|---|---|
-| A25 | ALTA | resuelto con efecto nuevo (→ A35, A36) | D21 y T056; T026 depende de T057 → T056 → T008 |
-| A26 | MEDIA | resuelto | T058 y T059; `seededAccount` solo resuelve correos de `UiAuditSeeder::STAFF_EMAILS`, que ya incluye `inactivo`. El control de 016 TM5 (solo cuentas del seeder) se mantiene |
-| A27 | ALTA | resuelto | Registro sin condición en `web` y `api`, entorno comprobado en cada petición; el test cambia `app['env']` como el precedente de `UiAuditSessionCommandTest` |
-| A28 | MEDIA | resuelto (matiz → A39) | D24: número fijo de consultas por endpoint; T021 y T050 |
-| A29 | MEDIA | resuelto | T029 sustituye las dos aserciones en inglés y exige que no quede ninguna |
-| A30 | MEDIA | resuelto (redacción → A40) | Contrato, D23 y T017: `symptoms` opcional; un elemento vacío da 422 |
-| A31 | MEDIA | resuelto con efecto nuevo (→ A34) | Cifras fijadas en `UiAuditSeederTest` (T002) y usadas en T026 |
-| A32 | ALTA | resuelto con efecto nuevo (→ A37) | D22 y T057; `evaluate.mjs` acepta un HTML local; `.ai/inspect/` está en `.gitignore` y CI no lo publica |
-| A33 | BAJA | resuelto | Título "<Mes en curso>" con la desviación de c5 declarada; dos entradas `dashboard-detalle-*` |
+Sin hallazgos abiertos. A34–A40 siguen aceptados como notas de tarea (abajo).
 
 ## Hallazgos nuevos
 | ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
 |---|---|---|---|---|---|
-| A34 | Cobertura de riesgos / Ambigüedad (CA10) | MEDIA | `plan.md` → Datos de prueba de la interfaz; T002 | El seeder no fija el `created_at` de los pacientes, y "pacientes nuevos" filtra por `created_at`. Si el test siembra con el reloj en D16, los pacientes cuentan como nuevos de septiembre; `ui:audit-data` corre con la hora real y los crea en el mes real. El test pasaría y el flujo del mes fallaría | Las cifras fijadas son las que produce `ui:audit-data` corrido con la hora real y leído con la hora de D16. Test: `UiAuditSeederTest` siembra sin reloj fijo y consulta `reports/monthly?month=2026-09` con el reloj en D16 |
-| A35 | Cobertura (P2) | MEDIA | T056 "hecho cuando" | Solo se observa `load` con una respuesta vacía. Quedan sin prueba propia antes de T026 varias rutas en un flujo, la secuencia 500 → real y una respuesta retenida desde la carga | Cada clave nueva se prueba con un flujo temporal que falla por la razón esperada: dos rutas respondidas en la carga, 500 y después la respuesta real, y una respuesta retenida desde la carga |
-| A36 | Duplicación | BAJA | D21; `plan.md` → Runner; T056 | `hold`, `times` y la espera (`expect.visibleAfter`) ya existen desde la 019 | T056 reutiliza esas claves; lo nuevo es `load` y la lista `answers`. Test: las entradas que ya usan `hold`, `times` o `visibleAfter` dan el mismo resultado |
-| A37 | Ambigüedad | BAJA | D22 ("a cada ancho") frente a T057 (un archivo por entrada) | `evaluate` abre un solo archivo y lo redimensiona; no está dicho a qué ancho se pinta la copia | Un archivo por entrada pintado a un ancho fijado (los estilos responden al redimensionar). Test: el "hecho cuando" de T057 nombra el archivo que mide `evaluate` |
-| A38 | Cobertura de riesgos (D16) | BAJA | `plan.md` → Core · reloj; T006, T007 | Con `now()` fijado durante la petición, `XSRF-TOKEN` y la cookie de sesión caducan el 17-09-2026 y el navegador las borra. Hoy no rompe ninguna entrada, pero un POST real daría 419 | El reloj fijo no afecta a la caducidad de las cookies. Test en `UiAuditClockTest`: con la cabecera, la `XSRF-TOKEN` de la respuesta caduca después de la hora real |
-| A39 | Ambigüedad (Definición de terminado) | BAJA | T050 | Correr solo `DashboardPerformanceTest` con `--parallel` no reproduce la carga de CI | T050 corre la suite completa con `--parallel` dos veces y anota el resultado de `DashboardPerformanceTest` |
-| A40 | Redacción | BAJA | `plan.md` → 422 de `POST /tracking`; T047 | "Escribe el síntoma o quítalo." es un texto nuevo de la API, no del diálogo; T047 no dice dónde se marca `symptoms.N` | Texto declarado como nuevo; T047 marca `symptoms.N` bajo el campo de síntomas. Test: T017 fija el texto |
+| A41 | Ambigüedad | BAJA | `plan.md` → contrato de `today-summary` (`is_past`: hora < ahora); T046 | Con D25, una misma cita puede llegar con `is_past: true` e `is_next: true`, y la línea de ahora queda después de ella. T046 no dice cómo se pinta esa fila | La fila vencida que es la siguiente lleva la marca de siguiente igual que las demás y la línea de ahora va después. Test: un flujo o caso de ui-audit en T046 (o su verificación manual) con una cita vencida por atender |
 
 ## Decisiones pendientes del usuario
 Ninguna.
@@ -62,5 +47,8 @@ Aceptados por el usuario el 2026-10-24:
 - **A39** → nota de T050: suite completa con `--parallel` dos veces, con el resultado de `DashboardPerformanceTest` anotado.
 - **A40** → nota de T017, T047: "Escribe el síntoma o quítalo." es texto nuevo de la API; el diálogo marca `symptoms.N` bajo el campo de síntomas.
 
+Aceptado por el usuario el 2026-10-25:
+- **A41** → nota de T046: la fila vencida que es la siguiente (`is_past` e `is_next`) lleva la marca de siguiente y la línea de ahora va después; T046 lo comprueba con una cita vencida por atender.
+
 ## Siguiente paso
-Aprobar `tasks.md` y seguir con `/implement 020`.
+Seguir con `/implement 020` (T002).

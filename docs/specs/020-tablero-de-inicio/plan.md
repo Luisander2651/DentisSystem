@@ -47,7 +47,7 @@ Resultado: 11 ✅ · 3 ➖ · 1 ❌ aceptado (P14).
 | Módulo | Cambio | Riesgo |
 |---|---|---|
 | Core · Autorización | `app/Core/Authorization/CurrentActorAuthorizationService.php`: sin permisos nuevos. Las lecturas usan `appointments.view` / `appointments.view-own`; "sin seguimiento" y registrar usan `appointment-tracking.create` / `appointment-tracking.create-own` | bajo: lo fija `RolePermissionsTest` |
-| Appointments · Domain | `Domain/ValueObjects/TodayAgenda.php` (nuevo): `fromAppointments(AppointmentEntity[] $appointments, DateTimeImmutable $now)`. Ordena por hora, cuenta total, completadas, por atender (asignada o reprogramada, sea cual sea la hora) y canceladas. La siguiente es la primera asignada o reprogramada con hora ≥ ahora; "después", las dos siguientes por atender y cuántas más quedan. `Domain/ValueObjects/AppointmentPage.php` (nuevo): `items` (≤ 10) y `total`, con `total ≥ count(items)` | medio: aquí viven CA2 y CA3 |
+| Appointments · Domain | `Domain/ValueObjects/TodayAgenda.php` (nuevo): `fromAppointments(AppointmentEntity[] $appointments, DateTimeImmutable $now)`. Ordena por hora, cuenta total, completadas, por atender (asignada o reprogramada, sea cual sea la hora) y canceladas. La siguiente es la primera asignada o reprogramada por hora, aunque su hora ya haya pasado: solo deja de serlo al completarse o cancelarse (CA2, D25); "después", las dos siguientes por atender tras ella y cuántas más quedan. `Domain/ValueObjects/AppointmentPage.php` (nuevo): `items` (≤ 10) y `total`, con `total ≥ count(items)` | medio: aquí viven CA2 y CA3 |
 | Appointments · Domain | `Domain/Repositories/AppointmentsRepositoryInterface.php`: `findUnclosedBefore(AppointmentDate $today, ?AppointmentUserId $userId, int $limit): AppointmentPage` (fecha < hoy, estado asignada o reprogramada, de la más reciente a la más antigua por fecha y hora). `Domain/Service/AppointmentsService.php`: `findUnclosed(...)` | bajo |
 | Appointments · Application | `Aplication/UseCases/GetTodaySummaryUseCase.php` (recorte del doctor como `GetTodayAppointmentsUseCase`, ahora en `now()` de la clínica → `TodayAgenda`) y `Aplication/UseCases/GetUnclosedAppointmentsUseCase.php` (mismo recorte, límite 10). El recorte se extrae a `Aplication/Support/DoctorScope.php` (`final readonly`, `forActor(AuthorizationServiceInterface)`), que también usan los dos casos de uso de la 018 (cierra 018/R5 sin cambiar su comportamiento) | bajo: `AgendaByRoleTest` fija el comportamiento de la 018 |
 | Appointments · Infrastructure | `EloquentAppointmentRepository::findUnclosedBefore`: una consulta con `with(user, patient, treatment)` limitada a 10 y un `count()` con los mismos filtros. Controladores invocables `GetTodaySummaryController` y `GetUnclosedAppointmentsController`. Recursos `TodaySummaryResource` y `DashboardAppointmentResource` (id, fecha, hora, estado, `day_label` como "Ayer · miércoles 21" o "Martes 20", paciente, tratamiento, doctor y `can`: acciones que el actor puede hacer sobre esa cita) | bajo |
@@ -180,9 +180,10 @@ cada columna.
 ## Estrategia de pruebas
 - **Unidad:**
   - `tests/Modules/Appointments/Unit/TodayAgendaTest.php` y `TodayAgendaPropertiesTest.php` (Eris):
-    orden por hora; los contadores suman el total; la siguiente es la primera por atender con hora
-    ≥ ahora; ninguna siguiente si todo pasó o está cerrado; `after` ≤ 2 y `after_more` correcto.
-    Una cita a la misma hora que ahora cuenta como siguiente.
+    orden por hora; los contadores suman el total; la siguiente es la primera por atender por hora,
+    aunque su hora haya pasado (una de las 11:30 asignada a las 11:40 es la siguiente, y la de las
+    12:30 va en `after`); ninguna siguiente si todas están cerradas; `after` ≤ 2 y `after_more`
+    correcto (D25).
   - `AppointmentPageTest` y `AppointmentPagePropertiesTest`: `items` ≤ límite y `total` ≥ `items`.
   - `DoctorScopeTest`: administrador y asistente sin recorte, doctor con su id, el resto rechazado.
   - `DashboardUseCasesAuthorizationTest`: sin permiso, cada caso de uso lanza
@@ -193,7 +194,7 @@ cada columna.
   `ActingAsPatient` y `fakeTwilio()` al crear citas con teléfono; `travelTo` fija la hora de la
   clínica):
   - `TodaySummaryTest`: forma del JSON; recorte del doctor con un `user_id` ajeno en la URL (CA1,
-    CA13); la siguiente cita (CA2); los contadores (CA3); un día sin citas; `can` por rol.
+    CA13); la siguiente cita (CA2), incluida una por atender cuya hora ya pasó, que sigue siendo la siguiente hasta completarla, y tras completarla pasa la próxima (D25); los contadores (CA3); un día sin citas; `can` por rol.
   - `UnclosedAppointmentsTest`: solo días anteriores en asignada o reprogramada; las de hoy
     quedan fuera; 15 → 10 más el total; orden; `day_label`; recorte del doctor (CA4, CA13).
   - `CompletedWithoutTrackingTest`: solo completadas sin seguimiento; recorte del doctor;
@@ -266,7 +267,7 @@ cada columna.
 | Criterio de aceptación | Cambio(s) | Test(s) |
 |---|---|---|
 | CA1: agenda de hoy por hora con sus datos; todas o las del doctor; "No hay citas para hoy." | `TodayAgenda`; `GetTodaySummaryUseCase`; `DoctorScope`; pantalla y JS | `TodayAgendaTest`, `TodaySummaryTest`; ui-audit `dashboard-*` (flujo de vacío) · verificación manual: agenda de hoy a 390 y 1440 px contra `candidatos/c5.html` |
-| CA2: siguiente cita (por atender, hora ≥ ahora), detalle con acciones del rol incluido Reprogramar; "No quedan citas por atender hoy." | `TodayAgenda`; `next.can`; `view-appointment-modal` reutilizado | `TodayAgendaPropertiesTest`, `TodaySummaryTest`; ui-audit `dashboard-administrador` (siguiente cita a la vista, K1; flujo de vacío) y `dashboard-detalle` (Reprogramar) |
+| CA2: siguiente cita (primera por atender de hoy, aunque su hora haya pasado; D25), detalle con acciones del rol incluido Reprogramar; "No quedan citas por atender hoy." | `TodayAgenda`; `next.can`; `view-appointment-modal` reutilizado | `TodayAgendaPropertiesTest`, `TodaySummaryTest`; ui-audit `dashboard-administrador` (siguiente cita a la vista, K1; flujo de vacío) y `dashboard-detalle` (Reprogramar) |
 | CA3: cuatro contadores que suman el total, recortados por rol | `TodayAgenda`; `day-progress` | `TodayAgendaPropertiesTest`, `TodaySummaryTest`; `evaluate.mjs` K2 |
 | CA4: sin cerrar de días anteriores, hasta 10 más el total, por rol; vacío | `findUnclosedBefore`; `AppointmentPage`; `pending-group` | `UnclosedAppointmentsTest`, `AppointmentPagePropertiesTest`; ui-audit `dashboard-administrador` (flujo de vacío); `evaluate` K3 |
 | CA5: "Completar" con el diálogo de la agenda; sale de la lista; asistente sin el botón | `can.complete`; `complete-appointment.js` reutilizado; `agendaPage.reload` | `DashboardFromInboxTest`, `UnclosedAppointmentsTest` (`can`); ui-audit `dashboard-completar` |
@@ -373,6 +374,11 @@ No aplica: `/dashboard` es una ruta privada del panel; la spec no crea ni cambia
   usuario, 2026-10-23).
 - **D20** Excepción de P3 para `ShowDashboardPageController` (A6; decisión del usuario,
   2026-10-23).
+- **D25** La siguiente cita es la primera de hoy por atender, sin mirar la hora: cambia solo al
+  completarla o cancelarla (CA2 editada; decisión del usuario, 2026-10-25). El seeder no cambia: a
+  las 11:40 del 17-09-2026 no hay ninguna por atender vencida y la siguiente sigue siendo la de las
+  12:30, como en c5; el caso de una vencida lo cubren `TodayAgendaTest`, sus propiedades y
+  `TodaySummaryTest`. La línea de ahora puede quedar después de la siguiente; su marca sigue en ella.
 - **D21** Los flujos de ui-audit pueden responder desde la carga de la página, en secuencia y
   reteniendo una respuesta, y esperar (A25). Sin eso, los estados por sección del inicio, que
   cargan al abrir la página, no se pueden probar en el navegador.

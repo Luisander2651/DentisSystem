@@ -39,8 +39,9 @@ cómo va el mes.
   las citas de la clínica; el doctor, solo las que tiene asignadas. Si no hay citas hoy, ve "No
   hay citas para hoy.".
 - [ ] CA2 · Dada la agenda de hoy, cuando se muestra, entonces la siguiente cita aparece
-  destacada: la primera de hoy en estado asignada o reprogramada cuya hora de inicio es igual o
-  posterior a la hora actual de la clínica. Desde ella se abre su detalle con las mismas acciones
+  destacada: la primera de hoy, por hora de inicio, en estado asignada o reprogramada, aunque su
+  hora ya haya pasado. Sigue siendo la siguiente hasta que se completa o se cancela; entonces pasa
+  a serlo la próxima sin cerrar. Desde ella se abre su detalle con las mismas acciones
   que el rol tiene en la agenda (018), incluido "Reprogramar" con el mismo diálogo y las mismas
   reglas (017); ningún rol ve una acción que no funcione. Si no queda ninguna, se indica "No
   quedan citas por atender hoy.".
@@ -258,6 +259,7 @@ Ninguna.
 | 2026-10-23 | brecha | ¿Completar también responde en español al rechazar una cita con seguimiento o cancelada? (/analyze A9) | Sí, en español y sin el identificador de la cita | usuario |
 | 2026-10-23 | contradicción | El paciente comparte la vista y su inicial salía recortada, lo que dejaba 016/R43 abierto (/analyze A16) | El paciente ve "Inicio - Dentissa" y su inicial completa; el resto de su inicio no cambia | usuario |
 | 2026-10-23 | brecha | ¿Qué ve el staff inactivo en `/dashboard`? (/analyze A17) | La página "Sin permiso", como en la agenda | usuario |
+| 2026-10-25 | brecha | ¿La siguiente cita cambia cuando pasa su hora, aunque siga sin cerrar? | No: es la primera de hoy sin cerrar y solo cambia al completarla o cancelarla; una cita olvidada queda como siguiente hasta que se cierre | usuario (durante /implement T001) |
 | 2026-10-22 | supuesto | ¿Cuántas citas se ven en las listas de pendientes? | Hasta 10, de la más reciente a la más antigua, con el total pendiente | agente; aceptado por el usuario, 2026-10-22 |
 | 2026-10-22 | supuesto | ¿Qué hace "Registrar seguimiento" en las acciones rápidas? | Abre el diálogo de completar de la siguiente cita; si no hay, no aparece | agente; aceptado por el usuario, 2026-10-22 |
 | 2026-10-22 | supuesto | ¿El tablero se actualiza solo? | No; se recarga al entrar y tras una acción hecha desde él | agente; aceptado por el usuario, 2026-10-22 |
@@ -296,3 +298,5 @@ Ninguna.
 | 2026-10-23 | Reaprobada tras la edición de CA11 | Aprobación del usuario |
 | 2026-10-23 | CA2 (Reprogramar en el detalle), CA10 (todo el mes, texto), CA11 (paciente: título e inicial), CA15 (también completar), CA16 (staff inactivo), "Fuera de alcance"; vuelve a `draft` | /analyze 020 ronda 1 (A1, A9, A10, A16, A17) |
 | 2026-10-23 | Reaprobada tras la edición de /analyze ronda 1 | Aprobación del usuario |
+| 2026-10-25 | CA2: la siguiente cita es la primera de hoy sin cerrar, aunque su hora haya pasado; vuelve a `draft` | Decisión del usuario durante /implement |
+| 2026-10-25 | Reaprobada tras la edición de CA2 | Aprobación del usuario |
