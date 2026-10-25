@@ -92,7 +92,7 @@ it('issues a session of the seeded inactive staff member, so the browser test se
     expect($token)->not->toBeNull()
         ->and($token->tokenable->email)->toBe(UiAuditSeeder::STAFF_EMAILS['inactivo'])
         ->and($token->tokenable->status)->toBe('inactive');
-})->skip('020: pendiente de T059');
+});
 
 it('issues no session when the seeded accounts do not exist, even if others do (abuse)', function () {
     $this->createUserWithRole('Administrador');
