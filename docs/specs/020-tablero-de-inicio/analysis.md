@@ -1,38 +1,44 @@
 ---
 result: pass
-round: 4
+round: 5
 mode: delta
 constitution_version: 1.2.0
 date: 2026-10-25
 spec_sha: 9e67e23b4bcd
-plan_sha: 4b0e1980bf50
-tasks_sha: bbbb0165211b
+plan_sha: 4428cfcb86f3
+tasks_sha: c6ed4fd0d367
 ---
 
 # Análisis · 020 Tablero de inicio
 
 ## Resumen
-Pasa. La ronda revisa solo la edición de CA2 (decisión del usuario del 2026-10-25: la siguiente cita
-es la primera de hoy por atender, aunque su hora haya pasado) y sus efectos en el plan (D25,
-`TodayAgenda`, estrategia de pruebas, Trazabilidad) y en T010 y T013. Delta pequeño, hecho sin
-subagente releyendo las secciones afectadas. Sin cambio estructural: ni módulos, ni contratos, ni
-criterios nuevos; los campos del contrato (`next`, `after`, `is_next`) no cambian de forma.
-Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 1
+Pasa. La ronda revisa D26 (expedientes no tenía buscador y CA9 lo promete: se añade el campo
+"Buscar", que filtra en el navegador la lista ya cargada; decisión del usuario del 2026-10-25, vista
+en `/implement` T026), la ampliación de T048 (vista y JS) y de `expedientes-buscar` en T026, y las
+tareas añadidas durante `/implement` (T060–T062). Delta pequeño, hecho sin subagente releyendo las
+secciones afectadas. Sin cambio estructural: ni contratos de API, ni módulos, ni criterios nuevos; la
+spec no cambia.
+Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 2
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
-| Criterios con tarea de test e implementación | 16 / 16 (CA2: T010, T013 → T030, T033) |
-| Amenazas con control y test | 9 / 9 (sin cambios) |
-| Principios de la constitución evaluados | 2 / 15 en esta delta (P2: T010 y T013 fallan antes de T030; P13: la regla vive en `TodayAgenda`, en el servidor); el resto no cambia |
+| Criterios con tarea de test e implementación | 16 / 16 (CA9: T024, T026 → T045, T048) |
+| Amenazas con control y test | 9 / 9 (sin cambios: el filtro no pide datos nuevos a la API) |
+| Principios de la constitución evaluados | 3 / 15 en esta delta (P2: `expedientes-buscar` falla antes de T048; P15: el campo copia el marcado y los tokens del buscador de `/pacientes`, sin valores nuevos; P13: filtrar una lista ya autorizada no es lógica de negocio) |
 
 ## Seguimiento de rondas anteriores
-Sin hallazgos abiertos. A34–A40 siguen aceptados como notas de tarea (abajo).
+Sin hallazgos abiertos. A34–A41 siguen aceptados como notas de tarea (abajo).
 
 ## Hallazgos nuevos
 | ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
 |---|---|---|---|---|---|
-| A41 | Ambigüedad | BAJA | `plan.md` → contrato de `today-summary` (`is_past`: hora < ahora); T046 | Con D25, una misma cita puede llegar con `is_past: true` e `is_next: true`, y la línea de ahora queda después de ella. T046 no dice cómo se pinta esa fila | La fila vencida que es la siguiente lleva la marca de siguiente igual que las demás y la línea de ahora va después. Test: un flujo o caso de ui-audit en T046 (o su verificación manual) con una cita vencida por atender |
+| A42 | Ambigüedad | BAJA | `plan.md` → Interfaz · expedientes (D26); T048 | Expedientes ya muestra "No hay pacientes registrados para mostrar." con la lista vacía; con el buscador, una búsqueda sin coincidencias debe decir "No se encontraron pacientes" y no el aviso de lista vacía | Cada caso muestra solo su aviso. Test: el flujo sin coincidencias de `expedientes-buscar` comprueba el texto y que el aviso de lista vacía no está a la vista |
+| A43 | Ambigüedad | BAJA | `plan.md` → Interfaz · expedientes (D26); T048 | Cambiar el filtro de estado recarga la lista desde la API; no está dicho si el texto escrito en "Buscar" se vuelve a aplicar | El texto del campo se vuelve a aplicar a la lista recargada. Test: un flujo de `expedientes-buscar` escribe, cambia el filtro y comprueba que siguen solo las tarjetas que coinciden |
+
+T060–T062 (añadidas durante `/implement` con decisión del usuario) cumplen las reglas de `/tasks`:
+una o dos rutas cada una, test antes del cambio (T060 → T061) y criterio de hecho; T026 depende de
+T062.
 
 ## Decisiones pendientes del usuario
 Ninguna.
@@ -49,6 +55,8 @@ Aceptados por el usuario el 2026-10-24:
 
 Aceptado por el usuario el 2026-10-25:
 - **A41** → nota de T046: la fila vencida que es la siguiente (`is_past` e `is_next`) lleva la marca de siguiente y la línea de ahora va después; T046 lo comprueba con una cita vencida por atender.
+- **A42** → nota de T048: la búsqueda sin coincidencias muestra "No se encontraron pacientes" y no el aviso de lista vacía; lo comprueba un flujo de `expedientes-buscar`.
+- **A43** → nota de T048: el texto de "Buscar" se vuelve a aplicar cuando el filtro de estado recarga la lista; lo comprueba un flujo de `expedientes-buscar`.
 
 ## Siguiente paso
-Seguir con `/implement 020` (T002).
+Seguir con `/implement 020` (T026).
