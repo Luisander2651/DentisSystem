@@ -35,6 +35,11 @@
  * (one per path and per successive request, each with `to`, `status`, `body`, `times` and `hold`)
  * and the action `wait` waits the milliseconds it says. The header of checks-dialogs.mjs has the
  * details.
+ *
+ * Copy for `evaluate` (spec 020, D22): an entry that declares `snapshot: true` leaves, from its
+ * visit at 1440 px, the page as it was painted in .ai/inspect/ui-audit/<entry>.html: the DOM with
+ * the build's styles, images and fonts inlined and without scripts, so it opens without network,
+ * session or headers. evaluate.mjs measures that file (it cannot sign in nor send serverNow).
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -52,6 +57,8 @@ const ROLES = ['administrador', 'asistente', 'doctor', 'paciente'];
 const VIEWPORTS = { 390: 844, 768: 1024, 1024: 768, 1280: 800, 1440: 900 };
 const DEFAULT_WIDTHS = [390, 768, 1440];
 const SETTLE_TIMEOUT = 15000;
+const SNAPSHOT_WIDTH = 1440;
+const SNAPSHOT_DIRECTORY = join(here, '..', '..', '.ai', 'inspect', 'ui-audit');
 
 class Cdp {
     #socket;
@@ -407,6 +414,69 @@ function isVisibleInPage(selector) {
 
         return element.getClientRects().length > 0 && style.visibility !== 'hidden' && style.display !== 'none';
     });
+}
+
+/**
+ * Spec 020 (D22): the painted page as a self-contained document. Same-origin stylesheets become
+ * <style> with their url() as data URIs, images become data URIs, and scripts and links go away.
+ */
+async function snapshotInPage() {
+    const asDataUri = async (url) => {
+        try {
+            const blob = await (await fetch(url, { credentials: 'include' })).blob();
+
+            return await new Promise((done) => {
+                const reader = new FileReader();
+                reader.onload = () => done(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        } catch {
+            return url;
+        }
+    };
+    const inlineUrls = async (css, base) => {
+        const urls = [...new Set([...css.matchAll(/url\(\s*['"]?([^'")]+)['"]?\s*\)/g)].map((match) => match[1]).filter((url) => !url.startsWith('data:')))];
+
+        for (const url of urls) {
+            css = css.split(url).join(await asDataUri(new URL(url, base).href));
+        }
+
+        return css;
+    };
+
+    const styles = [];
+
+    for (const sheet of document.styleSheets) {
+        try {
+            const css = [...sheet.cssRules].map((rule) => rule.cssText).join('\n');
+            styles.push(await inlineUrls(css, sheet.href ?? location.href));
+        } catch {
+            // A sheet of another origin cannot be read; the copy goes without it.
+        }
+    }
+
+    const copy = document.documentElement.cloneNode(true);
+    copy.querySelectorAll('script, link, style').forEach((node) => node.remove());
+
+    const originals = [...document.querySelectorAll('img')];
+    const copies = [...copy.querySelectorAll('img')];
+
+    for (const [index, image] of copies.entries()) {
+        const source = originals[index]?.currentSrc || originals[index]?.src;
+
+        if (source && !source.startsWith('data:')) {
+            image.setAttribute('src', await asDataUri(source));
+            image.removeAttribute('srcset');
+        }
+    }
+
+    for (const css of styles) {
+        const style = document.createElement('style');
+        style.textContent = css;
+        copy.querySelector('head').appendChild(style);
+    }
+
+    return '<!doctype html>\n' + copy.outerHTML;
 }
 
 function parseArguments(argv) {
@@ -768,6 +838,11 @@ async function auditPage(page, entry, width, options, checks, baseline) {
 
     if (options.screenshots) {
         await page.screenshot(join(options.screenshots, `${entry.id}-${width}.png`), entry.dialog === undefined);
+    }
+
+    if (entry.snapshot && width === SNAPSHOT_WIDTH) {
+        mkdirSync(SNAPSHOT_DIRECTORY, { recursive: true });
+        writeFileSync(join(SNAPSHOT_DIRECTORY, `${entry.id}.html`), await page.evaluate(snapshotInPage));
     }
 
     for (const check of checks) {
