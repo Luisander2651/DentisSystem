@@ -139,6 +139,18 @@ it('shows the brand with its alternative text', function (string $screen) {
     }
 })->with(pageStructureCases());
 
+// Spec 020 (T060): the brand is our own picture, as the G-imagenes gate of evaluate asks.
+it('declares the brand as our own picture', function (string $screen) {
+    $page = openStructureScreen($this, 'brand', $screen);
+    $images = $page->query('//img[contains(@src, "/images/brand/") and not(contains(@src, "/images/brand/access"))]');
+
+    expect($images->length)->toBeGreaterThan(0);
+
+    foreach ($images as $image) {
+        expect($image->getAttribute('data-origen'))->toBe('propia');
+    }
+})->with(pageStructureCases())->skip('020: pendiente de T061');
+
 it('points its tab icons to files of our own that exist', function (string $screen) {
     $page = openStructureScreen($this, 'icons', $screen);
 
