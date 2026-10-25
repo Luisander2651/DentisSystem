@@ -149,7 +149,7 @@ it('declares the brand as our own picture', function (string $screen) {
     foreach ($images as $image) {
         expect($image->getAttribute('data-origen'))->toBe('propia');
     }
-})->with(pageStructureCases())->skip('020: pendiente de T061');
+})->with(pageStructureCases());
 
 it('points its tab icons to files of our own that exist', function (string $screen) {
     $page = openStructureScreen($this, 'icons', $screen);
