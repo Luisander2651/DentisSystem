@@ -53,7 +53,8 @@ import { selectIndexInPage } from './checks-dialogs.mjs';
 const here = dirname(fileURLToPath(import.meta.url));
 // checks-dialogs goes last: it closes the dialog the others measure.
 const CHECK_MODULES = ['composition', 'global', 'screens', 'a11y', 'dialogs'];
-const ROLES = ['administrador', 'asistente', 'doctor', 'paciente'];
+// Spec 020 (A26): `inactivo` is the seeded inactive staff member, who gets "Sin permiso".
+const ROLES = ['administrador', 'asistente', 'doctor', 'paciente', 'inactivo'];
 const VIEWPORTS = { 390: 844, 768: 1024, 1024: 768, 1280: 800, 1440: 900 };
 const DEFAULT_WIDTHS = [390, 768, 1440];
 const SETTLE_TIMEOUT = 15000;
