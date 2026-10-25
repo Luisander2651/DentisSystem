@@ -69,9 +69,6 @@ it('names the role in the badge of the page header', function (string $role, str
 
     expect($texts)->toBe([$badge]);
 })->with([
-    'administrador en su inicio' => ['administrador', '/dashboard'],
-    'asistente en su inicio' => ['asistente', '/dashboard'],
-    'doctor en su inicio' => ['doctor', '/dashboard'],
     'paciente en su inicio' => ['paciente', '/dashboard'],
     'administrador en pacientes' => ['administrador', '/pacientes'],
     'administrador en expedientes' => ['administrador', '/expedientes-clinicos'],
@@ -88,13 +85,24 @@ it('shows the role in Spanish in the side menu', function (string $role) {
         ->and(array_unique($texts))->toBe([$label]);
 })->with(array_keys(ROLE_COPY));
 
-it('shows the role in Spanish at the start of the panel', function (string $role) {
-    [$actor, , $label] = ROLE_COPY[$role];
+it('shows the role in Spanish at the start of the patient', function () {
+    [$actor, , $label] = ROLE_COPY['paciente'];
 
     $texts = roleCopyTexts($this, 'inicio', $actor, '/dashboard', '//*[@data-role-label="inicio"]');
 
     expect($texts)->toBe([$label]);
-})->with(array_keys(ROLE_COPY));
+});
+
+/*
+ * Spec 020 (CA11): the start of the staff follows c5. Its header carries neither the badge nor
+ * the role next to the greeting; the role stays in the side menu.
+ */
+it('leaves the badge and the role out of the start of the staff', function (string $role) {
+    [$actor] = ROLE_COPY[$role];
+
+    expect(roleCopyTexts($this, 'badge', $actor, '/dashboard', '//*[@data-page-badge]'))->toBe([])
+        ->and(roleCopyTexts($this, 'inicio', $actor, '/dashboard', '//*[@data-role-label="inicio"]'))->toBe([]);
+})->with(['administrador', 'asistente', 'doctor'])->skip('020: pendiente de T045');
 
 it('never shows the internal name of a role', function (string $role) {
     [$actor] = ROLE_COPY[$role];
