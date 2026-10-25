@@ -1,6 +1,6 @@
 ---
 spec: 020-tablero-de-inicio
-status: approved
+status: draft   # vuelve a draft por /plan --fix (analysis ronda 2)
 constitution_version: 1.2.0
 created: 2026-10-23
 ---
@@ -56,14 +56,16 @@ Resultado: 11 ✅ · 3 ➖ · 1 ❌ aceptado (P14).
 | AppointmentTracking · Infrastructure | `Persistence/Eloquent/EloquentPendingTrackingRepository.php`: `AppointmentModel` con `status = completada` y `whereNotExists` sobre `appointment_tracking`, recorte opcional por `user_id`, orden por fecha y hora descendente, límite 10 y total. `Http/Controllers/GetCompletedWithoutTrackingController.php` y `RegisterAppointmentTrackingController.php`; ninguno captura `AuthorizationException`: el 403 sale por el render de `bootstrap/app.php`, el punto único donde se engancharán los accesos denegados (A13). `CompleteAppointmentController` responde los dos rechazos nuevos con 409 y su texto. `Http/Requests/RegisterAppointmentTrackingRequest.php`. El repositorio que guarda el registro convierte `UniqueConstraintViolationException` en `TrackingRegistrationException::alreadyRegistered()` | medio |
 | Providers | `app/Providers/AppServiceProvider.php`: enlace de `PendingTrackingRepositoryInterface` | bajo |
 | Rutas | `routes/api.php`, grupo `auth:sanctum` + `staff`: `GET /agenda/today-summary`, `GET /agenda/unclosed` y `GET /agenda/without-tracking` dentro del prefijo `agenda` (no chocan con `/appointments/{id}`), y `POST /appointments/{id}/tracking`. `routes/web.php`: `/dashboard` pasa a `ShowDashboardPageController` (invocable, en `app/Core/Http/`), que entrega a la vista el rol, la fecha y la hora de la clínica, el mes en curso (`AAAA-MM`) y las capacidades. Al staff inactivo le responde la vista "Sin permiso" (403), como `EnsureActiveStaff` en `/agenda` (CA16, A17). Excepción de P3 registrada (A6) | bajo |
-| Interfaz · pantalla | `resources/views/pages/dashboard.blade.php`: la rama del staff se reescribe según c5. Encabezado con `h1` "¡Hola, Nombre!" y la fecha; "Nueva cita" (`x-ui.button primary`) solo para el administrador. Secciones "Siguiente cita", "Cómo va el día", "Acciones rápidas", "Agenda de hoy", "Octubre hasta hoy" (solo administrador), "Citas sin cerrar" y "Completadas sin seguimiento" (administrador y doctor). Cada una con su región de carga, vacío y error, y `<template>` que el JS clona. Se van "Estado: En línea", "Actividad reciente", "Nuevo usuario", la tarjeta con inicial, correo y rol, y `x-ui.create-user-modal`. `@section('title', 'Inicio - Dentissa')` para todos los roles. Incluye `x-calendar.view-appointment-modal`, `complete-appointment-modal`, `cancel-appointment-confirm`, `create-appointment-modal` y `edit-appointment-modal` según el rol, como la agenda, para que el detalle ofrezca Reprogramar y ningún botón quede sin diálogo (CA2, A1). En la rama del paciente solo cambia la inicial, que pasa a `mb_substr` (CA11, A16) | medio: pantalla de entrada de todos los roles |
+| Interfaz · pantalla | `resources/views/pages/dashboard.blade.php`: la rama del staff se reescribe según c5. Encabezado con `h1` "¡Hola, Nombre!" y la fecha; "Nueva cita" (`x-ui.button primary`) solo para el administrador. Secciones "Siguiente cita", "Cómo va el día", "Acciones rápidas", "Agenda de hoy", "<Mes en curso>" (p. ej. "Septiembre", solo administrador; c5 decía "Octubre hasta hoy", pero CA10 cuenta todo el mes; A33), "Citas sin cerrar" y "Completadas sin seguimiento" (administrador y doctor). Cada una con su región de carga, vacío y error, y `<template>` que el JS clona. Se van "Estado: En línea", "Actividad reciente", "Nuevo usuario", la tarjeta con inicial, correo y rol, y `x-ui.create-user-modal`. `@section('title', 'Inicio - Dentissa')` para todos los roles. Incluye `x-calendar.view-appointment-modal`, `complete-appointment-modal`, `cancel-appointment-confirm`, `create-appointment-modal` y `edit-appointment-modal` según el rol, como la agenda, para que el detalle ofrezca Reprogramar y ningún botón quede sin diálogo (CA2, A1). En la rama del paciente solo cambia la inicial, que pasa a `mb_substr` (CA11, A16) | medio: pantalla de entrada de todos los roles |
 | Interfaz · componentes | `resources/views/components/dashboard/next-appointment.blade.php`, `day-progress.blade.php`, `now-line.blade.php` y `pending-group.blade.php` (nuevos, solo tokens), con las medidas de `design.md` | bajo |
 | Interfaz · JS | `resources/js/pages/dashboard.js` (registrado en `vite.config.js`), reescrito: carga en paralelo con `fetch('/api/v1/...', { credentials: 'include' })` el resumen de hoy, las sin cerrar, las sin seguimiento (si el rol las ve) y `reports/monthly?month=<mes en curso>` (solo administrador). Pinta cada sección por separado: carga, vacío con el texto de la spec y error con "Reintentar" (bloque de error de carga de `system.md`), sin tocar las demás. Inserta todo dato con `textContent` o clonando plantillas, nunca con `innerHTML`. Define `window.agendaPage.reload` para que los diálogos reutilizados recarguen las secciones afectadas tras completar, cancelar, agendar o registrar. Los avisos de pendientes son enlaces a su sección | medio |
 | Interfaz · diálogos reutilizados | `resources/js/pages/agenda/complete-appointment.js` y `components/calendar/complete-appointment-modal.blade.php`: `open(appointmentId, opener, { mode: 'register' })` cambia el título a "Registrar seguimiento", la confirmación a "¿Registrar el seguimiento de esta cita?" con "Sí, registrar seguimiento" (A20), envía a `POST /appointments/{id}/tracking` y anuncia "Seguimiento registrado.". Sin `mode`, todo igual: la acción rápida "Registrar seguimiento" completa la siguiente cita y abre el diálogo "Completar cita" (CA9, A21). El 422 marca el campo bajo su control (CA8). Cancelar, agendar y ver detalle se reutilizan sin cambios | medio: lo usa la agenda; `agenda-cita-completar*` de ui-audit lo vigila |
 | Interfaz · expedientes | `resources/js/pages/records/index.js`: con `?buscar=1`, el foco va al campo de búsqueda al cargar (acción "Buscar paciente", CA9) | bajo |
-| Datos de prueba de la interfaz | `database/seeders/UiAuditSeeder.php`: el día del inicio en la prueba es el **jueves 17 de septiembre de 2026 a las 11:40** (D16), un mes que ninguna otra entrada mira. Ese día lleva las 8 citas de `design.md` de los dos doctores (3 completadas, 4 por atender, 1 cancelada; la siguiente a las 12:30). Con las asignadas de julio suman 15 sin cerrar anteriores al 17, y hay 6 completadas sin seguimiento (al menos 2 de cada doctor), para que `evaluate` mida lo que suponen K1–K4 (A2). `tests/Modules/Core/Integration/UiAuditSeederTest.php` se actualiza: citas de septiembre, sin seguimiento por doctor e idempotencia (A15) | medio: `UiAuditSeederTest` y las entradas que cuentan citas del paciente sembrado |
-| Core · reloj de la prueba de navegador (nuevo) | `app/Core/Middlewares/UiAuditClock.php`: si la petición trae `X-Ui-Audit-Now` (fecha ISO 8601 válida) y el entorno es `local` o `testing`, fija `now()` a ese instante para esa petición; en otro entorno, o con un valor inválido, no hace nada. Se registra en `bootstrap/app.php` solo en esos entornos. `tests/Browser/ui-audit.mjs` envía la cabecera en todas las peticiones de una entrada que declara `serverNow` (D16, A3) | medio: código que solo existe para la prueba; TM9 |
-| Tests de navegador | `tests/Browser/screens.json`: `dashboard-administrador`, `-asistente` y `-doctor` siguen, con `serverNow` y `now` en el 17 de septiembre de 2026 a las 11:40, y con la línea base de 1440 px rehecha mediante una diferencia admitida (CA11 y c5, aprobada por el usuario el 2026-10-23) registrada en `tests/Browser/checks-composition.mjs` (A3). Nuevas: `dashboard-detalle` (administrador y asistente: el detalle de la siguiente cita ofrece Reprogramar y abre su diálogo; A1), `dashboard-completar` (diálogo de completar desde "Citas sin cerrar", doctor), `dashboard-cancelar` (confirmación, asistente), `dashboard-registrar-seguimiento` (diálogo en modo registro con su título y su confirmación, administrador), `dashboard-nueva-cita` (administrador), `dashboard-inactivo` (staff inactivo: "Sin permiso") y `expedientes-buscar` (`/expedientes-clinicos?buscar=1`: el foco queda en el buscador; A4). Flujos en `dashboard-administrador` y `dashboard-doctor`: "vacío de cada sección" (respuesta vacía de cada lectura: su texto exacto de la spec), "carga" (respuesta retenida: la sección indica que carga), "error de una sección" (500 en `/agenda/unclosed`: su bloque con "Reintentar" sigue a la vista pasada la caducidad de 12 s de la región de estado, porque es persistente como el de `system.md`, se alcanza con Tab y las demás secciones tienen contenido; A22), "Reintentar" (primera respuesta 500 y la siguiente real: la sección muestra sus citas; A5), "mes del administrador" (las cifras pintadas son las de los datos sembrados de septiembre, las mismas que fija `DashboardMatchesReportsTest`; A11) y "nombre con HTML" (paciente `<img src=x onerror=…>` como texto). Sale `dashboard-crear-usuario`. `dashboard-crear-paciente` sigue | medio |
+| Datos de prueba de la interfaz | `database/seeders/UiAuditSeeder.php`: el día del inicio en la prueba es el **jueves 17 de septiembre de 2026 a las 11:40** (D16), un mes que ninguna otra entrada mira. Ese día lleva las 8 citas de `design.md` de los dos doctores (3 completadas, 4 por atender, 1 cancelada; la siguiente a las 12:30). Con las asignadas de julio suman 15 sin cerrar anteriores al 17, y hay 6 completadas sin seguimiento (al menos 2 de cada doctor), para que `evaluate` mida lo que suponen K1–K4 (A2). `tests/Modules/Core/Integration/UiAuditSeederTest.php` se actualiza: citas de septiembre, sin seguimiento por doctor e idempotencia (A15), y fija las cifras que pinta el mes del administrador con la hora de D16 (citas de septiembre y de agosto, pacientes nuevos de cada mes y activos), las mismas que da `reports/monthly?month=2026-09` (A31) | medio: `UiAuditSeederTest` y las entradas que cuentan citas del paciente sembrado |
+| Core · reloj de la prueba de navegador (nuevo) | `app/Core/Middlewares/UiAuditClock.php`: si la petición trae `X-Ui-Audit-Now` (fecha ISO 8601 válida) y el entorno es `local` o `testing`, fija `now()` a ese instante para esa petición; en otro entorno, o con un valor inválido, no hace nada. El entorno se comprueba **en cada petición** (la misma lista que `UiAuditSeeder::ALLOWED_ENVIRONMENTS`). Se registra en `bootstrap/app.php` en los grupos `web` y `api` **sin condición**: en la web la pila se arma antes de cargar el entorno, así que un registro condicionado al entorno pasaría los tests y fallaría en el servidor (A27). `tests/Browser/ui-audit.mjs` envía la cabecera en todas las peticiones de una entrada que declara `serverNow` (D16, A3) y, en las que declaran `snapshot`, guarda una copia de la página pintada para `evaluate` (D22, A32) | medio: código que solo existe para la prueba; TM9 |
+| Core · sesión de la prueba de navegador | `app/Core/Console/UiAuditSessionCommand.php`: acepta el rol `inactivo` y entrega la sesión del staff inactivo sembrado (`UiAuditSeeder::STAFF_EMAILS['inactivo']`, estado `inactive`); el resto de cuentas sigue fuera (016 TM5). `UiAuditSessionCommandTest` pasa `inactivo` del dataset de rechazos al de roles con sesión, y el comando solo corre en `local` y `testing`, como hoy (A26) | bajo |
+| Runner de la prueba de navegador | `tests/Browser/checks-dialogs.mjs` (y la cabecera de `ui-audit.mjs`): un flujo puede declarar `load: true` para que sus respuestas se apliquen desde la carga de la página, una lista `answers` con una respuesta por ruta y por petición sucesiva (`to`, `status`, `body`, `times`), `hold: true` para retener una respuesta, y la acción `wait` (milisegundos). Las entradas existentes no cambian (D21, A25) | medio: lo usan todas las entradas con flujos |
+| Tests de navegador | `tests/Browser/screens.json`: `dashboard-administrador`, `-asistente` y `-doctor` siguen, con `serverNow` y `now` en el 17 de septiembre de 2026 a las 11:40, y con la línea base de 1440 px rehecha mediante una diferencia admitida (CA11 y c5, aprobada por el usuario el 2026-10-23) registrada en `tests/Browser/checks-composition.mjs` (A3). `dashboard-administrador` y `dashboard-doctor` declaran `snapshot` (D22). Nuevas: `dashboard-detalle-administrador` y `dashboard-detalle-asistente` (el detalle de la siguiente cita ofrece Reprogramar y abre su diálogo; A1, A33), `dashboard-completar` (diálogo de completar desde "Citas sin cerrar", doctor), `dashboard-cancelar` (confirmación, asistente), `dashboard-registrar-seguimiento` (diálogo en modo registro con su título y su confirmación, administrador), `dashboard-nueva-cita` (administrador), `dashboard-inactivo` (rol `inactivo` de la sesión de prueba: "Sin permiso"; A26) y `expedientes-buscar` (`/expedientes-clinicos?buscar=1`: el foco queda en el buscador; A4). Flujos en `dashboard-administrador` y `dashboard-doctor`, con `load: true` (D21): "vacío de cada sección" (respuesta vacía de cada lectura: su texto exacto de la spec), "carga" (respuesta retenida: la sección indica que carga), "error de una sección" (500 en `/agenda/unclosed`: su bloque con "Reintentar" sigue a la vista pasada la caducidad de 12 s de la región de estado, porque es persistente como el de `system.md`, se alcanza con Tab y las demás secciones tienen contenido; A22), "Reintentar" (primera respuesta 500 y la siguiente real: la sección muestra sus citas; A5), "mes del administrador" (los textos pintados son los exactos que dan los datos sembrados de septiembre frente a agosto de 2026, fijados en `UiAuditSeederTest`; A11, A31) y "nombre con HTML" (paciente `<img src=x onerror=…>` como texto). Sale `dashboard-crear-usuario`. `dashboard-crear-paciente` sigue | medio |
 | Sistema de diseño | `docs/design/system.md` y `system.html` (primera tarea): piezas y regla de `design.md` → "Cambios a incorporar al sistema"; inventario del inicio de los tres roles; fuera la vista "Inicio del panel, nuevo usuario" | bajo |
 | Documentación | `docs/architecture.md` (T090): endpoints nuevos de Appointments y AppointmentTracking. `docs/security.md`: puntos de entrada nuevos. `docs/observability.md`: puntos de emisión de la 020 | bajo |
 
@@ -120,15 +122,15 @@ miércoles 21", "Martes 20"). `total` cuenta todas. Vacío: `items: []`, `total:
 estado `completada` y `can: {"register": true}`. Ningún dato clínico.
 
 ### `POST /appointments/{id}/tracking`
-Cuerpo igual que `POST /appointments/{id}/complete`: `reason`, `symptoms[]`, `diagnosis` y
-`procedure_performed` obligatorios; `observations` y `recommendations` opcionales;
+Cuerpo igual que `POST /appointments/{id}/complete`: `reason`, `diagnosis` y
+`procedure_performed` obligatorios; `symptoms[]` opcional; `observations` y `recommendations` opcionales;
 `prescriptions[]` con `medication`, `dosage`, `durationDays` (1–365), `dailyFrequency` (1–24) e
 `instructions` opcional.
 
 | Caso | Respuesta |
 |---|---|
 | Administrador, o doctor con su cita, completada y sin seguimiento | 201 `{"message": "Seguimiento registrado.", "data": <AppointmentTrackingRecordResource>}`; la cita sigue `completada` |
-| Dato obligatorio vacío o fuera de rango | 422 con `errors` por campo (A19): `reason` "El motivo de la consulta es obligatorio.", `symptoms` "Escribe al menos un síntoma.", `diagnosis` "El diagnóstico es obligatorio.", `procedure_performed` "El procedimiento realizado es obligatorio.", `prescriptions.N.medication` "Escribe el medicamento.", `prescriptions.N.dosage` "Escribe la dosis.", `prescriptions.N.durationDays` "Escribe una duración de 1 a 365 días.", `prescriptions.N.dailyFrequency` "Escribe de 1 a 24 veces al día." (los textos del diálogo de completar) |
+| Dato obligatorio vacío o fuera de rango | 422 con `errors` por campo (A19): `reason` "El motivo de la consulta es obligatorio.", `symptoms` puede faltar o venir vacío, como al completar, donde es opcional (A30, decisión del usuario); cada elemento debe ser un texto no vacío: `symptoms.N` "Escribe el síntoma o quítalo.", `diagnosis` "El diagnóstico es obligatorio.", `procedure_performed` "El procedimiento realizado es obligatorio.", `prescriptions.N.medication` "Escribe el medicamento.", `prescriptions.N.dosage` "Escribe la dosis.", `prescriptions.N.durationDays` "Escribe una duración de 1 a 365 días.", `prescriptions.N.dailyFrequency` "Escribe de 1 a 24 veces al día." (los textos del diálogo de completar) |
 | Cita inexistente | 404 `{"error": "No se encontró la cita."}` |
 | Cita con seguimiento, también por doble envío | 409 `{"error": "Esta cita ya tiene seguimiento registrado."}` |
 | Cita cancelada, asignada o reprogramada | 409 `{"error": "Solo se registra el seguimiento de una cita completada."}` |
@@ -210,8 +212,10 @@ cada columna.
     las tres lecturas los contiene (TM6).
   - `DashboardPerformanceTest`: 50 citas hoy, 200 sin cerrar y 2 000 en el mes. Mide el tiempo de
     servidor de los cuatro endpoints que pide el inicio, uno tras otro y en caliente (se descarta una
-    primera vuelta). La suma debe quedar por debajo de 2 s, con la suite en serie. Es el RNF "el
-    inicio se muestra en menos de 2 s" sin el navegador (A12).
+    primera vuelta). La suma debe quedar por debajo de 2 s, y cada endpoint hace un número de consultas fijo que
+    no crece con los datos (sin N+1). Debe ser estable en `pest --parallel` como lo corre CI, sin
+    `skip`: T050 lo corre dos veces en paralelo (A28). Es el RNF "el inicio se muestra en menos
+    de 2 s" sin el navegador (A12).
   - `DashboardMatchesReportsTest`: las cifras del mes que pinta el inicio salen de
     `reports/monthly` del mes en curso (CA10). Lo comprueba ui-audit sobre la pantalla; en
     integración, el mismo endpoint con el mes de la vista.
@@ -220,10 +224,11 @@ cada columna.
     cancelar desde el inicio y forzar un 500 en cada lectura no deja en ningún log el nombre, el
     teléfono ni el email del paciente, ni el motivo, el diagnóstico o las recetas sembrados.
   - `UiAuditClockTest` (D16, TM9): en `testing`, la cabecera fija `now()` de la petición; un valor
-    inválido se ignora; en `production`, la cabecera no tiene efecto y el middleware no está
-    registrado.
+    inválido se ignora; con el entorno cambiado a `production` en el test, la cabecera no tiene
+    efecto; el middleware está en los grupos `web` y `api` y `/dashboard` responde sin error con
+    él (A27).
   - `CompleteAppointmentTest` (A9): completar una cita cancelada o con seguimiento responde 409 con
-    el texto en español y sin el id.
+    el texto en español y sin el id; las dos aserciones actuales en inglés se sustituyen (A29).
   - `tests/Modules/Core/Integration/DashboardScreenTest.php` (nuevo): HTML de `/dashboard` por rol
     (dataset de "Qué ve cada rol"), título "Inicio - Dentissa" para todos, un `h1`, sin "-" en
     contadores, sin las piezas retiradas, mes en curso en el atributo de datos, staff inactivo → 403
@@ -239,7 +244,8 @@ cada columna.
   por diferencia admitida y los flujos de "Tests de navegador" (vacío, carga, error, Reintentar,
   mes y nombre con HTML). Se comprueba que el resultado no depende de la hora real: dos corridas,
   a horas distintas, dan lo mismo (A3). `evaluate.mjs` con `design/criterios.json` y `criterios-doctor.json` sobre
-  `/dashboard` servido en local, en la tarea que construye la pantalla. Se ejecutan dos veces en
+  la copia de `dashboard-administrador` y `dashboard-doctor` que guarda ui-audit con la hora de D16
+  (D22), en la tarea que construye la pantalla. Se ejecutan dos veces en
   `/implement`.
 - **Regresión:** suites de Appointments, AppointmentTracking, Reports, Core y Users en serie.
 
@@ -254,7 +260,7 @@ cada columna.
 | TM6 | Information disclosure: las listas del inicio sacan datos clínicos o de contacto | A01:2025 · LFPDPPP | Recursos de las tres lecturas | `DashboardAppointmentResource` con campos fijos, sin seguimiento ni datos del paciente salvo el nombre | `DashboardNoClinicalDataTest` |
 | TM7 | Tampering / XSS almacenado: un nombre de paciente, tratamiento o doctor con HTML se ejecuta en el inicio | A05:2025 (inyección) | `dashboard.js` | Solo `textContent` y plantillas; nunca `innerHTML` | ui-audit flujo "nombre con HTML" |
 | TM8 | Denial of service: listas sin límite con muchas citas vencidas | A06:2025 · API4:2023 | `GET /agenda/unclosed`, `/without-tracking` | Límite de 10 en el servidor y `count()` aparte; límite general `api` | `UnclosedAppointmentsTest` (15 → 10), `DashboardPerformanceTest` |
-| TM9 | Tampering: alguien envía `X-Ui-Audit-Now` en producción para cambiar qué cuenta como "hoy" o "sin cerrar" | A02:2025 (configuración insegura) | `UiAuditClock` | El middleware solo se registra en `local` y `testing`, y además comprueba el entorno en cada petición | `UiAuditClockTest` (producción: sin efecto y sin registrar) |
+| TM9 | Tampering: alguien envía `X-Ui-Audit-Now` en producción para cambiar qué cuenta como "hoy" o "sin cerrar" | A02:2025 (configuración insegura) | `UiAuditClock` | El middleware comprueba el entorno en cada petición y solo actúa en `local` y `testing`; su registro no depende del entorno (A27) | `UiAuditClockTest` (entorno `production`: la cabecera no tiene efecto) |
 
 ## Trazabilidad
 | Criterio de aceptación | Cambio(s) | Test(s) |
@@ -283,7 +289,7 @@ cada columna.
 | TM6: datos clínicos en las listas | `DashboardAppointmentResource` | `DashboardNoClinicalDataTest` |
 | TM7: HTML en nombres | `dashboard.js` | ui-audit flujo "nombre con HTML" |
 | TM8: listas sin límite | Límite 10 + `count()` | `UnclosedAppointmentsTest`, `DashboardPerformanceTest` |
-| TM9: hora falsa en producción | `UiAuditClock` solo en local y testing | `UiAuditClockTest` |
+| TM9: hora falsa en producción | `UiAuditClock` comprueba el entorno en cada petición | `UiAuditClockTest` |
 | RNF: < 2 s con 50 hoy, 200 sin cerrar y 2 000 en el mes | Consultas con límite; reutiliza el reporte | `DashboardPerformanceTest` |
 | RNF: cálculos en el servidor; el mes sale del cálculo de Reportes | `TodayAgenda`; `reports/monthly` | `TodaySummaryTest`, `DashboardMatchesReportsTest` |
 | RNF: permisos en el servidor, denegado por actor | Casos de uso y rutas | `DashboardAccessControlTest`, `DashboardUseCasesAuthorizationTest` |
@@ -367,6 +373,17 @@ No aplica: `/dashboard` es una ruta privada del panel; la spec no crea ni cambia
   usuario, 2026-10-23).
 - **D20** Excepción de P3 para `ShowDashboardPageController` (A6; decisión del usuario,
   2026-10-23).
+- **D21** Los flujos de ui-audit pueden responder desde la carga de la página, en secuencia y
+  reteniendo una respuesta, y esperar (A25). Sin eso, los estados por sección del inicio, que
+  cargan al abrir la página, no se pueden probar en el navegador.
+- **D22** `evaluate.mjs` no inicia sesión ni envía cabeceras, así que no puede medir `/dashboard`
+  con la hora de D16 (A32). ui-audit guarda, en las entradas con `snapshot`, la página pintada
+  (DOM con los estilos de la build en línea, sin scripts) a cada ancho, y `evaluate` mide esa
+  copia. Se descarta sembrar datos que den K1–K4 con cualquier fecha, porque deshace D16.
+- **D23** Registrar usa las mismas reglas que completar: los síntomas son opcionales (A30;
+  decisión del usuario, 2026-10-24).
+- **D24** El umbral de 2 s se comprueba en `pest --parallel`, como en CI, junto con un número de
+  consultas fijo por endpoint, que no depende de la carga de la máquina (A28).
 - **D15** Los problemas abiertos de la evaluación del diseño (`design.md` → Resultado: "·" inicial a
   390 px, "Registrar seguimiento" en dos líneas y filas de sin cerrar a 390 px) se corrigen en la
   tarea que construye la pantalla, sin cambiar criterios.
@@ -389,8 +406,8 @@ No aplica: `/dashboard` es una ruta privada del panel; la spec no crea ni cambia
 - **`reports/monthly` lento con meses grandes** → `DashboardPerformanceTest`; plan B en D7.
 - **Datos de "hoy" inestables en ui-audit** (la hora de CI cambia) → hora fija del servidor y del
   navegador en las entradas del inicio (D16); dos corridas a horas distintas dan lo mismo.
-- **La hora fija llega a producción** → TM9: solo se registra en `local` y `testing`;
-  `UiAuditClockTest`.
+- **La hora fija llega a producción** → TM9: el middleware comprueba el entorno en cada petición y
+  solo actúa en `local` y `testing`; `UiAuditClockTest` con el entorno en `production`.
 - **CSRF en la operación nueva que cambia estado (RS5.a, pendiente)** → `POST
   /appointments/{id}/tracking` depende, como el resto de la API, de `SameSite=lax`. RS5.a queda fuera
   de esta spec, con su destino en el roadmap ("Seguridad sin objetivo asignado"); ninguna tarea la
