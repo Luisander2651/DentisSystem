@@ -66,6 +66,18 @@ final class UiAuditSeeder extends Seeder
 
     public const APPOINTMENTS_MONTH = '2026-07';
 
+    /**
+     * Spec 020 (D16): the day the dashboard of the browser test opens on, at 11:40, in a month
+     * no other entry looks at.
+     */
+    public const DASHBOARD_DAY = '2026-09-17';
+
+    /**
+     * Spec 020 (A34): the patients of the dashboard were registered in September, whatever the
+     * day ui:audit-data runs, so the month of the administrator counts them as new.
+     */
+    public const DASHBOARD_PATIENTS_CREATED_AT = '2026-09-01 09:00:00';
+
     public const TREATMENT_NAMES = [
         'Limpieza dental de prueba',
         'Resina de prueba',
@@ -97,7 +109,9 @@ final class UiAuditSeeder extends Seeder
         $this->seedPatient(self::EMPTY_PATIENT_EMAIL, 'Pedro', 'Prueba');
         $treatments = $this->seedTreatments();
         $this->seedAppointments($patient, $staff['doctor'], $treatments);
-        $this->seedOtherDoctorAppointments($patient, $this->seedOtherDoctor(), $treatments);
+        $otherDoctor = $this->seedOtherDoctor();
+        $this->seedOtherDoctorAppointments($patient, $otherDoctor, $treatments);
+        $this->seedDashboard(['doctor' => $staff['doctor'], 'otro' => $otherDoctor], $treatments);
         $this->seedContent();
     }
 
@@ -345,6 +359,76 @@ final class UiAuditSeeder extends Seeder
                 'user_id' => $doctor->id,
                 'patient_id' => $patient->id,
             ]);
+        }
+    }
+
+    /**
+     * Spec 020 (A2, A15): the dashboard of DASHBOARD_DAY, each appointment with a patient of its
+     * own. That day holds the eight appointments of design.md (3 completed with follow-up, 4 to
+     * attend, 1 cancelled; the next one at 12:30). Before it, with the open ones of
+     * APPOINTMENTS_MONTH, there are 15 unclosed, and with the one of spec 018, 6 completed without
+     * follow-up, 3 for each doctor.
+     *
+     * @param  array{doctor: UserModel, otro: UserModel}  $doctors
+     * @param  list<TreatmentModel>  $treatments
+     */
+    private function seedDashboard(array $doctors, array $treatments): void
+    {
+        $appointments = [
+            ['17', '09:00:00', 'completada', 0, 'otro', 'Laura'],
+            ['17', '09:45:00', 'completada', 1, 'doctor', 'Mario'],
+            ['17', '10:30:00', 'cancelada', 2, 'otro', 'Sofía'],
+            ['17', '11:15:00', 'completada', 0, 'doctor', 'Andrés'],
+            ['17', '12:30:00', 'asignada', 0, 'otro', 'Valeria'],
+            ['17', '13:15:00', 'reprogramada', 1, 'doctor', 'Javier'],
+            ['17', '16:00:00', 'asignada', 2, 'otro', 'Carmen'],
+            ['17', '17:30:00', 'asignada', 1, 'doctor', 'Elena'],
+            ['16', '16:00:00', 'asignada', 1, 'otro', 'Ramón'],
+            ['16', '10:00:00', 'asignada', 0, 'doctor', 'Lucía'],
+            ['15', '12:30:00', 'asignada', 2, 'otro', 'Tomás'],
+            ['14', '09:15:00', 'reprogramada', 2, 'doctor', 'Inés'],
+            ['11', '17:00:00', 'asignada', 0, 'otro', 'Hugo'],
+            ['11', '11:45:00', 'asignada', 1, 'doctor', 'Rosa'],
+            ['10', '13:00:00', 'asignada', 2, 'otro', 'Pablo'],
+            ['09', '10:30:00', 'asignada', 0, 'otro', 'Marta'],
+            ['07', '16:30:00', 'asignada', 1, 'doctor', 'Óscar'],
+            ['04', '09:00:00', 'asignada', 1, 'otro', 'Alicia'],
+            ['16', '12:00:00', 'completada', 0, 'doctor', 'Bruno'],
+            ['15', '17:15:00', 'completada', 1, 'otro', 'Clara'],
+            ['14', '11:00:00', 'completada', 2, 'otro', 'Daniel'],
+            ['10', '16:00:00', 'completada', 2, 'doctor', 'Eva'],
+            ['08', '10:15:00', 'completada', 0, 'otro', 'Félix'],
+        ];
+
+        $month = substr(self::DASHBOARD_DAY, 0, 8);
+
+        foreach ($appointments as $index => [$day, $time, $status, $treatment, $doctor, $firstName]) {
+            $patient = $this->seedPatient('inicio.'.$index.'@'.self::EMAIL_DOMAIN, $firstName, 'Prueba');
+            $patient->created_at = self::DASHBOARD_PATIENTS_CREATED_AT;
+            $patient->save();
+
+            $date = $month.$day;
+            $appointmentId = self::stableId('dashboard-appointment', $index);
+
+            AppointmentModel::query()->updateOrCreate(['id' => $appointmentId], [
+                'date' => $date,
+                'time' => $time,
+                'whatsapp_reminder' => false,
+                'status' => $status,
+                'treatment_id' => $treatments[$treatment]->id,
+                'user_id' => $doctors[$doctor]->id,
+                'patient_id' => $patient->id,
+            ]);
+
+            if ($status === 'completada' && $date === self::DASHBOARD_DAY) {
+                AppointmentTrackingModel::query()->updateOrCreate(['id' => self::stableId('dashboard-tracking', $index)], [
+                    'reason' => 'Revisión programada.',
+                    'symptoms' => [],
+                    'diagnosis' => 'Sin hallazgos.',
+                    'procedure_performed' => 'Revisión general.',
+                    'appointment_id' => $appointmentId,
+                ]);
+            }
         }
     }
 
