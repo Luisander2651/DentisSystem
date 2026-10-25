@@ -28,6 +28,8 @@ function rolePermissionMatrix(): array
         'patients.update' => ['patients.update', ['Administrador']],
         'patients.create' => ['patients.create', ['Administrador']],
         'patients.delete' => ['patients.delete', ['Administrador']],
+        // Spec 020 (CA13, CA14): today and the unclosed ones of the dashboard read with these two,
+        // the ones without follow-up and registering it with appointment-tracking.create(-own).
         'appointments.view' => ['appointments.view', ['Administrador', 'Asistente']],
         'appointments.view-own' => ['appointments.view-own', ['Doctor']],
         'appointments.create' => ['appointments.create', ['Administrador', 'Asistente']],
