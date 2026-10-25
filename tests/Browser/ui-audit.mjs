@@ -24,6 +24,11 @@
  * position, for values that change with the date). A 429 answered from here (a flow of
  * checks-dialogs) is not the API limiting the visit; an answer with `hold` waits until the flow
  * releases it, and `settle()` does not wait for it.
+ *
+ * Clock of an entry: `now` (or the top-level `now`) moves the browser's Date. Since spec 020, an
+ * entry may also declare `serverNow` (ISO 8601 with offset, such as "2026-09-17T11:40:00-06:00"):
+ * every request of the entry then carries X-Ui-Audit-Now with it, and the app, only in local and
+ * testing, answers as if it were that instant (UiAuditClock).
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -624,6 +629,10 @@ async function openEntry(browser, entry, width, options, session, config) {
     await page.send('Page.enable');
     await page.send('Runtime.enable');
     await page.send('Network.enable');
+
+    if (entry.serverNow) {
+        await page.send('Network.setExtraHTTPHeaders', { headers: { 'X-Ui-Audit-Now': entry.serverNow } });
+    }
     await page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 768 });
     await page.send('Emulation.setTouchEmulationEnabled', { enabled: width < 768 });
     // The same pointer on every machine: a runner without a mouse reports that it cannot hover.
