@@ -1,89 +1,81 @@
 ---
 result: fail
-round: 1
-mode: full
+round: 2
+mode: delta
 constitution_version: 1.2.0
-date: 2026-10-23
-spec_sha: 487172d42ea9
-plan_sha: 70efdd9d2c61
-tasks_sha: 8e33ca0ac3ed
+date: 2026-10-24
+spec_sha: 4455acdc1983
+plan_sha: d9b3c26beb82
+tasks_sha: cff812a0f74b
 ---
 
 # Análisis · 020 Tablero de inicio
 
 ## Resumen
-**Fail.** No hay hallazgos CRÍTICOS, pero sí 7 ALTOS que el usuario decidió corregir. Dos tocan
-el comportamiento: "Reprogramar" sin diálogo en el detalle abierto desde el inicio (A1) y datos de
-prueba que no producen lo que miden los criterios de diseño (A2). Uno es la línea base de 1440 px
-que la tarea no puede reescribir y que depende de la hora (A3). Uno es una desviación de P3 sin
-excepción (A6). Tres son pruebas que faltan (A4, A5, A7). Las decisiones de la spec (A1, A9, A10,
-A16, A17) van por `/specify --edit` antes de corregir el plan.
-
-Análisis de un subagente independiente (perfil `critical`). Los hallazgos ALTOS se verificaron
-en el código: `view-appointment.js:226-232`, `create-appointment.js:639-645`,
-`ui-audit.mjs:778-795`, `baseline-1440.json:82-84`, `UiAuditSeederTest.php` y
-`dashboard.blade.php:33,52,56`.
-
-Conteo: CRÍTICA 0 · ALTA 7 · MEDIA 12 · BAJA 5
+No pasa: quedan 3 hallazgos ALTOS nuevos. Los flujos de navegador de T026 no caben en el runner
+actual (A25). El control de TM9 depende del entorno al registrar el middleware, que en la web aún
+no está cargado (A27). Y `evaluate` mide sin la hora fija, así que K3 no puede pasar (A32). Los 24
+hallazgos de la ronda 1 quedaron resueltos; 8 con un efecto nuevo, que se registra como hallazgo
+nuevo. Delta hecho por un subagente independiente (el diff ocupa ~109 KB); cada hallazgo se
+verificó en el código.
+Conteo: CRÍTICA 0 · ALTA 3 · MEDIA 5 · BAJA 1
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
-| Criterios con tarea de test e implementación | 16 / 16 (siete en parte: CA1, CA2, CA4, CA7, CA9, CA10, CA12) |
-| Amenazas con control y test | 8 / 8 (con los matices de A8 y A24) |
-| Principios de la constitución evaluados | 15 / 15 |
+| Criterios con tarea de test e implementación | 16 / 16 (las partes de navegador de CA1, CA2, CA4, CA7, CA12 y CA16 dependen de A25 y A26) |
+| Amenazas con control y test | 9 / 9 (el test de TM9 depende de A27) |
+| Principios de la constitución evaluados | 10 / 15 en esta delta (P1–P7, P11, P13, P15 y la Definición de terminado); P8, P9, P10, P12 y P14 no cambian desde la ronda 1 |
 
 ## Seguimiento de rondas anteriores
-Primera ronda.
+| ID | Severidad | Estado | Evidencia |
+|---|---|---|---|
+| A1 | ALTA | resuelto | CA2 editado y sacado de "Fuera de alcance"; D17; el inicio incluye `edit-appointment-modal`; T045; T026 `dashboard-detalle` |
+| A2 | ALTA | resuelto con efecto nuevo (→ A32) | T002 y D16 siembran el 17-09-2026 con 15 sin cerrar, pero `evaluate.mjs` no envía `X-Ui-Audit-Now` |
+| A3 | ALTA | resuelto | D16 (hora fija); diferencia admitida en `ADMITTED` de `checks-composition.mjs`; T051; T050 corre a dos horas distintas |
+| A4 | ALTA | resuelto | T026 `expedientes-buscar` con `expect.focused`; T048 depende de T026 |
+| A5 | ALTA | resuelto con efecto nuevo (→ A25) | T026 declara los flujos de vacío, carga, error y Reintentar, pero `screens.json` no los puede expresar |
+| A6 | ALTA | resuelto | P3 y D20 registran la excepción con la decisión del usuario; T042; T024 |
+| A7 | ALTA | resuelto | T054 `DashboardLogsTest` va antes y entra en el "hecho cuando" de T035, T038 y T041 |
+| A8 | MEDIA | resuelto | TM1 nombra el control de cada lectura; T038 |
+| A9 | MEDIA | resuelto con efecto nuevo (→ A29) | CA15 editado; T029 y T049 |
+| A10 | MEDIA | resuelto | CA10 editado; `previous_short_label` y textos fijos; T022 |
+| A11 | MEDIA | resuelto con efecto nuevo (→ A31) | El flujo del mes compara con los datos de un test de integración, no con los sembrados |
+| A12 | MEDIA | resuelto con efecto nuevo (→ A28) | T021 define qué se mide, pero exige la suite en serie |
+| A13 | MEDIA | resuelto | 403 por el render de `bootstrap/app.php`; T019 afirma el cuerpo; 018/R8 fuera, con destino en el roadmap |
+| A14 | MEDIA | resuelto | Riesgos: RS5.a fuera, con destino en el roadmap; T052 y T053 la dejan pendiente |
+| A15 | MEDIA | resuelto | T002 actualiza `UiAuditSeederTest`, primero en rojo |
+| A16 | MEDIA | resuelto | CA11 editado; T024 ("Ángela" → "Á"); T045 (`mb_substr`) |
+| A17 | MEDIA | resuelto con efecto nuevo (→ A26) | CA16, D19, T042 y T024; `dashboard-inactivo` no puede abrir sesión en ui-audit |
+| A18 | MEDIA | resuelto | T027 lista los 8 archivos de `Domain/` |
+| A19 | MEDIA | resuelto con efecto nuevo (→ A30) | Contrato del 422 campo por campo; T017 |
+| A20 | BAJA | resuelto | Plan (diálogos reutilizados), T047 y T026 |
+| A21 | BAJA | resuelto | La acción rápida abre "Completar cita" y T026 lo comprueba |
+| A22 | BAJA | resuelto con efecto nuevo (→ A25) | Se quitan los 13 s, pero la espera de 12 s no tiene acción en el runner |
+| A23 | BAJA | resuelto | P3 cita `AppointmentTrackingModel::appointment()`; diferencia `doctor_name` / `user_name` declarada |
+| A24 | BAJA | resuelto | T028 en `tests/Modules/AppointmentTracking/Unit/Application/`; T038 en el control de TM4 |
 
 ## Hallazgos nuevos
 | ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
 |---|---|---|---|---|---|
-| A1 | Inconsistencia | ALTA | `plan.md` → Cambios por módulo (Interfaz · pantalla); `spec.md` CA2 y "Fuera de alcance" | El detalle reutilizado muestra "Reprogramar" en cuanto existe `agendaAppointmentModal.openEdit`, que el diálogo de agendar define siempre. Sin `edit-appointment-modal` en el inicio, el botón no hace nada. Además, CA2 ("las acciones que el rol tiene en la agenda") choca con "Reprogramar desde el inicio" en "Fuera de alcance" | `/specify --edit`: el detalle del inicio ofrece Reprogramar (decisión del usuario). Después, `/plan --fix` y `/tasks --fix`: ningún rol ve un botón que no funciona. Test: entrada de ui-audit `dashboard-detalle` (administrador y asistente) que reprograma desde el detalle |
-| A2 | Cobertura | ALTA | T002, T046, T050; `design/criterios.json` K3 | K3 exige "y 5 más", es decir, 15 citas sin cerrar. `UiAuditSeeder` siembra 3 o 4, y T002 no siembra las 15. `evaluate` sobre `/dashboard` local no puede pasar | Los datos de `ui:audit-data` producen lo que suponen los criterios: 15 sin cerrar del administrador, siguiente cita, completadas sin seguimiento por doctor. Test: `evaluate` con `criterios.json` y `criterios-doctor.json` en T046 |
-| A3 | Cobertura / riesgo | ALTA | T051; `plan.md` D14 | `baseline-1440.json` ya congela `dashboard-administrador`, `-asistente` y `-doctor`, y `writeBaseline` solo reescribe entradas nuevas o de una diferencia admitida, que T051 no registra. Con citas relativas a la hora del sembrado, la composición a 1440 px cambia según la hora | Diferencia admitida registrada con su criterio (CA11, c5) y la aprobación del usuario. La composición de `dashboard-*` no depende de la hora. Test: `npm run test:ui -- --only dashboard` con datos sembrados a horas distintas da el mismo resultado |
-| A4 | Constitución (P2) | ALTA | T048; `plan.md` → Estrategia de pruebas | `?buscar=1` (foco en el buscador, CA9) no tiene ninguna prueba que falle antes; T048 solo pide "mismo resultado" y una verificación manual | Entrada de ui-audit de `/expedientes-clinicos?buscar=1` que compruebe el foco en el buscador: falla antes de T048 y pasa después |
-| A5 | Constitución (P2) / Cobertura | ALTA | `spec.md` → Criterios de diseño (estados a `npm run test:ui`); T026 | Ninguna tarea prueba en navegador los textos de vacío de CA1, CA2, CA4 y CA7, el estado de carga de CA12 ni que "Reintentar" restablezca la sección | Flujos de ui-audit con respuestas vacías por sección (texto exacto de la spec), estado de carga visible y "Reintentar" que restablece el contenido; fallan antes de T046 |
-| A6 | Constitución (P3) | ALTA | `plan.md` P3 y "Rutas"; T042 | `ShowDashboardPageController` entrega rol y capacidades a la vista sin caso de uso, y el plan no registra la excepción de P3. La 019 sí la registró para el mismo patrón (A35) | Excepción de P3 registrada con la aprobación del usuario (decisión del usuario): la vista no lleva datos protegidos. Test: `DashboardScreenTest` por rol, incluido el staff inactivo |
-| A7 | Constitución (P11) | ALTA | `plan.md` P11 y Trazabilidad (RNF de logs) | La prohibición "logs sin datos de pacientes ni clínicos" solo se verifica a mano | Test de integración que captura el log durante el registro y los errores forzados y afirma que no contiene los valores sembrados de paciente ni del seguimiento |
-| A8 | Inconsistencia | MEDIA | `plan.md` TM1; T038 | TM1 nombra `DoctorScope` como control de `/agenda/without-tracking`, pero `DoctorScope` se basa en `appointments.view`, que el asistente tiene. El plan usa `appointment-tracking.create/-own` para esa lectura | TM1 nombra el control real de cada lectura. Test: `CompletedWithoutTrackingTest` (asistente 403, doctor con `user_id` ajeno) |
-| A9 | Inconsistencia / Cobertura (CA15) | MEDIA | `spec.md` CA15; `plan.md` → Rollout (`POST /complete` igual) | `POST /complete` también registra el seguimiento de una cita completada sin él, y en una cita con seguimiento o cancelada responde en inglés y con el id | `/specify --edit`: CA15 incluye `/complete` (decisión del usuario). Mensajes en español y sin id. Test: casos en `CompleteAppointmentTest` |
-| A10 | Ambigüedad | MEDIA | `spec.md` CA10; `plan.md` → `GET /reports/monthly` | "Hasta hoy" contradice "los mismos números que Reportes", que cuenta todo el mes. El plan usa `previous_label` donde la 019 da `previous_short_label`, y el formato del texto difiere entre spec y plan | `/specify --edit`: todo el mes, como Reportes, con el texto "42 citas · +6 respecto a septiembre (36)" (decisión del usuario). Test: `DashboardMatchesReportsTest` y ui-audit sobre el texto pintado |
-| A11 | Cobertura (CA10) | MEDIA | `plan.md` → Estrategia de pruebas; T022, T026 | El plan dice que ui-audit compara las cifras de la pantalla con `reports/monthly`, pero T026 no tiene ese paso | Paso en `dashboard-administrador` que compara las cifras pintadas con las de `/reportes` del mismo mes |
-| A12 | Ambigüedad / RNF | MEDIA | `plan.md` D4, D7; T021 | Que la 019 mida menos de 3 s no implica que quepa en 2 s. T021 suma tiempos de servidor, no "el inicio se muestra". La aserción de reloj real repite 019/R8 | Definir qué se mide y con qué margen. Test: `DashboardPerformanceTest` (o una medida de ui-audit si es la carga) |
-| A13 | Seguridad / riesgos | MEDIA | T041; `plan.md` → Contratos; `observability.md` (punto único de 403) | El contrato no fija el cuerpo del 403. El patrón actual captura `AuthorizationException` en el controlador, se salta el punto único donde se engancharán los accesos denegados y nombra el permiso interno (018/R8) | Los 403 nuevos salen por el punto único con un cuerpo fijo; 018/R8 se declara dentro o fuera con su destino. Test: un caso de `DashboardAccessControlTest` que afirma el cuerpo |
-| A14 | Cobertura de riesgos | MEDIA | `plan.md` → Riesgos; `security.md` RS5.a | `POST /appointments/{id}/tracking` es una entrada nueva que cambia estado y depende de `SameSite=lax`, y el plan no menciona RS5 | Riesgos del plan: RS5.a fuera, con motivo y destino; ninguna tarea lo declara mitigado |
-| A15 | Cobertura (P2) | MEDIA | T002; `tests/Modules/Core/Integration/UiAuditSeederTest.php` | Ese test afirma que todas las citas sembradas son de julio de 2026 y cuántas completó el doctor. T002 lo rompe y ninguna tarea lo actualiza | T002 actualiza `UiAuditSeederTest` (citas de hoy, completadas sin seguimiento por doctor, idempotencia), primero en rojo y después en verde |
-| A16 | Inconsistencia | MEDIA | `plan.md` → Interfaz · pantalla; T052 (cierra 016/R43) | La vista tiene una sola sección de título y el paciente también ve la tarjeta con la inicial recortada: o su título cambia (contra CA16) o R43 sigue abierto | `/specify --edit`: el paciente ve "Inicio - Dentissa" y su inicial completa; el resto de su inicio no cambia (decisión del usuario). Test: caso del paciente en `DashboardScreenTest` |
-| A17 | Ambigüedad | MEDIA | `plan.md` → Pantalla `/dashboard`; T042 | Con el staff inactivo, `/dashboard` mostraría la rama del staff con todas las secciones en error | `/specify --edit`: el staff inactivo recibe la vista "Sin permiso" (403), como en `/agenda` (decisión del usuario). Test: caso en `DashboardScreenTest` |
-| A18 | Constitución (P3) | MEDIA | T027 | El test de arquitectura no cubre todos los archivos de `Domain/` que tocan otras tareas: `AppointmentsService` (T031), `AppointmentCompletionRepositoryInterface` y `AppointmentCompletionService` (T039) | Los tests de arquitectura cubren todo archivo de `Domain/` que la spec crea o modifica |
-| A19 | Ambigüedad (P4/P6) | MEDIA | `plan.md` → `POST /tracking`; T017 | "Mensajes en español (los de los campos de completar)", pero completar responde con mensajes en inglés de los value objects; los textos en español solo existen en el cliente | El contrato lista el mensaje exacto de cada campo; T017 lo afirma campo por campo |
-| A20 | Inconsistencia | BAJA | `plan.md` → diálogos reutilizados; T047 | En modo registro, la confirmación seguiría diciendo "¿Completar esta cita?" y "Sí, completar cita" | Textos de confirmación del modo registro en el plan; `dashboard-registrar-seguimiento` los comprueba |
-| A21 | Ambigüedad | BAJA | `spec.md` CA8, CA9 | "Registrar seguimiento" nombra dos operaciones: completar la siguiente cita (acción rápida) y registrar en una completada (lista) | Etiqueta y título del diálogo coherentes con la operación de cada botón; ui-audit comprueba el título del diálogo que abre cada uno |
-| A22 | Ambigüedad | BAJA | T026 ("tras 13 s") | Una espera sin origen en el plan ni en la spec | Quitarla o explicar su origen; el flujo comprueba el bloque de error sin un tiempo arbitrario |
-| A23 | Redacción | BAJA | `plan.md` P3 y AppointmentTracking · Infrastructure | El precedente citado para leer `appointments` desde Infrastructure es inexacto, y `doctor_name` del contrato nuevo frente a `user_name` del recurso existente nombran el mismo dato | Corregir el precedente y declarar la diferencia de nombre |
-| A24 | Cobertura | BAJA | Cobertura de TM4; T012 | La ruta de T038 falta en el control de TM4, y T012 prueba casos de uso de AppointmentTracking desde la carpeta de tests de Appointments | T038 en TM4; el test repartido por módulo |
+| A25 | Cobertura / Constitución (P2) | ALTA | T026; `plan.md` → Tests de navegador; `tests/Browser/checks-dialogs.mjs` (`runFlows`, `answers`) | El runner instala la intercepción después de cargar la página, responde una sola ruta por flujo (`answer.to`) y no tiene retención (`hold`) ni espera en los flujos. Las secciones del inicio cargan al abrir la página, así que vacío por sección, carga, error de una sección, "Reintentar" y la espera de 12 s no se pueden expresar en `screens.json`. T026 no puede fallar por la razón esperada y ninguna tarea cambia el runner | Una tarea anterior a T026 permite, en los flujos, responder a las lecturas desde la carga de la página, retener una respuesta, responder distinto a peticiones sucesivas y esperar. Test: el ui-audit completo da el mismo resultado en las entradas existentes, y un flujo de prueba en `dashboard-administrador` falla por la razón esperada. `/plan --fix`, `/tasks --fix` |
+| A26 | Cobertura | MEDIA | T026 `dashboard-inactivo`; `app/Core/Console/UiAuditSessionCommand.php` (`seededAccount`) | El comando de sesión solo entrega sesión al staff activo y al paciente. Para el staff inactivo sembrado no hay sesión, y ninguna tarea cambia el comando ni su test (016 TM5) | ui-audit puede entrar como el staff inactivo sembrado, sin aceptar cuentas fuera del conjunto fijo. Test: el test del comando de sesión con el rol inactivo, y `dashboard-inactivo` en rojo antes de T042. `/plan --fix`, `/tasks --fix` |
+| A27 | Seguridad (TM9) | ALTA | `plan.md` → Core · reloj, TM9, D16; T006, T007 | El plan registra `UiAuditClock` en `bootstrap/app.php` "solo en local y testing". La función de `withMiddleware` corre al resolverse el kernel HTTP, y en la web eso pasa antes de cargar el entorno; en Pest ya está cargado. Preguntar el entorno al registrar pasa los tests pero en la web falla o no registra nunca. Además, "en production el middleware no está en la pila" no se puede comprobar sin rearrancar la aplicación | TM9 se apoya en una garantía que funciona en la web real: el entorno se comprueba en cada petición (precedente `UiAuditSeeder::ALLOWED_ENVIRONMENTS`), y el registro no depende del entorno. Test: `UiAuditClockTest` con el entorno en `production` (la cabecera no tiene efecto) y una petición a `/dashboard` sin error con el middleware registrado. `/plan --fix` (TM9, D16), `/tasks --fix` (T006, T007) |
+| A28 | Constitución (Definición de terminado) / RNF | MEDIA | T021; `plan.md` → Estrategia de pruebas | El umbral de 2 s se exige "con la suite en serie", pero la Definición de terminado y CI corren `pest --parallel`: o falla de forma intermitente o no se cumple | El test es estable bajo `--parallel`, o el plan dice cómo se aísla, sin `skip`. Test: `DashboardPerformanceTest` verde dos veces en `pest --parallel`. `/plan --fix`, `/tasks --fix` |
+| A29 | Inconsistencia | MEDIA | T029, T049; `CompleteAppointmentTest.php` | Dos casos existentes afirman hoy los textos en inglés, uno con el id. T029 solo añade casos y T049 exige que "el resto siga en verde": tras T049 esos dos fallan | T029 sustituye esas dos aserciones por las del contrato. Test: `CompleteAppointmentTest` completo en verde tras T049. `/tasks --fix` |
+| A30 | Inconsistencia | MEDIA | `plan.md` → `POST /tracking` (422 de `symptoms`); T017; CA8 | CA8 pide los campos y las reglas de completar, y completar admite `symptoms` vacío (`Symptoms::fromArray` solo rechaza elementos vacíos). "Escribe al menos un síntoma." sería una regla nueva que el diálogo no tiene | Decidido: mismas reglas que completar; los síntomas pueden quedar vacíos y un elemento vacío se rechaza. Test: T017 sobre `symptoms` vacío (se acepta) y con un elemento vacío (422). `/plan --fix`, `/tasks --fix` |
+| A31 | Ambigüedad / Cobertura (CA10) | MEDIA | `plan.md` → Tests de navegador (mes del administrador); T026 | Las cifras esperadas son "las de `DashboardMatchesReportsTest`", que usa sus propios datos, no los de `ui:audit-data`. T026 deja el texto abierto | Los textos esperados salen de los datos sembrados de septiembre de 2026, fijados en un test, o se comparan en la misma corrida con `/reportes` del mismo mes. Test: el flujo falla si una cifra pintada difiere. `/plan --fix`, `/tasks --fix` |
+| A32 | Cobertura (diseño K3) | ALTA | T046, T050; D16 | `evaluate.mjs` no envía `X-Ui-Audit-Now`. Con la fecha real, las citas por atender del 17-09 pasan a "sin cerrar": salen 19, se pinta "y 9 más" y K3 ("y 5 más") falla. El "hecho cuando" de T046 no se puede alcanzar | `evaluate` mide `/dashboard` con el servidor en la hora de D16, o los datos dan K1–K4 con cualquier fecha real. Test: `evaluate` con `criterios.json` y `criterios-doctor.json` pasa en T046. `/plan --fix`, `/tasks --fix` |
+| A33 | Redacción | BAJA | `plan.md` → Interfaz · pantalla ("Octubre hasta hoy"); T026 (`dashboard-detalle`) | El título de la sección contradice "todo el mes" (CA10). Cada entrada de `screens.json` lleva un solo rol, así que el detalle del administrador y el del asistente son dos entradas | Título coherente con CA10 y dos entradas con su id. `/plan --fix`, `/tasks --fix` |
 
 ## Decisiones pendientes del usuario
-Resueltas el 2026-10-23:
-- **A1:** el detalle del inicio ofrece Reprogramar con el diálogo de la agenda; sale de "Fuera de
-  alcance".
-- **A3:** se admite la diferencia de composición del inicio a 1440 px (CA11, c5) y se rehace la
-  línea base.
-- **A6:** excepción de P3 para `ShowDashboardPageController`, como `/reportes` en la 019.
-- **A9:** `/complete` entra en CA15: mensajes en español y sin id.
-- **A10:** el mes cuenta como Reportes (todo el mes), con el texto "42 citas · +6 respecto a
-  septiembre (36)".
-- **A16:** el paciente ve "Inicio - Dentissa" y su inicial completa; el resto no cambia.
-- **A17:** el staff inactivo recibe la vista "Sin permiso" (403) en `/dashboard`.
-- **MEDIA y BAJA:** se corrigen en el mismo `/plan --fix` y `/tasks --fix`, no como notas.
+Ninguna. Decididas el 2026-10-24:
+- **A30:** registrar usa las mismas reglas que completar; los síntomas pueden quedar vacíos (decisión del usuario).
+- **A26, A28, A29, A31, A33:** se corrigen ahora junto con los ALTOS, no como notas de `/implement` (decisión del usuario).
 
 ## Aceptados
-Ninguno.
+Ninguno en esta ronda.
 
 ## Siguiente paso
-1. `/specify --edit 020`: A1, A9, A10, A16 y A17 (CA2, CA10, CA11, CA15, CA16 y "Fuera de
-   alcance").
-2. `/plan 020 --fix A1–A24`.
-3. `/tasks 020 --fix A1–A24`.
-4. `/analyze 020` (delta).
+`/plan 020 --fix A25,A26,A27,A28,A30,A31,A32,A33` y `/tasks 020 --fix A25–A33`; después
+`/analyze 020` (ronda 3, delta).

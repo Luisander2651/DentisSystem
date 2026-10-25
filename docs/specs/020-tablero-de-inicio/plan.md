@@ -1,6 +1,6 @@
 ---
 spec: 020-tablero-de-inicio
-status: draft   # vuelve a draft por /plan --fix (analysis ronda 1)
+status: approved
 constitution_version: 1.2.0
 created: 2026-10-23
 ---
