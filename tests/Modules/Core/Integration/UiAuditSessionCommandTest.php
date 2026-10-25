@@ -81,6 +81,19 @@ it('issues a session of the seeded account of each role', function (string $role
     'paciente' => ['paciente', UiAuditSeeder::PATIENT_EMAIL],
 ]);
 
+it('issues a session of the seeded inactive staff member, so the browser test sees "Sin permiso" (spec 020, A26)', function () {
+    Storage::fake('public');
+    (new UiAuditSeeder)->run();
+
+    expect(Artisan::call('ui:audit-session', ['rol' => 'inactivo']))->toBe(0);
+
+    $token = PersonalAccessToken::findToken(trim(Artisan::output()));
+
+    expect($token)->not->toBeNull()
+        ->and($token->tokenable->email)->toBe(UiAuditSeeder::STAFF_EMAILS['inactivo'])
+        ->and($token->tokenable->status)->toBe('inactive');
+})->skip('020: pendiente de T059');
+
 it('issues no session when the seeded accounts do not exist, even if others do (abuse)', function () {
     $this->createUserWithRole('Administrador');
     $this->createPatient();
@@ -100,7 +113,7 @@ it('rejects anything that is not one of its roles (abuse)', function (string $ro
     expect(Artisan::call('ui:audit-session', ['rol' => $role]))->not->toBe(0)
         ->and(PersonalAccessToken::query()->count())->toBe(0)
         ->and($foreign->tokens()->count())->toBe(0);
-})->with(['root@example.com', 'Administrador ', 'inactivo', 'admin', '']);
+})->with(['root@example.com', 'Administrador ', 'Inactivo', 'inactive', 'admin', '']);
 
 it('issues no session outside local and testing (abuse)', function () {
     Storage::fake('public');
