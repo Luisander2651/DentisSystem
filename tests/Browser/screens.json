@@ -107,25 +107,493 @@
             "id": "dashboard-administrador",
             "screen": "dashboard",
             "path": "/dashboard",
-            "role": "administrador"
+            "role": "administrador",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "snapshot": true,
+            "flows": [
+                {
+                    "name": "vacío de cada sección",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/agenda/today-summary",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "date": "2026-09-17",
+                                    "now": "11:40",
+                                    "appointments": [],
+                                    "counts": {
+                                        "total": 0,
+                                        "completed": 0,
+                                        "pending": 0,
+                                        "cancelled": 0
+                                    },
+                                    "next": null,
+                                    "after": [],
+                                    "after_more": 0
+                                }
+                            }
+                        },
+                        {
+                            "to": "/api/v1/agenda/unclosed",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "items": [],
+                                    "total": 0
+                                }
+                            }
+                        },
+                        {
+                            "to": "/api/v1/agenda/without-tracking",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "items": [],
+                                    "total": 0
+                                }
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-dashboard-section=\"next\"]": "No quedan citas por atender hoy.",
+                            "[data-dashboard-section=\"agenda\"]": "No hay citas para hoy.",
+                            "[data-dashboard-section=\"unclosed\"]": "No hay citas pendientes de cerrar.",
+                            "[data-dashboard-section=\"without-tracking\"]": "Todas las citas completadas tienen seguimiento."
+                        }
+                    }
+                },
+                {
+                    "name": "carga",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/agenda/unclosed",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "items": [],
+                                    "total": 0
+                                }
+                            },
+                            "hold": true
+                        }
+                    ],
+                    "expect": {
+                        "visibleAfter": {
+                            "selector": "[data-dashboard-section=\"unclosed\"] [data-dashboard-state=\"loading\"]",
+                            "ms": 0
+                        }
+                    }
+                },
+                {
+                    "name": "error de una sección",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/agenda/unclosed",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 13000
+                        }
+                    ],
+                    "expect": {
+                        "visibleAfter": {
+                            "selector": "[data-dashboard-section=\"unclosed\"] [data-dashboard-state=\"error\"]",
+                            "ms": 0
+                        },
+                        "textIn": {
+                            "[data-dashboard-section=\"unclosed\"]": "No se pudo cargar esta sección.",
+                            "[data-dashboard-section=\"agenda\"]": "Valeria Prueba"
+                        },
+                        "tabbable": "[data-dashboard-section=\"unclosed\"] [data-dashboard-retry]",
+                        "announcedOnce": "No se pudo cargar esta sección."
+                    }
+                },
+                {
+                    "name": "Reintentar",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/agenda/unclosed",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            },
+                            "times": 1
+                        }
+                    ],
+                    "do": [
+                        {
+                            "click": "[data-dashboard-section=\"unclosed\"] [data-dashboard-retry]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "absent": [
+                            "[data-dashboard-section=\"unclosed\"] [data-dashboard-state=\"error\"]:not([hidden])"
+                        ],
+                        "textIn": {
+                            "[data-dashboard-section=\"unclosed\"]": "Ramón Prueba"
+                        }
+                    }
+                },
+                {
+                    "name": "nombre con HTML",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/agenda/today-summary",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "date": "2026-09-17",
+                                    "now": "11:40",
+                                    "appointments": [
+                                        {
+                                            "id": "80472206-113b-5416-b286-94bd4cd8a2dc",
+                                            "date": "2026-09-17",
+                                            "time": "12:30",
+                                            "status": "asignada",
+                                            "patient_name": "<img src=x onerror=\"window.__xss=1\">",
+                                            "treatment_name": "Limpieza dental",
+                                            "doctor_name": "Diego Prueba",
+                                            "is_past": false,
+                                            "is_next": true,
+                                            "can": {
+                                                "complete": true,
+                                                "cancel": true
+                                            }
+                                        }
+                                    ],
+                                    "counts": {
+                                        "total": 1,
+                                        "completed": 0,
+                                        "pending": 1,
+                                        "cancelled": 0
+                                    },
+                                    "next": {
+                                        "id": "80472206-113b-5416-b286-94bd4cd8a2dc",
+                                        "time": "12:30",
+                                        "status": "asignada",
+                                        "patient_name": "<img src=x onerror=\"window.__xss=1\">",
+                                        "treatment_name": "Limpieza dental",
+                                        "doctor_name": "Diego Prueba",
+                                        "can": {
+                                            "complete": true,
+                                            "cancel": true
+                                        }
+                                    },
+                                    "after": [],
+                                    "after_more": 0
+                                }
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "absent": [
+                            "[data-dashboard-section] img"
+                        ],
+                        "globalUndefined": [
+                            "__xss"
+                        ],
+                        "textIn": {
+                            "[data-dashboard-section=\"agenda\"]": "<img src=x onerror=\"window.__xss=1\">"
+                        }
+                    }
+                },
+                {
+                    "name": "mes del administrador",
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-dashboard-section=\"month\"] h2": "Septiembre",
+                            "[data-dashboard-month=\"appointments\"]": "23 citas · +23 respecto a agosto (0)",
+                            "[data-dashboard-month=\"new-patients\"]": "23 pacientes nuevos · +23 respecto a agosto (0)",
+                            "[data-dashboard-month=\"active-patients\"]": "pacientes activos · al 17 de septiembre de 2026"
+                        }
+                    }
+                },
+                {
+                    "name": "Registrar seguimiento de las acciones rápidas",
+                    "do": [
+                        {
+                            "click": "[data-dashboard-quick=\"register\"]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-complete-appointment-modal]"
+                        ],
+                        "textIn": {
+                            "[data-complete-appointment-modal] h2": "Completar cita"
+                        }
+                    }
+                }
+            ]
         },
         {
             "id": "dashboard-asistente",
             "screen": "dashboard",
             "path": "/dashboard",
-            "role": "asistente"
+            "role": "asistente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00"
         },
         {
             "id": "dashboard-doctor",
             "screen": "dashboard",
             "path": "/dashboard",
-            "role": "doctor"
+            "role": "doctor",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "snapshot": true,
+            "flows": [
+                {
+                    "name": "vacío de cada sección",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/agenda/today-summary",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "date": "2026-09-17",
+                                    "now": "11:40",
+                                    "appointments": [],
+                                    "counts": {
+                                        "total": 0,
+                                        "completed": 0,
+                                        "pending": 0,
+                                        "cancelled": 0
+                                    },
+                                    "next": null,
+                                    "after": [],
+                                    "after_more": 0
+                                }
+                            }
+                        },
+                        {
+                            "to": "/api/v1/agenda/unclosed",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "items": [],
+                                    "total": 0
+                                }
+                            }
+                        },
+                        {
+                            "to": "/api/v1/agenda/without-tracking",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "items": [],
+                                    "total": 0
+                                }
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-dashboard-section=\"next\"]": "No quedan citas por atender hoy.",
+                            "[data-dashboard-section=\"agenda\"]": "No hay citas para hoy.",
+                            "[data-dashboard-section=\"unclosed\"]": "No hay citas pendientes de cerrar.",
+                            "[data-dashboard-section=\"without-tracking\"]": "Todas las citas completadas tienen seguimiento."
+                        }
+                    }
+                },
+                {
+                    "name": "carga",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/agenda/unclosed",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "items": [],
+                                    "total": 0
+                                }
+                            },
+                            "hold": true
+                        }
+                    ],
+                    "expect": {
+                        "visibleAfter": {
+                            "selector": "[data-dashboard-section=\"unclosed\"] [data-dashboard-state=\"loading\"]",
+                            "ms": 0
+                        }
+                    }
+                },
+                {
+                    "name": "error de una sección",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/agenda/unclosed",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 13000
+                        }
+                    ],
+                    "expect": {
+                        "visibleAfter": {
+                            "selector": "[data-dashboard-section=\"unclosed\"] [data-dashboard-state=\"error\"]",
+                            "ms": 0
+                        },
+                        "textIn": {
+                            "[data-dashboard-section=\"unclosed\"]": "No se pudo cargar esta sección.",
+                            "[data-dashboard-section=\"agenda\"]": "Javier Prueba"
+                        },
+                        "tabbable": "[data-dashboard-section=\"unclosed\"] [data-dashboard-retry]",
+                        "announcedOnce": "No se pudo cargar esta sección."
+                    }
+                },
+                {
+                    "name": "Reintentar",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/agenda/unclosed",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            },
+                            "times": 1
+                        }
+                    ],
+                    "do": [
+                        {
+                            "click": "[data-dashboard-section=\"unclosed\"] [data-dashboard-retry]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "absent": [
+                            "[data-dashboard-section=\"unclosed\"] [data-dashboard-state=\"error\"]:not([hidden])"
+                        ],
+                        "textIn": {
+                            "[data-dashboard-section=\"unclosed\"]": "Lucía Prueba"
+                        }
+                    }
+                },
+                {
+                    "name": "nombre con HTML",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/agenda/today-summary",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "date": "2026-09-17",
+                                    "now": "11:40",
+                                    "appointments": [
+                                        {
+                                            "id": "80472206-113b-5416-b286-94bd4cd8a2dc",
+                                            "date": "2026-09-17",
+                                            "time": "12:30",
+                                            "status": "asignada",
+                                            "patient_name": "<img src=x onerror=\"window.__xss=1\">",
+                                            "treatment_name": "Limpieza dental",
+                                            "doctor_name": "Diego Prueba",
+                                            "is_past": false,
+                                            "is_next": true,
+                                            "can": {
+                                                "complete": true,
+                                                "cancel": true
+                                            }
+                                        }
+                                    ],
+                                    "counts": {
+                                        "total": 1,
+                                        "completed": 0,
+                                        "pending": 1,
+                                        "cancelled": 0
+                                    },
+                                    "next": {
+                                        "id": "80472206-113b-5416-b286-94bd4cd8a2dc",
+                                        "time": "12:30",
+                                        "status": "asignada",
+                                        "patient_name": "<img src=x onerror=\"window.__xss=1\">",
+                                        "treatment_name": "Limpieza dental",
+                                        "doctor_name": "Diego Prueba",
+                                        "can": {
+                                            "complete": true,
+                                            "cancel": true
+                                        }
+                                    },
+                                    "after": [],
+                                    "after_more": 0
+                                }
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "absent": [
+                            "[data-dashboard-section] img"
+                        ],
+                        "globalUndefined": [
+                            "__xss"
+                        ],
+                        "textIn": {
+                            "[data-dashboard-section=\"agenda\"]": "<img src=x onerror=\"window.__xss=1\">"
+                        }
+                    }
+                }
+            ]
         },
         {
             "id": "dashboard-paciente",
             "screen": "dashboard",
             "path": "/dashboard",
-            "role": "paciente"
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00"
         },
         {
             "id": "dashboard-menu",
@@ -143,7 +611,9 @@
                 {
                     "waitFor": "[data-sidebar-menu]"
                 }
-            ]
+            ],
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00"
         },
         {
             "id": "dashboard-ancho",
@@ -156,7 +626,9 @@
             "navigation": {
                 "shown": "[data-sidebar-menu]",
                 "toggle": "[data-sidebar-toggle]"
-            }
+            },
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00"
         },
         {
             "id": "dashboard-crear-paciente",
@@ -170,21 +642,235 @@
                     "click": "[data-create-patient-open]"
                 }
             ],
-            "sends": true
+            "sends": true,
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00"
         },
         {
-            "id": "dashboard-crear-usuario",
+            "id": "dashboard-detalle-administrador",
             "screen": "dashboard",
-            "dialog": "crear-usuario",
-            "dialogSelector": "#users-create-modal",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
             "path": "/dashboard",
             "role": "administrador",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
             "steps": [
                 {
-                    "click": "[data-create-user-open]"
+                    "click": "[data-dashboard-next-detail]"
                 }
             ],
-            "sends": true
+            "expects": [
+                {
+                    "text": "[data-view-appointment-edit]",
+                    "is": "Reprogramar"
+                }
+            ],
+            "flows": [
+                {
+                    "name": "Reprogramar abre su diálogo",
+                    "do": [
+                        {
+                            "click": "[data-view-appointment-edit]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-edit-appointment-modal]"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "dashboard-detalle-asistente",
+            "screen": "dashboard",
+            "dialog": "detalle-cita",
+            "dialogSelector": "[data-view-appointment-modal]",
+            "path": "/dashboard",
+            "role": "asistente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "steps": [
+                {
+                    "click": "[data-dashboard-next-detail]"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "[data-view-appointment-edit]",
+                    "is": "Reprogramar"
+                }
+            ],
+            "flows": [
+                {
+                    "name": "Reprogramar abre su diálogo",
+                    "do": [
+                        {
+                            "click": "[data-view-appointment-edit]"
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-edit-appointment-modal]"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "dashboard-completar",
+            "screen": "dashboard",
+            "dialog": "completar-cita",
+            "dialogSelector": "[data-complete-appointment-modal]",
+            "path": "/dashboard",
+            "role": "doctor",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "steps": [
+                {
+                    "click": "[data-dashboard-section=\"unclosed\"] [data-complete-appointment-trigger]"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "[data-complete-appointment-modal] h2",
+                    "is": "Completar cita"
+                }
+            ]
+        },
+        {
+            "id": "dashboard-cancelar",
+            "screen": "dashboard",
+            "dialog": "cancelar-cita",
+            "dialogSelector": "[data-cancel-appointment-confirm]",
+            "path": "/dashboard",
+            "role": "asistente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "steps": [
+                {
+                    "click": "[data-dashboard-section=\"unclosed\"] [data-dashboard-cancel]"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "[data-cancel-appointment-confirm] h2",
+                    "is": "Cancelar cita"
+                },
+                {
+                    "focus": "[data-cancel-appointment-keep]"
+                }
+            ]
+        },
+        {
+            "id": "dashboard-registrar-seguimiento",
+            "screen": "dashboard",
+            "dialog": "registrar-seguimiento",
+            "dialogSelector": "[data-complete-appointment-modal]",
+            "path": "/dashboard",
+            "role": "administrador",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "steps": [
+                {
+                    "click": "[data-dashboard-section=\"without-tracking\"] [data-dashboard-register]"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "[data-complete-appointment-modal] h2",
+                    "is": "Registrar seguimiento"
+                }
+            ],
+            "flows": [
+                {
+                    "name": "sin motivo",
+                    "do": [
+                        {
+                            "click": "[data-complete-appointment-next]"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [],
+                        "open": [
+                            "[data-complete-appointment-modal]"
+                        ],
+                        "dialogSays": {
+                            "in": "[data-complete-appointment-modal]",
+                            "text": "El motivo de la consulta es obligatorio."
+                        }
+                    }
+                },
+                {
+                    "name": "confirmación",
+                    "do": [
+                        {
+                            "fill": "[data-complete-appointment-reason]",
+                            "value": "Revisión de rutina"
+                        },
+                        {
+                            "fill": "[data-complete-appointment-diagnosis]",
+                            "value": "Sin hallazgos"
+                        },
+                        {
+                            "fill": "[data-complete-appointment-procedure]",
+                            "value": "Limpieza"
+                        },
+                        {
+                            "click": "[data-complete-appointment-next]"
+                        },
+                        {
+                            "click": "[data-complete-appointment-submit]"
+                        }
+                    ],
+                    "expect": {
+                        "requests": [],
+                        "open": [
+                            "[data-complete-appointment-confirm]"
+                        ],
+                        "textIn": {
+                            "[data-complete-appointment-confirm]": "¿Registrar el seguimiento de esta cita?"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": "dashboard-nueva-cita",
+            "screen": "dashboard",
+            "dialog": "nueva-cita",
+            "dialogSelector": "[data-create-appointment-modal]",
+            "path": "/dashboard",
+            "role": "administrador",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "steps": [
+                {
+                    "click": "[data-create-appointment-open]"
+                }
+            ]
+        },
+        {
+            "id": "dashboard-inactivo",
+            "screen": "dashboard",
+            "path": "/dashboard",
+            "role": "inactivo",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "flows": [
+                {
+                    "name": "Sin permiso",
+                    "expect": {
+                        "textIn": {
+                            "main": "No tienes permiso para ver esta pantalla"
+                        },
+                        "absent": [
+                            "[data-dashboard-section=\"next\"]"
+                        ]
+                    }
+                }
+            ]
         },
         {
             "id": "agenda",
@@ -1062,6 +1748,81 @@
             "screen": "expedientes",
             "path": "/expedientes-clinicos",
             "role": "administrador"
+        },
+        {
+            "id": "expedientes-buscar",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos?buscar=1",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "foco en el buscador",
+                    "expect": {
+                        "focused": "[data-records-search]"
+                    }
+                },
+                {
+                    "name": "escribir un nombre",
+                    "do": [
+                        {
+                            "fill": "[data-records-search]",
+                            "value": "Valeria"
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-records-list]": "Valeria Prueba"
+                        },
+                        "absent": [
+                            "[data-records-list] a[href$=\"/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                        ]
+                    }
+                },
+                {
+                    "name": "sin coincidencias",
+                    "do": [
+                        {
+                            "fill": "[data-records-search]",
+                            "value": "zzzz"
+                        }
+                    ],
+                    "expect": {
+                        "visibleAfter": {
+                            "selector": "[data-records-no-match]",
+                            "ms": 0
+                        },
+                        "textIn": {
+                            "[data-records-no-match]": "No se encontraron pacientes"
+                        },
+                        "absent": [
+                            "#records-empty:not(.hidden)"
+                        ]
+                    }
+                },
+                {
+                    "name": "la búsqueda sigue tras cambiar el filtro",
+                    "do": [
+                        {
+                            "fill": "[data-records-search]",
+                            "value": "Valeria"
+                        },
+                        {
+                            "click": "[data-records-status-filter] [data-status-value=\"active\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-records-list]": "Valeria Prueba"
+                        },
+                        "absent": [
+                            "[data-records-list] a[href$=\"/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                        ]
+                    }
+                }
+            ]
         },
         {
             "id": "expediente",
