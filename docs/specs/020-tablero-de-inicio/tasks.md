@@ -1,7 +1,7 @@
 ---
 spec: 020-tablero-de-inicio
 plan: plan.md
-status: draft
+status: approved
 ---
 
 # Tareas · 020 Tablero de inicio
