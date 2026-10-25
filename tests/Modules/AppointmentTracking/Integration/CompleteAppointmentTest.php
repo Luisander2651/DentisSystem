@@ -246,9 +246,10 @@ it('returns 409 when appointment is cancelled', function () {
         $this->validCompletePayload(),
     );
 
-    $response->assertStatus(409)
-        ->assertJson(['error' => 'Invalid status value. Allowed values are: completada, cancelada.']);
-});
+    // Spec 020 (A9, CA15): in Spanish and without the id of the appointment.
+    $response->assertConflict()
+        ->assertExactJson(['error' => 'No se puede completar una cita cancelada.']);
+})->skip('020: pendiente de T049');
 
 it('allows completing a rescheduled appointment', function () {
     $this->actingAsAdmin();
@@ -278,9 +279,10 @@ it('returns 409 when tracking already exists for appointment', function () {
         $this->validCompletePayload(),
     );
 
-    $response->assertStatus(409)
-        ->assertJson(['error' => "An appointment tracking record already exists for appointment {$appointment->id}."]);
-});
+    // Spec 020 (A9, CA15): in Spanish and without the id of the appointment.
+    $response->assertConflict()
+        ->assertExactJson(['error' => 'Esta cita ya tiene seguimiento registrado.']);
+})->skip('020: pendiente de T049');
 
 // -----------------------------------------------------------------
 // F. Shape de prescriptions[]
