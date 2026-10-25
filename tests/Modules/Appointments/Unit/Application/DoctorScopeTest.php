@@ -54,14 +54,14 @@ it('does not narrow who may see the whole agenda', function (array $granted) {
 })->with([
     'administrador' => [['appointments.view', 'appointments.view-own']],
     'asistente' => [['appointments.view']],
-])->skip('020: pendiente de T004');
+]);
 
 it('narrows the doctor to their own id', function () {
     $scope = DoctorScope::forActor(doctorScopeAuthorization(['appointments.view-own']));
 
     expect($scope)->toBeInstanceOf(AppointmentUserId::class)
         ->and($scope->value)->toBe(DOCTOR_SCOPE_ACTOR_ID);
-})->skip('020: pendiente de T004');
+});
 
 it('refuses anyone who may not see appointments (abuse)', function (array $granted) {
     expect(fn () => DoctorScope::forActor(doctorScopeAuthorization($granted)))
@@ -69,4 +69,4 @@ it('refuses anyone who may not see appointments (abuse)', function (array $grant
 })->with([
     'sin permisos' => [[]],
     'otros permisos' => [['patients.view', 'reports.view']],
-])->skip('020: pendiente de T004');
+]);
