@@ -29,6 +29,12 @@
  * entry may also declare `serverNow` (ISO 8601 with offset, such as "2026-09-17T11:40:00-06:00"):
  * every request of the entry then carries X-Ui-Audit-Now with it, and the app, only in local and
  * testing, answers as if it were that instant (UiAuditClock).
+ *
+ * Flows (`flows`, checks-dialogs): `answer` with `to`, `times` and `hold` as since spec 019; since
+ * spec 020, `load: true` answers from the moment the page loads, `answers` lists several answers
+ * (one per path and per successive request, each with `to`, `status`, `body`, `times` and `hold`)
+ * and the action `wait` waits the milliseconds it says. The header of checks-dialogs.mjs has the
+ * details.
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';

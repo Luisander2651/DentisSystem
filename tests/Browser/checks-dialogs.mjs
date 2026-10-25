@@ -20,8 +20,13 @@
  * with { status, body }; with `to` it answers instead any request whose path ends in `to`, GET
  * included, and lets the rest through (spec 019); `times` answers only the first n of them and
  * lets the next ones reach the API; `hold` keeps the answer waiting while the state is checked
- * and gives it afterwards. Actions (`do`): `fill` + `value`, `fillAll`, `click`, `press`,
- * `backdrop` and `selectIndex` + `index`. Expectations (`expect`): `requests`, `open`, `closed`,
+ * and gives it afterwards. Since spec 020, `load: true` answers from the moment the page loads
+ * (the sections of a screen that fetch on opening), and `answers` gives a list of answers instead
+ * of one, each with its `to`, `status`, `body` and, optionally, `times` and `hold`: a request takes
+ * the first one of its path that has not used up its `times`, so the same path can fail and then
+ * reach the API, or two paths can be answered at once; a request no answer takes reaches the API.
+ * Actions (`do`): `fill` + `value`, `fillAll`, `click`, `press`, `backdrop`, `selectIndex` +
+ * `index` and, since spec 020, `wait` (milliseconds). Expectations (`expect`): `requests`, `open`, `closed`,
  * `values`, `dialogSays`, `unmarked`, `announced`, and since spec 019 `announcedOnce` (said by
  * the regions exactly once), `absent` (selectors that must not exist), `globalUndefined`
  * (names of `window` that must stay undefined), `visibleAfter` ({ selector, ms }: in sight after
@@ -386,6 +391,55 @@ function answers(flow, request) {
 }
 
 /**
+ * Spec 020 (D21): how a flow answers each request, or null to let it reach the API. With
+ * `answers`, the first answer of the request's path that has not used up its `times`; otherwise
+ * the single `answer` of spec 017, as before.
+ */
+function responderFor(flow, sent) {
+    const keep = (request) => {
+        if (request.method !== 'GET') {
+            sent.push({ method: request.method, url: request.url, body: request.postData ? JSON.parse(request.postData) : {} });
+        }
+    };
+
+    if (flow.answers) {
+        const used = flow.answers.map(() => 0);
+
+        return (request) => {
+            const path = new URL(request.url).pathname;
+            const index = flow.answers.findIndex((answer, position) => path.endsWith(answer.to)
+                && (answer.times === undefined || used[position] < answer.times));
+
+            if (index === -1) {
+                return null;
+            }
+
+            used[index]++;
+            keep(request);
+
+            return flow.answers[index];
+        };
+    }
+
+    let answered = 0;
+
+    return (request) => {
+        if (!answers(flow, request)) {
+            return null;
+        }
+
+        if (flow.answer?.times !== undefined && answered >= flow.answer.times) {
+            return null;
+        }
+
+        answered++;
+        keep(request);
+
+        return flow.answer ?? { status: 200, body: { message: 'ok', data: {} } };
+    };
+}
+
+/**
  * Spec 017 (CA1, CA5, CA7) · what a dialog does when it sends, with the API answered from here:
  * each flow of the entry (`flows`) answers its requests with `answer`, runs its actions (`do`)
  * and checks the requests sent (`requests`, exactly those), the dialogs open and closed, the
@@ -396,29 +450,21 @@ async function runFlows(page, entry, baseUrl) {
 
     for (const flow of entry.flows ?? []) {
         const sent = [];
-        let answered = 0;
+        const responder = responderFor(flow, sent);
+        let stop = null;
+
+        // Spec 020 (D21): `load` answers what the page fetches as it opens, so it is in place
+        // before the page is entered again.
+        if (flow.load) {
+            stop = await page.intercept(responder);
+        }
+
         await reenter(page, entry, baseUrl);
         await page.evaluate(recordAnnouncementsInPage);
-        const stop = await page.intercept((request) => {
-            if (!answers(flow, request)) {
-                return null;
-            }
-
-            if (flow.answer?.times !== undefined && answered >= flow.answer.times) {
-                return null;
-            }
-
-            answered++;
-
-            if (request.method !== 'GET') {
-                sent.push({ method: request.method, url: request.url, body: request.postData ? JSON.parse(request.postData) : {} });
-            }
-
-            return flow.answer ?? { status: 200, body: { message: 'ok', data: {} } };
-        });
+        stop ??= await page.intercept(responder);
 
         try {
-            for (const action of flow.do) {
+            for (const action of flow.do ?? []) {
                 if (action.fill) {
                     if (!(await page.evaluate(fillInPage, action.fill, action.value))) {
                         throw new Error(`${action.fill} no está a la vista`);
@@ -436,6 +482,8 @@ async function runFlows(page, entry, baseUrl) {
                     if (!(await page.evaluate(selectIndexInPage, action.selectIndex, action.index ?? 0))) {
                         throw new Error(`${action.selectIndex} no tiene la opción ${action.index ?? 0}`);
                     }
+                } else if (action.wait !== undefined) {
+                    await new Promise((done) => setTimeout(done, action.wait));
                 }
 
                 await page.settle();
