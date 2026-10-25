@@ -2,9 +2,12 @@
 spec: 020-tablero-de-inicio
 plan: plan.md
 status: approved
+impl_base: ae818f4
 ---
 
 # Tareas · 020 Tablero de inicio
+
+> Línea base 2026-10-25 (`ae818f4`, Pest en serie con `memory_limit=1G`): 1 673 pasan y 1 falla, `StaffNavigationTest` por timeout de conexión a PostgreSQL (inestable conocido, 017/R12). No es de esta spec; no debe aumentar.
 
 Formato:
 `- [ ] T### [P] <verbo + qué> — <archivos> — hecho cuando: <criterio> — cubre: CA# — depende: T###`
@@ -77,7 +80,8 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | Definición de terminado | ✅ | T050: Pint, Pest completa en serie, build, `ui-audit`, `evaluate`, auditorías y `aidd.py validate`; T051–T053 y T090–T092 | test: T050 |
 
 ## Preparación
-- [ ] T001 Incorporar al sistema de diseño los cambios de `design.md` → "Cambios a incorporar al sistema": regla de color de la barra del día (completadas `success`, por atender `warning`, canceladas `danger`, con cifra y etiqueta al lado), componentes "Siguiente cita" y "Línea de ahora" con sus medidas, y en el inventario el inicio del administrador, del asistente y del doctor con datos (sin captura hasta T051), sin la vista "Inicio del panel, nuevo usuario"; fila en "Decisiones" — `docs/design/system.md`, `docs/design/system.html` — hecho cuando: `DesignTokensTest` y `OnlyDesignTokensTest` pasan · verificación manual: `system.html` muestra la siguiente cita, la línea de ahora y la barra del día a 390 y 1440 px contra c5; revisión anotada
+- [x] T001 Incorporar al sistema de diseño los cambios de `design.md` → "Cambios a incorporar al sistema": regla de color de la barra del día (completadas `success`, por atender `warning`, canceladas `danger`, con cifra y etiqueta al lado), componentes "Siguiente cita" y "Línea de ahora" con sus medidas, y en el inventario el inicio del administrador, del asistente y del doctor con datos (sin captura hasta T051), sin la vista "Inicio del panel, nuevo usuario"; fila en "Decisiones" — `docs/design/system.md`, `docs/design/system.html` — hecho cuando: `DesignTokensTest` y `OnlyDesignTokensTest` pasan · verificación manual: `system.html` muestra la siguiente cita, la línea de ahora y la barra del día a 390 y 1440 px contra c5; revisión anotada
+  - nota: verificación manual OK 2026-10-25 (usuario): `system.html` a 390 y 1440 px contra c5
 - [ ] T002 Sembrar los datos del inicio para la prueba de navegador y actualizar su test (A2, A15): el jueves 17 de septiembre de 2026 lleva las 8 citas de `design.md` de los dos doctores (3 completadas, 4 por atender, 1 cancelada; la siguiente a las 12:30); con las asignadas de julio suman 15 sin cerrar anteriores al 17, y hay 6 completadas sin seguimiento (al menos 2 de cada doctor). `UiAuditSeederTest` afirma esos datos, la idempotencia y las cifras exactas del mes con la hora de D16 (citas de septiembre y de agosto de 2026, pacientes nuevos de cada mes y activos), que son las que pinta el mes del administrador (A31), primero en rojo — `database/seeders/UiAuditSeeder.php`, `tests/Modules/Core/Integration/UiAuditSeederTest.php` — hecho cuando: `UiAuditSeederTest` falla antes del cambio del seeder y pasa después; `php artisan ui:audit-data` corre dos veces seguidas sin duplicar filas, y `npm run test:ui -- --only agenda,reportes` da el mismo resultado que antes, con nota — cubre: CA1, CA2, CA4, CA7
 - [ ] T003 [P] Escribir `DoctorScopeTest`: el administrador y el asistente (`appointments.view`) sin recorte, el doctor (`appointments.view-own`) con su id y el resto rechazado con `AuthorizationException`, con un servicio de autorización falso — `tests/Modules/Appointments/Unit/Application/DoctorScopeTest.php` (nuevo) — hecho cuando: falla porque la clase no existe y queda con `skip` — cubre: CA1, CA13
 - [ ] T004 Extraer el recorte del doctor a `DoctorScope::forActor()` y usarlo en `GetTodayAppointmentsUseCase` y `GetAllApointmentsByStatusAndDateUseCase`, sin cambiar su comportamiento (D11, 018/R5) — `app/Modules/Appointments/Aplication/Support/DoctorScope.php` (nuevo), `app/Modules/Appointments/Aplication/UseCases/GetTodayAppointmentsUseCase.php`, `app/Modules/Appointments/Aplication/UseCases/GetAllApointmentsByStatusAndDateUseCase.php` — hecho cuando: T003 pasa sin `skip`, y `AgendaByRoleTest` y `GetTodayAppointmentsTest` siguen en verde — cubre: CA13 — depende: T003
