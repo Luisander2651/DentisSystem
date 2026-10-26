@@ -19,6 +19,9 @@ import { announce, failureMessage } from '../../ui/status';
     var countActive = document.querySelector('[data-records-active-count]');
     var countInactive = document.querySelector('[data-records-inactive-count]');
     var statusFilter = document.querySelector('[data-records-status-filter]');
+    var searchInput = document.querySelector('[data-records-search]');
+    var noMatchBox = document.querySelector('[data-records-no-match]');
+    var loadedRecords = [];
 
     var detailSection = document.getElementById('record-detail-section');
     var selectedPatientLabel = document.getElementById('record-selected-patient-label');
@@ -342,6 +345,20 @@ import { announce, failureMessage } from '../../ui/status';
         }).join(', ');
     }
 
+    function matchingSearch(records) {
+        var query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+        if (query === '') {
+            return records;
+        }
+
+        return records.filter(function (patient) {
+            var text = [patient.first_name, patient.last_name, patient.email].map(function (value) { return String(value ?? ''); }).join(' ').toLowerCase();
+
+            return text.includes(query);
+        });
+    }
+
     function renderPatientCards(payload) {
         var records = Array.isArray(payload && payload.data)
             ? payload.data
@@ -359,7 +376,14 @@ import { announce, failureMessage } from '../../ui/status';
         if (countActive) countActive.textContent = String(activeCount);
         if (countInactive) countInactive.textContent = String(inactiveCount);
 
-        if (emptyBox) emptyBox.classList.toggle('hidden', records.length !== 0);
+        // Spec 020 (D26, A42, A43): the search filters the list just loaded, also after the
+        // status filter reloads it. "No hay pacientes…" is for an empty list, "No se encontraron
+        // pacientes" for a search that matches none.
+        loadedRecords = records;
+        records = matchingSearch(records);
+
+        if (emptyBox) emptyBox.classList.toggle('hidden', loadedRecords.length !== 0);
+        if (noMatchBox) noMatchBox.hidden = loadedRecords.length === 0 || records.length !== 0;
 
         if (records.length === 0) {
             recordsGrid.innerHTML = '';
@@ -934,6 +958,17 @@ import { announce, failureMessage } from '../../ui/status';
     if (statusFilter) {
         statusFilter.addEventListener('click', handleStatusFilter);
         setActiveStatusButton(selectedStatus);
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            renderPatientCards(loadedRecords);
+        });
+
+        // Spec 020 (CA9): "Buscar paciente" of the start leaves the search ready to type.
+        if (new URLSearchParams(window.location.search).get('buscar') === '1') {
+            searchInput.focus();
+        }
     }
 
     document.addEventListener('DOMContentLoaded', async function () {
