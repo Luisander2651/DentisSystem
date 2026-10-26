@@ -47,4 +47,4 @@ it('keeps the agenda of today free of infrastructure', function () {
 
 it('keeps the page of appointments free of infrastructure', function () {
     expect(appointmentsDomainViolations('ValueObjects/AppointmentPage.php'))->toBe([]);
-})->skip('020: pendiente de T031');
+});

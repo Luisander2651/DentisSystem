@@ -43,18 +43,18 @@ it('carries up to 10 appointments and the total of all of them', function () {
 
     expect($page->items)->toBe($items)
         ->and($page->total)->toBe(15);
-})->skip('020: pendiente de T031');
+});
 
 it('carries an empty page', function () {
     $page = AppointmentPage::create([], 0);
 
     expect($page->items)->toBe([])
         ->and($page->total)->toBe(0);
-})->skip('020: pendiente de T031');
+});
 
 it('refuses more appointments than the limit', function () {
     expect(fn () => AppointmentPage::create(pageAppointments(11), 11))->toThrow(AppointmentPageException::class);
-})->skip('020: pendiente de T031');
+});
 
 it('refuses a total smaller than the appointments it carries', function (int $count, int $total) {
     expect(fn () => AppointmentPage::create(pageAppointments($count), $total))->toThrow(AppointmentPageException::class);
@@ -62,4 +62,4 @@ it('refuses a total smaller than the appointments it carries', function (int $co
     'menos que las citas' => [3, 2],
     'cero con citas' => [1, 0],
     'negativo' => [0, -1],
-])->skip('020: pendiente de T031');
+]);

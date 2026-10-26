@@ -48,7 +48,7 @@ it('keeps the total at least the appointments it carries, and at most 10 of them
             ->and($page->total)->toBe($count + $more)
             ->and($page->total)->toBeGreaterThanOrEqual(count($page->items));
     });
-})->skip('020: pendiente de T031');
+});
 
 it('refuses any page over the limit or with a total under its appointments (property)', function () {
     $this->forAll(Eris\Generator\choose(0, 20), Eris\Generator\choose(-5, 30))->then(function (int $count, int $total) {
@@ -63,4 +63,4 @@ it('refuses any page over the limit or with a total under its appointments (prop
 
         expect($refused)->toBe(! $valid);
     });
-})->skip('020: pendiente de T031');
+});

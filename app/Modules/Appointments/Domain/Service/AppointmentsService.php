@@ -8,6 +8,7 @@ use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
+use App\Modules\Appointments\Domain\ValueObjects\AppointmentPage;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentUserId;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
@@ -36,5 +37,10 @@ class AppointmentsService
     public function deleteAppointment(AppointmentId $id): void
     {
         $this->repository->delete($id);
+    }
+
+    public function findUnclosed(AppointmentDate $today, ?AppointmentUserId $userId, int $limit = AppointmentPage::LIMIT): AppointmentPage
+    {
+        return $this->repository->findUnclosedBefore($today, $userId, $limit);
     }
 }
