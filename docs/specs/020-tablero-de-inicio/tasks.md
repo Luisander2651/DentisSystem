@@ -255,7 +255,8 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: endpoints nuevos de Appointments y AppointmentTracking, `DoctorScope` y `TrackingFactory`, y el inicio que consume además `reports/monthly`
   - nota: punto "Tablero de inicio" en Backend (controlador de `/dashboard`, las cuatro lecturas, `TodayAgenda`, `AppointmentPage`, `DoctorScope`, `TrackingFactory`, `reports/monthly` y `UiAuditClock`); la línea de rutas web de Frontend nombra los controladores invocables. Sin módulos ni dependencias nuevas
-- [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 020 para el objetivo 5 (escritura de seguimiento en `RegisterAppointmentTrackingUseCase` y `CompleteAppointmentUseCase`, cancelación en `UpdateAppointmentUseCase`, accesos denegados); OB1.a y OB3.a siguen pendientes. Sin cambios en `deployment.md`
+- [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 020 para el objetivo 5 (escritura de seguimiento en `RegisterAppointmentTrackingUseCase` y `CompleteAppointmentUseCase`, cancelación en `UpdateAppointmentUseCase`, accesos denegados); OB1.a y OB3.a siguen pendientes. Sin cambios en `deployment.md`
+  - nota: `observability.md` gana el punto "Spec 020" en Logs (sin logs nuevos y los puntos de emisión para el objetivo 5); OB1.a y OB3.a siguen pendientes. `deployment.md` sin cambios: ni variables, ni entornos, ni pasos nuevos (el reloj de la prueba no se configura)
 - [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
