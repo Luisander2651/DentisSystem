@@ -43,6 +43,21 @@ import { announce, announceError } from '../ui/status';
 
     let nextAppointment = null;
 
+    /*
+     * R8: the last load of each read wins. A section can be read again before the previous answer
+     * arrives (Reintentar, or the reload after completing or cancelling); an older answer that
+     * arrives late is dropped instead of painting over the newer one.
+     */
+    const latest = {};
+
+    function begin(read) {
+        latest[read] = (latest[read] ?? 0) + 1;
+
+        return latest[read];
+    }
+
+    const isLatest = (read, ticket) => latest[read] === ticket;
+
     /** Shows one state of a section (`loading`, `empty`, `error` or `content`) and hides the rest. */
     function show(target, state) {
         if (!target) {
@@ -84,6 +99,20 @@ import { announce, announceError } from '../ui/status';
 
     function detailOf(appointment) {
         return [appointment.treatment_name, appointment.doctor_name].filter(Boolean).join(' · ');
+    }
+
+    /** R10: a repeated action says, for a screen reader, which appointment it acts on. */
+    function nameAction(button, appointment) {
+        let suffix = button.querySelector('[data-action-for]');
+
+        if (!suffix) {
+            suffix = document.createElement('span');
+            suffix.className = 'sr-only';
+            suffix.dataset.actionFor = '';
+            button.appendChild(suffix);
+        }
+
+        suffix.textContent = ` de ${appointment.patient_name ?? ''} a las ${appointment.time ?? ''}`;
     }
 
     async function read(url) {
@@ -140,6 +169,13 @@ import { announce, announceError } from '../ui/status';
 
         if (complete) {
             complete.hidden = !data.next.can.complete;
+            nameAction(complete, data.next);
+        }
+
+        const detail = card.querySelector('[data-dashboard-next-detail]');
+
+        if (detail) {
+            nameAction(detail, data.next);
         }
 
         const after = card.querySelector('[data-next-after]');
@@ -240,15 +276,23 @@ import { announce, announceError } from '../ui/status';
     }
 
     async function loadToday() {
+        const ticket = begin('today');
         ['next', 'day', 'agenda'].forEach((name) => show(section(name), 'loading'));
 
         try {
             const data = await read('/api/v1/agenda/today-summary');
+
+            if (!isLatest('today', ticket)) {
+                return;
+            }
+
             paintNext(data);
             paintDay(data);
             paintAgenda(data);
         } catch {
-            failed(['next', 'day', 'agenda']);
+            if (isLatest('today', ticket)) {
+                failed(['next', 'day', 'agenda']);
+            }
         }
     }
 
@@ -257,6 +301,12 @@ import { announce, announceError } from '../ui/status';
     function setTotal(name, total) {
         text(root, `[data-dashboard-total="${name}"]`, String(total));
         text(section(name), '[data-dashboard-count]', total > 0 ? String(total) : '');
+    }
+
+    /** R9: the summary of the day never claims "0" for a total it does not know. */
+    function unknownTotal(name, label) {
+        text(root, `[data-dashboard-total="${name}"]`, label);
+        text(section(name), '[data-dashboard-count]', '');
     }
 
     function paintPending(name, data, rowTemplate, moreText) {
@@ -287,6 +337,7 @@ import { announce, announceError } from '../ui/status';
 
             row.querySelectorAll('button').forEach((button) => {
                 button.dataset.appointmentId = appointment.id;
+                nameAction(button, appointment);
             });
 
             const complete = row.querySelector('[data-complete-appointment-trigger]');
@@ -326,12 +377,21 @@ import { announce, announceError } from '../ui/status';
             return;
         }
 
+        const ticket = begin('unclosed');
         show(target, 'loading');
+        unknownTotal('unclosed', '–');
 
         try {
-            paintPending('unclosed', await read('/api/v1/agenda/unclosed'), 'unclosed-row', 'sin cerrar');
+            const data = await read('/api/v1/agenda/unclosed');
+
+            if (isLatest('unclosed', ticket)) {
+                paintPending('unclosed', data, 'unclosed-row', 'sin cerrar');
+            }
         } catch {
-            failed(['unclosed']);
+            if (isLatest('unclosed', ticket)) {
+                unknownTotal('unclosed', 'no disponible');
+                failed(['unclosed']);
+            }
         }
     }
 
@@ -342,12 +402,21 @@ import { announce, announceError } from '../ui/status';
             return;
         }
 
+        const ticket = begin('without-tracking');
         show(target, 'loading');
+        unknownTotal('without-tracking', '–');
 
         try {
-            paintPending('without-tracking', await read('/api/v1/agenda/without-tracking'), 'without-tracking-row', 'sin seguimiento');
+            const data = await read('/api/v1/agenda/without-tracking');
+
+            if (isLatest('without-tracking', ticket)) {
+                paintPending('without-tracking', data, 'without-tracking-row', 'sin seguimiento');
+            }
         } catch {
-            failed(['without-tracking']);
+            if (isLatest('without-tracking', ticket)) {
+                unknownTotal('without-tracking', 'no disponible');
+                failed(['without-tracking']);
+            }
         }
     }
 
@@ -424,12 +493,19 @@ import { announce, announceError } from '../ui/status';
             return;
         }
 
+        const ticket = begin('month');
         show(target, 'loading');
 
         try {
-            paintMonth(await read('/api/v1/reports/monthly?month=' + encodeURIComponent(currentMonth)));
+            const data = await read('/api/v1/reports/monthly?month=' + encodeURIComponent(currentMonth));
+
+            if (isLatest('month', ticket)) {
+                paintMonth(data);
+            }
         } catch {
-            failed(['month']);
+            if (isLatest('month', ticket)) {
+                failed(['month']);
+            }
         }
     }
 
@@ -452,10 +528,26 @@ import { announce, announceError } from '../ui/status';
         const retry = event.target.closest('[data-dashboard-retry]');
 
         if (retry) {
-            const name = retry.closest('[data-dashboard-section]')?.dataset.dashboardSection;
+            const target = retry.closest('[data-dashboard-section]');
+            const name = target?.dataset.dashboardSection;
 
             if (name && loaders[name]) {
-                loaders[name]();
+                // R7: the button is about to hide; the focus waits on the title of its section and,
+                // if the section fails again, goes to its new "Reintentar".
+                const title = target.querySelector('h2');
+
+                if (title) {
+                    title.setAttribute('tabindex', '-1');
+                    title.focus();
+                }
+
+                loaders[name]().then(() => {
+                    const again = target.querySelector('[data-dashboard-state="error"]:not([hidden]) [data-dashboard-retry]');
+
+                    if (again && (document.activeElement === title || document.activeElement === document.body)) {
+                        again.focus();
+                    }
+                });
             }
 
             return;
