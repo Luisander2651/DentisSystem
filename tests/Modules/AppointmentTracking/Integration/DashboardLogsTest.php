@@ -70,7 +70,7 @@ it('logs no patient nor clinical data when registering a follow-up', function ()
     ])->assertCreated();
 
     dashboardLogsLeakNothing($this->logged);
-})->skip('020: pendiente de T041');
+});
 
 it('logs no patient data when cancelling an unclosed appointment', function () {
     $this->actingAsNonAdminUser('Asistente');

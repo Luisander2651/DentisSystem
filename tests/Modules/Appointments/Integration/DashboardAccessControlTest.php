@@ -169,7 +169,7 @@ it('answers the ones without follow-up according to who asks (abuse)', function 
 
 it('answers registering a follow-up according to who asks (abuse)', function (string $actor, string $route, array $allowed) {
     dashboardAccessCheck($this, $actor, $route, $allowed);
-})->with(dashboardAccessActors())->with(dashboardAccessRouteDataset(['POST /appointments/{id}/tracking']))->skip('020: pendiente de T041');
+})->with(dashboardAccessActors())->with(dashboardAccessRouteDataset(['POST /appointments/{id}/tracking']));
 
 it('refuses the doctor the follow-up of an appointment of another doctor, from the render (abuse)', function () {
     [, $url, $payload] = ($this->buildRequest)('POST /appointments/{id}/tracking');
@@ -182,7 +182,7 @@ it('refuses the doctor the follow-up of an appointment of another doctor, from t
         ->assertExactJson(['error' => 'You are not allowed to perform this action (appointment-tracking.create-own).']);
 
     expect(dashboardAccessSnapshot())->toEqual($before);
-})->skip('020: pendiente de T041');
+});
 
 it('keeps refusing the assistant the month figures and new patients (CA14)', function () {
     $this->actingAsNonAdminUser('Asistente');

@@ -43,7 +43,7 @@ it('refuses a missing or out of range field with the text of the contract under 
     'duración 366' => [fn () => $this->validCompletePayload(['prescriptions' => [$this->validPrescriptionPayload(['durationDays' => 366])]]), 'prescriptions.0.durationDays', 'Escribe una duración de 1 a 365 días.'],
     'frecuencia 0' => [fn () => $this->validCompletePayload(['prescriptions' => [$this->validPrescriptionPayload(['dailyFrequency' => 0])]]), 'prescriptions.0.dailyFrequency', 'Escribe de 1 a 24 veces al día.'],
     'frecuencia 25' => [fn () => $this->validCompletePayload(['prescriptions' => [$this->validPrescriptionPayload(['dailyFrequency' => 25])]]), 'prescriptions.0.dailyFrequency', 'Escribe de 1 a 24 veces al día.'],
-])->skip('020: pendiente de T041');
+]);
 
 it('accepts the follow-up without symptoms, as when completing (D23)', function (Closure $payload) {
     $this->actingAsAdmin();
@@ -55,4 +55,4 @@ it('accepts the follow-up without symptoms, as when completing (D23)', function 
 })->with([
     'sin symptoms' => [fn () => array_diff_key($this->validCompletePayload(), ['symptoms' => true])],
     'symptoms vacío' => [fn () => $this->validCompletePayload(['symptoms' => []])],
-])->skip('020: pendiente de T041');
+]);

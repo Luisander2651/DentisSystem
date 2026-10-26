@@ -62,4 +62,4 @@ it('answers a generic 500 when registering a follow-up fails unexpectedly', func
         ->assertExactJson(['error' => 'Internal server error']);
 
     $this->assertDatabaseMissing('appointment_tracking', ['appointment_id' => $appointment->id]);
-})->skip('020: pendiente de T041');
+});

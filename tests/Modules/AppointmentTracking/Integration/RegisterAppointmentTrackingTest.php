@@ -73,7 +73,7 @@ it('lets the administrator register the follow-up of a completed appointment, wi
 
     $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'completada']);
     $this->assertDatabaseHas('appointment_tracking', ['appointment_id' => $appointment->id, 'reason' => 'Dolor persistente']);
-})->skip('020: pendiente de T041');
+});
 
 it('lets the doctor register the follow-up of their own completed appointment', function () {
     $doctor = $this->actingAsNonAdminUser('Doctor');
@@ -84,7 +84,7 @@ it('lets the doctor register the follow-up of their own completed appointment', 
         ->assertJsonPath('data.appointment_tracking.appointment_id', $appointment->id);
 
     $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'completada']);
-})->skip('020: pendiente de T041');
+});
 
 it('takes the appointment out of the list without follow-up', function () {
     $this->actingAsAdmin();
@@ -97,7 +97,7 @@ it('takes the appointment out of the list without follow-up', function () {
     $this->getJson('/api/v1/agenda/without-tracking')
         ->assertOk()
         ->assertExactJson(['data' => ['items' => [], 'total' => 0]]);
-})->skip('020: pendiente de T041');
+});
 
 it('refuses the doctor on an appointment of another doctor without saving anything (abuse)', function () {
     $this->actingAsNonAdminUser('Doctor');
@@ -110,7 +110,7 @@ it('refuses the doctor on an appointment of another doctor without saving anythi
     ]))->assertForbidden();
 
     expect(registerTrackingCounts())->toBe($before);
-})->skip('020: pendiente de T041');
+});
 
 it('refuses the assistant without saving anything (abuse)', function () {
     $this->actingAsNonAdminUser('Asistente');
@@ -120,7 +120,7 @@ it('refuses the assistant without saving anything (abuse)', function () {
     $this->postJson(registerTrackingUrl($appointment->id), $this->validCompletePayload())->assertForbidden();
 
     expect(registerTrackingCounts())->toBe($before);
-})->skip('020: pendiente de T041');
+});
 
 it('refuses an appointment that already has its follow-up (abuse)', function () {
     $this->actingAsAdmin();
@@ -132,7 +132,7 @@ it('refuses an appointment that already has its follow-up (abuse)', function () 
         ->assertExactJson(['error' => 'Esta cita ya tiene seguimiento registrado.']);
 
     expect(AppointmentTrackingModel::query()->where('appointment_id', $appointment->id)->count())->toBe(1);
-})->skip('020: pendiente de T041');
+});
 
 it('refuses an appointment that is not completed (abuse)', function (string $status) {
     $this->actingAsAdmin();
@@ -144,7 +144,7 @@ it('refuses an appointment that is not completed (abuse)', function (string $sta
 
     $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => $status]);
     $this->assertDatabaseMissing('appointment_tracking', ['appointment_id' => $appointment->id]);
-})->with(['cancelada', 'asignada', 'reprogramada'])->skip('020: pendiente de T041');
+})->with(['cancelada', 'asignada', 'reprogramada']);
 
 it('answers 404 with its text for an appointment that does not exist', function () {
     $this->actingAsAdmin();
@@ -152,7 +152,7 @@ it('answers 404 with its text for an appointment that does not exist', function 
     $this->postJson(registerTrackingUrl((string) Str::uuid()), $this->validCompletePayload())
         ->assertNotFound()
         ->assertExactJson(['error' => 'No se encontró la cita.']);
-})->skip('020: pendiente de T041');
+});
 
 it('answers the second of two submissions with 409, not 500', function () {
     $this->actingAsAdmin();
@@ -165,4 +165,4 @@ it('answers the second of two submissions with 409, not 500', function () {
         ->assertExactJson(['error' => 'Esta cita ya tiene seguimiento registrado.']);
 
     expect(AppointmentTrackingModel::query()->where('appointment_id', $appointment->id)->count())->toBe(1);
-})->skip('020: pendiente de T041');
+});

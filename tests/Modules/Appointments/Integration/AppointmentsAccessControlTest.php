@@ -276,6 +276,7 @@ const DASHBOARD_ACCESS_ROUTES = [
     'GET /agenda/today-summary',
     'GET /agenda/unclosed',
     'GET /agenda/without-tracking',
+    'POST /appointments/{id}/tracking',
 ];
 
 it('covers every agenda and appointments route and protects each one with the staff middleware', function () {

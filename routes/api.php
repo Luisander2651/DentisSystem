@@ -22,6 +22,7 @@ use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\CreatePrescr
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\DeletePrescriptionController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetAppointmentTrackingByAppointmentIdController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetCompletedWithoutTrackingController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\RegisterAppointmentTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdateAppointmentTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdatePrescriptionController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\LoginController;
@@ -202,6 +203,8 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 // appointments; the use cases check who owns the appointment.
                 Route::post('/{id}/complete', CompleteAppointmentController::class);
                 Route::get('/{id}/tracking', GetAppointmentTrackingByAppointmentIdController::class);
+                // Spec 020: the follow-up of an appointment completed without one.
+                Route::post('/{id}/tracking', RegisterAppointmentTrackingController::class);
             });
         });
     });
