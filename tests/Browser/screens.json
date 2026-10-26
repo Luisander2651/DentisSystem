@@ -196,7 +196,7 @@
                             "ms": 0
                         },
                         "textIn": {
-                            "[data-dashboard-total=\"unclosed\"]": "–"
+                            "[data-dashboard-total=\"unclosed\"]": "…"
                         }
                     }
                 },
@@ -615,7 +615,7 @@
                             "ms": 0
                         },
                         "textIn": {
-                            "[data-dashboard-total=\"unclosed\"]": "–"
+                            "[data-dashboard-total=\"unclosed\"]": "…"
                         }
                     }
                 },

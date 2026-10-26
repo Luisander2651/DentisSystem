@@ -87,11 +87,11 @@
                     <x-dashboard.day-progress />
                     <div class="flex flex-col gap-2 rounded-box border border-secondary bg-primary-soft px-4 py-3 text-sm text-ink" data-dashboard-pending-summary>
                         <a href="#dashboard-unclosed-title" class="flex min-h-control items-center justify-between gap-3 font-semibold">
-                            <span>Citas sin cerrar</span><span class="tabular-nums" data-dashboard-total="unclosed">–</span>
+                            <span>Citas sin cerrar</span><span class="tabular-nums" data-dashboard-total="unclosed">…</span>
                         </a>
                         @if ($can['register'] ?? false)
                             <a href="#dashboard-without-tracking-title" class="flex min-h-control items-center justify-between gap-3 font-semibold">
-                                <span>Completadas sin seguimiento</span><span class="tabular-nums" data-dashboard-total="without-tracking">–</span>
+                                <span>Completadas sin seguimiento</span><span class="tabular-nums" data-dashboard-total="without-tracking">…</span>
                             </a>
                         @endif
                     </div>

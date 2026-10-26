@@ -379,7 +379,7 @@ import { announce, announceError } from '../ui/status';
 
         const ticket = begin('unclosed');
         show(target, 'loading');
-        unknownTotal('unclosed', '–');
+        unknownTotal('unclosed', '…');
 
         try {
             const data = await read('/api/v1/agenda/unclosed');
@@ -404,7 +404,7 @@ import { announce, announceError } from '../ui/status';
 
         const ticket = begin('without-tracking');
         show(target, 'loading');
-        unknownTotal('without-tracking', '–');
+        unknownTotal('without-tracking', '…');
 
         try {
             const data = await read('/api/v1/agenda/without-tracking');
