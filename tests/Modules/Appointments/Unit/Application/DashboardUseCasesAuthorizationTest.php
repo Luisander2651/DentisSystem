@@ -102,7 +102,7 @@ it('refuses whoever may not see appointments before reading anything (abuse)', f
 })->with(['resumen de hoy', 'sin cerrar'])->with([
     'sin permisos' => [[]],
     'otros permisos' => [['patients.view', 'reports.view']],
-])->skip('020: pendiente de T033');
+]);
 
 it('asks for its permission first and then reads the appointments', function (string $useCase, array $granted) {
     $log = new DashboardCallLog;
@@ -117,4 +117,4 @@ it('asks for its permission first and then reads the appointments', function (st
 })->with(['resumen de hoy', 'sin cerrar'])->with([
     'administrador o asistente' => [['appointments.view']],
     'doctor' => [['appointments.view-own']],
-])->skip('020: pendiente de T033');
+]);
