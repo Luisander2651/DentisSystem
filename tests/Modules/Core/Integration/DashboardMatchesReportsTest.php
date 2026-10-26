@@ -64,4 +64,4 @@ it('hands over the month in course and its figures are the ones of reports/month
         ->assertJsonPath('data.patients.new.previous', 1)
         ->assertJsonPath('data.patients.new.difference', 2)
         ->assertJsonPath('data.patients.active', ['value' => 4, 'as_of' => '2026-10-22']);
-})->skip('020: pendiente de T045');
+});

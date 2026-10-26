@@ -80,7 +80,7 @@ it('titles the tab "Inicio - Dentissa" for every role, with one main title', fun
 
     expect(dashboardText($page->query('//title')->item(0)))->toBe('Inicio - Dentissa')
         ->and($page->query('//h1')->length)->toBe(1);
-})->with(['Administrador', 'Asistente', 'Doctor', 'paciente'])->skip('020: pendiente de T045');
+})->with(['Administrador', 'Asistente', 'Doctor', 'paciente']);
 
 it('greets the staff member by name with the date of the clinic', function (string $role) {
     [$page] = dashboardScreen($this, $role);
@@ -88,7 +88,7 @@ it('greets the staff member by name with the date of the clinic', function (stri
 
     expect(dashboardText($header))->toBe('¡Hola, Alma!')
         ->and(dashboardText($header->parentNode->parentNode))->toContain('Jueves 22 de octubre');
-})->with(['Administrador', 'Asistente', 'Doctor'])->skip('020: pendiente de T045');
+})->with(['Administrador', 'Asistente', 'Doctor']);
 
 it('offers "Nueva cita" in the header only to the administrator', function (string $role, bool $inHeader) {
     [$page] = dashboardScreen($this, $role);
@@ -99,7 +99,7 @@ it('offers "Nueva cita" in the header only to the administrator', function (stri
     'administrador' => ['Administrador', true],
     'asistente' => ['Asistente', false],
     'doctor' => ['Doctor', false],
-])->skip('020: pendiente de T045');
+]);
 
 it('offers on the next appointment the actions of the role', function (string $role, array $actions) {
     [$page] = dashboardScreen($this, $role);
@@ -110,7 +110,7 @@ it('offers on the next appointment the actions of the role', function (string $r
     'administrador' => ['Administrador', ['Completar', 'Ver detalle']],
     'asistente' => ['Asistente', ['Ver detalle']],
     'doctor' => ['Doctor', ['Completar', 'Ver detalle']],
-])->skip('020: pendiente de T045');
+]);
 
 it('offers the quick actions of the role', function (string $role, array $actions) {
     [$page] = dashboardScreen($this, $role);
@@ -120,7 +120,7 @@ it('offers the quick actions of the role', function (string $role, array $action
     'administrador' => ['Administrador', ['Nuevo paciente', 'Buscar paciente', 'Agenda de hoy', 'Registrar seguimiento']],
     'asistente' => ['Asistente', ['Nueva cita', 'Buscar paciente', 'Agenda de hoy']],
     'doctor' => ['Doctor', ['Buscar paciente', 'Agenda de hoy', 'Registrar seguimiento']],
-])->skip('020: pendiente de T045');
+]);
 
 it('has the sections of the role and none of the others', function (string $role, array $present, array $absent) {
     [$page, $html] = dashboardScreen($this, $role);
@@ -140,7 +140,7 @@ it('has the sections of the role and none of the others', function (string $role
     'administrador' => ['Administrador', ['Siguiente cita', 'Cómo va el día', 'Agenda de hoy', 'Octubre', 'Citas sin cerrar', 'Completadas sin seguimiento'], []],
     'asistente' => ['Asistente', ['Siguiente cita', 'Cómo va el día', 'Agenda de hoy', 'Citas sin cerrar'], ['Octubre', 'Completadas sin seguimiento']],
     'doctor' => ['Doctor', ['Siguiente cita', 'Cómo va el día', 'Agenda de hoy', 'Citas sin cerrar', 'Completadas sin seguimiento'], ['Octubre']],
-])->skip('020: pendiente de T045');
+]);
 
 it('leaves out the pieces of the old start and never shows a counter as "-" (CA11)', function (string $role) {
     [$page, $html] = dashboardScreen($this, $role);
@@ -153,7 +153,7 @@ it('leaves out the pieces of the old start and never shows a counter as "-" (CA1
         ->and($html)->not->toContain('alma.inicio@example.test')
         ->and($texts)->not->toContain('-')
         ->and($texts)->not->toContain('–');
-})->with(['Administrador', 'Asistente', 'Doctor'])->skip('020: pendiente de T045');
+})->with(['Administrador', 'Asistente', 'Doctor']);
 
 it('hands over the month in course to the administrator only', function (string $role, bool $handsOver) {
     [, $html] = dashboardScreen($this, $role);
@@ -163,7 +163,7 @@ it('hands over the month in course to the administrator only', function (string 
     'administrador' => ['Administrador', true],
     'asistente' => ['Asistente', false],
     'doctor' => ['Doctor', false],
-])->skip('020: pendiente de T045');
+]);
 
 it('keeps the start of the patient, with the whole initial of "Ángela" (A16)', function () {
     [$page] = dashboardScreen($this, 'paciente');
@@ -171,7 +171,7 @@ it('keeps the start of the patient, with the whole initial of "Ángela" (A16)', 
 
     expect($texts)->toContain('Á')
         ->and(dashboardText($page->query('//h1')->item(0)))->toBe('¡Hola, Ángela!');
-})->skip('020: pendiente de T045');
+});
 
 it('refuses the start to an inactive staff member with the "Sin permiso" page (A17)', function () {
     $this->actingAsInactiveAdmin();

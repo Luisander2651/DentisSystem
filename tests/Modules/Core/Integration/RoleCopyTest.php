@@ -102,7 +102,7 @@ it('leaves the badge and the role out of the start of the staff', function (stri
 
     expect(roleCopyTexts($this, 'badge', $actor, '/dashboard', '//*[@data-page-badge]'))->toBe([])
         ->and(roleCopyTexts($this, 'inicio', $actor, '/dashboard', '//*[@data-role-label="inicio"]'))->toBe([]);
-})->with(['administrador', 'asistente', 'doctor'])->skip('020: pendiente de T045');
+})->with(['administrador', 'asistente', 'doctor']);
 
 it('never shows the internal name of a role', function (string $role) {
     [$actor] = ROLE_COPY[$role];

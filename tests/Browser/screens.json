@@ -853,7 +853,7 @@
         },
         {
             "id": "dashboard-inactivo",
-            "screen": "dashboard",
+            "screen": "error-403",
             "path": "/dashboard",
             "role": "inactivo",
             "now": "2026-09-17T11:40:00-06:00",
