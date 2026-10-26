@@ -85,16 +85,34 @@ it('has a next appointment only while one is to attend, the first one by time wh
     });
 });
 
-it('lists at most two appointments to attend after the next one and counts the rest (property)', function () {
+it('lists the two appointments to attend after the next one by time and counts the rest (property)', function () {
     $this->forAll(agendaPropertyDay(), Eris\Generator\choose(0, 1439))->then(function (array $lines, int $now) {
         $agenda = TodayAgenda::fromAppointments(agendaPropertyAppointments($lines), agendaPropertyNow($now));
 
-        expect(count($agenda->after))->toBeLessThanOrEqual(2)
-            ->and($agenda->afterMore)->toBe(max(0, $agenda->pending - 1 - count($agenda->after)));
+        // Oracle from the generated lines alone: the minutes of the ones to attend, in order.
+        $toAttend = array_map(
+            fn (array $line): int => $line[0],
+            array_values(array_filter($lines, fn (array $line): bool => in_array($line[1], ['asignada', 'reprogramada'], true))),
+        );
+        sort($toAttend);
+        $minutesOf = fn (AppointmentEntity $appointment): int => ((int) substr($appointment->Time()->value, 0, 2)) * 60 + (int) substr($appointment->Time()->value, 3, 2);
+
+        expect(array_map($minutesOf, $agenda->after))->toBe(array_slice($toAttend, 1, 2))
+            ->and($agenda->afterMore)->toBe(max(0, count($toAttend) - 3));
 
         foreach ($agenda->after as $appointment) {
-            expect(agendaPropertyIsToAttend($appointment))->toBeTrue()
-                ->and($appointment->Time()->value >= $agenda->next?->Time()->value)->toBeTrue();
+            expect(agendaPropertyIsToAttend($appointment))->toBeTrue();
+        }
+    });
+});
+
+it('marks as past exactly the appointments whose time is before now (property)', function () {
+    $this->forAll(agendaPropertyDay(), Eris\Generator\choose(0, 1439))->then(function (array $lines, int $now) {
+        $appointments = agendaPropertyAppointments($lines);
+        $agenda = TodayAgenda::fromAppointments($appointments, agendaPropertyNow($now));
+
+        foreach ($appointments as $index => $appointment) {
+            expect($agenda->isPast($appointment))->toBe($lines[$index][0] < $now);
         }
     });
 });
