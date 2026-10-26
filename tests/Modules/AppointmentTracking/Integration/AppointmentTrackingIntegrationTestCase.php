@@ -6,6 +6,10 @@ namespace Tests\Modules\AppointmentTracking\Integration;
 
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentModel;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\TreatmentModel;
+use App\Modules\AppointmentTracking\Domain\Entities\AppointmentTrackingEntity;
+use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentTrackingRepositoryInterface;
+use App\Modules\AppointmentTracking\Domain\ValueObjects\AppointmentTrackingAppointmentId;
+use App\Modules\AppointmentTracking\Domain\ValueObjects\AppointmentTrackingId;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\Support\ActingAsPatient;
@@ -42,6 +46,40 @@ abstract class AppointmentTrackingIntegrationTestCase extends TestCase
         $data['patient_id'] ??= $this->createPatient()->id;
 
         return AppointmentModel::create($data);
+    }
+
+    /**
+     * Spec 020 (TM5): the second of two simultaneous submissions. The follow-up is already in the
+     * database, but the use case does not see it yet, so only the unique constraint stops it.
+     */
+    protected function missExistingTrackingOnRead(): void
+    {
+        $repository = $this->app->make(AppointmentTrackingRepositoryInterface::class);
+
+        $this->app->instance(AppointmentTrackingRepositoryInterface::class, new class($repository) implements AppointmentTrackingRepositoryInterface
+        {
+            public function __construct(private readonly AppointmentTrackingRepositoryInterface $repository) {}
+
+            public function save(AppointmentTrackingEntity $appointmentTracking): AppointmentTrackingEntity
+            {
+                return $this->repository->save($appointmentTracking);
+            }
+
+            public function findById(AppointmentTrackingId $id): ?AppointmentTrackingEntity
+            {
+                return $this->repository->findById($id);
+            }
+
+            public function findByAppointmentId(AppointmentTrackingAppointmentId $appointmentId): ?AppointmentTrackingEntity
+            {
+                return null;
+            }
+
+            public function delete(AppointmentTrackingId $id): void
+            {
+                $this->repository->delete($id);
+            }
+        });
     }
 
     protected function completeAppointmentUrl(string $appointmentId): string

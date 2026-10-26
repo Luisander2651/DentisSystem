@@ -154,6 +154,22 @@ it('answers 404 with its text for an appointment that does not exist', function 
         ->assertExactJson(['error' => 'No se encontró la cita.']);
 });
 
+it('answers 409, not 500, when the follow-up is saved in the meantime by a simultaneous submission (TM5)', function () {
+    $this->actingAsAdmin();
+    $appointment = $this->createAppointment(['date' => '2026-10-21', 'status' => 'completada']);
+    registerTrackingExisting($appointment);
+    $this->missExistingTrackingOnRead();
+
+    $this->postJson(registerTrackingUrl($appointment->id), $this->validCompletePayload([
+        'prescriptions' => [$this->validPrescriptionPayload()],
+    ]))
+        ->assertConflict()
+        ->assertExactJson(['error' => 'Esta cita ya tiene seguimiento registrado.']);
+
+    expect(AppointmentTrackingModel::query()->where('appointment_id', $appointment->id)->count())->toBe(1)
+        ->and(DB::table('appointment_tracking_prescriptions')->count())->toBe(0);
+});
+
 it('answers the second of two submissions with 409, not 500', function () {
     $this->actingAsAdmin();
     $appointment = $this->createAppointment(['date' => '2026-10-21', 'status' => 'completada']);

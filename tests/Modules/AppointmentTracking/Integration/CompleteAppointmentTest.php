@@ -284,6 +284,27 @@ it('returns 409 when tracking already exists for appointment', function () {
         ->assertExactJson(['error' => 'Esta cita ya tiene seguimiento registrado.']);
 });
 
+it('answers 409, not 500, when a simultaneous completion saves the follow-up in the meantime (spec 020, TM5)', function () {
+    $this->actingAsAdmin();
+    $appointment = $this->createAppointment();
+    AppointmentTrackingModel::query()->create([
+        'id' => (string) Str::uuid(),
+        'reason' => 'Revisión',
+        'symptoms' => [],
+        'diagnosis' => 'Caries',
+        'procedure_performed' => 'Resina',
+        'appointment_id' => $appointment->id,
+    ]);
+    $this->missExistingTrackingOnRead();
+
+    $this->postJson($this->completeAppointmentUrl($appointment->id), $this->validCompletePayload())
+        ->assertConflict()
+        ->assertExactJson(['error' => 'Esta cita ya tiene seguimiento registrado.']);
+
+    $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'asignada']);
+    expect(AppointmentTrackingModel::query()->where('appointment_id', $appointment->id)->count())->toBe(1);
+})->skip('020: pendiente de T066');
+
 // -----------------------------------------------------------------
 // F. Shape de prescriptions[]
 // -----------------------------------------------------------------
