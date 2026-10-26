@@ -12,7 +12,7 @@ use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 use App\Modules\AppointmentTracking\Application\DTOs\CompleteAppointmentDTO;
 use App\Modules\AppointmentTracking\Application\Support\TrackingFactory;
 use App\Modules\AppointmentTracking\Domain\Entities\AppointmentTrackingRecord;
-use App\Modules\AppointmentTracking\Domain\Exceptions\AppointmentTrackingException;
+use App\Modules\AppointmentTracking\Domain\Exceptions\TrackingRegistrationException;
 use App\Modules\AppointmentTracking\Domain\Service\AppointmentCompletionService;
 use App\Modules\AppointmentTracking\Domain\Service\AppointmentTrackingService;
 use App\Modules\AppointmentTracking\Domain\ValueObjects\AppointmentTrackingAppointmentId;
@@ -47,15 +47,16 @@ final readonly class CompleteAppointmentUseCase
             throw AuthorizationException::forbidden('appointment-tracking.create-own');
         }
 
+        // Spec 020 (A9, D18): in Spanish and without the id of the appointment.
         if ($appointment->Status()->isCancelled()) {
-            throw AppointmentException::invalidStatusTransition();
+            throw TrackingRegistrationException::cancelledAppointment();
         }
 
         $trackingAppointmentId = new AppointmentTrackingAppointmentId($dto->appointmentId);
         $existingTracking = $this->appointmentTrackingService->findByAppointmentId($trackingAppointmentId);
 
         if ($existingTracking !== null) {
-            throw AppointmentTrackingException::alreadyExistsForAppointment($dto->appointmentId);
+            throw TrackingRegistrationException::alreadyRegistered();
         }
 
         $appointment->complete();
