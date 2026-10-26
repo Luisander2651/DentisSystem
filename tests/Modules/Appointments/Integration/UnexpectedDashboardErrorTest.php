@@ -45,7 +45,7 @@ it('answers a generic 500 when the ones without follow-up fail unexpectedly', fu
     $this->getJson('/api/v1/agenda/without-tracking')
         ->assertStatus(500)
         ->assertExactJson(['error' => 'Internal server error']);
-})->skip('020: pendiente de T038');
+});
 
 it('answers a generic 500 when registering a follow-up fails unexpectedly', function () {
     $appointment = $this->createAppointment(['date' => '2026-10-21', 'status' => 'completada']);

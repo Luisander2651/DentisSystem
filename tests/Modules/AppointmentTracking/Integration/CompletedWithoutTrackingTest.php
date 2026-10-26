@@ -89,7 +89,7 @@ it('answers with the shape of the contract', function () {
             'items' => ['*' => ['id', 'date', 'time', 'status', 'patient_name', 'treatment_name', 'doctor_name', 'can' => ['register']]],
             'total',
         ]]);
-})->skip('020: pendiente de T038');
+});
 
 it('gives the administrator only the completed appointments without a follow-up', function () {
     $days = withoutTrackingDays($this);
@@ -101,7 +101,7 @@ it('gives the administrator only the completed appointments without a follow-up'
         ->and(array_column($data['items'], 'id'))->toEqualCanonicalizing($days['pending'])
         ->and(array_unique(array_column($data['items'], 'status')))->toBe(['completada'])
         ->and(array_unique(array_map(fn (array $item): string => json_encode($item['can']), $data['items'])))->toBe([json_encode(['register' => true])]);
-})->skip('020: pendiente de T038');
+});
 
 it('gives at most 10 of them and the total of all (TM8)', function () {
     $this->actingAsAdmin();
@@ -114,7 +114,7 @@ it('gives at most 10 of them and the total of all (TM8)', function () {
         ->assertOk()
         ->assertJsonCount(10, 'data.items')
         ->assertJsonPath('data.total', 12);
-})->skip('020: pendiente de T038');
+});
 
 it('gives the doctor only their own, whatever filter the request sends (abuse)', function (array $query) {
     $days = withoutTrackingDays($this);
@@ -130,7 +130,7 @@ it('gives the doctor only their own, whatever filter the request sends (abuse)',
     'sin filtros' => [[]],
     'user_id de otro doctor' => [['user_id' => ':other']],
     'doctor_id de otro doctor' => [['doctor_id' => ':other']],
-])->skip('020: pendiente de T038');
+]);
 
 it('refuses the assistant (abuse)', function () {
     withoutTrackingDays($this);
@@ -139,7 +139,7 @@ it('refuses the assistant (abuse)', function () {
     $this->getJson(WITHOUT_TRACKING_URL)
         ->assertForbidden()
         ->assertJsonMissingPath('data');
-})->skip('020: pendiente de T038');
+});
 
 it('answers an empty list with a total of 0', function () {
     $this->actingAsAdmin();
@@ -149,4 +149,4 @@ it('answers an empty list with a total of 0', function () {
     $this->getJson(WITHOUT_TRACKING_URL)
         ->assertOk()
         ->assertExactJson(['data' => ['items' => [], 'total' => 0]]);
-})->skip('020: pendiente de T038');
+});

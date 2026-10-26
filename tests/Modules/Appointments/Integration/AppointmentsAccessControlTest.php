@@ -275,6 +275,7 @@ it('returns the agenda treatments catalog to the administrator ordered by name, 
 const DASHBOARD_ACCESS_ROUTES = [
     'GET /agenda/today-summary',
     'GET /agenda/unclosed',
+    'GET /agenda/without-tracking',
 ];
 
 it('covers every agenda and appointments route and protects each one with the staff middleware', function () {

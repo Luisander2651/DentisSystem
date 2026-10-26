@@ -122,7 +122,7 @@ it('keeps the medical, contact and clinical data of the patient out of the ones 
     }
 })->with([
     'sin seguimiento' => '/api/v1/agenda/without-tracking',
-])->skip('020: pendiente de T038');
+]);
 
 it('gives each appointment only the keys of the contract', function (string $url, string $path) {
     $items = $this->getJson($url)->assertOk()->json($path);
@@ -147,7 +147,7 @@ it('gives each appointment without follow-up only the keys of the contract', fun
     }
 })->with([
     'sin seguimiento' => ['/api/v1/agenda/without-tracking', 'data.items'],
-])->skip('020: pendiente de T038');
+]);
 
 it('gives the next appointment and the ones after it only the keys of the contract', function () {
     $data = $this->getJson('/api/v1/agenda/today-summary')->assertOk()->json('data');

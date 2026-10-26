@@ -134,7 +134,7 @@ it('refuses the ones without follow-up to whoever may not register it, before re
 })->with([
     'sin permisos' => [[]],
     'asistente' => [['appointments.view', 'appointments.create', 'appointments.update', 'patients.view']],
-])->skip('020: pendiente de T038');
+]);
 
 it('asks for its permission first and gives the doctor only their own (TM1)', function (array $granted, ?string $scope) {
     $log = new TrackingCallLog;
@@ -148,7 +148,7 @@ it('asks for its permission first and gives the doctor only their own (TM1)', fu
 })->with([
     'administrador' => [['appointment-tracking.create'], null],
     'doctor' => [['appointment-tracking.create-own'], TRACKING_AUTH_ACTOR_ID],
-])->skip('020: pendiente de T038');
+]);
 
 it('refuses registering to whoever may not register it, before reading (abuse)', function (array $granted) {
     $log = new TrackingCallLog;

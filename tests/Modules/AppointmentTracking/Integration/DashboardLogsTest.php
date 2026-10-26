@@ -103,4 +103,4 @@ it('logs an unexpected error of the ones without follow-up once, without the dat
 
     expect($this->logged->filter(fn (MessageLogged $entry): bool => $entry->message === 'unexpected_error'))->toHaveCount(1);
     dashboardLogsLeakNothing($this->logged);
-})->skip('020: pendiente de T038');
+});

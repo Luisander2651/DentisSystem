@@ -101,7 +101,7 @@ it('serves the four reads of the dashboard in less than 2 s with 50 today, 200 u
     }
 
     expect(array_sum($times))->toBeLessThan(2.0, 'the dashboard took '.json_encode($times));
-})->skip('020: pendiente de T038');
+});
 
 it('makes the same number of queries with few appointments as with many (D24)', function (string $url) {
     performanceAppointments($this, today: 4, unclosed: 10, closed: 5);
@@ -127,7 +127,7 @@ it('makes the same number of queries for the ones without follow-up with few app
     $many = performanceQueriesOf($this, $url);
 
     expect($many)->toBe($few);
-})->skip('020: pendiente de T038');
+});
 
 it('makes the same number of queries for the month with few appointments as with many (D24)', function () {
     $url = DASHBOARD_PERFORMANCE_READS['mes'];

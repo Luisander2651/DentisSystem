@@ -21,6 +21,7 @@ use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\CompleteAppo
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\CreatePrescriptionController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\DeletePrescriptionController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetAppointmentTrackingByAppointmentIdController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetCompletedWithoutTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdateAppointmentTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdatePrescriptionController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\LoginController;
@@ -167,6 +168,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::get('/today-appointments', GetTodayAppointmentsController::class);
                 Route::get('/today-summary', GetTodaySummaryController::class);
                 Route::get('/unclosed', GetUnclosedAppointmentsController::class);
+                Route::get('/without-tracking', GetCompletedWithoutTrackingController::class);
             });
 
             Route::prefix('patients')->group(function (): void {
