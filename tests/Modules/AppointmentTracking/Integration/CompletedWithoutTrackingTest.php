@@ -103,6 +103,20 @@ it('gives the administrator only the completed appointments without a follow-up'
         ->and(array_unique(array_map(fn (array $item): string => json_encode($item['can']), $data['items'])))->toBe([json_encode(['register' => true])]);
 });
 
+it('orders them from the most recent to the oldest, by date and then by time (CA7)', function () {
+    $this->actingAsAdmin();
+
+    $book = fn (string $date, string $time): string => $this->createAppointment(['date' => $date, 'time' => $time, 'status' => 'completada'])->id;
+    $earlyOfTheDay = $book('2026-10-21', '09:00');
+    $oldest = $book('2026-10-14', '08:00');
+    $lateOfTheDay = $book('2026-10-21', '16:00');
+    $dayBefore = $book('2026-10-20', '12:00');
+
+    $ids = array_column($this->getJson(WITHOUT_TRACKING_URL)->assertOk()->json('data.items'), 'id');
+
+    expect($ids)->toBe([$lateOfTheDay, $earlyOfTheDay, $dayBefore, $oldest]);
+});
+
 it('gives at most 10 of them and the total of all (TM8)', function () {
     $this->actingAsAdmin();
 
