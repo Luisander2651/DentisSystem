@@ -932,6 +932,124 @@
                             "[data-complete-appointment-confirm]": "¿Registrar el seguimiento de esta cita?"
                         }
                     }
+                },
+                {
+                    "name": "el servidor rechaza dos campos",
+                    "answer": {
+                        "status": 422,
+                        "body": {
+                            "message": "El motivo de la consulta admite hasta 2000 caracteres.",
+                            "errors": {
+                                "reason": [
+                                    "El motivo de la consulta admite hasta 2000 caracteres."
+                                ],
+                                "diagnosis": [
+                                    "El diagnóstico admite hasta 2000 caracteres."
+                                ]
+                            }
+                        }
+                    },
+                    "do": [
+                        {
+                            "fill": "[data-complete-appointment-reason]",
+                            "value": "Revisión de rutina"
+                        },
+                        {
+                            "fill": "[data-complete-appointment-diagnosis]",
+                            "value": "Sin hallazgos"
+                        },
+                        {
+                            "fill": "[data-complete-appointment-procedure]",
+                            "value": "Limpieza"
+                        },
+                        {
+                            "click": "[data-complete-appointment-next]"
+                        },
+                        {
+                            "click": "[data-complete-appointment-submit]"
+                        },
+                        {
+                            "click": "[data-complete-appointment-confirm-accept]"
+                        },
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "requests": [
+                            {
+                                "method": "POST",
+                                "to": "/tracking",
+                                "has": {
+                                    "reason": "Revisión de rutina"
+                                }
+                            }
+                        ],
+                        "open": [
+                            "[data-complete-appointment-modal]"
+                        ],
+                        "textIn": {
+                            "#complete-appointment-reason-error": "El motivo de la consulta admite hasta 2000 caracteres.",
+                            "#complete-appointment-diagnosis-error": "El diagnóstico admite hasta 2000 caracteres."
+                        },
+                        "values": {
+                            "[data-complete-appointment-reason]": "Revisión de rutina",
+                            "[data-complete-appointment-diagnosis]": "Sin hallazgos"
+                        },
+                        "focused": "[data-complete-appointment-reason]"
+                    }
+                },
+                {
+                    "name": "registro aceptado",
+                    "answer": {
+                        "status": 201,
+                        "body": {
+                            "message": "Seguimiento registrado.",
+                            "data": {}
+                        }
+                    },
+                    "do": [
+                        {
+                            "fill": "[data-complete-appointment-reason]",
+                            "value": "Revisión de rutina"
+                        },
+                        {
+                            "fill": "[data-complete-appointment-diagnosis]",
+                            "value": "Sin hallazgos"
+                        },
+                        {
+                            "fill": "[data-complete-appointment-procedure]",
+                            "value": "Limpieza"
+                        },
+                        {
+                            "click": "[data-complete-appointment-next]"
+                        },
+                        {
+                            "click": "[data-complete-appointment-submit]"
+                        },
+                        {
+                            "click": "[data-complete-appointment-confirm-accept]"
+                        },
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "requests": [
+                            {
+                                "method": "POST",
+                                "to": "/tracking",
+                                "has": {
+                                    "reason": "Revisión de rutina",
+                                    "diagnosis": "Sin hallazgos"
+                                }
+                            }
+                        ],
+                        "closed": [
+                            "[data-complete-appointment-modal]"
+                        ],
+                        "announced": "Seguimiento registrado."
+                    }
                 }
             ]
         },
@@ -1919,6 +2037,36 @@
                         "absent": [
                             "[data-records-list] a[href$=\"/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
                         ]
+                    }
+                },
+                {
+                    "name": "anuncia lo que encuentra",
+                    "do": [
+                        {
+                            "fill": "[data-records-search]",
+                            "value": "Valeria"
+                        },
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "announcedOnce": "1 paciente encontrado."
+                    }
+                },
+                {
+                    "name": "anuncia que no hay coincidencias",
+                    "do": [
+                        {
+                            "fill": "[data-records-search]",
+                            "value": "zzzz"
+                        },
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "announcedOnce": "No se encontraron pacientes."
                     }
                 }
             ]
