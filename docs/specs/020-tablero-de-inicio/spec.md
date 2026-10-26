@@ -1,7 +1,7 @@
 ---
 id: 020
 slug: tablero-de-inicio
-status: approved
+status: implemented
 created: 2026-10-22
 extends: [009, 018]
 ---
