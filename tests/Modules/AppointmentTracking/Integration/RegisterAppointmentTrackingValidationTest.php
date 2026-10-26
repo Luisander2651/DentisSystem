@@ -83,7 +83,7 @@ it('refuses a field over its limit with its text under it', function (Closure $p
     'dosis de 256' => [fn () => $this->validCompletePayload(['prescriptions' => [$this->validPrescriptionPayload(['dosage' => str_repeat('a', 256)])]]), 'prescriptions.0.dosage', 'La dosis admite hasta 255 caracteres.'],
     'indicaciones de 2001' => [fn () => $this->validCompletePayload(['prescriptions' => [$this->validPrescriptionPayload(['instructions' => str_repeat('a', 2001)])]]), 'prescriptions.0.instructions', 'Las indicaciones admiten hasta 2000 caracteres.'],
     '21 recetas' => [fn () => $this->validCompletePayload(['prescriptions' => array_fill(0, 21, $this->validPrescriptionPayload())]), 'prescriptions', 'Añade hasta 20 recetas.'],
-])->skip('020: pendiente de T068');
+]);
 
 it('accepts every field right at its limit', function () {
     $this->actingAsAdmin();
