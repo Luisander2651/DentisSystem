@@ -262,7 +262,11 @@ export async function run(page, entry) {
 }
 
 /** From now on, keeps every text written to a status region, as checks-a11y does. */
-function recordAnnouncementsInPage() {
+/**
+ * Spec 020 (T063): with `fromLoad`, what the regions already say counts as said, because a flow
+ * with `load` starts recording once the page has opened and announced what it loaded.
+ */
+function recordAnnouncementsInPage(fromLoad = false) {
     const said = [];
     const regions = '[role=status], [role=alert], [aria-live]';
     const previous = new WeakMap();
@@ -279,7 +283,12 @@ function recordAnnouncementsInPage() {
     };
 
     for (const region of document.querySelectorAll(regions)) {
-        previous.set(region, region.textContent.replace(/\s+/g, ' ').trim());
+        const text = region.textContent.replace(/\s+/g, ' ').trim();
+        previous.set(region, text);
+
+        if (fromLoad && text !== '') {
+            said.push(text);
+        }
     }
 
     new MutationObserver(note).observe(document.body, { subtree: true, childList: true, characterData: true });
@@ -460,7 +469,7 @@ async function runFlows(page, entry, baseUrl) {
         }
 
         await reenter(page, entry, baseUrl);
-        await page.evaluate(recordAnnouncementsInPage);
+        await page.evaluate(recordAnnouncementsInPage, Boolean(flow.load));
         stop ??= await page.intercept(responder);
 
         try {
