@@ -254,12 +254,41 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 - [x] T055 Rehacer las capturas del inicio de los tres roles en `docs/design/capturas/` y marcarlas como capturadas en el inventario de `system.md`, sin la vista "nuevo usuario" — `docs/design/capturas/` (generado por `npm run test:ui -- --only dashboard`), `docs/design/system.md` — hecho cuando: las capturas existen a 390 y 1440 px y el inventario las enlaza — depende: T051
   - nota: `npm run test:ui -- --only dashboard-administrador,dashboard-asistente,dashboard-doctor,dashboard-paciente,dashboard-menu,dashboard-crear-paciente --screenshots` (17 visitas, 0 fallos); se copian las de 390 y 1440 px, también las del paciente, el menú y "nuevo paciente", que muestran el inicio detrás, y salen las de "nuevo usuario". Las tres filas del inventario pasan a capturadas. La base local lleva alguna cita de desarrollo además de `UiAuditSeeder` (se ve una en "Completadas sin seguimiento" del administrador); queda dicho en `system.md`
 
+## Correcciones de /review
+- [ ] T065 Tests de la carrera del seguimiento: en `RegisterAppointmentTrackingTest`, un caso que llegue al repositorio con el seguimiento ya insertado (el `AppointmentTrackingRepositoryInterface` enlazado devuelve `null` en `findByAppointmentId` mientras la fila existe) y espere 409 "Esta cita ya tiene seguimiento registrado." con una sola fila; en `CompleteAppointmentTest`, el mismo caso al completar, que hoy responde 500 — `tests/Modules/AppointmentTracking/Integration/RegisterAppointmentTrackingTest.php`, `tests/Modules/AppointmentTracking/Integration/CompleteAppointmentTest.php` — hecho cuando: el de completar falla hoy con 500; el de registrar pasa y falla al quitar el `catch` de `register()` (comprobado rompiéndolo) — cubre: CA15
+  - nota: añadida por /review: R1, R2
+- [ ] T066 Convertir en `complete()` la violación de la restricción única en `TrackingRegistrationException::alreadyRegistered()`, como `register()` — `app/Modules/AppointmentTracking/Infrastructure/Persistence/Eloquent/EloquentAppointmentCompletionRepository.php` — hecho cuando: T065 pasa entero — cubre: CA15 — depende: T065
+  - nota: añadida por /review: R2
+- [ ] T067 Tests de los límites del seguimiento (decisión del usuario, 2026-10-26): en `RegisterAppointmentTrackingValidationTest`, 422 con mensaje en español bajo su campo para medicamento o dosis de 256 caracteres, motivo, diagnóstico, procedimiento, observaciones, recomendaciones o indicaciones de 2001, un síntoma de 256, 21 síntomas y 21 recetas, y 201 justo en cada límite; en `CompleteAppointmentTest`, completar con un medicamento o una dosis de 256 caracteres responde lo mismo que con uno vacío (400), no 500 — `tests/Modules/AppointmentTracking/Integration/RegisterAppointmentTrackingValidationTest.php`, `tests/Modules/AppointmentTracking/Integration/CompleteAppointmentTest.php` — hecho cuando: los casos por encima del límite fallan hoy (201 o 500) y los del límite pasan — cubre: CA8, CA15
+  - nota: añadida por /review: R3
+- [ ] T068 Límites en `RegisterAppointmentTrackingRequest`: `max:255` en medicamento, dosis y cada síntoma; `max:2000` en los textos; `max:20` en `symptoms` y `prescriptions`; mensajes en español — `app/Modules/AppointmentTracking/Infrastructure/Http/Requests/RegisterAppointmentTrackingRequest.php` — hecho cuando: los casos de registro de T067 pasan — cubre: CA8 — depende: T067
+  - nota: añadida por /review: R3
+- [ ] T069 `Medication` rechaza más de 255 caracteres con su excepción propia (`MedicationException::tooLong()`), igual que rechaza el vacío — `app/Modules/AppointmentTracking/Domain/ValueObjects/Medication.php`, `app/Modules/AppointmentTracking/Domain/Exceptions/ValueObjects/MedicationException.php` — hecho cuando: el caso de medicamento de T067 en `CompleteAppointmentTest` pasa — cubre: CA15 — depende: T067
+  - nota: añadida por /review: R3
+- [ ] T070 `Dosage` rechaza más de 255 caracteres con `DosageException::tooLong()` — `app/Modules/AppointmentTracking/Domain/ValueObjects/Dosage.php`, `app/Modules/AppointmentTracking/Domain/Exceptions/ValueObjects/DosageException.php` — hecho cuando: T067 pasa entero — cubre: CA15 — depende: T067
+  - nota: añadida por /review: R3
+- [ ] T071 Registrar en `.gitleaksignore` la huella del falso positivo `generic-api-key` de `TRACKING_AUTH_ACTOR_ID` (UUID fijo de test, commit 6282754) — `.gitleaksignore` — hecho cuando: el comando de gitleaks del job de CI (`gitleaks:v8.30.1 git` sobre `ae818f4..HEAD`) termina sin hallazgos
+  - nota: añadida por /review: R14
+- [ ] T072 Comprobar el orden de "Completadas sin seguimiento" (CA7): comparar los ids con el orden exacto, con dos citas del mismo día a horas distintas — `tests/Modules/AppointmentTracking/Integration/CompletedWithoutTrackingTest.php` — hecho cuando: pasa y falla al quitar el orden por hora o invertir el orden en `EloquentPendingTrackingRepository` (comprobado rompiéndolo) — cubre: CA7
+  - nota: añadida por /review: R4
+- [ ] T073 Oráculo independiente en `TodayAgendaPropertiesTest`: `after` es exactamente las dos por atender siguientes a la próxima por hora, `afterMore` es `max(0, por atender − 3)` contado desde las citas generadas, e `isPast` coincide con hora < ahora — `tests/Modules/Appointments/Unit/Domain/TodayAgendaPropertiesTest.php` — hecho cuando: pasa y falla con un `TodayAgenda` provisional que deja `after` vacío (comprobado rompiéndolo) — cubre: CA2
+  - nota: añadida por /review: R6
+- [ ] T074 Flujos del inicio en `screens.json`: "vacío de cada sección" comprueba que "Registrar seguimiento" no está a la vista; "Reintentar" comprueba que solo se repite la petición de esa sección y que el foco queda en el título de la sección tras recargar; "carga" y "error de una sección" comprueban que el resumen del día no dice "0" en sin cerrar ni sin seguimiento ("–" mientras carga, "no disponible" si falla); un flujo con la primera respuesta de `/agenda/unclosed` retenida, un reintento con otra respuesta y la liberación de la primera comprueba que queda pintada la última; los botones de las filas y de la siguiente cita llevan el nombre del paciente y la hora en su nombre accesible — `tests/Browser/screens.json` — hecho cuando: los flujos nuevos fallan hoy por esas razones y el resto del inicio pasa — cubre: CA9, CA12
+  - nota: añadida por /review: R5, R7, R8, R9, R10, R13
+- [ ] T075 Flujos de expedientes y del registro de seguimiento en `screens.json`: en `expedientes-buscar`, escribir un nombre que no existe anuncia "No se encontraron pacientes" en la región de estado y uno que existe anuncia el número de pacientes; en `dashboard-registrar-seguimiento`, un 422 con errores por campo deja cada mensaje bajo su campo, conserva lo escrito y lleva el foco al primero, y un 200 envía a `/appointments/{id}/tracking` y anuncia "Seguimiento registrado." — `tests/Browser/screens.json` — hecho cuando: el de expedientes falla hoy; los del registro pasan y fallan al quitar `markServerErrors` (un defecto que destapen se corrige en la tarea) — cubre: CA8, CA9 — depende: T074
+  - nota: añadida por /review: R11, R12
+- [ ] T076 Corregir el inicio: el foco va al título de la sección (con `tabindex="-1"`) al pulsar "Reintentar" y, si vuelve a fallar, al nuevo "Reintentar"; cada carga de sección lleva un número de secuencia y se descarta la respuesta que no es la última; los totales del resumen del día empiezan en "–" y dicen "no disponible" si su lectura falla; los botones de filas y siguiente cita añaden en `sr-only` " de {paciente} a las {hora}" — `resources/js/pages/dashboard.js`, `resources/views/pages/dashboard.blade.php` — hecho cuando: los flujos de T074 pasan, `ui-audit` del inicio pasa a 390, 768 y 1440 px y `evaluate` sigue pasando con los dos criterios · revisión de accesibilidad: foco y nombres comprobados en los flujos — cubre: CA9, CA12 — depende: T074
+  - nota: añadida por /review: R7, R8, R9, R10
+- [ ] T077 El buscador de expedientes anuncia por `resources/js/ui/status.js` el número de pacientes o "No se encontraron pacientes", tras 400 ms sin escribir — `resources/js/pages/records/index.js` — hecho cuando: el flujo de expedientes de T075 pasa y `ui-audit` de `expedientes*` pasa · revisión de accesibilidad: un solo anuncio por búsqueda — cubre: CA9 — depende: T075
+  - nota: añadida por /review: R11
+- [ ] T078 Verificación tras las correcciones: Pint, Pest completo en serie sin fallos nuevos, `npm run build`, `ui-audit` de `dashboard*`, `expediente*` y `agenda-cita-completar*` dos veces, `evaluate` con los dos criterios, gitleaks del rango y `aidd.py validate` — hecho cuando: todo en verde, con nota de resultados — depende: T066, T068, T069, T070, T071, T072, T073, T076, T077
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: endpoints nuevos de Appointments y AppointmentTracking, `DoctorScope` y `TrackingFactory`, y el inicio que consume además `reports/monthly`
   - nota: punto "Tablero de inicio" en Backend (controlador de `/dashboard`, las cuatro lecturas, `TodayAgenda`, `AppointmentPage`, `DoctorScope`, `TrackingFactory`, `reports/monthly` y `UiAuditClock`); la línea de rutas web de Frontend nombra los controladores invocables. Sin módulos ni dependencias nuevas
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 020 para el objetivo 5 (escritura de seguimiento en `RegisterAppointmentTrackingUseCase` y `CompleteAppointmentUseCase`, cancelación en `UpdateAppointmentUseCase`, accesos denegados); OB1.a y OB3.a siguen pendientes. Sin cambios en `deployment.md`
   - nota: `observability.md` gana el punto "Spec 020" en Logs (sin logs nuevos y los puntos de emisión para el objetivo 5); OB1.a y OB3.a siguen pendientes. `deployment.md` sin cambios: ni variables, ni entornos, ni pasos nuevos (el reloj de la prueba no se configura)
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - nota: suite Pest completa en serie el 2026-10-26: 1 890 pasan, 0 fallos (850 s); los 16 criterios marcados. El recorrido con NVDA (RNF; verificación manual de T046) no se hace, por decisión del usuario (ver la nota de T046)
 
 ## Despliegue (lo ejecuta `/release`)
@@ -273,20 +302,20 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
 | CA1 | T010, T013, T024, T026 | T030, T033, T035, T045, T046 |
-| CA2 | T010, T013, T026 | T030, T035, T043, T045, T046 |
+| CA2 | T010, T013, T026, T073 | T030, T035, T043, T045, T046 |
 | CA3 | T010, T013 | T030, T035, T043, T046 |
 | CA4 | T011, T014, T026 | T031, T032, T033, T035, T044, T046 |
 | CA5 | T014, T018, T026 | T034, T035, T046, T047 |
 | CA6 | T014, T018, T026 | T034, T035, T046, T047 |
-| CA7 | T011, T015, T020, T026, T054 | T036, T037, T038, T044, T046 |
-| CA8 | T016, T017, T026, T054 | T005, T039, T040, T041, T047 |
-| CA9 | T024, T026 | T045, T046, T048 |
+| CA7 | T011, T015, T020, T026, T054, T072 | T036, T037, T038, T044, T046 |
+| CA8 | T016, T017, T026, T054, T067, T075 | T005, T039, T040, T041, T047, T068 |
+| CA9 | T024, T026, T074, T075 | T045, T046, T048, T076, T077 |
 | CA10 | T022, T024, T026 | T042, T045, T046 |
 | CA11 | T024 | T045 |
-| CA12 | T026 | T046, T056 |
+| CA12 | T026, T074 | T046, T056, T076 |
 | CA13 | T003, T012, T013, T014, T015, T016, T019, T025, T028 | T004, T033, T035, T038, T040, T041 |
 | CA14 | T012, T015, T016, T019, T025, T028 | T038, T041 |
-| CA15 | T016, T029 | T036, T039, T040, T041, T049 |
+| CA15 | T016, T029, T065, T067 | T036, T039, T040, T041, T049, T066, T069, T070 |
 | CA16 | T019, T024, T026, T058 | T035, T042, T045, T059 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
@@ -295,7 +324,7 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | TM2 | T040 | T016 |
 | TM3 | T038, T040 | T019, T028 |
 | TM4 | T035, T038, T041 | T019 |
-| TM5 | T039, T040 | T016 |
+| TM5 | T039, T040, T066 | T016, T065 |
 | TM6 | T034 | T020 |
 | TM7 | T046 | T026 |
 | TM8 | T032 | T014, T021 |
