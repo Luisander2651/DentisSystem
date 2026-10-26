@@ -88,7 +88,7 @@ it('answers with the shape of the contract', function () {
             'items' => ['*' => ['id', 'date', 'time', 'status', 'patient_name', 'treatment_name', 'doctor_name', 'day_label', 'can' => ['complete', 'cancel']]],
             'total',
         ]]);
-})->skip('020: pendiente de T035');
+});
 
 it('gives the 10 most recent unclosed appointments of earlier days and the total of 15 (TM8)', function () {
     unclosedDays($this);
@@ -105,7 +105,7 @@ it('gives the 10 most recent unclosed appointments of earlier days and the total
             '2026-10-15 10:00', '2026-10-14 10:00', '2026-10-13 10:00',
         ])
         ->and(array_unique(array_column($data['items'], 'status')))->toEqualCanonicalizing(['asignada', 'reprogramada']);
-})->skip('020: pendiente de T035');
+});
 
 it('leaves out the appointments of today and the ones already completed or cancelled', function () {
     unclosedDays($this);
@@ -117,7 +117,7 @@ it('leaves out the appointments of today and the ones already completed or cance
         ->and($moments)->not->toContain('2026-10-22 12:30')
         ->and($moments)->not->toContain('2026-10-21 11:00')
         ->and($moments)->not->toContain('2026-10-20 15:00');
-})->skip('020: pendiente de T035');
+});
 
 it('labels each day, yesterday included', function () {
     unclosedDays($this);
@@ -135,7 +135,7 @@ it('labels each day, yesterday included', function () {
             'treatment_name' => 'Limpieza dental de prueba',
             'doctor_name' => 'Diego Prueba',
         ]);
-})->skip('020: pendiente de T035');
+});
 
 it('gives the doctor only their own unclosed appointments, whatever filter the request sends (abuse)', function (array $query) {
     $days = unclosedDays($this);
@@ -151,7 +151,7 @@ it('gives the doctor only their own unclosed appointments, whatever filter the r
     'sin filtros' => [[]],
     'user_id de otro doctor' => [['user_id' => ':other']],
     'doctor_id de otro doctor' => [['doctor_id' => ':other']],
-])->skip('020: pendiente de T035');
+]);
 
 it('answers an empty list with a total of 0', function () {
     $this->actingAsAdmin();
@@ -160,7 +160,7 @@ it('answers an empty list with a total of 0', function () {
     $this->getJson(UNCLOSED_URL)
         ->assertOk()
         ->assertExactJson(['data' => ['items' => [], 'total' => 0]]);
-})->skip('020: pendiente de T035');
+});
 
 it('tells each role what it may do with an unclosed appointment', function (string $actor, array $can) {
     $days = unclosedDays($this);
@@ -178,4 +178,4 @@ it('tells each role what it may do with an unclosed appointment', function (stri
     'administrador' => ['administrador', ['complete' => true, 'cancel' => true]],
     'asistente' => ['asistente', ['complete' => false, 'cancel' => true]],
     'doctor' => ['doctor', ['complete' => true, 'cancel' => false]],
-])->skip('020: pendiente de T035');
+]);

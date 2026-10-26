@@ -55,7 +55,7 @@ it('takes an unclosed appointment out of the list once the administrator complet
 
     expect(inboxUnclosedIds($this))->toBe([]);
     $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'completada']);
-})->skip('020: pendiente de T035');
+});
 
 it('takes an unclosed appointment out of the list once its doctor completes it', function () {
     $doctor = $this->actingAsNonAdminUser('Doctor');
@@ -66,7 +66,7 @@ it('takes an unclosed appointment out of the list once its doctor completes it',
     $this->postJson("/api/v1/appointments/{$appointment->id}/complete", inboxCompletePayload())->assertCreated();
 
     expect(inboxUnclosedIds($this))->toBe([]);
-})->skip('020: pendiente de T035');
+});
 
 it('takes an unclosed appointment out of the list once the assistant cancels it', function () {
     $this->actingAsNonAdminUser('Asistente');
@@ -78,4 +78,4 @@ it('takes an unclosed appointment out of the list once the assistant cancels it'
 
     expect(inboxUnclosedIds($this))->toBe([]);
     $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'cancelada']);
-})->skip('020: pendiente de T035');
+});

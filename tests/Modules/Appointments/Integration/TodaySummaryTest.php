@@ -92,7 +92,7 @@ it('answers with the shape of the contract', function () {
         ]])
         ->assertJsonPath('data.date', '2026-10-22')
         ->assertJsonPath('data.now', '11:40');
-})->skip('020: pendiente de T035');
+});
 
 it('lists the appointments of today by time with their patient, treatment, doctor and status', function () {
     summaryDay($this);
@@ -114,7 +114,7 @@ it('lists the appointments of today by time with their patient, treatment, docto
         ->and($byTime['10:30']['status'])->toBe('cancelada')
         ->and($byTime['11:15']['is_past'])->toBeTrue()
         ->and(array_keys(array_filter(array_column($data['appointments'], 'is_next', 'time'))))->toBe(['12:30']);
-})->skip('020: pendiente de T035');
+});
 
 it('counts 8 appointments today: 3 completed, 4 to attend and 1 cancelled', function () {
     summaryDay($this);
@@ -123,7 +123,7 @@ it('counts 8 appointments today: 3 completed, 4 to attend and 1 cancelled', func
     $this->getJson(TODAY_SUMMARY_URL)
         ->assertOk()
         ->assertJsonPath('data.counts', ['total' => 8, 'completed' => 3, 'pending' => 4, 'cancelled' => 1]);
-})->skip('020: pendiente de T035');
+});
 
 it('gives the next appointment and the two after it, with how many more remain', function () {
     $day = summaryDay($this);
@@ -144,7 +144,7 @@ it('gives the next appointment and the two after it, with how many more remain',
             ['time' => '16:00', 'patient_name' => 'Carmen Prueba'],
         ])
         ->and($data['after_more'])->toBe(1);
-})->skip('020: pendiente de T035');
+});
 
 it('keeps an appointment to attend whose time has passed as the next one until it is completed (D25)', function () {
     $day = summaryDay($this);
@@ -169,7 +169,7 @@ it('keeps an appointment to attend whose time has passed as the next one until i
         ->assertOk()
         ->assertJsonPath('data.next.time', '12:30')
         ->assertJsonPath('data.counts.completed', 4);
-})->skip('020: pendiente de T035');
+});
 
 it('answers a day without appointments with empty sections', function () {
     $this->actingAsAdmin();
@@ -181,7 +181,7 @@ it('answers a day without appointments with empty sections', function () {
         ->assertJsonPath('data.next', null)
         ->assertJsonPath('data.after', [])
         ->assertJsonPath('data.after_more', 0);
-})->skip('020: pendiente de T035');
+});
 
 it('gives the doctor only their own appointments of today, whatever filter the request sends (abuse)', function (array $query) {
     $day = summaryDay($this);
@@ -200,7 +200,7 @@ it('gives the doctor only their own appointments of today, whatever filter the r
     'sin filtros' => [[]],
     'user_id de otro doctor' => [['user_id' => ':other']],
     'doctor_id de otro doctor' => [['doctor_id' => ':other']],
-])->skip('020: pendiente de T035');
+]);
 
 it('tells the administrator they may complete and cancel the appointments to attend', function () {
     summaryDay($this);
@@ -214,7 +214,7 @@ it('tells the administrator they may complete and cancel the appointments to att
         ->and($byTime['09:00']['can'])->toBe(['complete' => false, 'cancel' => false])
         ->and($byTime['10:30']['can'])->toBe(['complete' => false, 'cancel' => false])
         ->and($data['next']['can'])->toBe(['complete' => true, 'cancel' => true]);
-})->skip('020: pendiente de T035');
+});
 
 it('tells the assistant they may cancel but not complete', function () {
     summaryDay($this);
@@ -227,7 +227,7 @@ it('tells the assistant they may cancel but not complete', function () {
         ->and($byTime['12:30']['can'])->toBe(['complete' => false, 'cancel' => true])
         ->and($byTime['09:00']['can'])->toBe(['complete' => false, 'cancel' => false])
         ->and($data['next']['can'])->toBe(['complete' => false, 'cancel' => true]);
-})->skip('020: pendiente de T035');
+});
 
 it('tells the doctor they may complete their appointments to attend but not cancel them', function () {
     $day = summaryDay($this);
@@ -239,4 +239,4 @@ it('tells the doctor they may complete their appointments to attend but not canc
     expect($byTime['13:15']['can'])->toBe(['complete' => true, 'cancel' => false])
         ->and($byTime['09:45']['can'])->toBe(['complete' => false, 'cancel' => false])
         ->and($data['next']['can'])->toBe(['complete' => true, 'cancel' => false]);
-})->skip('020: pendiente de T035');
+});

@@ -10,9 +10,11 @@ use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentsByPa
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetDoctorsForAppointmentSelectController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPatientsForAppointmentSelectController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodayAppointmentsController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodaySummaryController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentByIdController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentsAdminController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentsController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetUnclosedAppointmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateAppointmentController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateTreatmentController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\CompleteAppointmentController;
@@ -163,6 +165,8 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::get('/doctors', GetDoctorsForAppointmentSelectController::class);
                 Route::get('/treatments', GetTreatmentsController::class);
                 Route::get('/today-appointments', GetTodayAppointmentsController::class);
+                Route::get('/today-summary', GetTodaySummaryController::class);
+                Route::get('/unclosed', GetUnclosedAppointmentsController::class);
             });
 
             Route::prefix('patients')->group(function (): void {

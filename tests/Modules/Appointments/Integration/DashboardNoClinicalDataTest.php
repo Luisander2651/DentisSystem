@@ -109,7 +109,7 @@ it('keeps the medical, contact and clinical data of the patient out of today and
 })->with([
     'hoy' => '/api/v1/agenda/today-summary',
     'sin cerrar' => '/api/v1/agenda/unclosed',
-])->skip('020: pendiente de T035');
+]);
 
 it('keeps the medical, contact and clinical data of the patient out of the ones without follow-up (abuse)', function (string $url) {
     $response = $this->getJson($url)->assertOk();
@@ -135,7 +135,7 @@ it('gives each appointment only the keys of the contract', function (string $url
 })->with([
     'hoy' => ['/api/v1/agenda/today-summary', 'data.appointments'],
     'sin cerrar' => ['/api/v1/agenda/unclosed', 'data.items'],
-])->skip('020: pendiente de T035');
+]);
 
 it('gives each appointment without follow-up only the keys of the contract', function (string $url, string $path) {
     $items = $this->getJson($url)->assertOk()->json($path);
@@ -154,4 +154,4 @@ it('gives the next appointment and the ones after it only the keys of the contra
 
     expect(array_keys($data))->toEqualCanonicalizing(['date', 'now', 'appointments', 'counts', 'next', 'after', 'after_more'])
         ->and(array_keys($data['next']))->toEqualCanonicalizing(['id', 'time', 'status', 'patient_name', 'treatment_name', 'doctor_name', 'can']);
-})->skip('020: pendiente de T035');
+});

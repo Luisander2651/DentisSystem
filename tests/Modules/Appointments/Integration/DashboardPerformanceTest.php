@@ -115,7 +115,7 @@ it('makes the same number of queries with few appointments as with many (D24)', 
 })->with([
     'hoy' => DASHBOARD_PERFORMANCE_READS['hoy'],
     'sin cerrar' => DASHBOARD_PERFORMANCE_READS['sin cerrar'],
-])->skip('020: pendiente de T035');
+]);
 
 it('makes the same number of queries for the ones without follow-up with few appointments as with many (D24)', function () {
     $url = DASHBOARD_PERFORMANCE_READS['sin seguimiento'];

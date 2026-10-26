@@ -27,7 +27,7 @@ it('answers a generic 500 when today fails unexpectedly', function () {
     $this->getJson('/api/v1/agenda/today-summary')
         ->assertStatus(500)
         ->assertExactJson(['error' => 'Internal server error']);
-})->skip('020: pendiente de T035');
+});
 
 it('answers a generic 500 when the unclosed ones fail unexpectedly', function () {
     $this->mock(AppointmentsRepositoryInterface::class)
@@ -36,7 +36,7 @@ it('answers a generic 500 when the unclosed ones fail unexpectedly', function ()
     $this->getJson('/api/v1/agenda/unclosed')
         ->assertStatus(500)
         ->assertExactJson(['error' => 'Internal server error']);
-})->skip('020: pendiente de T035');
+});
 
 it('answers a generic 500 when the ones without follow-up fail unexpectedly', function () {
     $this->mock(PendingTrackingRepositoryInterface::class)

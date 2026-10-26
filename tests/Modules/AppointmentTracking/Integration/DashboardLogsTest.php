@@ -93,7 +93,7 @@ it('logs an unexpected error of today and the unclosed ones once, without the da
 })->with([
     'hoy' => ['/api/v1/agenda/today-summary', 'findAllByStatusAndDateOrPatientId'],
     'sin cerrar' => ['/api/v1/agenda/unclosed', 'findUnclosedBefore'],
-])->skip('020: pendiente de T035');
+]);
 
 it('logs an unexpected error of the ones without follow-up once, without the data of its message', function () {
     $this->actingAsAdmin();

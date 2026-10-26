@@ -161,7 +161,7 @@ beforeEach(function () {
 
 it('answers today and the unclosed ones according to who asks (abuse)', function (string $actor, string $route, array $allowed) {
     dashboardAccessCheck($this, $actor, $route, $allowed);
-})->with(dashboardAccessActors())->with(dashboardAccessRouteDataset(['GET /agenda/today-summary', 'GET /agenda/unclosed']))->skip('020: pendiente de T035');
+})->with(dashboardAccessActors())->with(dashboardAccessRouteDataset(['GET /agenda/today-summary', 'GET /agenda/unclosed']));
 
 it('answers the ones without follow-up according to who asks (abuse)', function (string $actor, string $route, array $allowed) {
     dashboardAccessCheck($this, $actor, $route, $allowed);
