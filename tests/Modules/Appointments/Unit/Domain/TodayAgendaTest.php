@@ -71,13 +71,13 @@ it('orders the appointments of today by time', function () {
     $agenda = TodayAgenda::fromAppointments(conventionDay(), todayAgendaNow());
 
     expect(timesOf($agenda->appointments))->toBe(['09:00', '09:45', '10:30', '11:15', '12:30', '13:15', '16:00', '17:30']);
-})->skip('020: pendiente de T030');
+});
 
 it('counts the day as 8 in total, 3 completed, 4 to attend and 1 cancelled', function () {
     $agenda = TodayAgenda::fromAppointments(conventionDay(), todayAgendaNow());
 
     expect([$agenda->total, $agenda->completed, $agenda->pending, $agenda->cancelled])->toBe([8, 3, 4, 1]);
-})->skip('020: pendiente de T030');
+});
 
 it('takes the first appointment to attend as the next one, with two after it and one more', function () {
     $agenda = TodayAgenda::fromAppointments(conventionDay(), todayAgendaNow());
@@ -85,7 +85,7 @@ it('takes the first appointment to attend as the next one, with two after it and
     expect($agenda->next?->Time()->value)->toBe('12:30')
         ->and(timesOf($agenda->after))->toBe(['13:15', '16:00'])
         ->and($agenda->afterMore)->toBe(1);
-})->skip('020: pendiente de T030');
+});
 
 it('keeps an appointment to attend whose time has passed as the next one (D25)', function () {
     $appointments = [...conventionDay(), todayAppointment('11:30', 'asignada')];
@@ -95,14 +95,14 @@ it('keeps an appointment to attend whose time has passed as the next one (D25)',
     expect($agenda->next?->Time()->value)->toBe('11:30')
         ->and(timesOf($agenda->after))->toBe(['12:30', '13:15'])
         ->and($agenda->afterMore)->toBe(2);
-})->skip('020: pendiente de T030');
+});
 
 it('tells which appointments are already past', function () {
     $agenda = TodayAgenda::fromAppointments(conventionDay(), todayAgendaNow());
     $past = array_values(array_filter($agenda->appointments, fn (AppointmentEntity $appointment): bool => $agenda->isPast($appointment)));
 
     expect(timesOf($past))->toBe(['09:00', '09:45', '10:30', '11:15']);
-})->skip('020: pendiente de T030');
+});
 
 it('has no next appointment when every appointment of the day is closed', function () {
     $agenda = TodayAgenda::fromAppointments([
@@ -114,7 +114,7 @@ it('has no next appointment when every appointment of the day is closed', functi
         ->and($agenda->after)->toBe([])
         ->and($agenda->afterMore)->toBe(0)
         ->and($agenda->pending)->toBe(0);
-})->skip('020: pendiente de T030');
+});
 
 it('handles a day without appointments', function () {
     $agenda = TodayAgenda::fromAppointments([], todayAgendaNow());
@@ -124,4 +124,4 @@ it('handles a day without appointments', function () {
         ->and($agenda->next)->toBeNull()
         ->and($agenda->after)->toBe([])
         ->and($agenda->afterMore)->toBe(0);
-})->skip('020: pendiente de T030');
+});

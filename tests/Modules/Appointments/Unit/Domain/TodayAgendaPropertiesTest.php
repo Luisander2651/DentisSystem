@@ -66,7 +66,7 @@ it('adds completed, to attend and cancelled up to the total (property)', functio
         expect($agenda->total)->toBe(count($lines))
             ->and($agenda->completed + $agenda->pending + $agenda->cancelled)->toBe($agenda->total);
     });
-})->skip('020: pendiente de T030');
+});
 
 it('has a next appointment only while one is to attend, the first one by time whatever now is (property)', function () {
     $this->forAll(agendaPropertyDay(), Eris\Generator\choose(0, 1439))->then(function (array $lines, int $now) {
@@ -83,7 +83,7 @@ it('has a next appointment only while one is to attend, the first one by time wh
                 ->and($agenda->next->Time()->value)->toBe($earliest);
         }
     });
-})->skip('020: pendiente de T030');
+});
 
 it('lists at most two appointments to attend after the next one and counts the rest (property)', function () {
     $this->forAll(agendaPropertyDay(), Eris\Generator\choose(0, 1439))->then(function (array $lines, int $now) {
@@ -97,4 +97,4 @@ it('lists at most two appointments to attend after the next one and counts the r
                 ->and($appointment->Time()->value >= $agenda->next?->Time()->value)->toBeTrue();
         }
     });
-})->skip('020: pendiente de T030');
+});

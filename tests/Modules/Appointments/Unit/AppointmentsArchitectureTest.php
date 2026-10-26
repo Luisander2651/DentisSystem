@@ -43,7 +43,7 @@ it('keeps the files of the Domain this spec changes free of infrastructure', fun
 
 it('keeps the agenda of today free of infrastructure', function () {
     expect(appointmentsDomainViolations('ValueObjects/TodayAgenda.php'))->toBe([]);
-})->skip('020: pendiente de T030');
+});
 
 it('keeps the page of appointments free of infrastructure', function () {
     expect(appointmentsDomainViolations('ValueObjects/AppointmentPage.php'))->toBe([]);
