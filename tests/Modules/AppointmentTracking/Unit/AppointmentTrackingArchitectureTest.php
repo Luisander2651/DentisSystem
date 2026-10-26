@@ -44,4 +44,4 @@ it('keeps the new files of the Domain free of infrastructure', function (string 
 })->with([
     'Repositories/PendingTrackingRepositoryInterface.php',
     'Exceptions/TrackingRegistrationException.php',
-])->skip('020: pendiente de T036');
+]);
