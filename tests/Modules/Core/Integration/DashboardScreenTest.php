@@ -177,7 +177,7 @@ it('refuses the start to an inactive staff member with the "Sin permiso" page (A
     $this->actingAsInactiveAdmin();
 
     $this->get('/dashboard')->assertForbidden()->assertViewIs('errors::403');
-})->skip('020: pendiente de T042');
+});
 
 it('sends a visitor without a session to the login', function () {
     $this->get('/dashboard')->assertRedirect('/login');

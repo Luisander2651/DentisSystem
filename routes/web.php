@@ -1,5 +1,6 @@
 <?php
 
+use App\Core\Http\ShowDashboardPageController;
 use App\Modules\ContentManagement\Infrastructure\HTTP\Controllers\ShowLandingPageController;
 use App\Modules\Reports\Infrastructure\Http\Controllers\ShowReportsPageController;
 use Illuminate\Support\Facades\Route;
@@ -39,9 +40,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return view('pages.auth.logout');
     })->name('logout.page');
 
-    Route::get('/dashboard', function () {
-        return view('pages.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', ShowDashboardPageController::class)->name('dashboard');
 
     Route::middleware('staff:administrador,asistente,doctor')->group(function () {
         Route::get('/expedientes-clinicos', function () {
