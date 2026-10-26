@@ -304,8 +304,9 @@ de `UiAuditSeeder`. **76 de 76 capturadas** (149 imágenes, a 390 y 1440 px). La
 "Reprogramar cita", añadió "Confirmar cancelación" y regeneró esas capturas y la del detalle de
 cita asignada el 2026-10-16, con `ui-audit` en local sobre los mismos datos. CI comprueba además
 cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas quedan en el artefacto
-`ui-audit` de cada corrida. La spec 020 rehace el inicio del panel: sus tres vistas con datos quedan pendientes de
-captura hasta T055 y sale la de "nuevo usuario".
+`ui-audit` de cada corrida. La spec 020 rehace el inicio del panel: el 2026-10-26 se regeneraron con `ui-audit` en local sus
+vistas (las tres con datos, la del paciente, el menú móvil y "nuevo paciente") y sale la de "nuevo usuario"; la base local
+lleva, además de los datos de `UiAuditSeeder`, alguna cita de desarrollo que se ve en las listas del administrador.
 
 | Vista | Ruta / plantilla | Rol | Capturas | Estado |
 |---|---|---|---|---|
@@ -321,9 +322,9 @@ captura hasta T055 y sale la de "nuevo usuario".
 | Restablecer contraseña (con token) | `/reset-password?token=…` · `pages/auth/reset-password.blade.php` | público | [390](capturas/reset-password-390.png) · [1440](capturas/reset-password-1440.png) | capturada |
 | Restablecer contraseña (sin token) | `/reset-password` | público | [390](capturas/reset-password-sin-token-390.png) · [1440](capturas/reset-password-sin-token-1440.png) | capturada |
 | Cerrar sesión | `/logout` · `pages/auth/logout.blade.php` | Paciente | [390](capturas/logout-390.png) · [1440](capturas/logout-1440.png) | capturada |
-| Inicio del panel, con datos | `/dashboard` · `pages/dashboard.blade.php` | Administrador | — | pendiente de captura (spec 020, T055): siguiente cita, día, acciones, agenda, mes y pendientes |
-| Inicio del panel, con datos | `/dashboard` | Asistente | — | pendiente de captura (spec 020, T055): sin el mes ni las completadas sin seguimiento |
-| Inicio del panel, con datos | `/dashboard` | Doctor | — | pendiente de captura (spec 020, T055): solo sus citas, sin el mes |
+| Inicio del panel, con datos | `/dashboard` · `pages/dashboard.blade.php` | Administrador | [390](capturas/dashboard-administrador-390.png) · [1440](capturas/dashboard-administrador-1440.png) | capturada (spec 020): siguiente cita, día, acciones, agenda, mes y pendientes |
+| Inicio del panel, con datos | `/dashboard` | Asistente | [390](capturas/dashboard-asistente-390.png) · [1440](capturas/dashboard-asistente-1440.png) | capturada (spec 020): sin el mes ni las completadas sin seguimiento |
+| Inicio del panel, con datos | `/dashboard` | Doctor | [390](capturas/dashboard-doctor-390.png) · [1440](capturas/dashboard-doctor-1440.png) | capturada (spec 020): solo sus citas, sin el mes |
 | Inicio del panel, vacío y error de una sección | `/dashboard` | Administrador | — | lo comprueba `ui-audit` (flujos de vacío, carga, error y "Reintentar"; spec 020); sin captura propia |
 | Inicio del panel | `/dashboard` | Paciente | [390](capturas/dashboard-paciente-390.png) · [1440](capturas/dashboard-paciente-1440.png) | capturada |
 | Inicio del panel, nuevo paciente | `components/ui/create-patient-modal.blade.php` | Administrador | [390](capturas/dashboard-crear-paciente-390.png) · [1440](capturas/dashboard-crear-paciente-1440.png) | capturada |
