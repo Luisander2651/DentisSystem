@@ -160,7 +160,7 @@ it('refuses registering to whoever may not register it, before reading (abuse)',
 })->with([
     'sin permisos' => [[]],
     'asistente' => [['appointments.view', 'appointments.create', 'appointments.update', 'patients.view']],
-])->skip('020: pendiente de T040');
+]);
 
 it('asks for its permission first and only then reads the appointment', function (array $granted) {
     $log = new TrackingCallLog;
@@ -177,4 +177,4 @@ it('asks for its permission first and only then reads the appointment', function
 })->with([
     'administrador' => [['appointment-tracking.create']],
     'doctor' => [['appointment-tracking.create-own']],
-])->skip('020: pendiente de T040');
+]);
