@@ -168,7 +168,10 @@
                             "[data-dashboard-section=\"agenda\"]": "No hay citas para hoy.",
                             "[data-dashboard-section=\"unclosed\"]": "No hay citas pendientes de cerrar.",
                             "[data-dashboard-section=\"without-tracking\"]": "Todas las citas completadas tienen seguimiento."
-                        }
+                        },
+                        "absent": [
+                            "[data-dashboard-quick=\"register\"]:not([hidden])"
+                        ]
                     }
                 },
                 {
@@ -191,6 +194,9 @@
                         "visibleAfter": {
                             "selector": "[data-dashboard-section=\"unclosed\"] [data-dashboard-state=\"loading\"]",
                             "ms": 0
+                        },
+                        "textIn": {
+                            "[data-dashboard-total=\"unclosed\"]": "–"
                         }
                     }
                 },
@@ -218,7 +224,8 @@
                         },
                         "textIn": {
                             "[data-dashboard-section=\"unclosed\"]": "No se pudo cargar esta sección.",
-                            "[data-dashboard-section=\"agenda\"]": "Valeria Prueba"
+                            "[data-dashboard-section=\"agenda\"]": "Valeria Prueba",
+                            "[data-dashboard-total=\"unclosed\"]": "no disponible"
                         },
                         "tabbable": "[data-dashboard-section=\"unclosed\"] [data-dashboard-retry]",
                         "announcedOnce": "No se pudo cargar esta sección."
@@ -228,6 +235,27 @@
                     "name": "Reintentar",
                     "load": true,
                     "answers": [
+                        {
+                            "to": "/api/v1/agenda/today-summary",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "date": "2026-09-17",
+                                    "now": "11:40",
+                                    "appointments": [],
+                                    "counts": {
+                                        "total": 0,
+                                        "completed": 0,
+                                        "pending": 0,
+                                        "cancelled": 0
+                                    },
+                                    "next": null,
+                                    "after": [],
+                                    "after_more": 0
+                                }
+                            },
+                            "times": 1
+                        },
                         {
                             "to": "/api/v1/agenda/unclosed",
                             "status": 500,
@@ -251,6 +279,28 @@
                         ],
                         "textIn": {
                             "[data-dashboard-section=\"unclosed\"]": "Ramón Prueba"
+                        },
+                        "focused": "#dashboard-unclosed-title",
+                        "visibleAfter": {
+                            "selector": "[data-dashboard-section=\"agenda\"] [data-dashboard-state=\"empty\"]",
+                            "ms": 0
+                        }
+                    }
+                },
+                {
+                    "name": "nombre de cada acción",
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-dashboard-next-complete]": "de Valeria Prueba a las 12:30",
+                            "[data-dashboard-next-detail]": "de Valeria Prueba a las 12:30",
+                            "[data-dashboard-section=\"unclosed\"] [data-complete-appointment-trigger]": "de Ramón Prueba a las 16:00",
+                            "[data-dashboard-section=\"unclosed\"] [data-dashboard-cancel]": "de Ramón Prueba a las 16:00",
+                            "[data-dashboard-section=\"without-tracking\"] [data-dashboard-register]": "de Bruno Prueba a las 12:00"
                         }
                     }
                 },
@@ -430,7 +480,10 @@
                             "[data-dashboard-section=\"agenda\"]": "No hay citas para hoy.",
                             "[data-dashboard-section=\"unclosed\"]": "No hay citas pendientes de cerrar.",
                             "[data-dashboard-section=\"without-tracking\"]": "Todas las citas completadas tienen seguimiento."
-                        }
+                        },
+                        "absent": [
+                            "[data-dashboard-quick=\"register\"]:not([hidden])"
+                        ]
                     }
                 },
                 {
@@ -453,6 +506,9 @@
                         "visibleAfter": {
                             "selector": "[data-dashboard-section=\"unclosed\"] [data-dashboard-state=\"loading\"]",
                             "ms": 0
+                        },
+                        "textIn": {
+                            "[data-dashboard-total=\"unclosed\"]": "–"
                         }
                     }
                 },
@@ -480,7 +536,8 @@
                         },
                         "textIn": {
                             "[data-dashboard-section=\"unclosed\"]": "No se pudo cargar esta sección.",
-                            "[data-dashboard-section=\"agenda\"]": "Javier Prueba"
+                            "[data-dashboard-section=\"agenda\"]": "Javier Prueba",
+                            "[data-dashboard-total=\"unclosed\"]": "no disponible"
                         },
                         "tabbable": "[data-dashboard-section=\"unclosed\"] [data-dashboard-retry]",
                         "announcedOnce": "No se pudo cargar esta sección."
@@ -490,6 +547,27 @@
                     "name": "Reintentar",
                     "load": true,
                     "answers": [
+                        {
+                            "to": "/api/v1/agenda/today-summary",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "date": "2026-09-17",
+                                    "now": "11:40",
+                                    "appointments": [],
+                                    "counts": {
+                                        "total": 0,
+                                        "completed": 0,
+                                        "pending": 0,
+                                        "cancelled": 0
+                                    },
+                                    "next": null,
+                                    "after": [],
+                                    "after_more": 0
+                                }
+                            },
+                            "times": 1
+                        },
                         {
                             "to": "/api/v1/agenda/unclosed",
                             "status": 500,
@@ -513,6 +591,27 @@
                         ],
                         "textIn": {
                             "[data-dashboard-section=\"unclosed\"]": "Lucía Prueba"
+                        },
+                        "focused": "#dashboard-unclosed-title",
+                        "visibleAfter": {
+                            "selector": "[data-dashboard-section=\"agenda\"] [data-dashboard-state=\"empty\"]",
+                            "ms": 0
+                        }
+                    }
+                },
+                {
+                    "name": "nombre de cada acción",
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-dashboard-next-complete]": "de Javier Prueba a las 13:15",
+                            "[data-dashboard-next-detail]": "de Javier Prueba a las 13:15",
+                            "[data-dashboard-section=\"unclosed\"] [data-complete-appointment-trigger]": "de Lucía Prueba a las 10:00",
+                            "[data-dashboard-section=\"without-tracking\"] [data-dashboard-register]": "de Bruno Prueba a las 12:00"
                         }
                     }
                 },
