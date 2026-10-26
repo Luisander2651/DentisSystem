@@ -34,7 +34,7 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 | 017 | [Reprogramar y cancelar citas](017-reprogramar-cancelar-citas/spec.md) | Appointments, interfaz de la agenda | released (v0.3.0) | — | — | — |
 | 018 | [Agenda por rol](018-agenda-por-rol/spec.md) | Appointments, AppointmentTracking, Core, interfaz de la agenda | released (v0.4.0) | — | — | — |
 | 019 | [Reportes mensuales](019-reportes-mensuales/spec.md) | Reportes (nuevo), Appointments, Patients, interfaz | released (v0.5.0) | — | — | — |
-| 020 | [Tablero de inicio](020-tablero-de-inicio/spec.md) | Appointments, AppointmentTracking, Reports, interfaz del inicio | approved | — | — | — |
+| 020 | [Tablero de inicio](020-tablero-de-inicio/spec.md) | Appointments, AppointmentTracking, Reports, interfaz del inicio | implemented | — | — | — |
 
 ## Pendientes sin spec
 - **Portal del paciente**: layout `patient.blade.php` sin pantallas funcionales.

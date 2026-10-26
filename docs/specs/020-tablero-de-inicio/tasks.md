@@ -259,7 +259,8 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
   - nota: punto "Tablero de inicio" en Backend (controlador de `/dashboard`, las cuatro lecturas, `TodayAgenda`, `AppointmentPage`, `DoctorScope`, `TrackingFactory`, `reports/monthly` y `UiAuditClock`); la línea de rutas web de Frontend nombra los controladores invocables. Sin módulos ni dependencias nuevas
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 020 para el objetivo 5 (escritura de seguimiento en `RegisterAppointmentTrackingUseCase` y `CompleteAppointmentUseCase`, cancelación en `UpdateAppointmentUseCase`, accesos denegados); OB1.a y OB3.a siguen pendientes. Sin cambios en `deployment.md`
   - nota: `observability.md` gana el punto "Spec 020" en Logs (sin logs nuevos y los puntos de emisión para el objetivo 5); OB1.a y OB3.a siguen pendientes. `deployment.md` sin cambios: ni variables, ni entornos, ni pasos nuevos (el reloj de la prueba no se configura)
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
+  - nota: suite Pest completa en serie el 2026-10-26: 1 890 pasan, 0 fallos (850 s); los 16 criterios marcados. Pendiente fuera de los criterios: el recorrido con NVDA del inicio del doctor (RNF; verificación manual de T046), que hará el usuario antes de `/review`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

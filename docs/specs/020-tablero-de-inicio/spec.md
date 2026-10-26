@@ -1,7 +1,7 @@
 ---
 id: 020
 slug: tablero-de-inicio
-status: approved
+status: implemented
 created: 2026-10-22
 extends: [009, 018]
 ---
@@ -33,49 +33,49 @@ cómo va el mes.
   que abrir los reportes a diario.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dado un miembro activo del staff, cuando entra al inicio del panel, entonces ve la
+- [x] CA1 · Dado un miembro activo del staff, cuando entra al inicio del panel, entonces ve la
   agenda de hoy (en la zona horaria de la clínica) ordenada por hora de inicio, con hora,
   paciente, tratamiento, doctor y estado de cada cita. El administrador y el asistente ven todas
   las citas de la clínica; el doctor, solo las que tiene asignadas. Si no hay citas hoy, ve "No
   hay citas para hoy.".
-- [ ] CA2 · Dada la agenda de hoy, cuando se muestra, entonces la siguiente cita aparece
+- [x] CA2 · Dada la agenda de hoy, cuando se muestra, entonces la siguiente cita aparece
   destacada: la primera de hoy, por hora de inicio, en estado asignada o reprogramada, aunque su
   hora ya haya pasado. Sigue siendo la siguiente hasta que se completa o se cancela; entonces pasa
   a serlo la próxima sin cerrar. Desde ella se abre su detalle con las mismas acciones
   que el rol tiene en la agenda (018), incluido "Reprogramar" con el mismo diálogo y las mismas
   reglas (017); ningún rol ve una acción que no funcione. Si no queda ninguna, se indica "No
   quedan citas por atender hoy.".
-- [ ] CA3 · Dada la agenda de hoy, cuando se muestra, entonces aparecen cuatro contadores de hoy:
+- [x] CA3 · Dada la agenda de hoy, cuando se muestra, entonces aparecen cuatro contadores de hoy:
   citas (todas, también las canceladas), completadas, por atender (asignadas o reprogramadas, sea
   cual sea su hora) y canceladas. Completadas, por atender y canceladas suman el total de citas,
   y cuentan las mismas citas que la lista del rol (las del doctor, solo las suyas).
-- [ ] CA4 · Dadas citas de días anteriores a hoy que siguen asignadas o reprogramadas, cuando se
+- [x] CA4 · Dadas citas de días anteriores a hoy que siguen asignadas o reprogramadas, cuando se
   muestra el inicio, entonces aparecen como "Citas sin cerrar", de la más reciente a la más
   antigua, con fecha, hora, paciente, tratamiento y doctor. Se ven hasta 10, con el total
   pendiente (p. ej. "y 5 más"). El administrador y el asistente ven todas; el doctor, solo las
   suyas. Si no hay ninguna, se indica "No hay citas pendientes de cerrar.".
-- [ ] CA5 · Dada una cita sin cerrar, cuando el administrador (cualquier cita) o el doctor (las
+- [x] CA5 · Dada una cita sin cerrar, cuando el administrador (cualquier cita) o el doctor (las
   suyas) pulsa "Completar", entonces se abre el mismo diálogo de completar con seguimiento
   clínico y recetas de la agenda, con sus mismas reglas (009 CA1–CA4 y CA13, 018 CA12). Al
   guardar, la cita queda completada con su seguimiento y sale de la lista. El asistente no ve
   "Completar".
-- [ ] CA6 · Dada una cita sin cerrar, cuando el administrador o el asistente pulsa "Cancelar
+- [x] CA6 · Dada una cita sin cerrar, cuando el administrador o el asistente pulsa "Cancelar
   cita" y lo confirma, entonces la cita queda cancelada, se avisa "Cita cancelada." y sale de la
   lista. Si elige no cancelar o cierra la confirmación, la cita no cambia (017 CA7). El doctor no
   ve "Cancelar cita".
-- [ ] CA7 · Dadas citas completadas que no tienen seguimiento clínico, cuando el administrador
+- [x] CA7 · Dadas citas completadas que no tienen seguimiento clínico, cuando el administrador
   (todas) o el doctor (las suyas) abre el inicio, entonces aparecen como "Completadas sin
   seguimiento", de la más reciente a la más antigua, con fecha, paciente, tratamiento y doctor,
   sin ningún dato clínico. Se ven hasta 10, con el total pendiente. Si no hay ninguna, se indica
   "Todas las citas completadas tienen seguimiento.". El asistente no ve esta sección.
-- [ ] CA8 · Dada una cita completada sin seguimiento, cuando el administrador o el doctor al que
+- [x] CA8 · Dada una cita completada sin seguimiento, cuando el administrador o el doctor al que
   está asignada pulsa "Registrar seguimiento", entonces se abre el formulario del seguimiento
   clínico con los mismos campos y reglas que al completar una cita (motivo, síntomas, diagnóstico
   y procedimiento obligatorios; observaciones, recomendaciones y recetas opcionales; 009 CA1 y
   CA13). Al guardar, la cita sigue completada, queda con su seguimiento y sus recetas, y sale de
   la lista. Si falta un dato obligatorio, el formulario sigue abierto con lo escrito y el mensaje
   junto al campo.
-- [ ] CA9 · Dado un miembro activo del staff, cuando abre el inicio, entonces ve solo las
+- [x] CA9 · Dado un miembro activo del staff, cuando abre el inicio, entonces ve solo las
   acciones rápidas de su rol:
 
   | Acción | Administrador | Asistente | Doctor | Qué hace |
@@ -86,36 +86,36 @@ cómo va el mes.
   | Agenda de hoy | sí | sí | sí | lleva a la agenda en el día de hoy |
   | Registrar seguimiento | sí | no | sí | abre el diálogo de completar de la siguiente cita (CA2); si no hay siguiente cita, no aparece |
 
-- [ ] CA10 · Dado un administrador, cuando abre el inicio, entonces ve las citas del mes en curso
+- [x] CA10 · Dado un administrador, cuando abre el inicio, entonces ve las citas del mes en curso
   (todas las del mes, también las ya agendadas para días que vienen, como en "Reportes"), los
   pacientes nuevos del mes y los pacientes activos (ficha en estado activo). Las citas y los
   pacientes nuevos se comparan con el mes anterior y su diferencia (p. ej. "42 citas · +6 respecto
   a septiembre (36)"), con el aviso "Mes en curso: datos hasta hoy" y un enlace a "Reportes". Los
   números son los mismos que muestra "Reportes" para el mes en curso (019 CA2, CA4 y CA9). El
   asistente y el doctor no ven esta sección.
-- [ ] CA11 · Dado el inicio de cualquier rol del staff, cuando se muestra, entonces ya no hay
+- [x] CA11 · Dado el inicio de cualquier rol del staff, cuando se muestra, entonces ya no hay
   contadores con "-", ni la tarjeta "Estado: En línea", ni "Actividad reciente", ni la acción
   "Nuevo usuario", ni la tarjeta del encabezado con la inicial, el correo y el rol (el rol sigue
   en el menú lateral). El título de la pestaña es "Inicio - Dentissa" (cierra 016/R42). En el
   inicio del paciente, el título es también "Inicio - Dentissa" y su inicial se muestra completa
   aunque lleve acento; así no queda ninguna inicial recortada (cierra 016/R43).
-- [ ] CA12 · Dado que una sección del inicio no se puede cargar, cuando falla, entonces esa
+- [x] CA12 · Dado que una sección del inicio no se puede cargar, cuando falla, entonces esa
   sección muestra "No se pudo cargar esta sección." con un botón "Reintentar" y las demás
   secciones se siguen viendo y usando. Mientras carga, cada sección indica que está cargando.
-- [ ] CA13 · (abuso) Como doctor, intento obtener por otra vía las citas de hoy, las sin cerrar o
+- [x] CA13 · (abuso) Como doctor, intento obtener por otra vía las citas de hoy, las sin cerrar o
   las completadas sin seguimiento de otro doctor, o completar o registrar el seguimiento de una
   cita que no es mía, o ver los indicadores del mes → solo recibo mis citas (las demás no
   aparecen ni cuentan) y lo demás se rechaza con acceso denegado, sin cambiar ninguna cita ni
   guardar ningún seguimiento.
-- [ ] CA14 · (abuso) Como asistente, intento por otra vía completar una cita, registrar un
+- [x] CA14 · (abuso) Como asistente, intento por otra vía completar una cita, registrar un
   seguimiento, ver las completadas sin seguimiento, ver los indicadores del mes o dar de alta un
   paciente → se rechaza con acceso denegado y no cambia nada.
-- [ ] CA15 · (abuso) Como staff, intento registrar un seguimiento en una cita que ya lo tiene, que
+- [x] CA15 · (abuso) Como staff, intento registrar un seguimiento en una cita que ya lo tiene, que
   está cancelada o que todavía no está completada, por otra vía → se rechaza con un mensaje en
   español, la cita no cambia y no se guarda ningún seguimiento. Lo mismo al completar una cita que
   ya tiene seguimiento o está cancelada: el rechazo va en español y sin el identificador de la
   cita (cambia 009 CA3 y CA4 solo en el texto del mensaje).
-- [ ] CA16 · (abuso) Como paciente, staff inactivo o visitante sin sesión, intento obtener
+- [x] CA16 · (abuso) Como paciente, staff inactivo o visitante sin sesión, intento obtener
   cualquier dato del tablero por otra vía → se rechaza igual que la agenda (014, 018 CA11). Si
   el staff inactivo entra a `/dashboard`, ve la página "Sin permiso", como en la agenda. El
   paciente sigue viendo su inicio, sin más cambios que los de CA11.
