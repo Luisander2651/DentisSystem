@@ -298,7 +298,10 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 - [x] T077 El buscador de expedientes anuncia por `resources/js/ui/status.js` el número de pacientes o "No se encontraron pacientes", tras 400 ms sin escribir — `resources/js/pages/records/index.js` — hecho cuando: el flujo de expedientes de T075 pasa y `ui-audit` de `expedientes*` pasa · revisión de accesibilidad: un solo anuncio por búsqueda — cubre: CA9 — depende: T075
   - nota: añadida por /review: R11
   - nota: tras 400 ms sin escribir anuncia "N pacientes encontrados." / "1 paciente encontrado." / "No se encontraron pacientes." (nada con el campo vacío o la lista sin cargar); cada tecla cancela el anuncio pendiente, así que hay uno por búsqueda. Con build, las 14 entradas `expediente*` (42 visitas): pasan los flujos de T075; 3 fallos sueltos (`expediente` a 768 px, por peticiones en curso, y el foco tras eliminar en los dos diálogos de eliminar a 1440 px) pasan al repetirlas con el cambio y también sin él: intermitentes (017/R12). Revisión de accesibilidad: `announcedOnce` comprueba un solo anuncio
-- [ ] T078 Verificación tras las correcciones: Pint, Pest completo en serie sin fallos nuevos, `npm run build`, `ui-audit` de `dashboard*`, `expediente*` y `agenda-cita-completar*` dos veces, `evaluate` con los dos criterios, gitleaks del rango y `aidd.py validate` — hecho cuando: todo en verde, con nota de resultados — depende: T066, T068, T069, T070, T071, T072, T073, T076, T077, T079
+- [x] T080 Pasar los flujos de `dashboard-administrador` a una entrada nueva `dashboard-administrador-flujos`, solo a 1440 px (los flujos prueban comportamiento, no composición), con su línea base de 1440 px; la entrada original sigue a 390, 768 y 1440 con su `snapshot` — `tests/Browser/screens.json`, `tests/Browser/baseline-1440.json` — hecho cuando: `ui-audit` de `dashboard*` pasa sin "limitada por la API" — cubre: CA12 — depende: T076, T079
+  - nota: añadida durante /implement (T078): una visita del inicio del administrador supera las 100 peticiones/min de la API (11 flujos × 3 anchos con el mismo usuario) y el runner la repite entera tras el 429; decisión del usuario, 2026-10-26
+  - nota: los 9 flujos pasan tal cual a la entrada nueva; `--baseline` solo escribe la suya (las demás no cambian). `dashboard*`: 40 visitas, 0 fallos, sin 429
+- [ ] T078 Verificación tras las correcciones: Pint, Pest completo en serie sin fallos nuevos, `npm run build`, `ui-audit` de `dashboard*`, `expediente*` y `agenda-cita-completar*` dos veces, `evaluate` con los dos criterios, gitleaks del rango y `aidd.py validate` — hecho cuando: todo en verde, con nota de resultados — depende: T066, T068, T069, T070, T071, T072, T073, T076, T077, T079, T080
 
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: endpoints nuevos de Appointments y AppointmentTracking, `DoctorScope` y `TrackingFactory`, y el inicio que consume además `reports/monthly`
@@ -329,7 +332,7 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 | CA9 | T024, T026, T074, T075 | T045, T046, T048, T076, T077 |
 | CA10 | T022, T024, T026 | T042, T045, T046 |
 | CA11 | T024 | T045 |
-| CA12 | T026, T074, T079 | T046, T056, T076 |
+| CA12 | T026, T074, T079, T080 | T046, T056, T076 |
 | CA13 | T003, T012, T013, T014, T015, T016, T019, T025, T028 | T004, T033, T035, T038, T040, T041 |
 | CA14 | T012, T015, T016, T019, T025, T028 | T038, T041 |
 | CA15 | T016, T029, T065, T067 | T036, T039, T040, T041, T049, T066, T069, T070 |

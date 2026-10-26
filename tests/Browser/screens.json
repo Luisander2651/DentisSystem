@@ -110,7 +110,18 @@
             "role": "administrador",
             "now": "2026-09-17T11:40:00-06:00",
             "serverNow": "2026-09-17T11:40:00-06:00",
-            "snapshot": true,
+            "snapshot": true
+        },
+        {
+            "id": "dashboard-administrador-flujos",
+            "screen": "dashboard",
+            "path": "/dashboard",
+            "role": "administrador",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                1440
+            ],
             "flows": [
                 {
                     "name": "vacío de cada sección",
