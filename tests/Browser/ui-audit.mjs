@@ -33,8 +33,8 @@
  * Flows (`flows`, checks-dialogs): `answer` with `to`, `times` and `hold` as since spec 019; since
  * spec 020, `load: true` answers from the moment the page loads, `answers` lists several answers
  * (one per path and per successive request, each with `to`, `status`, `body`, `times` and `hold`)
- * and the action `wait` waits the milliseconds it says. The header of checks-dialogs.mjs has the
- * details.
+ * the action `wait` waits the milliseconds it says and `release` gives the answers kept by `hold`
+ * at that point (review of spec 020). The header of checks-dialogs.mjs has the details.
  *
  * Copy for `evaluate` (spec 020, D22): an entry that declares `snapshot: true` leaves, from its
  * visit at 1440 px, the page as it was painted in .ai/inspect/ui-audit/<entry>.html: the DOM with

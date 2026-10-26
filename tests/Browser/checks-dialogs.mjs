@@ -26,7 +26,8 @@
  * the first one of its path that has not used up its `times`, so the same path can fail and then
  * reach the API, or two paths can be answered at once; a request no answer takes reaches the API.
  * Actions (`do`): `fill` + `value`, `fillAll`, `click`, `press`, `backdrop`, `selectIndex` +
- * `index` and, since spec 020, `wait` (milliseconds). Expectations (`expect`): `requests`, `open`, `closed`,
+ * `index` and, since spec 020, `wait` (milliseconds) and `release` (gives the answers kept by `hold`
+ * at that point of the flow, so a late answer can arrive after a newer one). Expectations (`expect`): `requests`, `open`, `closed`,
  * `values`, `dialogSays`, `unmarked`, `announced`, and since spec 019 `announcedOnce` (said by
  * the regions exactly once), `absent` (selectors that must not exist), `globalUndefined`
  * (names of `window` that must stay undefined), `visibleAfter` ({ selector, ms }: in sight after
@@ -493,6 +494,8 @@ async function runFlows(page, entry, baseUrl) {
                     }
                 } else if (action.wait !== undefined) {
                     await new Promise((done) => setTimeout(done, action.wait));
+                } else if (action.release) {
+                    await page.release();
                 }
 
                 await page.settle();
