@@ -53,6 +53,16 @@ export const ADMITTED = [
         entries: ['agenda', 'agenda-con-citas', 'agenda-hoy-sin-citas', 'agenda-dia'],
         difference: 'Cada día del calendario pasa a ser un botón (antes, una caja con clic que el teclado no alcanzaba), se retira el botón "Mes", que no hacía nada, y la tarjeta "Citas para hoy" pierde su alto mínimo; el calendario y la tarjeta siguen en su sitio.',
     },
+    {
+        criterion: '020 CA11',
+        entries: ['dashboard-administrador', 'dashboard-asistente', 'dashboard-doctor'],
+        difference: 'El inicio del staff es el tablero de la spec 020 (candidato c5, aprobado por el usuario el 2026-10-23): saludo con la fecha en lugar de la tarjeta con la inicial, el correo y el rol; siguiente cita, avance del día, agenda de hoy, pendientes, acciones rápidas y, para el administrador, el mes en curso, en lugar de los contadores con "-", "Estado: En línea" y "Actividad reciente".',
+    },
+    {
+        criterion: '020 CA9',
+        entries: ['expedientes', 'expediente', 'expediente-contacto-form', 'expediente-direccion-form', 'expediente-medicos-form', 'expediente-asistente', 'expediente-doctor'],
+        difference: 'Expedientes gana el campo "Buscar" de pacientes delante de sus filtros por estado, que siguen en la misma fila; "Buscar paciente" del inicio lo abre listo para escribir (D26).',
+    },
 ];
 
 // In points of the window width. The runner of CI and a local machine draw the same text with
