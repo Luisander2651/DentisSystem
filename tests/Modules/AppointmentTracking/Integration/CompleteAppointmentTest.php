@@ -476,6 +476,21 @@ it('returns 400 when prescription medication is empty', function () {
         ->assertJson(['error' => 'Medication must be a non-empty string.']);
 });
 
+it('returns 400, not 500, when a prescription field does not fit its column (spec 020, R3)', function (string $field) {
+    $this->actingAsAdmin();
+    $appointment = $this->createAppointment();
+
+    $this->postJson(
+        $this->completeAppointmentUrl($appointment->id),
+        $this->validCompletePayload([
+            'prescriptions' => [$this->validPrescriptionPayload([$field => str_repeat('a', 256)])],
+        ]),
+    )->assertStatus(400)->assertJsonStructure(['error']);
+
+    $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'asignada']);
+    $this->assertDatabaseCount('appointment_tracking', 0);
+})->with(['medication', 'dosage'])->skip('020: pendiente de T070');
+
 it('returns 400 when prescription dosage is empty', function () {
     $this->actingAsAdmin();
     $appointment = $this->createAppointment();
