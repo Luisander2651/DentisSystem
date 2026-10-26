@@ -86,11 +86,11 @@
                 <div class="mt-4 space-y-4" data-dashboard-content hidden>
                     <x-dashboard.day-progress />
                     <div class="flex flex-col gap-2 rounded-box border border-secondary bg-primary-soft px-4 py-3 text-sm text-ink" data-dashboard-pending-summary>
-                        <a href="#dashboard-unclosed-title" class="flex items-center justify-between gap-3 font-semibold">
+                        <a href="#dashboard-unclosed-title" class="flex min-h-control items-center justify-between gap-3 font-semibold">
                             <span>Citas sin cerrar</span><span class="tabular-nums" data-dashboard-total="unclosed">0</span>
                         </a>
                         @if ($can['register'] ?? false)
-                            <a href="#dashboard-without-tracking-title" class="flex items-center justify-between gap-3 font-semibold">
+                            <a href="#dashboard-without-tracking-title" class="flex min-h-control items-center justify-between gap-3 font-semibold">
                                 <span>Completadas sin seguimiento</span><span class="tabular-nums" data-dashboard-total="without-tracking">0</span>
                             </a>
                         @endif
@@ -161,10 +161,11 @@
 
     {{-- Templates that dashboard.js clones and fills with textContent (TM7). --}}
     <template data-dashboard-template="agenda-item">
-        <li class="grid grid-cols-[3.5rem_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1 rounded-box border-l-4 border-transparent py-2 pl-2 data-[next]:border-primary data-[past]:text-muted" data-dashboard-item>
-            <span class="text-sm font-bold tabular-nums" data-item-time></span>
-            <span class="min-w-0">
-                <span class="block font-semibold text-ink" data-item-patient></span>
+        {{-- design.md: the ones before now go compact, in 14 px and muted, on one line from 768 px. --}}
+        <li class="group grid grid-cols-[3.5rem_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1 rounded-box border-l-4 border-transparent py-2 pl-2 text-ink data-[next]:border-primary data-[past]:py-1 data-[past]:text-muted" data-dashboard-item>
+            <span class="text-sm font-bold tabular-nums group-data-[past]:font-semibold" data-item-time></span>
+            <span class="min-w-0 group-data-[past]:text-sm md:group-data-[past]:flex md:group-data-[past]:gap-1">
+                <span class="block font-semibold group-data-[past]:font-normal" data-item-patient></span>
                 <span class="sr-only" data-item-next-label hidden>(siguiente)</span>
                 <span class="block text-sm text-muted" data-item-detail></span>
             </span>
