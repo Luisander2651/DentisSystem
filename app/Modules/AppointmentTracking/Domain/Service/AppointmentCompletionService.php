@@ -26,4 +26,12 @@ class AppointmentCompletionService
     ): AppointmentTrackingRecord {
         return $this->repository->complete($appointment, $appointmentTracking, $prescriptions);
     }
+
+    /**
+     * @param  PrescriptionEntity[]  $prescriptions
+     */
+    public function register(AppointmentTrackingEntity $appointmentTracking, array $prescriptions): AppointmentTrackingRecord
+    {
+        return $this->repository->register($appointmentTracking, $prescriptions);
+    }
 }

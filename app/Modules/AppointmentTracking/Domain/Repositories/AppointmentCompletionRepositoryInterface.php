@@ -27,4 +27,17 @@ interface AppointmentCompletionRepositoryInterface
         AppointmentTrackingEntity $appointmentTracking,
         array $prescriptions,
     ): AppointmentTrackingRecord;
+
+    /**
+     * Spec 020 (CA8, TM5): persists, in a single atomic operation, the clinical tracking record
+     * and the prescription lines of an appointment that is already completed, without touching
+     * the appointment. A second record for the same appointment - two submissions at once
+     * included - is refused with TrackingRegistrationException::alreadyRegistered().
+     *
+     * @param  PrescriptionEntity[]  $prescriptions
+     */
+    public function register(
+        AppointmentTrackingEntity $appointmentTracking,
+        array $prescriptions,
+    ): AppointmentTrackingRecord;
 }

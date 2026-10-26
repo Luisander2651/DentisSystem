@@ -8,9 +8,11 @@ use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\AppointmentTracking\Domain\Entities\AppointmentTrackingEntity;
 use App\Modules\AppointmentTracking\Domain\Entities\AppointmentTrackingRecord;
+use App\Modules\AppointmentTracking\Domain\Exceptions\TrackingRegistrationException;
 use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentCompletionRepositoryInterface;
 use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentTrackingRepositoryInterface;
 use App\Modules\AppointmentTracking\Domain\Repositories\PrescriptionRepositoryInterface;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 class EloquentAppointmentCompletionRepository implements AppointmentCompletionRepositoryInterface
@@ -42,5 +44,24 @@ class EloquentAppointmentCompletionRepository implements AppointmentCompletionRe
             // 4. Return a record of the completed appointment, including the saved tracking and prescriptions.
             return AppointmentTrackingRecord::create($savedTracking, $savedPrescriptions);
         });
+    }
+
+    public function register(AppointmentTrackingEntity $appointmentTracking, array $prescriptions): AppointmentTrackingRecord
+    {
+        try {
+            return DB::transaction(function () use ($appointmentTracking, $prescriptions) {
+                $savedTracking = $this->appointmentTracking->save($appointmentTracking);
+                $savedPrescriptions = [];
+
+                foreach ($prescriptions as $prescription) {
+                    $savedPrescriptions[] = $this->prescriptions->save($prescription);
+                }
+
+                return AppointmentTrackingRecord::create($savedTracking, $savedPrescriptions);
+            });
+        } catch (UniqueConstraintViolationException) {
+            // Spec 020 (TM5): the appointment got its follow-up in the meantime.
+            throw TrackingRegistrationException::alreadyRegistered();
+        }
     }
 }
