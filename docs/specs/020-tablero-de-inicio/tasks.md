@@ -253,7 +253,8 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 - [ ] T055 Rehacer las capturas del inicio de los tres roles en `docs/design/capturas/` y marcarlas como capturadas en el inventario de `system.md`, sin la vista "nuevo usuario" — `docs/design/capturas/` (generado por `npm run test:ui -- --only dashboard`), `docs/design/system.md` — hecho cuando: las capturas existen a 390 y 1440 px y el inventario las enlaza — depende: T051
 
 ## Integración y documentación
-- [ ] T090 Actualizar `docs/architecture.md` si cambió la estructura: endpoints nuevos de Appointments y AppointmentTracking, `DoctorScope` y `TrackingFactory`, y el inicio que consume además `reports/monthly`
+- [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: endpoints nuevos de Appointments y AppointmentTracking, `DoctorScope` y `TrackingFactory`, y el inicio que consume además `reports/monthly`
+  - nota: punto "Tablero de inicio" en Backend (controlador de `/dashboard`, las cuatro lecturas, `TodayAgenda`, `AppointmentPage`, `DoctorScope`, `TrackingFactory`, `reports/monthly` y `UiAuditClock`); la línea de rutas web de Frontend nombra los controladores invocables. Sin módulos ni dependencias nuevas
 - [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 020 para el objetivo 5 (escritura de seguimiento en `RegisterAppointmentTrackingUseCase` y `CompleteAppointmentUseCase`, cancelación en `UpdateAppointmentUseCase`, accesos denegados); OB1.a y OB3.a siguen pendientes. Sin cambios en `deployment.md`
 - [ ] T092 Marcar spec como `implemented`
 
