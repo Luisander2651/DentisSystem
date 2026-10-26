@@ -70,6 +70,29 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
         return;
     }
 
+    // Spec 020 (CA8, A20): the same dialog registers the follow-up of an appointment already
+    // completed. Without `mode` it completes, as always (A21).
+    var MODES = {
+        complete: {
+            title: 'Completar cita',
+            path: '/complete',
+            confirmTitle: '¿Completar esta cita?',
+            confirmMessage: 'Se guardará el registro clínico y las prescripciones. Esta acción no se puede deshacer.',
+            acceptText: 'Sí, completar cita',
+            done: 'Cita completada.',
+        },
+        register: {
+            title: 'Registrar seguimiento',
+            path: '/tracking',
+            confirmTitle: '¿Registrar el seguimiento de esta cita?',
+            confirmMessage: 'Se guardará el registro clínico y las prescripciones. La cita sigue completada.',
+            acceptText: 'Sí, registrar seguimiento',
+            done: 'Seguimiento registrado.',
+        },
+    };
+    var modalTitle = modal.querySelector('h2');
+    var mode = MODES.complete;
+
     var activeAppointmentId = null;
     var currentStep = 1;
     var isDirty = false;
@@ -321,10 +344,16 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
         return data;
     }
 
+    /** A 422 of the server, kept so each message goes under its field. */
+    function ValidationFailure(message, errors) {
+        this.message = message;
+        this.errors = errors || {};
+    }
+
     async function completeAppointment(appointmentId, payload) {
         var xsrfToken = getCookie('XSRF-TOKEN');
 
-        var response = await fetch('/api/v1/appointments/' + appointmentId + '/complete', {
+        var response = await fetch('/api/v1/appointments/' + appointmentId + mode.path, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -340,8 +369,59 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
             return {};
         });
 
+        if (response.status === 422 && data.errors) {
+            throw new ValidationFailure(failureMessage(response.status, data), data.errors);
+        }
+
         if (!response.ok) {
             throw new Error(failureMessage(response.status, data));
+        }
+    }
+
+    /**
+     * Spec 020 (CA8, A40): each message of a 422 under its field, `symptoms.N` under the symptoms
+     * and `prescriptions.N.*` under that row; the dialog goes back to the step of the first one.
+     */
+    function markServerErrors(errors) {
+        var prescriptionFields = {
+            medication: '[data-prescription-medication]',
+            dosage: '[data-prescription-dosage]',
+            durationDays: '[data-prescription-duration]',
+            dailyFrequency: '[data-prescription-frequency]',
+        };
+        var rows = Array.from(prescriptionsList.querySelectorAll('[data-prescription-row]'));
+        var firstStep = null;
+        var firstField = null;
+
+        Object.keys(errors).forEach(function (key) {
+            var message = [].concat(errors[key])[0];
+            var parts = key.split('.');
+            var field = null;
+            var step = 1;
+
+            if (key === 'reason') field = reasonInput;
+            if (key === 'diagnosis') field = diagnosisInput;
+            if (key === 'procedure_performed') field = procedureInput;
+            if (parts[0] === 'symptoms') field = symptomsInput;
+
+            if (parts[0] === 'prescriptions' && parts.length === 3 && rows[Number(parts[1])]) {
+                field = rows[Number(parts[1])].querySelector(prescriptionFields[parts[2]] || '[data-prescription-medication]');
+                step = 2;
+            }
+
+            if (field && message) {
+                setFieldError(field, message);
+
+                if (firstField === null) {
+                    firstField = field;
+                    firstStep = step;
+                }
+            }
+        });
+
+        if (firstField) {
+            showStep(firstStep);
+            firstField.focus();
         }
     }
 
@@ -419,6 +499,12 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
             showError(error instanceof TypeError ? failureMessage(0) : error.message);
             setSubmittingState(false);
 
+            if (error instanceof ValidationFailure) {
+                markServerErrors(error.errors);
+
+                return;
+            }
+
             // Al cerrarse la confirmación el botón estaba deshabilitado y el foco se fue a otro sitio.
             if (submitButton) {
                 submitButton.focus();
@@ -429,7 +515,7 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
 
         setSubmittingState(false);
         closeModal(true);
-        announce('Cita completada.');
+        announce(mode.done);
 
         if (window.agendaPage && typeof window.agendaPage.reload === 'function') {
             window.agendaPage.reload().catch(function (reloadError) {
@@ -438,8 +524,19 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
         }
     }
 
-    async function open(appointmentId, opener) {
+    /**
+     * @param {string} appointmentId
+     * @param {HTMLElement} [opener]
+     * @param {{mode?: 'register'}} [options] `register` records the follow-up of a completed appointment
+     */
+    async function open(appointmentId, opener, options) {
         resetState();
+        mode = options && options.mode === 'register' ? MODES.register : MODES.complete;
+
+        if (modalTitle) {
+            modalTitle.textContent = mode.title;
+        }
+
         activeAppointmentId = appointmentId;
         openDialog(modal, opener || document.activeElement);
         showStep(1);
@@ -530,9 +627,9 @@ import { announce, announceError, clearAnnouncements, failureMessage } from '../
             }
 
             openConfirm({
-                title: '¿Completar esta cita?',
-                message: 'Se guardará el registro clínico y las prescripciones. Esta acción no se puede deshacer.',
-                acceptText: 'Sí, completar cita',
+                title: mode.confirmTitle,
+                message: mode.confirmMessage,
+                acceptText: mode.acceptText,
                 cancelText: 'Revisar de nuevo',
                 onAccept: submitCompletion,
             });
