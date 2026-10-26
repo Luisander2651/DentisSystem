@@ -489,7 +489,7 @@ it('returns 400, not 500, when a prescription field does not fit its column (spe
 
     $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'asignada']);
     $this->assertDatabaseCount('appointment_tracking', 0);
-})->with(['medication', 'dosage'])->skip('020: pendiente de T070');
+})->with(['medication', 'dosage']);
 
 it('returns 400 when prescription dosage is empty', function () {
     $this->actingAsAdmin();
