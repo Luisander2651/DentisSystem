@@ -303,7 +303,7 @@ it('answers 409, not 500, when a simultaneous completion saves the follow-up in 
 
     $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'asignada']);
     expect(AppointmentTrackingModel::query()->where('appointment_id', $appointment->id)->count())->toBe(1);
-})->skip('020: pendiente de T066');
+});
 
 // -----------------------------------------------------------------
 // F. Shape de prescriptions[]

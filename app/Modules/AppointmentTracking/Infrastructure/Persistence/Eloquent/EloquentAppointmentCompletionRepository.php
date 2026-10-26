@@ -28,22 +28,26 @@ class EloquentAppointmentCompletionRepository implements AppointmentCompletionRe
         AppointmentTrackingEntity $appointmentTracking,
         array $prescriptions,
     ): AppointmentTrackingRecord {
-        return DB::transaction(function () use ($appointment, $appointmentTracking, $prescriptions) {
-            // 1. Confirms the appointment as completed, so it can no longer be modified.
-            $this->appointments->save($appointment);
+        try {
+            return DB::transaction(function () use ($appointment, $appointmentTracking, $prescriptions) {
+                // 1. Confirms the appointment as completed, so it can no longer be modified.
+                $this->appointments->save($appointment);
 
-            // 2. Save the tracking information, which will be referenced by the prescriptions.
-            $savedTracking = $this->appointmentTracking->save($appointmentTracking);
+                // 2. Save the tracking information, which will be referenced by the prescriptions.
+                $savedTracking = $this->appointmentTracking->save($appointmentTracking);
 
-            // 3. Save the prescriptions, which will reference the tracking information.
-            $savedPrescriptions = [];
-            foreach ($prescriptions as $prescription) {
-                $savedPrescriptions[] = $this->prescriptions->save($prescription);
-            }
+                // 3. Save the prescriptions, which will reference the tracking information.
+                $savedPrescriptions = [];
+                foreach ($prescriptions as $prescription) {
+                    $savedPrescriptions[] = $this->prescriptions->save($prescription);
+                }
 
-            // 4. Return a record of the completed appointment, including the saved tracking and prescriptions.
-            return AppointmentTrackingRecord::create($savedTracking, $savedPrescriptions);
-        });
+                // 4. Return a record of the completed appointment, including the saved tracking and prescriptions.
+                return AppointmentTrackingRecord::create($savedTracking, $savedPrescriptions);
+            });
+        } catch (UniqueConstraintViolationException) {
+            throw TrackingRegistrationException::alreadyRegistered();
+        }
     }
 
     public function register(AppointmentTrackingEntity $appointmentTracking, array $prescriptions): AppointmentTrackingRecord
