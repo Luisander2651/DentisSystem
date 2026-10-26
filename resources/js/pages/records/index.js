@@ -961,8 +961,25 @@ import { announce, failureMessage } from '../../ui/status';
     }
 
     if (searchInput) {
+        var searchAnnouncement = null;
+
         searchInput.addEventListener('input', function () {
             renderPatientCards(loadedRecords);
+
+            // Review of spec 020 (R11): a screen reader hears what the search found, once it
+            // stops typing for a moment.
+            window.clearTimeout(searchAnnouncement);
+            searchAnnouncement = window.setTimeout(function () {
+                if (searchInput.value.trim() === '' || loadedRecords.length === 0) {
+                    return;
+                }
+
+                var found = matchingSearch(loadedRecords).length;
+
+                announce(found === 0
+                    ? 'No se encontraron pacientes.'
+                    : found + (found === 1 ? ' paciente encontrado.' : ' pacientes encontrados.'));
+            }, 400);
         });
 
         // Spec 020 (CA9): "Buscar paciente" of the start leaves the search ready to type.
