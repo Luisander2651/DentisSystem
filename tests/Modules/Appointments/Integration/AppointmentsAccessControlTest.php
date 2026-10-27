@@ -268,6 +268,17 @@ it('returns the agenda treatments catalog to the administrator ordered by name, 
         ->and($response->json('data.0.time'))->toBe(0);
 });
 
+/**
+ * Spec 020: the routes of the dashboard are checked actor by actor in DashboardAccessControlTest;
+ * here they only have to exist and carry the staff middleware like the rest.
+ */
+const DASHBOARD_ACCESS_ROUTES = [
+    'GET /agenda/today-summary',
+    'GET /agenda/unclosed',
+    'GET /agenda/without-tracking',
+    'POST /appointments/{id}/tracking',
+];
+
 it('covers every agenda and appointments route and protects each one with the staff middleware', function () {
     $routes = collect(Route::getRoutes()->getRoutes())
         ->filter(fn ($route): bool => str_starts_with($route->uri(), 'api/v1/agenda')
@@ -280,7 +291,7 @@ it('covers every agenda and appointments route and protects each one with the st
         ]);
 
     expect($routes->pluck('key')->sort()->values()->all())
-        ->toEqual(collect(array_keys(appointmentsAccessRoutes()))->sort()->values()->all());
+        ->toEqual(collect(array_keys(appointmentsAccessRoutes()))->merge(DASHBOARD_ACCESS_ROUTES)->sort()->values()->all());
 
     $routes->each(fn (array $route) => expect($route['middleware'])->toContain('staff'));
 });

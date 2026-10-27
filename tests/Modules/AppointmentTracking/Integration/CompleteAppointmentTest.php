@@ -246,8 +246,9 @@ it('returns 409 when appointment is cancelled', function () {
         $this->validCompletePayload(),
     );
 
-    $response->assertStatus(409)
-        ->assertJson(['error' => 'Invalid status value. Allowed values are: completada, cancelada.']);
+    // Spec 020 (A9, CA15): in Spanish and without the id of the appointment.
+    $response->assertConflict()
+        ->assertExactJson(['error' => 'No se puede completar una cita cancelada.']);
 });
 
 it('allows completing a rescheduled appointment', function () {
@@ -278,8 +279,30 @@ it('returns 409 when tracking already exists for appointment', function () {
         $this->validCompletePayload(),
     );
 
-    $response->assertStatus(409)
-        ->assertJson(['error' => "An appointment tracking record already exists for appointment {$appointment->id}."]);
+    // Spec 020 (A9, CA15): in Spanish and without the id of the appointment.
+    $response->assertConflict()
+        ->assertExactJson(['error' => 'Esta cita ya tiene seguimiento registrado.']);
+});
+
+it('answers 409, not 500, when a simultaneous completion saves the follow-up in the meantime (spec 020, TM5)', function () {
+    $this->actingAsAdmin();
+    $appointment = $this->createAppointment();
+    AppointmentTrackingModel::query()->create([
+        'id' => (string) Str::uuid(),
+        'reason' => 'Revisión',
+        'symptoms' => [],
+        'diagnosis' => 'Caries',
+        'procedure_performed' => 'Resina',
+        'appointment_id' => $appointment->id,
+    ]);
+    $this->missExistingTrackingOnRead();
+
+    $this->postJson($this->completeAppointmentUrl($appointment->id), $this->validCompletePayload())
+        ->assertConflict()
+        ->assertExactJson(['error' => 'Esta cita ya tiene seguimiento registrado.']);
+
+    $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'asignada']);
+    expect(AppointmentTrackingModel::query()->where('appointment_id', $appointment->id)->count())->toBe(1);
 });
 
 // -----------------------------------------------------------------
@@ -452,6 +475,21 @@ it('returns 400 when prescription medication is empty', function () {
     $response->assertStatus(400)
         ->assertJson(['error' => 'Medication must be a non-empty string.']);
 });
+
+it('returns 400, not 500, when a prescription field does not fit its column (spec 020, R3)', function (string $field) {
+    $this->actingAsAdmin();
+    $appointment = $this->createAppointment();
+
+    $this->postJson(
+        $this->completeAppointmentUrl($appointment->id),
+        $this->validCompletePayload([
+            'prescriptions' => [$this->validPrescriptionPayload([$field => str_repeat('a', 256)])],
+        ]),
+    )->assertStatus(400)->assertJsonStructure(['error']);
+
+    $this->assertDatabaseHas('appointments', ['id' => $appointment->id, 'status' => 'asignada']);
+    $this->assertDatabaseCount('appointment_tracking', 0);
+})->with(['medication', 'dosage']);
 
 it('returns 400 when prescription dosage is empty', function () {
     $this->actingAsAdmin();

@@ -110,7 +110,7 @@ Crear una cita:
 - Componentes y organización: `resources/views/layouts/{admin,app,dashboard,landing,patient,error}`, componentes Blade en `components/{ui,calendar,landing,records}` y páginas en `pages/<sección>/index.blade.php` con sus diálogos al lado. Los componentes `x-ui.*` (botón, campo, marca, diálogo, región de estado, contador, filtro, insignia, registro, subtítulo, encabezado de página) son la única forma de pintar esos elementos (spec 016).
 - JS: un archivo por página en `resources/js/pages/<sección>/<acción>.js`, cada uno declarado a mano como entrada en `vite.config.js`; `fetch` a `/api/v1`. Lo común vive en `resources/js/ui/`: `dialog.js` abre y cierra los `<dialog>` y devuelve el foco, `status.js` anuncia avisos y errores en la región de estado con textos propios en español, y `badge.js` pinta las insignias de estado.
 - Estado: sin librería de estado; cada página mantiene su estado en el DOM.
-- Routing: rutas web en español (`/agenda`, `/pacientes`, `/expedientes-clinicos`, `/contenido`) definidas como closures en `routes/web.php`. Cualquier otra dirección web cae en una ruta de respaldo declarada en `bootstrap/app.php`, fuera del grupo `web`, que responde la página "No encontrada" sin abrir sesión.
+- Routing: rutas web en español (`/agenda`, `/pacientes`, `/expedientes-clinicos`, `/contenido`) definidas en `routes/web.php`, como closures o, en `/`, `/dashboard` (spec 020) y `/reportes`, con un controlador invocable. Cualquier otra dirección web cae en una ruta de respaldo declarada en `bootstrap/app.php`, fuera del grupo `web`, que responde la página "No encontrada" sin abrir sesión.
 - Design tokens / sistema de diseño: Tailwind 4 CSS-first. `resources/css/app.css` declara en `@theme` los únicos colores, radios y tamaños de control, con la paleta por defecto de Tailwind desactivada; sin modo oscuro. El sistema está en [design/system.md](design/system.md) (2.0.0) y lo hacen cumplir `tests/Modules/Core/Unit/Design` y `npm run test:ui` (`tests/Browser/`), que revisa cada pantalla y diálogo a 390, 768 y 1440 px.
 - Diseño adaptable: el menú lateral del panel y el menú del sitio público se despliegan desde 1024 px; por debajo se usa el menú plegable.
 - Accesibilidad: objetivo **WCAG 2.1 AA**. La spec 016 revisó todas las pantallas: contraste de texto 4.5:1, controles de 44 px, un foco visible, etiquetas y nombres accesibles, diálogos con foco atrapado y todo alcanzable con teclado, comprobado por `npm run test:ui`; la comprobación con lector de pantalla es manual.
@@ -134,6 +134,21 @@ Crear una cita:
   `openspout/openspout` 5.12.0 ([ADR 0005](adr/0005-openspout-para-excel.md)) solo con celdas de texto o número
   explícitas, detrás del puerto `MonthlyReportExporterInterface` de Application. La pantalla `/reportes`
   llama a `ReportMonth` sin caso de uso para la lista de meses (excepción de P3 aceptada en el plan).
+- Tablero de inicio (spec 020): `/dashboard` lo sirve `App\Core\Http\ShowDashboardPageController`, que
+  entrega a la vista el rol, la fecha y la hora de la clínica, el mes en curso y las capacidades del
+  actor (excepción de P3 aceptada en el plan, D20); el staff inactivo recibe "Sin permiso".
+  `resources/js/pages/dashboard.js` pide en paralelo cuatro lecturas y pinta cada sección con su estado:
+  Appointments añade `GET /agenda/today-summary` (citas de hoy, contadores y siguiente cita, calculada en
+  el dominio por `TodayAgenda`) y `GET /agenda/unclosed` (citas pasadas aún asignadas o reprogramadas,
+  como mucho 10 con el total aparte, `AppointmentPage`); AppointmentTracking añade
+  `GET /agenda/without-tracking` (completadas sin seguimiento, `PendingTrackingRepositoryInterface`) y
+  `POST /appointments/{id}/tracking` (registrar el seguimiento de una completada; la restricción única
+  convierte el doble envío en 409). El recorte del doctor a sus citas vive en `DoctorScope`
+  (`Aplication/Support`), que comparten los listados de la agenda y del inicio, y las reglas del
+  seguimiento y sus recetas en `TrackingFactory` (`Application/Support`), que comparten completar y
+  registrar. El mes del administrador reutiliza `GET /reports/monthly` (spec 019). En `local` y
+  `testing`, `App\Core\Middlewares\UiAuditClock` deja que la prueba de navegador fije la hora con la
+  cabecera `X-Ui-Audit-Now`; en otro entorno la ignora.
 - Seguridad: rate limiting `throttle:api` (10/min por IP sin autenticar, 100/min por usuario) y `throttle:report-downloads` (10 descargas del reporte por minuto por administrador, spec 019) sobre la IP real del visitante (`App\Core\Middlewares\TrustCloudflareProxies` sustituye a `TrustProxies` y confía solo en los rangos de Cloudflare de `config/security.php`); `App\Core\Middlewares\SecurityHeaders` añade CSP con nonce (`Vite::useCspNonce`), `X-Frame-Options`, `nosniff` y `Referrer-Policy`; CORS limitado a `APP_URL` sin credenciales. Ver [security.md](security.md).
 
 ## Contrato entre capas

@@ -14,6 +14,7 @@ use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\ContactInfoM
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\MedicalDataModel;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Carbon\CarbonImmutable;
 use Database\Seeders\UiAuditSeeder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -100,11 +101,72 @@ it('seeds a second doctor who shares the doctor\'s day, and a completed appointm
         ->and(AppointmentModel::query()->where('user_id', $doctor->id)->whereDate('date', $sharedDay)->count())->toBe(2)
         ->and(AppointmentModel::query()->where('user_id', $otherDoctor->id)->whereDate('date', $sharedDay)->count())->toBe(1);
 
-    $completed = AppointmentModel::query()->where('user_id', $doctor->id)->where('status', 'completada')->pluck('id');
+    $completed = AppointmentModel::query()
+        ->where('user_id', $doctor->id)
+        ->where('status', 'completada')
+        ->where('date', 'like', UiAuditSeeder::APPOINTMENTS_MONTH.'-%')
+        ->pluck('id');
     $withTracking = AppointmentTrackingModel::query()->whereIn('appointment_id', $completed)->pluck('appointment_id');
 
     expect($completed)->toHaveCount(2)
         ->and($withTracking)->toHaveCount(1);
+});
+
+/*
+ * Spec 020 (A2, A15, A31, A34): the dashboard of the browser test opens on Thursday 17 September
+ * 2026 at 11:40 (D16). That day carries the eight appointments of design.md for the two doctors,
+ * and the days before it the pending lists of K1–K4.
+ */
+
+it('seeds the day of the dashboard with the appointments of the design (spec 020)', function () {
+    (new UiAuditSeeder)->run();
+
+    $doctor = UserModel::query()->where('email', UiAuditSeeder::STAFF_EMAILS['doctor'])->firstOrFail();
+    $otherDoctor = UserModel::query()->where('email', UiAuditSeeder::OTHER_DOCTOR_EMAIL)->firstOrFail();
+    $day = AppointmentModel::query()->whereDate('date', '2026-09-17')->orderBy('time')->get();
+
+    expect($day)->toHaveCount(8)
+        ->and($day->countBy('status')->sortKeys()->all())->toBe(['asignada' => 3, 'cancelada' => 1, 'completada' => 3, 'reprogramada' => 1])
+        ->and($day->where('user_id', $doctor->id))->toHaveCount(4)
+        ->and($day->where('user_id', $otherDoctor->id))->toHaveCount(4);
+
+    $open = $day->whereIn('status', ['asignada', 'reprogramada']);
+
+    expect(substr((string) $open->first()->time, 0, 5))->toBe('12:30')
+        ->and($open->every(fn (AppointmentModel $appointment): bool => (string) $appointment->time > '11:40'))->toBeTrue()
+        ->and(AppointmentTrackingModel::query()->whereIn('appointment_id', $day->where('status', 'completada')->pluck('id'))->count())->toBe(3);
+});
+
+it('leaves 15 unclosed appointments before the day and 6 completed without follow-up, at least 2 per doctor (spec 020)', function () {
+    (new UiAuditSeeder)->run();
+
+    $unclosed = AppointmentModel::query()
+        ->whereIn('status', ['asignada', 'reprogramada'])
+        ->whereDate('date', '<', '2026-09-17')
+        ->count();
+
+    $withoutTracking = AppointmentModel::query()
+        ->where('status', 'completada')
+        ->whereDate('date', '<', '2026-09-17')
+        ->whereNotIn('id', AppointmentTrackingModel::query()->select('appointment_id'))
+        ->get();
+
+    expect($unclosed)->toBe(15)
+        ->and($withoutTracking)->toHaveCount(6)
+        ->and($withoutTracking->countBy('user_id')->values()->sort()->values()->all())->toBe([3, 3]);
+});
+
+it('gives the figures of September 2026 that the month of the administrator paints (spec 020, A31, A34)', function () {
+    // Seeded as ui:audit-data does, with the real clock; read with the clock of the dashboard.
+    (new UiAuditSeeder)->run();
+    $this->travelTo(CarbonImmutable::parse('2026-09-17 11:40:00', 'America/Mexico_City'));
+    $this->actingAsAdmin();
+
+    $report = $this->getJson('/api/v1/reports/monthly?month=2026-09')->assertOk()->json('data');
+
+    expect($report['appointments']['total'])->toMatchArray(['value' => 23, 'previous' => 0, 'difference' => 23])
+        ->and($report['patients']['new'])->toMatchArray(['value' => 23, 'previous' => 0, 'difference' => 23])
+        ->and($report['patients']['active'])->toBe(['value' => 25, 'as_of' => '2026-09-17']);
 });
 
 it('stores neutral images of its own under its reserved directory', function () {

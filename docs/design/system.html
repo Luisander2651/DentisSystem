@@ -253,6 +253,33 @@
 .opt .cmp dd b { font-size: 20px; }
 .opt .loaderror { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; border: 1px solid var(--color-danger); background: var(--color-danger-soft); border-radius: var(--radius-box); padding: 12px 16px; font-size: var(--text-small); color: var(--color-ink); }
 .opt .loaderror strong { color: var(--color-danger); }
+/* Spec 020 · siguiente cita, barra del día y línea de ahora */
+.opt .next { position: relative; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-card); padding: 20px 20px 20px 26px; overflow: hidden; }
+.opt .next::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 6px; background: var(--color-primary); }
+.opt .next-label { display: flex; align-items: center; gap: 8px; font-size: var(--text-min); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); margin: 0 0 8px; }
+.opt .next-label::before { content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--color-primary); }
+.opt .next-time { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0; }
+.opt .next-time b { font-size: 40px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.opt .next-patient { font-size: 20px; font-weight: 700; margin: 8px 0 2px; }
+.opt .next-meta, .opt .next-after { color: var(--color-muted); font-size: var(--text-small); margin: 0; }
+.opt .next-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 12px; }
+.opt .daybar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: var(--color-line); margin: 0 0 16px; }
+.opt .daybar .ok { background: var(--color-success); }
+.opt .daybar .wait { background: var(--color-warning); }
+.opt .daybar .off { background: var(--color-danger); }
+.opt .daycount { display: grid; grid-template-columns: repeat(4, 1fr); margin: 0; }
+.opt .daycount div { padding: 0 12px; border-left: 1px solid var(--color-line); }
+.opt .daycount div:first-child { padding-left: 0; border-left: 0; }
+.opt .daycount dd { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 24px; font-weight: 700; }
+.opt .daycount dt { font-size: var(--text-min); color: var(--color-muted); }
+.opt .swatch { width: 10px; height: 10px; border-radius: 3px; }
+.opt .swatch.ok { background: var(--color-success); } .opt .swatch.wait { background: var(--color-warning); } .opt .swatch.off { background: var(--color-danger); } .opt .swatch.all { background: var(--color-ink); }
+.opt .dayl { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.opt .dayl li { padding: 8px 12px; border-radius: var(--radius-box); border: 1px solid var(--color-line); background: var(--color-surface); }
+.opt .dayl li.past { color: var(--color-muted); font-size: var(--text-small); }
+.opt .dayl li.is-next { border-left: 4px solid var(--color-primary); }
+.opt .dayl li.nowline { display: flex; align-items: center; gap: 8px; font-size: var(--text-min); font-weight: 700; color: var(--color-muted); padding: 0; border: 0; background: none; }
+.opt .dayl li.nowline::after { content: ""; flex: 1; height: 2px; background: var(--color-primary); }
 </style>
 </head>
 <body>
@@ -394,6 +421,41 @@
             </div>
         </div>
     </div></div>
+    <h3 class="v-group">Inicio del panel</h3>
+    <p class="v-note">Spec 020. Sin tokens nuevos. El rosa marca la siguiente cita y la hora actual como acento, nunca como fondo. En la barra del día, verde, ámbar y rojo rellenan completadas, por atender y canceladas, siempre con la cifra y la etiqueta al lado. Datos de prueba del jueves 17 de septiembre de 2026 a las 11:40.</p>
+    <div class="v-stage"><div class="opt">
+        <div class="grid2">
+            <div class="next">
+                <p class="next-label">Siguiente cita</p>
+                <p class="next-time"><b>12:30</b><span class="pill warning">Asignada</span></p>
+                <p class="next-patient">Andrea Prueba</p>
+                <p class="next-meta">Limpieza dental de prueba · Diego Prueba</p>
+                <div class="next-actions"><button class="btn btn-secondary" type="button">Ver detalle</button><button class="btn btn-secondary" type="button">Completar</button></div>
+                <p class="next-after">Después: 13:15 Javier Prueba · 16:00 Carmen Prueba · y 1 más</p>
+            </div>
+            <div class="card">
+                <h3>Barra del día</h3>
+                <div class="daybar" aria-hidden="true"><span class="ok" style="width:37.5%"></span><span class="wait" style="width:50%"></span><span class="off" style="width:12.5%"></span></div>
+                <dl class="daycount">
+                    <div><dd><span class="swatch all" aria-hidden="true"></span>8</dd><dt>Citas</dt></div>
+                    <div><dd><span class="swatch ok" aria-hidden="true"></span>3</dd><dt>Completadas</dt></div>
+                    <div><dd><span class="swatch wait" aria-hidden="true"></span>4</dd><dt>Por atender</dt></div>
+                    <div><dd><span class="swatch off" aria-hidden="true"></span>1</dd><dt>Canceladas</dt></div>
+                </dl>
+            </div>
+            <div class="card">
+                <h3>Línea de ahora en la agenda de hoy</h3>
+                <ol class="dayl">
+                    <li class="past">09:00 · Lucía Prueba · Completada</li>
+                    <li class="past">10:30 · Mario Prueba · Completada</li>
+                    <li class="nowline" aria-hidden="true">Ahora · 11:40</li>
+                    <li class="is-next"><b>12:30</b> · Andrea Prueba<span class="sr"> (siguiente)</span></li>
+                    <li><b>13:15</b> · Javier Prueba</li>
+                </ol>
+                <p class="note" style="margin-top:12px">Lo pasado va compacto, en 14 px y gris. La línea es decorativa; la siguiente cita lleva la marca de 4 px y "(siguiente)" para lectores de pantalla.</p>
+            </div>
+        </div>
+    </div></div>
     <h3 class="v-group">Formularios</h3>
     <p class="v-note">Un solo campo: 44 px de alto, letra de 16 px (CA29), borde con contraste suficiente (CA7), etiqueta siempre visible.</p>
     <div class="v-stage"><div class="opt">
@@ -446,18 +508,13 @@
         <figure class="v-shot"><figcaption><strong>Cerrar sesión</strong> · Paciente<br><span>/logout · pages/auth/logout.blade.php</span></figcaption>
           <div class="v-pairing"><a class="v-img v-img-390" href="capturas/logout-390.png"><img src="capturas/logout-390.png" alt="Cerrar sesión a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/logout-1440.png"><img src="capturas/logout-1440.png" alt="Cerrar sesión a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
       <h3 class="v-group" id="g-panel">Inicio del panel</h3>
-        <figure class="v-shot"><figcaption><strong>Inicio del panel</strong> · Administrador<br><span>/dashboard · pages/dashboard.blade.php</span></figcaption>
-          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-administrador-390.png"><img src="capturas/dashboard-administrador-390.png" alt="Inicio del panel a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/dashboard-administrador-1440.png"><img src="capturas/dashboard-administrador-1440.png" alt="Inicio del panel a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
-        <figure class="v-shot"><figcaption><strong>Inicio del panel</strong> · Asistente<br><span>/dashboard</span></figcaption>
-          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-asistente-390.png"><img src="capturas/dashboard-asistente-390.png" alt="Inicio del panel a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/dashboard-asistente-1440.png"><img src="capturas/dashboard-asistente-1440.png" alt="Inicio del panel a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
-        <figure class="v-shot"><figcaption><strong>Inicio del panel</strong> · Doctor<br><span>/dashboard</span></figcaption>
-          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-doctor-390.png"><img src="capturas/dashboard-doctor-390.png" alt="Inicio del panel a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/dashboard-doctor-1440.png"><img src="capturas/dashboard-doctor-1440.png" alt="Inicio del panel a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
+        <figure class="v-shot"><figcaption><strong>Inicio del panel, con datos</strong> · Administrador<br><span>/dashboard · pages/dashboard.blade.php</span><br><span>Pendiente de captura (spec 020, T055).</span></figcaption></figure>
+        <figure class="v-shot"><figcaption><strong>Inicio del panel, con datos</strong> · Asistente<br><span>/dashboard</span><br><span>Pendiente de captura (spec 020, T055).</span></figcaption></figure>
+        <figure class="v-shot"><figcaption><strong>Inicio del panel, con datos</strong> · Doctor<br><span>/dashboard</span><br><span>Pendiente de captura (spec 020, T055).</span></figcaption></figure>
         <figure class="v-shot"><figcaption><strong>Inicio del panel</strong> · Paciente<br><span>/dashboard</span></figcaption>
           <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-paciente-390.png"><img src="capturas/dashboard-paciente-390.png" alt="Inicio del panel a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/dashboard-paciente-1440.png"><img src="capturas/dashboard-paciente-1440.png" alt="Inicio del panel a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
         <figure class="v-shot"><figcaption><strong>Inicio del panel, nuevo paciente</strong> · Administrador<br><span>components/ui/create-patient-modal.blade.php</span></figcaption>
           <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-crear-paciente-390.png"><img src="capturas/dashboard-crear-paciente-390.png" alt="Inicio del panel, nuevo paciente a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/dashboard-crear-paciente-1440.png"><img src="capturas/dashboard-crear-paciente-1440.png" alt="Inicio del panel, nuevo paciente a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
-        <figure class="v-shot"><figcaption><strong>Inicio del panel, nuevo usuario</strong> · Administrador<br><span>components/ui/create-user-modal.blade.php</span></figcaption>
-          <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-crear-usuario-390.png"><img src="capturas/dashboard-crear-usuario-390.png" alt="Inicio del panel, nuevo usuario a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/dashboard-crear-usuario-1440.png"><img src="capturas/dashboard-crear-usuario-1440.png" alt="Inicio del panel, nuevo usuario a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
         <figure class="v-shot"><figcaption><strong>Menú lateral abierto en móvil</strong> · Administrador<br><span>/dashboard · components/ui/sidebar.blade.php</span></figcaption>
           <div class="v-pairing"><a class="v-img v-img-390" href="capturas/dashboard-menu-390.png"><img src="capturas/dashboard-menu-390.png" alt="Menú lateral abierto en móvil a 390 px" loading="lazy"><span>390 px</span></a></div></figure>
       <h3 class="v-group" id="g-agenda">Agenda</h3>

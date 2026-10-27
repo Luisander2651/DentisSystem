@@ -1,7 +1,7 @@
 {{--
     Marca (docs/design/system.md → Marca). En las barras, el icono junto a "Dentissa" (variante
     `icon`, con una línea opcional debajo en el slot); donde hay espacio, el logo completo
-    (variante `logo`). Siempre con texto alternativo.
+    (variante `logo`). Siempre con texto alternativo y `data-origen="propia"` (spec 020).
 --}}
 @props([
     'variant' => 'icon',
@@ -13,11 +13,12 @@
         alt="Melissa López N., odontología integral"
         width="520"
         height="156"
+        data-origen="propia"
         {{ $attributes->merge(['class' => 'h-auto w-64 max-w-full']) }}
     >
 @else
     <span {{ $attributes->merge(['class' => 'inline-flex items-center gap-3']) }}>
-        <img src="{{ asset('images/brand/icon-64.png') }}" alt="Logo de Dentissa" width="40" height="40" class="size-10 shrink-0 rounded-control">
+        <img src="{{ asset('images/brand/icon-64.png') }}" alt="Logo de Dentissa" width="40" height="40" data-origen="propia" class="size-10 shrink-0 rounded-control">
         <span class="leading-tight">
             <span class="block text-base font-bold tracking-tight text-ink">Dentissa</span>
             @if ($slot->isNotEmpty())

@@ -7,6 +7,7 @@ use App\Core\Middlewares\InjectSanctumTokenFromCookie;
 use App\Core\Middlewares\OnlyAdmin;
 use App\Core\Middlewares\SecurityHeaders;
 use App\Core\Middlewares\TrustCloudflareProxies;
+use App\Core\Middlewares\UiAuditClock;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -53,6 +54,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['auth_token']);
         $middleware->web(prepend: [InjectSanctumTokenFromCookie::class]);
         $middleware->api(prepend: [InjectSanctumTokenFromCookie::class]);
+
+        // Spec 020 (D16, A27): unconditional on purpose; the middleware checks the environment
+        // on every request, because the web stack is built before the environment is loaded.
+        $middleware->web(append: [UiAuditClock::class]);
+        $middleware->api(append: [UiAuditClock::class]);
 
         $middleware->alias([
             'sanctum.cookie' => InjectSanctumTokenFromCookie::class,

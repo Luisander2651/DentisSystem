@@ -50,10 +50,27 @@
             </div>
         </article>
 
-        <div class="flex items-center gap-2 overflow-x-auto" data-records-status-filter>
-            <x-ui.chip :pressed="true" data-status-value="">Todos</x-ui.chip>
-            <x-ui.chip data-status-value="active">Activos</x-ui.chip>
-            <x-ui.chip data-status-value="inactive">Inactivos</x-ui.chip>
+        {{-- Spec 020 (D26): the same search as /pacientes; "Buscar paciente" of the start opens it ready to type. --}}
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div class="relative flex-1">
+                <label for="records-search" class="mb-1.5 block text-sm font-semibold text-ink">Buscar</label>
+                <div class="pointer-events-none absolute bottom-0 left-0 flex h-control items-center pl-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-4 w-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </div>
+                <input
+                    type="text"
+                    id="records-search"
+                    placeholder="Nombre o correo"
+                    data-records-search
+                    class="block h-control w-full rounded-control border border-field bg-surface pl-11 pr-4 text-control text-ink"
+                >
+            </div>
+
+            <div class="flex items-center gap-2 overflow-x-auto" data-records-status-filter>
+                <x-ui.chip :pressed="true" data-status-value="">Todos</x-ui.chip>
+                <x-ui.chip data-status-value="active">Activos</x-ui.chip>
+                <x-ui.chip data-status-value="inactive">Inactivos</x-ui.chip>
+            </div>
         </div>
 
         {{-- Loading State --}}
@@ -65,6 +82,8 @@
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-records-list id="records-table-container"></div>
 
         {{-- Empty State --}}
+        <p hidden data-records-no-match class="rounded-card border border-line bg-surface p-5 text-center text-sm text-muted shadow-sm">No se encontraron pacientes</p>
+
         <div id="records-empty" class="hidden rounded-card border border-line bg-surface p-5 text-center text-sm text-muted shadow-sm">
             No hay pacientes registrados para mostrar.
         </div>

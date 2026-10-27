@@ -5,6 +5,31 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-26
+Tablero de inicio: al entrar al panel, cada miembro del staff ve cómo va el día y qué tiene pendiente (spec 020).
+
+### Added
+- El inicio del panel muestra la siguiente cita por atender destacada, con su paciente, tratamiento y doctor, y las dos que vienen después; el doctor solo ve las suyas (spec 020).
+- "Cómo va el día" cuenta las citas de hoy, las completadas, las que quedan por atender y las canceladas, y "Agenda de hoy" las lista en orden con una línea que marca la hora actual (spec 020).
+- "Citas sin cerrar" lista las citas de días anteriores que siguen asignadas o reprogramadas, agrupadas por día, con "Completar" y "Cancelar cita" según el rol (spec 020).
+- "Completadas sin seguimiento" lista las citas completadas a las que les falta el seguimiento clínico, con "Registrar seguimiento" para el administrador y el doctor de la cita (spec 020).
+- Acciones rápidas por rol: nueva cita, nuevo paciente, buscar paciente, agenda de hoy y registrar seguimiento (spec 020).
+- El administrador ve el mes en curso: citas y pacientes nuevos comparados con el mes anterior, y pacientes activos, con enlace a los reportes (spec 020).
+- Expedientes clínicos tiene un buscador por nombre o correo; "Buscar paciente" del inicio lo abre listo para escribir (spec 020).
+
+### Changed
+- El inicio del staff ya no muestra contadores con "-", la tarjeta "Estado: En línea", "Actividad reciente", la acción "Nuevo usuario" ni la tarjeta con la inicial, el correo y el rol; la pestaña se llama "Inicio - Dentissa" (spec 020).
+- Si una sección del inicio no carga, dice "No se pudo cargar esta sección." con "Reintentar", y las demás siguen funcionando (spec 020).
+- Completar una cita responde en español cuando la cita ya tiene seguimiento o no existe (spec 020).
+
+### Fixed
+- Dos personas que completan a la vez la misma cita ya no provocan un error: la segunda recibe el aviso de que la cita ya tiene seguimiento (spec 020).
+- Un medicamento o una dosis demasiado largos al completar una cita ya no provocan un error del servidor (spec 020).
+
+### Security
+- Cada rol solo ve y hace en el inicio lo que le corresponde: el doctor, solo sus citas; el asistente no registra seguimiento ni ve el mes; un paciente o un miembro del staff inactivo reciben "Sin permiso" (spec 020).
+- Registrar un seguimiento limita la longitud de cada texto y el número de síntomas y recetas (spec 020).
+
 ## [0.5.1] - 2026-10-23
 Corrección: completar una cita con recetas sin instrucciones.
 

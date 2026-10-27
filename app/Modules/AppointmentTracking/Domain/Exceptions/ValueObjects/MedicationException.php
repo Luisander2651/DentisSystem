@@ -12,4 +12,9 @@ final class MedicationException extends ValueObjectsException
     {
         return new self('Medication must be a non-empty string.');
     }
+
+    public static function tooLong(int $maxLength): self
+    {
+        return new self("Medication must be at most {$maxLength} characters.");
+    }
 }

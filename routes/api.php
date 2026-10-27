@@ -10,15 +10,19 @@ use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentsByPa
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetDoctorsForAppointmentSelectController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPatientsForAppointmentSelectController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodayAppointmentsController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodaySummaryController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentByIdController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentsAdminController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentsController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetUnclosedAppointmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateAppointmentController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\UpdateTreatmentController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\CompleteAppointmentController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\CreatePrescriptionController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\DeletePrescriptionController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetAppointmentTrackingByAppointmentIdController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetCompletedWithoutTrackingController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\RegisterAppointmentTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdateAppointmentTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdatePrescriptionController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\LoginController;
@@ -163,6 +167,9 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::get('/doctors', GetDoctorsForAppointmentSelectController::class);
                 Route::get('/treatments', GetTreatmentsController::class);
                 Route::get('/today-appointments', GetTodayAppointmentsController::class);
+                Route::get('/today-summary', GetTodaySummaryController::class);
+                Route::get('/unclosed', GetUnclosedAppointmentsController::class);
+                Route::get('/without-tracking', GetCompletedWithoutTrackingController::class);
             });
 
             Route::prefix('patients')->group(function (): void {
@@ -196,6 +203,8 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 // appointments; the use cases check who owns the appointment.
                 Route::post('/{id}/complete', CompleteAppointmentController::class);
                 Route::get('/{id}/tracking', GetAppointmentTrackingByAppointmentIdController::class);
+                // Spec 020: the follow-up of an appointment completed without one.
+                Route::post('/{id}/tracking', RegisterAppointmentTrackingController::class);
             });
         });
     });

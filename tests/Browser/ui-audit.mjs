@@ -24,6 +24,22 @@
  * position, for values that change with the date). A 429 answered from here (a flow of
  * checks-dialogs) is not the API limiting the visit; an answer with `hold` waits until the flow
  * releases it, and `settle()` does not wait for it.
+ *
+ * Clock of an entry: `now` (or the top-level `now`) moves the browser's Date. Since spec 020, an
+ * entry may also declare `serverNow` (ISO 8601 with offset, such as "2026-09-17T11:40:00-06:00"):
+ * every request of the entry then carries X-Ui-Audit-Now with it, and the app, only in local and
+ * testing, answers as if it were that instant (UiAuditClock).
+ *
+ * Flows (`flows`, checks-dialogs): `answer` with `to`, `times` and `hold` as since spec 019; since
+ * spec 020, `load: true` answers from the moment the page loads, `answers` lists several answers
+ * (one per path and per successive request, each with `to`, `status`, `body`, `times` and `hold`)
+ * the action `wait` waits the milliseconds it says and `release` gives the answers kept by `hold`
+ * at that point (review of spec 020). The header of checks-dialogs.mjs has the details.
+ *
+ * Copy for `evaluate` (spec 020, D22): an entry that declares `snapshot: true` leaves, from its
+ * visit at 1440 px, the page as it was painted in .ai/inspect/ui-audit/<entry>.html: the DOM with
+ * the build's styles, images and fonts inlined and without scripts, so it opens without network,
+ * session or headers. evaluate.mjs measures that file (it cannot sign in nor send serverNow).
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -37,10 +53,13 @@ import { selectIndexInPage } from './checks-dialogs.mjs';
 const here = dirname(fileURLToPath(import.meta.url));
 // checks-dialogs goes last: it closes the dialog the others measure.
 const CHECK_MODULES = ['composition', 'global', 'screens', 'a11y', 'dialogs'];
-const ROLES = ['administrador', 'asistente', 'doctor', 'paciente'];
+// Spec 020 (A26): `inactivo` is the seeded inactive staff member, who gets "Sin permiso".
+const ROLES = ['administrador', 'asistente', 'doctor', 'paciente', 'inactivo'];
 const VIEWPORTS = { 390: 844, 768: 1024, 1024: 768, 1280: 800, 1440: 900 };
 const DEFAULT_WIDTHS = [390, 768, 1440];
 const SETTLE_TIMEOUT = 15000;
+const SNAPSHOT_WIDTH = 1440;
+const SNAPSHOT_DIRECTORY = join(here, '..', '..', '.ai', 'inspect', 'ui-audit');
 
 class Cdp {
     #socket;
@@ -398,6 +417,69 @@ function isVisibleInPage(selector) {
     });
 }
 
+/**
+ * Spec 020 (D22): the painted page as a self-contained document. Same-origin stylesheets become
+ * <style> with their url() as data URIs, images become data URIs, and scripts and links go away.
+ */
+async function snapshotInPage() {
+    const asDataUri = async (url) => {
+        try {
+            const blob = await (await fetch(url, { credentials: 'include' })).blob();
+
+            return await new Promise((done) => {
+                const reader = new FileReader();
+                reader.onload = () => done(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        } catch {
+            return url;
+        }
+    };
+    const inlineUrls = async (css, base) => {
+        const urls = [...new Set([...css.matchAll(/url\(\s*['"]?([^'")]+)['"]?\s*\)/g)].map((match) => match[1]).filter((url) => !url.startsWith('data:')))];
+
+        for (const url of urls) {
+            css = css.split(url).join(await asDataUri(new URL(url, base).href));
+        }
+
+        return css;
+    };
+
+    const styles = [];
+
+    for (const sheet of document.styleSheets) {
+        try {
+            const css = [...sheet.cssRules].map((rule) => rule.cssText).join('\n');
+            styles.push(await inlineUrls(css, sheet.href ?? location.href));
+        } catch {
+            // A sheet of another origin cannot be read; the copy goes without it.
+        }
+    }
+
+    const copy = document.documentElement.cloneNode(true);
+    copy.querySelectorAll('script, link, style').forEach((node) => node.remove());
+
+    const originals = [...document.querySelectorAll('img')];
+    const copies = [...copy.querySelectorAll('img')];
+
+    for (const [index, image] of copies.entries()) {
+        const source = originals[index]?.currentSrc || originals[index]?.src;
+
+        if (source && !source.startsWith('data:')) {
+            image.setAttribute('src', await asDataUri(source));
+            image.removeAttribute('srcset');
+        }
+    }
+
+    for (const css of styles) {
+        const style = document.createElement('style');
+        style.textContent = css;
+        copy.querySelector('head').appendChild(style);
+    }
+
+    return '<!doctype html>\n' + copy.outerHTML;
+}
+
 function parseArguments(argv) {
     const options = {
         baseUrl: 'http://localhost:8000',
@@ -624,6 +706,10 @@ async function openEntry(browser, entry, width, options, session, config) {
     await page.send('Page.enable');
     await page.send('Runtime.enable');
     await page.send('Network.enable');
+
+    if (entry.serverNow) {
+        await page.send('Network.setExtraHTTPHeaders', { headers: { 'X-Ui-Audit-Now': entry.serverNow } });
+    }
     await page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 768 });
     await page.send('Emulation.setTouchEmulationEnabled', { enabled: width < 768 });
     // The same pointer on every machine: a runner without a mouse reports that it cannot hover.
@@ -753,6 +839,11 @@ async function auditPage(page, entry, width, options, checks, baseline) {
 
     if (options.screenshots) {
         await page.screenshot(join(options.screenshots, `${entry.id}-${width}.png`), entry.dialog === undefined);
+    }
+
+    if (entry.snapshot && width === SNAPSHOT_WIDTH) {
+        mkdirSync(SNAPSHOT_DIRECTORY, { recursive: true });
+        writeFileSync(join(SNAPSHOT_DIRECTORY, `${entry.id}.html`), await page.evaluate(snapshotInPage));
     }
 
     for (const check of checks) {

@@ -1,0 +1,2 @@
+# Spec 020 (R14): TRACKING_AUTH_ACTOR_ID is a fixed UUID of a test, not a secret.
+6282754b293d9850abbe0e15900a256c48b3e3f5:tests/Modules/AppointmentTracking/Unit/Application/TrackingUseCasesAuthorizationTest.php:generic-api-key:28

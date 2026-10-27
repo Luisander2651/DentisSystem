@@ -225,6 +225,27 @@ las tablas del expediente por debajo de `md`.
 ### Subtítulo con acción · `x-ui.section-title`
 Un `h2` con su acción a la derecha.
 
+### Siguiente cita · `x-dashboard.next-appointment`
+Pieza del inicio del panel (spec 020). Tarjeta `surface`, radio `card`, borde `line`, con una
+franja de 6 px en `primary` a la izquierda: el rosa como acento, no como fondo. Encima, la etiqueta
+"Siguiente cita" (12 px en mayúsculas, `muted`, con un punto `primary`). Debajo, la hora en 40 px /
+700 con cifras tabulares y su insignia de estado, el paciente en 20 px / 700, el tratamiento y el
+doctor en `muted`, las acciones en `secondary` y la línea "Después: …" con las dos citas siguientes
+y cuántas más quedan.
+
+### Barra del día · `x-dashboard.day-progress`
+Pieza del inicio del panel (spec 020). Barra apilada de 12 px, `rounded-full` y decorativa
+(`aria-hidden`): completadas en `success`, por atender en `warning` y canceladas en `danger`.
+Debajo, una `dl` de cuatro columnas separadas por `line`, cada una con la cifra en 24 px / 700, su
+muestra de color y la etiqueta en 12 px `muted`. El color nunca va solo: la cifra y la etiqueta
+siempre están al lado.
+
+### Línea de ahora · `x-dashboard.now-line`
+Pieza de una lista del día (spec 020). Regla de 2 px en `primary` con "Ahora · HH:MM" en 12 px /
+700 `muted`, decorativa (`aria-hidden`). Separa lo que ya pasó, compacto en 14 px y `muted`, de lo
+que viene. La cita siguiente lleva una marca de 4 px en `primary` en el borde izquierdo y
+"(siguiente)" solo para lectores de pantalla.
+
 ### Lista o tarjeta
 Tarjeta `surface`, radio `card`, borde `line`, `shadow-sm`. Aviso informativo: fondo `primary-soft`,
 borde `secondary`, radio `box`, texto en tinta.
@@ -268,7 +289,7 @@ Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
 | Pantalla | Móvil | Escritorio | Componentes |
 |---|---|---|---|
 | Inicio (sitio público) | [capturas/inicio-390.png](capturas/inicio-390.png) | [capturas/inicio-1440.png](capturas/inicio-1440.png) | barra, tarjetas, preguntas frecuentes, pie |
-| Inicio del panel | [capturas/dashboard-administrador-390.png](capturas/dashboard-administrador-390.png) | [capturas/dashboard-administrador-1440.png](capturas/dashboard-administrador-1440.png) | menú lateral, encabezado, contadores |
+| Inicio del panel | pendiente (spec 020, T055) | pendiente (spec 020, T055) | menú lateral, siguiente cita, barra del día, línea de ahora, pendientes |
 | Agenda | [capturas/agenda-con-citas-390.png](capturas/agenda-con-citas-390.png) | [capturas/agenda-con-citas-1440.png](capturas/agenda-con-citas-1440.png) | calendario, filtros, diálogos |
 | Agenda, un día sin citas para hoy | `/agenda` | Administrador | [390](capturas/agenda-hoy-sin-citas-390.png) · [1440](capturas/agenda-hoy-sin-citas-1440.png) | capturada |
 | Pacientes | [capturas/pacientes-390.png](capturas/pacientes-390.png) | [capturas/pacientes-1440.png](capturas/pacientes-1440.png) | búsqueda, tarjetas, diálogos |
@@ -283,7 +304,9 @@ de `UiAuditSeeder`. **76 de 76 capturadas** (149 imágenes, a 390 y 1440 px). La
 "Reprogramar cita", añadió "Confirmar cancelación" y regeneró esas capturas y la del detalle de
 cita asignada el 2026-10-16, con `ui-audit` en local sobre los mismos datos. CI comprueba además
 cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas quedan en el artefacto
-`ui-audit` de cada corrida.
+`ui-audit` de cada corrida. La spec 020 rehace el inicio del panel: el 2026-10-26 se regeneraron con `ui-audit` en local sus
+vistas (las tres con datos, la del paciente, el menú móvil y "nuevo paciente") y sale la de "nuevo usuario"; la base local
+lleva, además de los datos de `UiAuditSeeder`, alguna cita de desarrollo que se ve en las listas del administrador.
 
 | Vista | Ruta / plantilla | Rol | Capturas | Estado |
 |---|---|---|---|---|
@@ -299,12 +322,12 @@ cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas qued
 | Restablecer contraseña (con token) | `/reset-password?token=…` · `pages/auth/reset-password.blade.php` | público | [390](capturas/reset-password-390.png) · [1440](capturas/reset-password-1440.png) | capturada |
 | Restablecer contraseña (sin token) | `/reset-password` | público | [390](capturas/reset-password-sin-token-390.png) · [1440](capturas/reset-password-sin-token-1440.png) | capturada |
 | Cerrar sesión | `/logout` · `pages/auth/logout.blade.php` | Paciente | [390](capturas/logout-390.png) · [1440](capturas/logout-1440.png) | capturada |
-| Inicio del panel | `/dashboard` · `pages/dashboard.blade.php` | Administrador | [390](capturas/dashboard-administrador-390.png) · [1440](capturas/dashboard-administrador-1440.png) | capturada |
-| Inicio del panel | `/dashboard` | Asistente | [390](capturas/dashboard-asistente-390.png) · [1440](capturas/dashboard-asistente-1440.png) | capturada |
-| Inicio del panel | `/dashboard` | Doctor | [390](capturas/dashboard-doctor-390.png) · [1440](capturas/dashboard-doctor-1440.png) | capturada |
+| Inicio del panel, con datos | `/dashboard` · `pages/dashboard.blade.php` | Administrador | [390](capturas/dashboard-administrador-390.png) · [1440](capturas/dashboard-administrador-1440.png) | capturada (spec 020): siguiente cita, día, acciones, agenda, mes y pendientes |
+| Inicio del panel, con datos | `/dashboard` | Asistente | [390](capturas/dashboard-asistente-390.png) · [1440](capturas/dashboard-asistente-1440.png) | capturada (spec 020): sin el mes ni las completadas sin seguimiento |
+| Inicio del panel, con datos | `/dashboard` | Doctor | [390](capturas/dashboard-doctor-390.png) · [1440](capturas/dashboard-doctor-1440.png) | capturada (spec 020): solo sus citas, sin el mes |
+| Inicio del panel, vacío y error de una sección | `/dashboard` | Administrador | — | lo comprueba `ui-audit` (flujos de vacío, carga, error y "Reintentar"; spec 020); sin captura propia |
 | Inicio del panel | `/dashboard` | Paciente | [390](capturas/dashboard-paciente-390.png) · [1440](capturas/dashboard-paciente-1440.png) | capturada |
 | Inicio del panel, nuevo paciente | `components/ui/create-patient-modal.blade.php` | Administrador | [390](capturas/dashboard-crear-paciente-390.png) · [1440](capturas/dashboard-crear-paciente-1440.png) | capturada |
-| Inicio del panel, nuevo usuario | `components/ui/create-user-modal.blade.php` | Administrador | [390](capturas/dashboard-crear-usuario-390.png) · [1440](capturas/dashboard-crear-usuario-1440.png) | capturada |
 | Menú lateral abierto en móvil | `/dashboard` · `components/ui/sidebar.blade.php` | Administrador | [390](capturas/dashboard-menu-390.png) | capturada a 390 px (existe por debajo de 1024 px; CI lo revisa también a 768 px) |
 | Agenda, mes actual sin citas | `/agenda` · `pages/agenda/index.blade.php` | Administrador | [390](capturas/agenda-390.png) · [1440](capturas/agenda-1440.png) | capturada |
 | Agenda, mes con citas | `/agenda` (julio de 2026) | Administrador | [390](capturas/agenda-con-citas-390.png) · [1440](capturas/agenda-con-citas-1440.png) | capturada |
@@ -389,6 +412,9 @@ cita" se recorrió hasta el paso 2 sin enviarlo, así que no escribió nada.
   spec 016): lo verifican `OnlyDesignTokensTest`, `DesignTokensTest` y `npm run test:ui`.
 - Verde y ámbar también marcan si el cambio de un indicador es favorable o desfavorable (spec 019),
   siempre con flecha y texto; el rojo nunca marca tendencias.
+- En la barra del día (spec 020), verde, ámbar y rojo rellenan las completadas, las por atender y
+  las canceladas, siempre con la cifra y la etiqueta al lado; fuera de esa barra el rojo sigue
+  siendo solo de cancelar.
 - Rojo solo para eliminar, cancelar una cita y errores; en cancelar, solo dentro de la
   confirmación (el botón que confirma y la advertencia de que no se puede deshacer): el botón
   "Cancelar cita" del detalle es `secondary`. Verde, ámbar, azul y rojo para estados de cita, siempre con
@@ -453,3 +479,4 @@ lo nuevo a partir del último.
 | 2026-10-17 | diseño | La agenda deja de ser solo del administrador: ¿qué vistas se inventarían? | Agenda, agendar y detalle de cita como asistente y como doctor; el acceso denegado del asistente se captura en `/usuarios`, porque `/agenda` ya no lo rechaza | usuario (docs/specs/018-agenda-por-rol/design.md) |
 | 2026-10-20 | contradicción | El verde y el ámbar eran solo de estados de cita, y el reporte necesita marcar si un cambio es bueno o malo para la clínica | Verde favorable, ámbar desfavorable, gris neutro, siempre con flecha y texto; el rojo sigue reservado | usuario (docs/specs/019-reportes-mensuales/design.md) |
 | 2026-10-20 | diseño | Piezas nuevas del reporte mensual | Indicador de cambio (`x-ui.trend`), selector (`x-ui.select`), contador comparado (variante de `x-ui.stat`), bloque de error de carga de la pantalla y texto propio de un caso en la región de estado; cuatro vistas de Reportes en el inventario | usuario (docs/specs/019-reportes-mensuales/design.md, T001) |
+| 2026-10-25 | diseño | Piezas nuevas del inicio del panel | Siguiente cita, barra del día y línea de ahora, sin tokens nuevos; los colores de estado rellenan la barra del día siempre con cifra y etiqueta; el inicio del administrador, el asistente y el doctor con datos sustituye a las capturas del inicio, y sale la vista "nuevo usuario" | usuario (docs/specs/020-tablero-de-inicio/design.md, T001) |

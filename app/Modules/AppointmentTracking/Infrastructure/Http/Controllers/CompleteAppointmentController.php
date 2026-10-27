@@ -11,6 +11,7 @@ use App\Modules\AppointmentTracking\Application\DTOs\CompleteAppointmentDTO;
 use App\Modules\AppointmentTracking\Application\Exceptions\AppointmentTrackingApplicationException;
 use App\Modules\AppointmentTracking\Application\UseCases\CompleteAppointmentUseCase;
 use App\Modules\AppointmentTracking\Domain\Exceptions\AppointmentTrackingException;
+use App\Modules\AppointmentTracking\Domain\Exceptions\TrackingRegistrationException;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Resources\AppointmentTrackingRecordResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,6 +46,8 @@ final readonly class CompleteAppointmentController
         } catch (AppointmentException $e) {
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (AppointmentTrackingException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        } catch (TrackingRegistrationException $e) {
             return response()->json(['error' => $e->getMessage()], 409);
         } catch (AppointmentTrackingApplicationException $e) {
             return response()->json(['error' => $e->getMessage()], 409);

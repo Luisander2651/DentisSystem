@@ -51,10 +51,11 @@ it('offers the patient neither the agenda nor the records', function () {
 });
 
 it('greets the doctor with a neutral message, not the patient one (spec 014, R4 and R36)', function () {
-    $this->actingAsNonAdminUser('Doctor');
+    $doctor = $this->actingAsNonAdminUser('Doctor');
 
+    // Spec 020 (c5): the start of the staff greets by name with the date, without a description.
     $this->get('/dashboard')->assertOk()
-        ->assertSee('Consulta los expedientes clínicos de los pacientes.')
+        ->assertSee('¡Hola, '.$doctor->first_name.'!')
         ->assertDontSee('de tus pacientes')
         ->assertDontSee('Tu salud dental');
 });

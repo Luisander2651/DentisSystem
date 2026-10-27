@@ -9,9 +9,11 @@ use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\EloquentAppointmentRepository;
 use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentCompletionRepositoryInterface;
 use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentTrackingRepositoryInterface;
+use App\Modules\AppointmentTracking\Domain\Repositories\PendingTrackingRepositoryInterface;
 use App\Modules\AppointmentTracking\Domain\Repositories\PrescriptionRepositoryInterface;
 use App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent\EloquentAppointmentCompletionRepository;
 use App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent\EloquentAppointmentTrackingRepository;
+use App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent\EloquentPendingTrackingRepository;
 use App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent\EloquentPrescriptionRepository;
 use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\DeleteCertificationUseCase;
 use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\SaveCertificationUseCase;
@@ -117,6 +119,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             AppointmentCompletionRepositoryInterface::class,
             EloquentAppointmentCompletionRepository::class,
+        );
+
+        $this->app->bind(
+            PendingTrackingRepositoryInterface::class,
+            EloquentPendingTrackingRepository::class,
         );
 
         $this->app->bind(

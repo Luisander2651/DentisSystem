@@ -8,12 +8,18 @@ use App\Modules\AppointmentTracking\Domain\Exceptions\ValueObjects\MedicationExc
 
 final readonly class Medication
 {
+    /** Spec 020 (R3): the size of its column. */
+    public const MAX_LENGTH = 255;
+
     private function __construct(
         public string $value,
     ) {
         $trimmed = trim($value);
         if (empty($trimmed)) {
             throw MedicationException::emptyMedication();
+        }
+        if (mb_strlen($value) > self::MAX_LENGTH) {
+            throw MedicationException::tooLong(self::MAX_LENGTH);
         }
     }
 

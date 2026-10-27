@@ -6,10 +6,10 @@ namespace App\Modules\Appointments\Aplication\UseCases;
 
 use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Modules\Appointments\Aplication\DTOs\GetAllAppointmentsByStatusAndDateDTO;
+use App\Modules\Appointments\Aplication\Support\DoctorScope;
 use App\Modules\Appointments\Domain\Service\AppointmentsService;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
-use App\Modules\Appointments\Domain\ValueObjects\AppointmentUserId;
 
 final readonly class GetAllApointmentsByStatusAndDateUseCase
 {
@@ -20,7 +20,7 @@ final readonly class GetAllApointmentsByStatusAndDateUseCase
 
     public function execute(GetAllAppointmentsByStatusAndDateDTO $getAllAppointmentsByStatusAndDateDTO): array
     {
-        $userId = $this->doctorScope();
+        $userId = DoctorScope::forActor($this->authorization);
 
         $status = null;
         $date = null;
@@ -39,24 +39,5 @@ final readonly class GetAllApointmentsByStatusAndDateUseCase
             date: $date,
             userId: $userId,
         );
-    }
-
-    /**
-     * Spec 018: who may see the whole agenda gets no narrowing; the doctor only ever gets their
-     * own appointments, whatever the request asks for. Anyone else is refused.
-     */
-    private function doctorScope(): ?AppointmentUserId
-    {
-        if ($this->authorization->can('appointments.view')) {
-            return null;
-        }
-
-        if ($this->authorization->can('appointments.view-own')) {
-            return new AppointmentUserId($this->authorization->currentActorId());
-        }
-
-        $this->authorization->assertCan('appointments.view');
-
-        return null;
     }
 }

@@ -75,6 +75,16 @@ usuario (indicado en cada caso).
   `OnlyAdmin` y por el render de `AuthorizationException`, los mismos puntos de arriba; hoy no se
   registran (OB1.a pendiente). Ver o descargar el reporte no es lectura de datos sensibles (solo
   agregados) y no se audita.
+- Spec 020 (tablero de inicio): ningún log nuevo; sus errores inesperados quedan en el
+  `unexpected_error` de siempre y `DashboardLogsTest` comprueba que ni el registro de seguimiento,
+  ni la cancelación, ni los errores forzados escriben datos del paciente o del seguimiento. Puntos de
+  emisión para el objetivo 5 (hoy no se registran; P14 ❌ aceptado, OB1.a y OB3.a pendientes):
+  escritura de datos de salud en `RegisterAppointmentTrackingUseCase` (`POST
+  /api/v1/appointments/{id}/tracking`) y en `CompleteAppointmentUseCase`; cancelación de una cita
+  desde el inicio en `UpdateAppointmentUseCase`; accesos denegados a las lecturas del inicio y al
+  registro de seguimiento en el render de `AuthorizationException` y en `EnsureActiveStaff`, y al
+  `/dashboard` del staff inactivo en `ShowDashboardPageController`. Las lecturas del inicio (citas de
+  hoy, sin cerrar y sin seguimiento) no llevan datos de salud y no se auditan.
 
 ## Correlación
 - Identificador por petición: cabecera `X-Request-Id` (propuesta); se acepta del cliente si es

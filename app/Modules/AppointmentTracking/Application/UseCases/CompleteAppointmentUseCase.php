@@ -10,25 +10,12 @@ use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
 use App\Modules\Appointments\Domain\Service\AppointmentsService;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 use App\Modules\AppointmentTracking\Application\DTOs\CompleteAppointmentDTO;
-use App\Modules\AppointmentTracking\Domain\Entities\AppointmentTrackingEntity;
+use App\Modules\AppointmentTracking\Application\Support\TrackingFactory;
 use App\Modules\AppointmentTracking\Domain\Entities\AppointmentTrackingRecord;
-use App\Modules\AppointmentTracking\Domain\Entities\PrescriptionEntity;
-use App\Modules\AppointmentTracking\Domain\Exceptions\AppointmentTrackingException;
+use App\Modules\AppointmentTracking\Domain\Exceptions\TrackingRegistrationException;
 use App\Modules\AppointmentTracking\Domain\Service\AppointmentCompletionService;
 use App\Modules\AppointmentTracking\Domain\Service\AppointmentTrackingService;
 use App\Modules\AppointmentTracking\Domain\ValueObjects\AppointmentTrackingAppointmentId;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\DailyFrequency;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\Diagnosis;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\Dosage;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\DurationDays;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\Instructions;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\Medication;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\Observations;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\PrescriptionAppointmentTrackingId;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\ProcedurePerformed;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\Reason;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\Recommendations;
-use App\Modules\AppointmentTracking\Domain\ValueObjects\Symptoms;
 
 final readonly class CompleteAppointmentUseCase
 {
@@ -60,45 +47,31 @@ final readonly class CompleteAppointmentUseCase
             throw AuthorizationException::forbidden('appointment-tracking.create-own');
         }
 
+        // Spec 020 (A9, D18): in Spanish and without the id of the appointment.
         if ($appointment->Status()->isCancelled()) {
-            throw AppointmentException::invalidStatusTransition();
+            throw TrackingRegistrationException::cancelledAppointment();
         }
 
         $trackingAppointmentId = new AppointmentTrackingAppointmentId($dto->appointmentId);
         $existingTracking = $this->appointmentTrackingService->findByAppointmentId($trackingAppointmentId);
 
         if ($existingTracking !== null) {
-            throw AppointmentTrackingException::alreadyExistsForAppointment($dto->appointmentId);
+            throw TrackingRegistrationException::alreadyRegistered();
         }
 
         $appointment->complete();
 
-        $tracking = AppointmentTrackingEntity::create(
-            appointmentId: $trackingAppointmentId,
-            reason: Reason::fromString($dto->reason),
-            symptoms: Symptoms::fromArray($dto->symptoms),
-            diagnosis: Diagnosis::fromString($dto->diagnosis),
-            procedurePerformed: ProcedurePerformed::fromString($dto->procedurePerformed),
-            observations: Observations::fromNullable($dto->observations),
-            recommendations: Recommendations::fromNullable($dto->recommendations),
+        $tracking = TrackingFactory::tracking(
+            appointmentId: $dto->appointmentId,
+            reason: $dto->reason,
+            symptoms: $dto->symptoms,
+            diagnosis: $dto->diagnosis,
+            procedurePerformed: $dto->procedurePerformed,
+            observations: $dto->observations,
+            recommendations: $dto->recommendations,
         );
 
-        // El id ya existe en memoria (generado por AppointmentTrackingId::random() dentro de create()),
-        // así que cada receta se construye referenciándolo directo — nunca se confía en un
-        // appointment_tracking_id que venga suelto del request.
-        $trackingId = $tracking->Id()->value;
-
-        $prescriptions = array_map(
-            fn (array $p) => PrescriptionEntity::create(
-                appointmentTrackingId: new PrescriptionAppointmentTrackingId($trackingId),
-                medication: Medication::fromString((string) ($p['medication'] ?? '')),
-                dosage: Dosage::fromString((string) ($p['dosage'] ?? '')),
-                durationDays: DurationDays::fromInt((int) $p['durationDays']),
-                dailyFrequency: DailyFrequency::fromInt((int) $p['dailyFrequency']),
-                instructions: Instructions::fromNullable($p['instructions'] ?? null),
-            ),
-            $dto->prescriptions,
-        );
+        $prescriptions = TrackingFactory::prescriptions($tracking, $dto->prescriptions);
 
         return $this->appointmentCompletionService->complete($appointment, $tracking, $prescriptions);
     }

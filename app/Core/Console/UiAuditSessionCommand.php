@@ -19,7 +19,7 @@ final class UiAuditSessionCommand extends Command
 {
     public const TOKEN_NAME = 'ui-audit';
 
-    protected $signature = 'ui:audit-session {rol : administrador, asistente, doctor o paciente}';
+    protected $signature = 'ui:audit-session {rol : administrador, asistente, doctor, inactivo o paciente}';
 
     protected $description = 'Emite una sesión de un usuario sembrado por UiAuditSeeder para las pruebas de interfaz';
 
@@ -34,7 +34,7 @@ final class UiAuditSessionCommand extends Command
         $account = $this->seededAccount((string) $this->argument('rol'));
 
         if ($account === null) {
-            $this->error('No hay un usuario sembrado para ese rol. Roles: administrador, asistente, doctor, paciente. Ejecuta antes ui:audit-data.');
+            $this->error('No hay un usuario sembrado para ese rol. Roles: administrador, asistente, doctor, inactivo, paciente. Ejecuta antes ui:audit-data.');
 
             return self::FAILURE;
         }
@@ -50,6 +50,11 @@ final class UiAuditSessionCommand extends Command
             'administrador', 'asistente', 'doctor' => UserModel::query()
                 ->where('email', UiAuditSeeder::STAFF_EMAILS[$role])
                 ->where('status', 'active')
+                ->first(),
+            // Spec 020 (A26): the inactive staff member, so the browser test sees "Sin permiso".
+            'inactivo' => UserModel::query()
+                ->where('email', UiAuditSeeder::STAFF_EMAILS['inactivo'])
+                ->where('status', 'inactive')
                 ->first(),
             'paciente' => PatientModel::query()->where('email', UiAuditSeeder::PATIENT_EMAIL)->first(),
             default => null,
