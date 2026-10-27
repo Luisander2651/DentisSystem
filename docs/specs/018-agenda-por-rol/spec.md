@@ -186,3 +186,4 @@ Diseño de la spec: [design.md](design.md) (sin composiciones; cada rol ve solo 
 | 2026-10-17 | Reaprobada tras la edición | Aprobación del usuario |
 | 2026-10-18 | Liberada en v0.4.0 | /release 018 |
 | 2026-10-23 | Corregido por la ficha 2026-10-23-fix-completar-cita-sin-instrucciones en v0.5.1 (CA12) | /release |
+| 2026-10-26 | Comportamiento modificado por 020 en v0.6.0: el inicio reutiliza las acciones de la agenda por rol (completar, cancelar, agendar, CA2 y CA12) y el recorte del doctor a sus citas (CA11); `doctorScope()` duplicado pasa a `DoctorScope` (018/R5) | /release |

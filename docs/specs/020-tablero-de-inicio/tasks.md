@@ -316,9 +316,13 @@ Las tareas no añaden nada al análisis de [plan.md](plan.md); se revisa lo que 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
   - Sin staging (`deploy.environments: [local, prod]`): la verificación se hace en producción tras T097, con cuentas de prueba. El administrador y el doctor entran al inicio: las secciones cargan, la siguiente cita es la correcta y el mes coincide con `/reportes` (CA1–CA4, CA10). El asistente no ve "Completadas sin seguimiento" ni el mes (CA14). En Loki, sin 500 en `/api/v1/agenda/*` ni en `/api/v1/appointments/*/tracking`.
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-- [ ] T098 Marcar spec como `released`
+  - nota: 2026-10-26. No hay staging (P12): CI en verde en el PR #38 (Pest en paralelo, build, ui-audit, Pint, artefactos y seguridad del PR) y en `main` sobre su merge (`ac60560`, run 40426490288); suite local en serie y `ui-audit` acotado dos veces en T078. Verificación local con la imagen de la versión: `dentissa-app:v0.6.0` y `dentissa-web:v0.6.0` construidas desde `git archive v0.6.0`; usuario `www-data`, sin `.env`, `.git`, `public/hot`, `node_modules`, tests, Node ni Composer; `expose_php` Off y `zend.exception_ignore_args` On; manifiesto de Vite con `dashboard.js` y `records/index.js` y los mismos 29 assets en `app` y `web`; las cuatro rutas nuevas registradas. Sin migraciones, variables nuevas ni cambios en `docker/` o `docker-compose.prod.yml` desde v0.5.1. `composer audit`, `npm audit` y semgrep sin hallazgos; gitleaks limpio. PR fusionado con `--admin` por decisión del usuario (la protección de `main` pide una aprobación que el autor no puede dar), como #30, #36 y #37
+- [x] T096 Aprobación humana para producción
+  - aprobado por Luisander2651 el 2026-10-26 18:49 (00:49 UTC del 27) para v0.6.0 ("desplegar v0.6.0 a producción")
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: 2026-10-26, despliegue manual del usuario en el droplet con `docker/prod/deploy.sh v0.6.0` (sin migraciones; backup `pre-v0.6.0-20261027T005728Z.dump`; verificación local 14/14; se conservan las imágenes de v0.6.0 y v0.5.1) y `verify.sh --remote` 30/30, desde el equipo del usuario. Vigilancia de 15 min (01:02–01:18 UTC del 27): 90 peticiones a `/up`, `/`, `/login`, `/dashboard`, `/api/v1/agenda/today-summary` y `/api/v1/agenda/unclosed` sin sesión y pidiendo JSON, sin 5xx (máximo 0,7 s), todas con la respuesta esperada (200, 200, 200, 401, 401 y 401). Sin rollback
+  - nota: verificación en producción confirmada por el usuario el 2026-10-26 ("todo bien"): el inicio del administrador y del doctor carga sus secciones, con la siguiente cita correcta y el mes igual que `/reportes` (CA1–CA4, CA10); el asistente no ve "Completadas sin seguimiento" ni el mes (CA14); en Loki, sin 500 en `/api/v1/agenda/*` ni en `/api/v1/appointments/*/tracking`
+- [x] T098 Marcar spec como `released`
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

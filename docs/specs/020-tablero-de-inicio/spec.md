@@ -1,7 +1,8 @@
 ---
 id: 020
 slug: tablero-de-inicio
-status: implemented
+status: released
+released: v0.6.0 (2026-10-26)
 created: 2026-10-22
 extends: [009, 018]
 ---
