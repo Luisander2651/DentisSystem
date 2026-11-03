@@ -1,28 +1,41 @@
 ---
-date: 2026-10-22
-since: f33c9e6977 (commit de /init)
-head: 8550f2c
+date: 2026-11-03
+since: 8550f2c (sync.last)
+head: 4446f58
 status: closed
 ---
-# Conciliación 2026-10-22
+# Conciliación 2026-11-03
 
 ## Resumen
-Primer `/sync` desde el `/init` (464 commits). `aidd.py drift` marca 5 commits sin `(NNN)` ni
-`Ficha:`; los cinco ya están cubiertos por una spec o son mantenimiento documentado. No hay specs
-`released` con deriva, huecos en `architecture.md`, specs inferidas sin validar ni fichas abiertas
-viejas.
+`aidd.py drift` desde `8550f2c` revisa 113 commits y marca 3 sin `(NNN)` ni `Ficha:`, que son 2
+cambios hechos fuera del flujo por decisión del usuario: el login de la app móvil (PR #40) y las
+páginas de Aviso de Privacidad y Términos y Condiciones (PR #41). Ambos añaden comportamiento, así
+que no caben en una ficha de carril. Tocan archivos de siete specs `released`; ninguna contradice sus
+criterios. Sí cambian criterios de dos specs `approved` que describen el sistema actual: 001
+(CA4) y, en menor medida, 002 y 011. Sin huecos en `architecture.md`, sin specs inferidas por validar
+ni fichas abiertas viejas.
+
+`/release` solo publica specs `implemented` con review aprobada o fichas `done`; ninguno de los dos
+cambios lo es todavía, así que la propuesta elegida decide cómo se libera.
 
 ## Commits fuera del flujo
 | commit | qué es | propuesta | decisión |
 |---|---|---|---|
-| `fcdd3a5` feat(appointment-tracking): T053-T054 | Tareas T053 y T054 de la spec 014 (marcadas `[x]` en su `tasks.md`); el asunto no cita la spec, solo el cuerpo ("spec 014, CA12") | nada: cubierto por la spec 014 (`released`) | nada (decisión del usuario, 2026-10-22) |
-| `4b3aecf` fix(docker): configuración de producción | Mantenimiento de despliegue hecho directo en `main` (credenciales desde `.env`, puertos de db y redis cerrados, TLS y dominio en nginx) | nada: la spec 015 lo toma como punto de partida, lo verifica contra sus criterios (spec.md §Supuestos) y lo separa en `docker-compose.prod.yml` (`9b56acc`) | nada (decisión del usuario, 2026-10-22) |
-| `8ccfd3b` ci(ai-dd): activar el workflow | Mantenimiento de CI: mueve `.ai/ci/ai-dd.yml` a `.github/workflows/`, fija SHAs e imágenes; registrado en `security.md`, `deployment.md`, roadmap y CHANGELOG (PR #19) | nada (ya documentado) · alternativa: ficha retroactiva `/chore --retro 8ccfd3b` | nada (decisión del usuario, 2026-10-22) |
-| `f04c086` chore: ignorar documento local | 3 líneas de `.gitignore` para un documento local | nada: trivial | nada (decisión del usuario, 2026-10-22) |
-| `a5350c1` chore(ai-dd): upgrade 1.18.1 | `/init --upgrade` de hoy (PR #32), registrado en CHANGELOG | nada: trabajo del flujo | nada (decisión del usuario, 2026-10-22) |
+| `142b773` feat(auth): add mobile login for active administrators | Comportamiento nuevo: `POST /api/v1/auth/mobile/login` (solo administradores activos, token en el cuerpo, un token por actor y canal). Cambia 001 CA4 ("se revocan todos los tokens previos del actor") y es una excepción a 001 CA1 / BR-4 (el token nunca va en el cuerpo) solo para esta ruta | spec nueva 021 con `extends: [001]` que diga qué criterios de 001 cambia | spec 021 creada como registro (`draft`); liberado en v0.7.0 sin plan, tareas ni review (decisión del usuario, 2026-11-03) |
+| `8bae49b` feat(landing): add privacy notice and terms and conditions pages · `65fa1ab` fix(landing): keep legal links off wrapped text lines | Comportamiento nuevo: `/aviso-de-privacidad`, `/terminos-y-condiciones`, enlaces del pie (cierra 016/R47), leyenda en el registro y `meta description` por página. El segundo commit es parte del mismo cambio (arreglo de composición en CI) | spec nueva 022 con `extends: [011, 002]` | spec 022 creada como registro (`draft`); liberado en v0.7.0 sin plan, tareas ni review (decisión del usuario, 2026-11-03) |
 
 ## Specs con deriva
-Ninguna.
+| spec | commits | archivos | ¿respeta sus criterios? | propuesta |
+|---|---|---|---|---|
+| 014 control de acceso y errores (`released`) | `142b773`, `8bae49b` | `routes/api.php`, `routes/web.php` | sí: rutas nuevas públicas por diseño; el 403 del login móvil sigue el formato `{"error"}` de la spec | nada |
+| 015 primer despliegue (`released`) | `8bae49b`, `65fa1ab` | `resources/views/pages/auth/register.blade.php` | sí: solo se añade la leyenda legal; la imagen de acceso y el formulario siguen igual | nada |
+| 016 sistema de diseño (`released`) | `8bae49b`, `65fa1ab` | vistas públicas, componentes `x-landing.legal-*`, inventario y línea base de `test:ui` | sí: solo tokens y componentes del sistema; `UiCopyTest`, `OnlyDesignTokensTest`, `PageStructureTest` y `npm run test:ui` en verde en CI. La diferencia del registro está admitida en `checks-composition.mjs` con el criterio "páginas legales (sin spec, 2026-11-03)" | nada; criterio cambiado a `022 CA7` |
+| 017, 018, 019, 020 (`released`) | `8bae49b`, `65fa1ab` | solo `tests/Browser/screens.json` y `baseline-1440.json`, archivos compartidos del inventario | sí: sus entradas no cambian | nada |
+
+Specs `approved` (no las marca `drift`, pero describen el comportamiento que cambió):
+- **001 inicio y cierre de sesión:** CA4 deja de ser cierto para el staff (un token por canal, `user-auth` y `user-mobile`); CA1 sigue siendo cierto para `/api/v1/auth/login`.
+- **002 registro de pacientes:** el formulario muestra la leyenda de aceptación con enlaces; no cambia ningún criterio de la API.
+- **011 sitio público:** CA4 enumera las páginas estáticas; ahora hay dos más.
 
 ## Arquitectura
 Sin huecos.
@@ -32,3 +45,6 @@ Ninguna sin validar.
 
 ## Fichas abiertas
 Ninguna (`2026-10-15-fix-reprogramar-cita` está `escalated` a la spec 017, ya liberada).
+
+## Cierre
+El usuario eligió primero el camino 1 (specs 021 y 022 por el flujo completo) y, al ver el coste, decidió desplegar sin plan, tareas ni review (2026-11-03). Las specs 021 y 022 quedan en `draft` como registro del comportamiento liberado en v0.7.0; `aidd.py status` las seguirá mostrando con `/plan` como siguiente paso. Las desviaciones de P1, P4, P11 y P14 que eso implica quedan aceptadas por el usuario para esta versión. `sync.last` pasa a `4446f58`.

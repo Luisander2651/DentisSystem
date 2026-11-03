@@ -35,6 +35,8 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 | 018 | [Agenda por rol](018-agenda-por-rol/spec.md) | Appointments, AppointmentTracking, Core, interfaz de la agenda | released (v0.4.0) | — | — | — |
 | 019 | [Reportes mensuales](019-reportes-mensuales/spec.md) | Reportes (nuevo), Appointments, Patients, interfaz | released (v0.5.0) | — | — | — |
 | 020 | [Tablero de inicio](020-tablero-de-inicio/spec.md) | Appointments, AppointmentTracking, Reports, interfaz del inicio | released (v0.6.0) | — | — | — |
+| 021 | [Inicio de sesión de la app móvil](021-sesion-app-movil/spec.md) | Auth | draft (registro; en v0.7.0 sin plan ni review) | — | — | — |
+| 022 | [Aviso de Privacidad y Términos y Condiciones](022-paginas-legales/spec.md) | Sitio público, registro, Core | draft (registro; en v0.7.0 sin plan ni review) | — | — | — |
 
 ## Pendientes sin spec
 - **Portal del paciente**: layout `patient.blade.php` sin pantallas funcionales.
