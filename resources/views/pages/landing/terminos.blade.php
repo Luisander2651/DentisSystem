@@ -5,7 +5,7 @@
 
 @php
     $controller = config('legal.controller');
-    $link = 'font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4';
+    $link = 'inline-flex min-h-control items-center font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4';
 @endphp
 
 @section('content')
@@ -81,7 +81,8 @@
     </x-landing.legal-section>
 
     <x-landing.legal-section id="privacidad" title="Privacidad">
-        <p>El tratamiento de tus datos personales se rige por nuestro <a href="{{ route('aviso-privacidad') }}" class="{{ $link }}">Aviso de Privacidad</a>.</p>
+        <p>El tratamiento de tus datos personales se rige por nuestro Aviso de Privacidad.</p>
+        <a href="{{ route('aviso-privacidad') }}" class="{{ $link }}">Leer el Aviso de Privacidad</a>
     </x-landing.legal-section>
 
     <x-landing.legal-section id="cambios" title="Cambios a estos términos">
@@ -93,7 +94,8 @@
     </x-landing.legal-section>
 
     <x-landing.legal-section id="contacto" title="Contacto">
-        <p>Si tienes dudas sobre estos términos, escríbenos a <strong class="text-ink">{{ $controller['privacy_email'] }}</strong> o visita la página de <a href="{{ route('contacto') }}" class="{{ $link }}">Contacto y Ubicación</a>.</p>
+        <p>Si tienes dudas sobre estos términos, escríbenos a <strong class="text-ink">{{ $controller['privacy_email'] }}</strong> o visita la página de Contacto y Ubicación.</p>
+        <a href="{{ route('contacto') }}" class="{{ $link }}">Ir a Contacto y Ubicación</a>
     </x-landing.legal-section>
 </x-landing.legal-document>
 @endsection

@@ -107,10 +107,10 @@ it('links the footer of the public site to both legal pages', function (string $
 
 it('tells a patient who signs up that they accept both legal pages', function () {
     $page = legalPage($this, '/register');
-    $legend = $page->query('//form//p[@id="register-legal"]');
+    $legend = $page->query('//form//*[@id="register-legal"]/p');
 
     expect($legend->length)->toBe(1)
-        ->and(preg_replace('/\s+/u', ' ', trim($legend->item(0)->textContent)))->toBe('Al registrarte aceptas el Aviso de Privacidad y los Términos y Condiciones.')
-        ->and($page->query('//p[@id="register-legal"]/a[@href="'.route('aviso-privacidad').'"]')->length)->toBe(1)
-        ->and($page->query('//p[@id="register-legal"]/a[@href="'.route('terminos').'"]')->length)->toBe(1);
+        ->and(trim($legend->item(0)->textContent))->toBe('Al registrarte aceptas el Aviso de Privacidad y los Términos y Condiciones.')
+        ->and($page->query('//*[@id="register-legal"]//a[@href="'.route('aviso-privacidad').'"]')->length)->toBe(1)
+        ->and($page->query('//*[@id="register-legal"]//a[@href="'.route('terminos').'"]')->length)->toBe(1);
 });

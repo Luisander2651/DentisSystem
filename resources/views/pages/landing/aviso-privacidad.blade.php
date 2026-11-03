@@ -5,7 +5,7 @@
 
 @php
     $controller = config('legal.controller');
-    $link = 'font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4';
+    $link = 'inline-flex min-h-control items-center font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4';
 @endphp
 
 @section('content')
@@ -104,7 +104,8 @@
 
     <x-landing.legal-section id="cambios" title="Cambios a este aviso">
         <p>Podemos actualizar este aviso por cambios en la ley, en nuestros servicios o en la forma en que tratamos tus datos. Publicaremos cada versión en esta página con su fecha de actualización.</p>
-        <p>El uso del sitio también se rige por los <a href="{{ route('terminos') }}" class="{{ $link }}">Términos y Condiciones</a>.</p>
+        <p>El uso del sitio también se rige por los Términos y Condiciones.</p>
+        <a href="{{ route('terminos') }}" class="{{ $link }}">Leer los Términos y Condiciones</a>
     </x-landing.legal-section>
 </x-landing.legal-document>
 @endsection
