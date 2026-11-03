@@ -64,7 +64,7 @@ export const ADMITTED = [
         difference: 'Expedientes gana el campo "Buscar" de pacientes delante de sus filtros por estado, que siguen en la misma fila; "Buscar paciente" del inicio lo abre listo para escribir (D26).',
     },
     {
-        criterion: 'páginas legales (sin spec, 2026-11-03)',
+        criterion: '022 CA7',
         entries: ['register'],
         difference: 'El registro gana, antes de "Registrarme", la leyenda "Al registrarte aceptas el Aviso de Privacidad y los Términos y Condiciones" con un enlace a cada página (decisión del usuario, 2026-11-03).',
     },

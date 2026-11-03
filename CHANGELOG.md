@@ -5,6 +5,23 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-03
+Inicio de sesión para la app móvil de asistencias y páginas de Aviso de Privacidad y Términos y Condiciones. Hecho fuera del flujo de specs por decisión del usuario; documentado después en las specs 021 y 022 (sin plan ni review).
+
+### Added
+- La app móvil de asistencias tiene su propio inicio de sesión: un administrador activo entra con su correo y su contraseña y la app recibe su credencial de sesión, que dura 24 horas (spec 021).
+- Un administrador puede tener abiertas a la vez la sesión del panel web y la de la app; cerrar sesión en la app no cierra la web (spec 021).
+- Páginas públicas "Aviso de Privacidad" y "Términos y Condiciones", con versión, fecha de actualización e índice; los datos del responsable aparecen como pendientes hasta que el cliente los proporcione (spec 022).
+- El registro de pacientes indica que al registrarse se aceptan el Aviso de Privacidad y los Términos y Condiciones, con un enlace a cada uno (spec 022).
+- Las dos páginas legales tienen su propia descripción para buscadores (spec 022).
+
+### Changed
+- Los enlaces "Aviso de Privacidad" y "Términos y Condiciones" del pie del sitio llevan a sus páginas; antes no llevaban a ninguna parte (spec 022).
+- Cada inicio de sesión del staff cierra solo las sesiones anteriores de su mismo canal (panel web o app), no todas (spec 021).
+
+### Security
+- Solo los administradores activos pueden entrar en la app: un doctor, un asistente o un paciente con su contraseña correcta reciben "acceso denegado" y no se crea ni se cierra ninguna de sus sesiones; los intentos se limitan a 10 por minuto, como en el panel web (spec 021).
+
 ## [0.6.0] - 2026-10-26
 Tablero de inicio: al entrar al panel, cada miembro del staff ve cómo va el día y qué tiene pendiente (spec 020).
 
