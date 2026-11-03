@@ -27,6 +27,7 @@ use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdateAppoin
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdatePrescriptionController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\LoginController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\LogoutController;
+use App\Modules\Auth\Infrastructure\Http\Controllers\MobileLoginController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\RegisterController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\ResetPasswordController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\SendResetPasswordEmailController;
@@ -90,6 +91,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
 
         Route::prefix('auth')->group(function (): void {
             Route::post('/login', LoginController::class);
+            Route::post('/mobile/login', MobileLoginController::class);
             Route::post('/register', RegisterController::class);
             Route::middleware('auth:sanctum')->group(function (): void {
                 Route::post('/logout', LogoutController::class);
