@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
+use Illuminate\Support\Facades\Hash;
 use Mockery\MockInterface;
 use Tests\Modules\Auth\Integration\AuthIntegrationTestCase;
 
@@ -54,4 +55,32 @@ it('returns a generic 500 without the internal exception message (BR-15)', funct
     $response->assertStatus(500)->assertExactJson(['error' => 'Internal server error']);
     expect($response->getContent())->not->toContain('SQLSTATE');
     expect($response->getContent())->not->toContain('undefined_table');
+});
+
+it('returns 429 on the eleventh unauthenticated mobile login attempt from the same IP', function () {
+    $payload = $this->validLoginPayload();
+
+    for ($attempt = 1; $attempt <= 10; $attempt++) {
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.30'])
+            ->postJson($this->mobileLoginUrl(), $payload)
+            ->assertUnauthorized();
+    }
+
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.30'])
+        ->postJson($this->mobileLoginUrl(), $payload)
+        ->assertStatus(429);
+});
+
+it('returns a generic 500 from the mobile login without the internal exception message', function () {
+    $admin = $this->createUserWithRole('Administrador');
+
+    Hash::shouldReceive('check')->andThrow(new RuntimeException('SQLSTATE[08006]: connection failure: internal detail'));
+
+    $response = $this->postJson($this->mobileLoginUrl(), [
+        'email' => $admin->email,
+        'password' => 'Sup3rSecret!',
+    ]);
+
+    $response->assertStatus(500)->assertExactJson(['error' => 'Internal server error']);
+    expect($response->getContent())->not->toContain('SQLSTATE');
 });

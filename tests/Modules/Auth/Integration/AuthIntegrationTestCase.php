@@ -78,6 +78,11 @@ abstract class AuthIntegrationTestCase extends TestCase
         return '/api/v1/auth/login';
     }
 
+    protected function mobileLoginUrl(): string
+    {
+        return '/api/v1/auth/mobile/login';
+    }
+
     protected function registerUrl(): string
     {
         return '/api/v1/auth/register';
