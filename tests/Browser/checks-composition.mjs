@@ -63,6 +63,11 @@ export const ADMITTED = [
         entries: ['expedientes', 'expediente', 'expediente-contacto-form', 'expediente-direccion-form', 'expediente-medicos-form', 'expediente-asistente', 'expediente-doctor'],
         difference: 'Expedientes gana el campo "Buscar" de pacientes delante de sus filtros por estado, que siguen en la misma fila; "Buscar paciente" del inicio lo abre listo para escribir (D26).',
     },
+    {
+        criterion: 'páginas legales (sin spec, 2026-11-03)',
+        entries: ['register'],
+        difference: 'El registro gana, antes de "Registrarme", la leyenda "Al registrarte aceptas el Aviso de Privacidad y los Términos y Condiciones" con un enlace a cada página (decisión del usuario, 2026-11-03).',
+    },
 ];
 
 // In points of the window width. The runner of CI and a local machine draw the same text with

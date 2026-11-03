@@ -41,6 +41,8 @@ cuatro vistas Blade sobre un solo layout.
 | `/acerca-de-nosotros` | sí | ✅ "Acerca de Nosotros - Dentissa" | ❌ | ❌ | ✅ 1 | ❌ | ❌ | `GET` 200 |
 | `/galeria` | sí | ✅ "Galería de Sonrisas - Dentissa" | ❌ | ❌ | ✅ 1 | ❌ | ❌ | `GET` 200; el HTML dice "Cargando galería..." y las imágenes llegan por `GET /api/v1/public/gallery-images` (`resources/js/pages/landing/galeria.js:21`) |
 | `/contacto` | sí | ✅ "Contacto y Ubicación - Dentissa" | ❌ | ❌ | ✅ 1 | ❌ | ❌ | `GET` 200 |
+| `/aviso-de-privacidad` | sí | ✅ "Aviso de Privacidad - Dentissa" | ✅ propia | ❌ | ✅ 1 | ❌ | ❌ | `LegalPagesTest` (2026-11-03, sin auditar en producción) |
+| `/terminos-y-condiciones` | sí | ✅ "Términos y Condiciones - Dentissa" | ✅ propia | ❌ | ✅ 1 | ❌ | ❌ | `LegalPagesTest` (2026-11-03, sin auditar en producción) |
 | `/login`, `/register`, `/forgot-password`, `/reset-password` | no (pantallas de acceso) | ➖ | ➖ | ➖ | ✅ 1 | ➖ | ➖ | `GET /login` y `/register` 200 **sin** `noindex` (SE4) |
 | Panel (`/dashboard`, `/agenda`, `/pacientes`…) | no (exigen sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | `GET /agenda` sin sesión → `302` a `/login` |
 | URL inexistente | no (404) | ✅ "No encontrada - Dentissa" | ➖ | ➖ | ✅ 1 | ➖ | ➖ | `GET /pagina-que-no-existe` → `404`, `noindex`, página propia |

@@ -67,6 +67,13 @@
 				¿Ya tienes cuenta? Inicia sesión
 			</a>
 
+			<p id="register-legal" class="text-sm leading-6 text-muted">
+				Al registrarte aceptas el
+				<a href="{{ route('aviso-privacidad') }}" class="font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4">Aviso de Privacidad</a>
+				y los
+				<a href="{{ route('terminos') }}" class="font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4">Términos y Condiciones</a>.
+			</p>
+
 			<div class="w-full">
 				<x-ui.button id="register-submit" variant="primary" type="submit" class="w-full sm:w-auto">
 					Registrarme
