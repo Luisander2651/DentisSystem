@@ -67,6 +67,14 @@
 				¿Ya tienes cuenta? Inicia sesión
 			</a>
 
+			<div id="register-legal" class="text-sm text-muted">
+				<p class="leading-6">Al registrarte aceptas el Aviso de Privacidad y los Términos y Condiciones.</p>
+				<div class="flex flex-wrap items-center gap-x-4">
+					<a href="{{ route('aviso-privacidad') }}" class="inline-flex min-h-control items-center font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4">Aviso de Privacidad</a>
+					<a href="{{ route('terminos') }}" class="inline-flex min-h-control items-center font-semibold text-ink underline decoration-primary decoration-2 underline-offset-4">Términos y Condiciones</a>
+				</div>
+			</div>
+
 			<div class="w-full">
 				<x-ui.button id="register-submit" variant="primary" type="submit" class="w-full sm:w-auto">
 					Registrarme

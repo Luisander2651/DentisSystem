@@ -102,8 +102,8 @@
                 &copy; {{ date('Y') }} Dentissa. Todos los derechos reservados.
             </p>
             <p class="flex gap-4 text-min">
-                <a href="#" class="inline-flex min-h-control items-center text-muted underline-offset-4 hover:text-ink hover:underline">Aviso de Privacidad</a>
-                <a href="#" class="inline-flex min-h-control items-center text-muted underline-offset-4 hover:text-ink hover:underline">Términos de Servicio</a>
+                <a href="{{ route('aviso-privacidad') }}" class="inline-flex min-h-control items-center text-muted underline-offset-4 hover:text-ink hover:underline">Aviso de Privacidad</a>
+                <a href="{{ route('terminos') }}" class="inline-flex min-h-control items-center text-muted underline-offset-4 hover:text-ink hover:underline">Términos y Condiciones</a>
             </p>
         </div>
     </div>

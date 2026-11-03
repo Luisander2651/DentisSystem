@@ -19,6 +19,14 @@ Route::get('/acerca-de-nosotros', function () {
     return view('pages.landing.acerca');
 })->name('acerca');
 
+Route::get('/aviso-de-privacidad', function () {
+    return view('pages.landing.aviso-privacidad');
+})->name('aviso-privacidad');
+
+Route::get('/terminos-y-condiciones', function () {
+    return view('pages.landing.terminos');
+})->name('terminos');
+
 Route::get('/login', function () {
     return view('pages.auth.login');
 })->name('login');

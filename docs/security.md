@@ -13,11 +13,11 @@ updated: 2026-10-04
 
 ## Obligaciones derivadas de la LFPDPPP
 Los datos de salud son **datos personales sensibles** según la LFPDPPP. Obligaciones que afectan al
-sistema. Ninguna está implementada; todas son requisito **antes de cargar datos reales de pacientes**:
+sistema. Solo el aviso de privacidad está publicado (parcial); el resto no está implementado; todas son requisito **antes de cargar datos reales de pacientes**:
 
 | Obligación | Qué implica en Dentissa | Estado |
 |---|---|---|
-| Aviso de privacidad | Publicarlo en el sitio y mostrarlo en el registro de pacientes y en el alta por el staff | pendiente |
+| Aviso de privacidad | Publicarlo en el sitio y mostrarlo en el registro de pacientes y en el alta por el staff | parcial: publicado en `/aviso-de-privacidad` (texto fijo, versión y fecha en `config/legal.php`) y enlazado en el pie y en el registro; faltan los datos reales del responsable (marcados como pendientes en `config/legal.php`), mostrarlo en el alta por el staff y validar el texto con un especialista. Hecho sin spec, pendiente de `/sync` |
 | Consentimiento expreso y por escrito para datos sensibles | Registrar el consentimiento del paciente (fecha, versión del aviso) antes de guardar datos médicos o clínicos | pendiente |
 | Derechos ARCO (acceso, rectificación, cancelación, oposición) | Procedimiento y medio para que el paciente los ejerza; exportar y suprimir sus datos | pendiente |
 | Medidas de seguridad administrativas, técnicas y físicas | Cerrar los riesgos 1 y 2 (control de acceso y cifrado en reposo), además de backups cifrados y control de accesos al VPS | pendiente |
