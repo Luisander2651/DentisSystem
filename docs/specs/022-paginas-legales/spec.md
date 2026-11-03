@@ -165,3 +165,4 @@ Ninguna.
 |---|---|---|
 | 2026-11-03 | Spec creada a partir del cambio ya integrado (PR #41) | `/sync` 2026-11-03, decisión del usuario |
 | 2026-11-03 | Se queda en `draft` como registro del comportamiento; liberado en v0.7.0 sin plan, tareas ni review | Decisión del usuario: desplegar sin el flujo completo |
+| 2026-11-03 | Desplegado en producción con v0.7.0 (verificación local 14/14, remota 30/30, vigilancia de 15 min sin 5xx) | Registro de la liberación en `docs/sync.md` |
