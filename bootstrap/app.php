@@ -3,6 +3,7 @@
 use App\Core\Authorization\Exceptions\AuthorizationException;
 use App\Core\Http\UnexpectedErrorResponse;
 use App\Core\Middlewares\EnsureActiveStaff;
+use App\Core\Middlewares\EnsureServiceKey;
 use App\Core\Middlewares\InjectSanctumTokenFromCookie;
 use App\Core\Middlewares\OnlyAdmin;
 use App\Core\Middlewares\SecurityHeaders;
@@ -64,6 +65,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'sanctum.cookie' => InjectSanctumTokenFromCookie::class,
             'only.admin' => OnlyAdmin::class,
             'staff' => EnsureActiveStaff::class,
+            'service.key' => EnsureServiceKey::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

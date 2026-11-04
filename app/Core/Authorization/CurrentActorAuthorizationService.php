@@ -120,6 +120,8 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
             // Spec 019: the monthly report and its download.
             'reports.view' => $adminOnly,
             'reports.export' => $adminOnly,
+            // Attendance microservice: GET /auth/me, only the administrator controls the room.
+            'auth.session.view' => $adminOnly,
         ];
     }
 }

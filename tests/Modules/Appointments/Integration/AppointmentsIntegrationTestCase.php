@@ -64,6 +64,16 @@ abstract class AppointmentsIntegrationTestCase extends TestCase
         return '/api/v1/agenda/today-appointments';
     }
 
+    protected function internalAppointmentUrl(string $id): string
+    {
+        return "/api/v1/internal/appointments/{$id}";
+    }
+
+    protected function internalTodayAppointmentsUrl(): string
+    {
+        return '/api/v1/internal/appointments/today';
+    }
+
     protected function treatmentsAdminUrl(): string
     {
         return '/api/v1/treatments';
