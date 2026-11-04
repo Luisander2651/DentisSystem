@@ -92,14 +92,6 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             });
         });
 
-        // Attendance microservice: no user behind the request, only the service key.
-        Route::prefix('internal')->middleware('service.key')->group(function (): void {
-            Route::prefix('appointments')->group(function (): void {
-                Route::get('/today', GetInternalTodayAppointmentsController::class);
-                Route::get('/{id}', GetInternalAppointmentByIdController::class);
-            });
-        });
-
         Route::prefix('auth')->group(function (): void {
             Route::post('/login', LoginController::class);
             Route::post('/mobile/login', MobileLoginController::class);
@@ -223,5 +215,14 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::post('/{id}/tracking', RegisterAppointmentTrackingController::class);
             });
         });
+    });
+});
+
+// Attendance microservice: no user behind the request, only the service key. Outside
+// throttle:api, which would cap every QR scan from its single IP at 10 a minute.
+Route::prefix('v1/internal')->middleware(['throttle:internal-service', 'service.key'])->group(function (): void {
+    Route::prefix('appointments')->group(function (): void {
+        Route::get('/today', GetInternalTodayAppointmentsController::class);
+        Route::get('/{id}', GetInternalAppointmentByIdController::class);
     });
 });

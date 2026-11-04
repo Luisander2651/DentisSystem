@@ -18,13 +18,21 @@ final class EnsureServiceKey
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $expectedKey = (string) config('services.attendance.key');
-        $givenKey = (string) $request->header('X-Service-Key', '');
-
-        if ($expectedKey === '' || ! hash_equals($expectedKey, $givenKey)) {
+        if (! self::hasValidKey($request)) {
             return new JsonResponse(['error' => 'Invalid service key.'], 401);
         }
 
         return $next($request);
+    }
+
+    /**
+     * Also read by the `internal-service` rate limiter, which runs before this middleware.
+     */
+    public static function hasValidKey(Request $request): bool
+    {
+        $expectedKey = (string) config('services.attendance.key');
+        $givenKey = (string) $request->header('X-Service-Key', '');
+
+        return $expectedKey !== '' && hash_equals($expectedKey, $givenKey);
     }
 }

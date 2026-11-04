@@ -111,6 +111,46 @@ it('does not accept a patient session in place of the service key', function () 
     $this->getJson($this->internalTodayAppointmentsUrl())->assertUnauthorized();
 });
 
+// --- Rate limit ---
+
+it('does not cap the QR scans of the service at the anonymous limit of 10 a minute', function () {
+    $appointment = $this->createAppointment();
+
+    for ($scan = 1; $scan <= 30; $scan++) {
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.30'])
+            ->withHeader('X-Service-Key', 'test-service-key')
+            ->getJson($this->internalAppointmentUrl($appointment->id))
+            ->assertOk();
+    }
+});
+
+it('keeps a wrong service key at 10 attempts a minute per IP', function () {
+    for ($attempt = 1; $attempt <= 10; $attempt++) {
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.31'])
+            ->withHeader('X-Service-Key', 'wrong-key')
+            ->getJson($this->internalTodayAppointmentsUrl())
+            ->assertUnauthorized();
+    }
+
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.31'])
+        ->withHeader('X-Service-Key', 'wrong-key')
+        ->getJson($this->internalTodayAppointmentsUrl())
+        ->assertStatus(429);
+});
+
+it('still serves the service while a wrong key is being throttled from the same IP', function () {
+    for ($attempt = 1; $attempt <= 11; $attempt++) {
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.32'])
+            ->withHeader('X-Service-Key', 'wrong-key')
+            ->getJson($this->internalTodayAppointmentsUrl());
+    }
+
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.32'])
+        ->withHeader('X-Service-Key', 'test-service-key')
+        ->getJson($this->internalTodayAppointmentsUrl())
+        ->assertOk();
+});
+
 // --- Unexpected failure ---
 
 it('answers a generic 500 when reading an appointment fails unexpectedly', function () {
