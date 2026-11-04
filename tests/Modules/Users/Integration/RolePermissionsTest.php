@@ -63,6 +63,7 @@ function rolePermissionMatrix(): array
         // Spec 019: the monthly report and its download, only for the administrator.
         'reports.view' => ['reports.view', ['Administrador']],
         'reports.export' => ['reports.export', ['Administrador']],
+        'auth.session.view' => ['auth.session.view', ['Administrador']],
     ];
 }
 

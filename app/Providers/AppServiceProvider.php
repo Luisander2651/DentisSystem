@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Core\Authorization\CurrentActorAuthorizationService;
 use App\Core\Health\CheckDependenciesOnHealth;
+use App\Core\Middlewares\EnsureServiceKey;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\EloquentAppointmentRepository;
 use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentCompletionRepositoryInterface;
@@ -226,6 +227,15 @@ class AppServiceProvider extends ServiceProvider
             return $request->user()
                 ? Limit::perMinute(100)->by($request->user()->id) // 100 por min por usuario
                 : Limit::perMinute(10)->by($request->ip()); // 10 por min por IP
+        });
+
+        // Attendance microservice: every QR scan arrives from its single IP and without a user,
+        // so the `api` limiter would answer 429 (and keep the door shut) after 10 scans a minute.
+        // The valid key gets its own high budget; a wrong key stays at 10 per minute per IP.
+        RateLimiter::for('internal-service', function (Request $request) {
+            return EnsureServiceKey::hasValidKey($request)
+                ? Limit::perMinute(600)->by('internal-service')
+                : Limit::perMinute(10)->by('internal-service:'.$request->ip());
         });
 
         // Spec 019 (CA14, TM5): each administrator downloads at most 10 reports a minute.

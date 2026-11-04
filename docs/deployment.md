@@ -305,6 +305,7 @@ Lo usa `/fix --hotfix` (decisión del usuario, 2026-10-15).
 | R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_DEFAULT_REGION, R2_BUCKET, R2_URL, R2_ENDPOINT, R2_USE_PATH_STYLE_ENDPOINT | ✓ | ✓ | `.env` |
 | TWILIO_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, TWILIO_APPOINTMENT_TEMPLATE_SID | opcional | ✓ | `.env` (vacías en `.env.example`; se leen con `config('services.twilio.*')`) |
 | BREVO_EMAIL_SENDER_API_KEY, BREVO_RESET_PASSWORD_TEMPLATE_ID | opcional | ✓ | `.env` (vacías en `.env.example`; se leen con `config('services.brevo.*')`) |
+| ATTENDANCE_SERVICE_KEY | opcional | ✓ (si corre el microservicio de asistencias) | `.env` (vacía en `.env.example`; se lee con `config('services.attendance.key')`; la misma llave va en `CORE_SERVICE_KEY` del microservicio; sin ella, `/api/v1/internal/*` responde 401) |
 | LOG_CHANNEL, LOG_STACK, LOG_LEVEL | ✓ | ✓ | `.env` (`stderr` e `info` por defecto en `.env.example`) |
 | CSP_REPORT_ONLY | opcional | ✓ | `.env` (`false`; `true` solo como interruptor de emergencia) |
 | COMPOSE_FILE, DATA_VOLUME_PREFIX | — | ✓ | `.env` del clon de producción (`docker-compose.prod.yml` y el proyecto Compose de la pila manual, `dentissystem`) |

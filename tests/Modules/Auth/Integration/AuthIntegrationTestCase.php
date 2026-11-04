@@ -6,6 +6,7 @@ namespace Tests\Modules\Auth\Integration;
 
 use App\Modules\Auth\Domain\Events\SendEmailForChangePasswordEvent;
 use App\Modules\Auth\Domain\Service\PasswordResetService;
+use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Event;
@@ -83,6 +84,11 @@ abstract class AuthIntegrationTestCase extends TestCase
         return '/api/v1/auth/mobile/login';
     }
 
+    protected function meUrl(): string
+    {
+        return '/api/v1/auth/me';
+    }
+
     protected function registerUrl(): string
     {
         return '/api/v1/auth/register';
@@ -128,6 +134,22 @@ abstract class AuthIntegrationTestCase extends TestCase
             'password' => 'Sup3rSecret!',
             'confirm_password' => 'Sup3rSecret!',
         ], $overrides);
+    }
+
+    /**
+     * Signs the user in from the app with the default test password and returns the token
+     * the app would keep, with the guard cache cleared for the next request.
+     */
+    protected function mobileTokenFor(UserModel $user): string
+    {
+        $token = $this->postJson($this->mobileLoginUrl(), [
+            'email' => $user->email,
+            'password' => 'Sup3rSecret!',
+        ])->json('data.token');
+
+        $this->forgetAuthState();
+
+        return $token;
     }
 
     // --- Reset token helpers ---

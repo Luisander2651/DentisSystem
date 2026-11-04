@@ -8,6 +8,8 @@ use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAllApointmentsBy
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentByIdController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentsByPatientIdController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetDoctorsForAppointmentSelectController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetInternalAppointmentByIdController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetInternalTodayAppointmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPatientsForAppointmentSelectController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodayAppointmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodaySummaryController;
@@ -25,6 +27,7 @@ use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetCompleted
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\RegisterAppointmentTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdateAppointmentTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdatePrescriptionController;
+use App\Modules\Auth\Infrastructure\Http\Controllers\GetAuthenticatedUserController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\LoginController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\LogoutController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\MobileLoginController;
@@ -95,6 +98,9 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             Route::post('/register', RegisterController::class);
             Route::middleware('auth:sanctum')->group(function (): void {
                 Route::post('/logout', LogoutController::class);
+            });
+            Route::middleware(['auth:sanctum', 'only.admin'])->group(function (): void {
+                Route::get('/me', GetAuthenticatedUserController::class);
             });
             Route::post('/send-reset-password-email', SendResetPasswordEmailController::class);
             Route::post('/reset-password', ResetPasswordController::class);
@@ -209,5 +215,14 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::post('/{id}/tracking', RegisterAppointmentTrackingController::class);
             });
         });
+    });
+});
+
+// Attendance microservice: no user behind the request, only the service key. Outside
+// throttle:api, which would cap every QR scan from its single IP at 10 a minute.
+Route::prefix('v1/internal')->middleware(['throttle:internal-service', 'service.key'])->group(function (): void {
+    Route::prefix('appointments')->group(function (): void {
+        Route::get('/today', GetInternalTodayAppointmentsController::class);
+        Route::get('/{id}', GetInternalAppointmentByIdController::class);
     });
 });
