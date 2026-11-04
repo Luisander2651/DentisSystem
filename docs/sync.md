@@ -41,3 +41,14 @@ Ninguna (`2026-10-15-fix-reprogramar-cita` está `escalated` a la spec 017, ya l
 
 ## Cierre
 El usuario pidió conciliar y liberar "como lo hicimos" con 021 y 022 (2026-11-04): la spec 023 queda en `draft` como registro del comportamiento liberado en v0.8.0. Las desviaciones de P1, P5 (rutas internas sin `assertCan`) y P14 quedan aceptadas por el usuario para esta versión. `sync.last` pasa a `8877ff9`.
+
+## Liberación v0.8.0
+- Tag `v0.8.0` sobre `5f14c30` (merge del PR #46). Código verificado en CI en los PR #44 y #45 (Pest en paralelo, build, `test:ui`, Pint, artefactos y seguridad del PR); suite local en serie, 1983 en verde. Puerta de seguridad: `npm audit` y `composer audit` limpios tras la ficha `2026-11-04-chore-dependency-audit`.
+- Producción: despliegue manual del usuario en el droplet con `docker/prod/deploy.sh v0.8.0` el 2026-11-04 (4 min 16 s; sin migraciones; verificación local 14/14; se conservan las imágenes de v0.8.0 y v0.7.0), con `ATTENDANCE_SERVICE_KEY` añadida antes al `.env` del clon. `verify.sh --remote` dio primero 28/30 (falló la petición directa al origen de `X-Powered-By` y el límite a través del proxy); repetidas a mano las dos comprobaciones pasaban (sin `X-Powered-By` en el origen; diez 200 y luego 429 con `X-Forwarded-For` rotado), y la segunda corrida dio 30/30.
+- Comprobación de las rutas nuevas: `/api/v1/internal/appointments/today` sin `X-Service-Key` responde 401 `{"error":"Invalid service key."}` y `/api/v1/auth/me` sin token responde 401. La respuesta con la llave la comprueba el usuario (la llave no sale del droplet).
+- Vigilancia de 15 min, dos ventanas desde el equipo del usuario a `/up`, `/`, `/login`, `/api/v1/appointments`, `/api/v1/auth/me` y `/api/v1/internal/appointments/today`, sin sesión ni llave:
+  - 18:54–19:11 UTC: 90 peticiones, sin 5xx; 88 con la respuesta esperada (200 en las páginas, 401 en las rutas protegidas) y 2 sin respuesta en 15 s; tiempos de hasta 8,2 s. El desglose mostró el apretón TLS directo al origen en hasta 4,8 s.
+  - 21:04–21:20 UTC: 90 peticiones, sin 5xx; 36 no salieron del equipo (sin DNS de 21:07 a 21:12, corte de red del usuario), 53 con la respuesta esperada y 1 sin respuesta en 15 s; tiempos de hasta 4,7 s.
+- En el droplet (21:17 UTC): carga 0,23 / 0,48 / 0,63, disco al 53 %, contenedores en reposo y sin 5xx, errores ni timeouts en los logs de `app` y `nginx` de los últimos 30 min. Swap con 702 MB en uso (752 MB de RAM disponibles), probablemente del build. La latencia se atribuye a la red del usuario y al swap tras el build, no a v0.8.0. Sin rollback.
+- Observación: con 2 GB de RAM, cada build en el droplet empuja servicios al swap; vigilarlo antes de cargar datos reales.
+- Pendiente para el usuario: comprobar `/api/v1/internal/appointments/today` con `X-Service-Key` (200) y configurar la misma llave en `CORE_SERVICE_KEY` del microservicio.
