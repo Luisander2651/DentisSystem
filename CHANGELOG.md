@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-04
+Consultas para el microservicio de asistencias: confirmar quién inició sesión en la app y leer las citas al escanear el QR de un paciente. Hecho fuera del flujo de specs por decisión del usuario; documentado después en la spec 023 (sin plan ni review).
+
+### Added
+- El microservicio de asistencias puede confirmar que la sesión de la app sigue siendo de un administrador activo antes de aceptar una conexión o una orden (spec 023).
+- El microservicio puede consultar una cita por su identificador al escanear el QR de un paciente, y las citas de hoy de todos los doctores, identificándose con su propia llave (spec 023).
+
+### Security
+- Un administrador desactivado, o al que le quitaron el rol, deja de poder usar la app aunque su sesión no haya caducado (spec 023).
+- Las consultas de citas del microservicio se rechazan sin la llave correcta, aunque quien pregunte tenga una sesión abierta; los intentos con una llave incorrecta se limitan a 10 por minuto, sin frenar al microservicio (spec 023).
+- Actualizadas dos dependencias con avisos de seguridad: una del cliente HTTP del panel (alta) y otra de la composición de correos (media) (chore 2026-11-04-chore-dependency-audit).
+
 ## [0.7.0] - 2026-11-03
 Inicio de sesión para la app móvil de asistencias y páginas de Aviso de Privacidad y Términos y Condiciones. Hecho fuera del flujo de specs por decisión del usuario; documentado después en las specs 021 y 022 (sin plan ni review).
 
