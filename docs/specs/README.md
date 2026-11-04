@@ -37,6 +37,7 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 | 020 | [Tablero de inicio](020-tablero-de-inicio/spec.md) | Appointments, AppointmentTracking, Reports, interfaz del inicio | released (v0.6.0) | — | — | — |
 | 021 | [Inicio de sesión de la app móvil](021-sesion-app-movil/spec.md) | Auth | draft (registro; en v0.7.0 sin plan ni review) | — | — | — |
 | 022 | [Aviso de Privacidad y Términos y Condiciones](022-paginas-legales/spec.md) | Sitio público, registro, Core | draft (registro; en v0.7.0 sin plan ni review) | — | — | — |
+| 023 | [Consultas del microservicio de asistencias](023-consultas-del-microservicio-de-asistencias/spec.md) | Auth, Appointments, Core | draft (registro; en v0.8.0 sin plan ni review) | — | — | — |
 
 ## Pendientes sin spec
 - **Portal del paciente**: layout `patient.blade.php` sin pantallas funcionales.
