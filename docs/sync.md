@@ -48,3 +48,11 @@ Ninguna (`2026-10-15-fix-reprogramar-cita` está `escalated` a la spec 017, ya l
 
 ## Cierre
 El usuario eligió primero el camino 1 (specs 021 y 022 por el flujo completo) y, al ver el coste, decidió desplegar sin plan, tareas ni review (2026-11-03). Las specs 021 y 022 quedan en `draft` como registro del comportamiento liberado en v0.7.0; `aidd.py status` las seguirá mostrando con `/plan` como siguiente paso. Las desviaciones de P1, P4, P11 y P14 que eso implica quedan aceptadas por el usuario para esta versión. `sync.last` pasa a `4446f58`.
+
+## Liberación v0.7.0
+- Tag `v0.7.0` sobre `c9bb3e0` (merge del PR #42). Código ya verificado en CI en los PR #40 y #41 (Pest en paralelo, build, `test:ui`, Pint, artefactos y seguridad del PR); suite local en serie en cada uno.
+- Producción: despliegue manual del usuario en el droplet con `docker/prod/deploy.sh v0.7.0` el 2026-11-03 (4 min 33 s; sin migraciones; verificación local 14/14; se conservan las imágenes de v0.7.0 y v0.6.0) y `verify.sh --remote` 30/30 desde el equipo del usuario.
+- Comprobación de las rutas nuevas (19:40 UTC): `/aviso-de-privacidad`, `/terminos-y-condiciones` y `/register` responden 200; el aviso muestra la versión 1.0 y los datos del responsable como pendientes; el pie del inicio enlaza a las dos páginas; el registro muestra la leyenda; el login móvil sin datos responde 422.
+- Vigilancia de 15 min (19:40–19:55 UTC): 112 peticiones a `/up`, `/`, `/login`, `/aviso-de-privacidad`, `/terminos-y-condiciones`, `/register`, `/api/v1/appointments` sin sesión y `POST /api/v1/auth/mobile/login` sin datos, sin 5xx (máximo 1,5 s). Todas con la respuesta esperada (200 en las páginas, 401 en la ruta protegida y 422 en el login móvil). Sin rollback.
+- Pendiente para el usuario: iniciar sesión con un administrador desde la app (o con una petición manual) contra producción, y sustituir los datos del responsable en `config/legal.php` antes de cargar datos reales.
+
