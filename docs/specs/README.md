@@ -27,7 +27,7 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 | 010 | [Confirmación de cita por WhatsApp](010-confirmacion-de-cita-por-whatsapp/spec.md) | whatsApp | approved | media | no | — (U7 pendiente) |
 | 011 | [Sitio público](011-sitio-publico/spec.md) | ContentManagement | approved | alta | no | — (U5 en curso) |
 | 012 | [Gestión del contenido público](012-gestion-de-contenido/spec.md) | ContentManagement | approved | media | no | — (U5 en curso) |
-| 013 | [Código QR por cita](013-codigos-qr-por-cita/spec.md) | Appointments | approved | — | — | — |
+| 013 | [Código QR por cita](013-codigos-qr-por-cita/spec.md) | Appointments | reemplazada por la 024 | — | — | — |
 | 014 | [Control de acceso y errores sin detalles internos](014-control-de-acceso-y-errores/spec.md) | Patients, Appointments, AppointmentTracking, ContentManagement | released (v0.1.0) | — | — | — |
 | 015 | [Despliegue de producción en el VPS](015-primer-despliegue-vps/spec.md) | Infraestructura, whatsApp, Email, Appointments, Auth | released (v0.1.0) | — | — | — |
 | 016 | [Sistema de diseño aplicado](016-sistema-de-diseno-aplicado/spec.md) | Interfaz (todas las vistas), Core | released (v0.2.0) | — | — | — |
@@ -38,6 +38,7 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 | 021 | [Inicio de sesión de la app móvil](021-sesion-app-movil/spec.md) | Auth | draft (registro; en v0.7.0 sin plan ni review) | — | — | — |
 | 022 | [Aviso de Privacidad y Términos y Condiciones](022-paginas-legales/spec.md) | Sitio público, registro, Core | draft (registro; en v0.7.0 sin plan ni review) | — | — | — |
 | 023 | [Consultas del microservicio de asistencias](023-consultas-del-microservicio-de-asistencias/spec.md) | Auth, Appointments, Core | draft (registro; en v0.8.0 sin plan ni review) | — | — | — |
+| 024 | [QR de cita para el acceso](024-qr-de-cita-para-el-acceso/spec.md) | Appointments, interfaz de la agenda | approved | — | — | — |
 
 ## Pendientes sin spec
 - **Portal del paciente**: layout `patient.blade.php` sin pantallas funcionales.

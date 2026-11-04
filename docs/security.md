@@ -124,11 +124,11 @@ Las rutas de pacientes, subrecursos, expediente y citas solo exigen `auth:sanctu
 
 Correcciones:
 - RS1.a Restringir las rutas de pacientes, subrecursos, expediente y citas a staff — estado: mitigada (v0.1.0; spec 014)
-- RS1.b Comprobar la propiedad del recurso — estado: pendiente (spec 013, CA24)
-- RS1.c Fijar el provider del guard `sanctum` — estado: pendiente (spec 013, CA23)
+- RS1.b Comprobar la propiedad del recurso — estado: pendiente (sin spec; la 013, que la cubría con CA24, se reemplazó por la 024 el 2026-11-04)
+- RS1.c Fijar el provider del guard `sanctum` — estado: pendiente (sin spec; la 013, que la cubría con CA23, se reemplazó por la 024 el 2026-11-04)
 - RS1.d Añadir tests de acceso denegado — estado: mitigada (v0.1.0; spec 014): `PatientsAccessControlTest`, `AppointmentsAccessControlTest`, `RolePermissionsTest`
 
-RS1 queda **parcialmente mitigado** hasta que la spec 013 cierre RS1.b y RS1.c.
+RS1 queda **parcialmente mitigado** hasta que una spec cierre RS1.b y RS1.c.
 
 ### RS2 · Alta — Datos de salud sin cifrar en reposo
 
