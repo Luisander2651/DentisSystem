@@ -21,25 +21,25 @@ it('draws an SVG document', function () {
 
     expect($svg)->toStartWith('<?xml')
         ->and($svg)->toContain('<svg');
-})->skip('024: pendiente de T020');
+});
 
 it('holds exactly the given text, without prefix nor spaces', function () {
     $svg = (new ChillerlanQrCodeGenerator)->svg(QR_GENERATOR_APPOINTMENT_ID);
 
     expect($this->decodeQrSvg($svg))->toBe(QR_GENERATOR_APPOINTMENT_ID);
-})->skip('024: pendiente de T020');
+});
 
 it('draws the same code every time for the same text', function () {
     $generator = new ChillerlanQrCodeGenerator;
 
     expect($generator->svg(QR_GENERATOR_APPOINTMENT_ID))->toBe($generator->svg(QR_GENERATOR_APPOINTMENT_ID));
-})->skip('024: pendiente de T020');
+});
 
 it('uses error correction M', function () {
     $result = $this->decodeQrSvgResult((new ChillerlanQrCodeGenerator)->svg(QR_GENERATOR_APPOINTMENT_ID));
 
     expect($result->eccLevel->getLevel())->toBe(EccLevel::M);
-})->skip('024: pendiente de T020');
+});
 
 it('carries no script nor link that could run when the file is opened (abuse)', function () {
     $svg = (new ChillerlanQrCodeGenerator)->svg(QR_GENERATOR_APPOINTMENT_ID);
@@ -48,7 +48,7 @@ it('carries no script nor link that could run when the file is opened (abuse)', 
         ->and(stripos($svg, 'href'))->toBeFalse()
         ->and(stripos($svg, 'xlink'))->toBeFalse()
         ->and(stripos($svg, 'onload'))->toBeFalse();
-})->skip('024: pendiente de T020');
+});
 
 it('draws a code in less than 150 ms', function () {
     $generator = new ChillerlanQrCodeGenerator;
@@ -59,4 +59,4 @@ it('draws a code in less than 150 ms', function () {
     $elapsedMs = (hrtime(true) - $start) / 1_000_000;
 
     expect($elapsedMs)->toBeLessThan(150);
-})->skip('024: pendiente de T020');
+});

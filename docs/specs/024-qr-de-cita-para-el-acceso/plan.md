@@ -207,8 +207,9 @@ No aplica: la ruta es privada de la API del panel; la spec no crea ni cambia rut
   esta spec; se corrige con `/fix`. El QR no copia ese comportamiento (A1).
 - **D4** Nombre del archivo: `cita-AAAA-MM-DD-HHMM.png`, sin datos del paciente (TM5).
 - **D5** `chillerlan/php-qrcode` 6.0.1 → ADR 0007 (P10).
-- **D6** CA1 se prueba sobre la respuesta real: un ayudante de test rasteriza el SVG con GD y lo
-  decodifica con la misma librería. Comparar el SVG con el que genera el adaptador no bastaría,
+- **D6** CA1 se prueba sobre la respuesta real: un ayudante de test arma la matriz con los módulos
+  oscuros del SVG y la decodifica con la misma librería (sin su detector de imágenes, que fallaba
+  en ~1 de cada 1 000 códigos; nota de T020). Comparar el SVG con el que genera el adaptador no bastaría,
   porque dos errores iguales se anularían.
 - **D8** Sin `/design-spec`: el cambio es un bloque dentro de un diálogo que ya existe y K1–K4 se
   comprueban con `npm run test:ui` (decisión del usuario, 2026-11-04).

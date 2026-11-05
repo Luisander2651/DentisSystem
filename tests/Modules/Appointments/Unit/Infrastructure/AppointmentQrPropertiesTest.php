@@ -26,7 +26,7 @@ it('reads back exactly the appointment id for any id (property)', function () {
 
         expect($this->decodeQrSvg($generator->svg($id)))->toBe($id);
     });
-})->skip('024: pendiente de T020');
+});
 
 it('hands out random version 4 appointment ids (property)', function () {
     $this->forAll(
