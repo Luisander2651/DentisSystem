@@ -2,9 +2,12 @@
 spec: 024-qr-de-cita-para-el-acceso
 plan: plan.md
 status: approved
+impl_base: 6b49614
 ---
 
 # Tareas · 024 QR de cita para el acceso
+
+> Línea base 2026-11-04 (`6b49614`, Pest en serie con `memory_limit=1G`): 1 983 pasan y ninguno falla (833 s). `npm audit --audit-level=high`: sin hallazgos. `composer audit`: 8 avisos de Symfony publicados el 2026-11-04 (`symfony/filesystem`, `http-foundation` ×4 incluido CVE-2026-118514, `http-kernel`, `routing` con CVE-2026-118516 y `yaml`), ajenos a esta spec; se tratan aparte (decisión del usuario).
 
 Formato:
 `- [ ] T### [P] <verbo + qué> — <archivos> — hecho cuando: <criterio> — cubre: CA# — depende: T###`
@@ -56,8 +59,9 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 | P15 Solo el sistema de diseño | ✅ | T023 usa `x-ui.button` y tokens; T050 corre `OnlyDesignTokensTest` y `ui-audit` | test: T050 |
 
 ## Preparación
-- [ ] T001 Medir la línea base: Pest completa en serie, `composer audit` y `npm audit --audit-level=high`, y anotar el resultado al inicio de este archivo (`impl_base` en el frontmatter) — `docs/specs/024-qr-de-cita-para-el-acceso/tasks.md` — hecho cuando: el resultado y el commit base quedan anotados
-- [ ] T002 Añadir `chillerlan/php-qrcode` 6.0.1 con `composer require --no-interaction chillerlan/php-qrcode:6.0.1` — `composer.json`, `composer.lock` — hecho cuando: `composer.json` fija `"6.0.1"` sin rango, `composer show` lista `chillerlan/php-qrcode 6.0.1` y `chillerlan/php-settings-container 3.3.0` y `composer audit` no da hallazgos (ADR 0007) — depende: T001
+- [x] T001 Medir la línea base: Pest completa en serie, `composer audit` y `npm audit --audit-level=high`, y anotar el resultado al inicio de este archivo (`impl_base` en el frontmatter) — `docs/specs/024-qr-de-cita-para-el-acceso/tasks.md` — hecho cuando: el resultado y el commit base quedan anotados
+- [ ] T002 Añadir `chillerlan/php-qrcode` 6.0.1 con `composer require --no-interaction chillerlan/php-qrcode:6.0.1` — `composer.json`, `composer.lock` — hecho cuando: `composer.json` fija `"6.0.1"` sin rango, `composer show` lista `chillerlan/php-qrcode 6.0.1` y `chillerlan/php-settings-container 3.3.0` y `composer audit` no da hallazgos nuevos frente a T001 (ADR 0007) — depende: T001
+  - nota: 2026-11-04: la línea base ya tiene 8 avisos de Symfony publicados ese día (ver T001); se tratan aparte, por decisión del usuario.
 - [ ] T003 Crear el ayudante que rasteriza con GD los módulos oscuros del SVG (8 px por módulo y margen blanco) y lo decodifica con `QRCode::readFromBlob()` — `tests/Support/DecodesQrSvg.php` — hecho cuando: Pint pasa y un SVG generado con la librería en un test temporal se decodifica al texto original (luego lo ejercitan T010 y T013) — depende: T002
 
 ## Tests (antes de implementar)
