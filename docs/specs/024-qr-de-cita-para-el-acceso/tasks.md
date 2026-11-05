@@ -86,12 +86,12 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 
 ## Cierre
 - [ ] T050 Comprobar la definición de terminado: Pint (`--dirty --format agent`); Pest completa en serie sin ninguna marca `024:` de `skip` y sin fallos nuevos frente a T001; `npm run build`; `ui-audit` completo en local; `composer audit` y `npm audit --audit-level=high`; `grep -rn "getMessage()"` sin resultados en el controlador nuevo; `aidd.py validate` sin errores — hecho cuando: todo pasa y el resultado queda anotado — depende: T020–T023
-- [ ] T051 [P] Documentar el bloque del QR dentro del detalle de la cita — `docs/design/system.md`, `docs/design/system.html` — hecho cuando: el componente aparece con su uso, tamaño mínimo y textos — depende: T023
-- [ ] T052 [P] Añadir `GET /api/v1/appointments/{id}/qr` (staff) a "Superficie de ataque" — `docs/security.md` — hecho cuando: la fila está con su control — depende: T022
+- [x] T051 [P] Documentar el bloque del QR dentro del detalle de la cita — `docs/design/system.md`, `docs/design/system.html` — hecho cuando: el componente aparece con su uso, tamaño mínimo y textos — depende: T023
+- [x] T052 [P] Añadir `GET /api/v1/appointments/{id}/qr` (staff) a "Superficie de ataque" — `docs/security.md` — hecho cuando: la fila está con su control — depende: T022
 
 ## Integración y documentación
-- [ ] T090 Actualizar `docs/architecture.md` si cambió la estructura: puerto de QR en `Aplication/Support` y su adaptador `Infrastructure/Qr` (`chillerlan/php-qrcode`, ADR 0007); el QR que Core genera y el microservicio de asistencias lee (023)
-- [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 024 para el objetivo 5 (obtención del QR en `GetAppointmentQrUseCase`; accesos denegados). Sin cambios en `deployment.md` (sin variables ni pasos nuevos; `composer install` ya va en la imagen)
+- [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: puerto de QR en `Aplication/Support` y su adaptador `Infrastructure/Qr` (`chillerlan/php-qrcode`, ADR 0007); el QR que Core genera y el microservicio de asistencias lee (023)
+- [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 024 para el objetivo 5 (obtención del QR en `GetAppointmentQrUseCase`; accesos denegados). Sin cambios en `deployment.md` (sin variables ni pasos nuevos; `composer install` ya va en la imagen)
 - [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
