@@ -10,8 +10,9 @@ created: 2026-11-04
 ## Enfoque técnico
 **Appointments** suma una lectura: `GET /api/v1/appointments/{id}/qr`. Devuelve un SVG que solo
 contiene el UUID de la cita. Va en el mismo grupo (`auth:sanctum` + `staff`) y con el mismo permiso
-(`appointments.view-detail`) que `GET /appointments/{id}`. El caso de uso reutiliza `AppointmentId`
-(400) y `AppointmentsService::findById` (404). El QR lo dibuja un puerto de aplicación,
+(`appointments.view-detail`) que `GET /appointments/{id}`. El caso de uso valida el id con `AppointmentId`
+y el controlador convierte su `InvalidArgumentException` en 400, como la consulta interna (023);
+`AppointmentsService::findById` da el 404. El QR lo dibuja un puerto de aplicación,
 `QrCodeGeneratorInterface`, con un adaptador sobre `chillerlan/php-qrcode` 6.0.1 (ADR 0007). No se
 guarda nada: no hay migración, R2 ni enlaces temporales.
 
@@ -33,7 +34,7 @@ Core no recibe ninguna petición nueva por el escaneo (spec, "Flujo de acceso").
 | P3 Capas del módulo | ✅ | Controller invocable → `GetAppointmentQrUseCase` (`assertCan` primero) → `AppointmentsService::findById` → `AppointmentsRepositoryInterface`. El generador de QR es un puerto de aplicación (`Aplication/Support/`), no de dominio: dibujar el QR es un formato de salida, no una regla de negocio (D1). El adaptador vive en `Infrastructure/Qr/` y se enlaza en `AppServiceProvider`. Sin dependencias nuevas entre módulos | test: `AppointmentsArchitectureTest` (ningún `chillerlan`, `Illuminate\Support\Facades` ni `Infrastructure` en `Domain/` ni en `Aplication/`); manual: `/review` |
 | P4 Contrato de API primero | ✅ | Contrato en "Contratos y datos": un endpoint nuevo; los demás no cambian | test: `AppointmentQrTest` fija 200 (tipo y cabeceras), 400, 404 y 500; `AppointmentsAccessControlTest`, 401 y 403 |
 | P5 Autorización en el servidor | ✅ | `auth:sanctum` + `staff` + `assertCan('appointments.view-detail')`, igual que el detalle. No hay comprobación de pertenencia: todo el staff ve el detalle de cualquier cita (014, 018 CA8), y el paciente no tiene acceso. Test de acceso denegado por actor (paciente, staff inactivo, sin sesión) | test: `AppointmentsAccessControlTest` (fila `GET /appointments/{id}/qr`); `AppointmentQrTest` (paciente con cita propia → 403) |
-| P6 Validación con FormRequest | ➖ | El endpoint no recibe cuerpo ni consulta: solo el id de la ruta, que `AppointmentId` valida con 400, igual que `GET /appointments/{id}` (spec CA4). Un parámetro de consulta que llegue se ignora | test: `AppointmentQrTest` (id no UUID → 400) |
+| P6 Validación con FormRequest | ➖ | El endpoint no recibe cuerpo ni consulta: solo el id de la ruta. `AppointmentId` lo valida y el controlador responde 400 como la consulta interna (023, spec CA4); `GET /appointments/{id}` responde hoy 500 en ese caso, un bug aparte (D9). Un parámetro de consulta que llegue se ignora | test: `AppointmentQrTest` (id no UUID → 400) |
 | P7 Errores sin detalles internos | ✅ | 500 con `UnexpectedErrorResponse`. 404 y 400 con los textos de las rutas de citas, sin datos del paciente | test: `AppointmentQrTest` (generador y repositorio que fallan → `{"error": "Internal server error"}`) |
 | P8 Secretos fuera del repositorio | ➖ | Sin configuración ni variables nuevas | — |
 | P9 Migraciones reversibles | ➖ | Sin migraciones | — |
@@ -49,7 +50,7 @@ Core no recibe ninguna petición nueva por el escaneo (spec, "Flujo de acceso").
 |---|---|---|
 | Dependencias | `composer.json`/`composer.lock`: `chillerlan/php-qrcode` `6.0.1` | Bajo: una transitiva; ADR 0007 |
 | Appointments · Aplication | `Support/QrCodeGeneratorInterface` (`svg(string $content): string`); `UseCases/GetAppointmentQrUseCase` (`execute(GetAppointmentByIdDTO): ?string`, reutiliza el DTO del detalle) | Bajo |
-| Appointments · Infrastructure | `Qr/ChillerlanQrCodeGenerator` (`final readonly`; opciones fijas: `QRMarkupSVG`, `outputBase64 = false`, `EccLevel::M`, `addQuietzone = true`, `connectPaths = false`, `drawLightModules = false`); `Http/Controllers/GetAppointmentQrController` (invocable, `final`, mismos `catch` que `GetAppointmentByIdController`) | Bajo |
+| Appointments · Infrastructure | `Qr/ChillerlanQrCodeGenerator` (`final readonly`; opciones fijas: `QRMarkupSVG`, `outputBase64 = false`, `EccLevel::M`, `addQuietzone = true`, `connectPaths = false`, `drawLightModules = false`); `Http/Controllers/GetAppointmentQrController` (invocable, `final`, los `catch` de `GetAppointmentByIdController` más `InvalidArgumentException` → 400, como `GetInternalAppointmentByIdController`) | Bajo |
 | Core · Providers | `AppServiceProvider`: `bind(QrCodeGeneratorInterface, ChillerlanQrCodeGenerator)` | Bajo |
 | Rutas | `routes/api.php`: `Route::get('/{id}/qr', GetAppointmentQrController::class)` en el grupo `appointments` de `auth:sanctum` + `staff`, junto a `/{id}/tracking` | Bajo |
 | Interfaz | `components/calendar/view-appointment-modal.blade.php`: bloque `data-view-appointment-qr` (figura con `<img>` de 240 × 240 px reservados, aviso de error y `x-ui.button` "Descargar QR"). `resources/js/pages/agenda/view-appointment.js`: lo muestra en citas abiertas, fija `src` y `alt`, gestiona `error` y la descarga, y lo limpia al abrir otra cita o cerrar | Medio: el diálogo lo comparten agenda, inicio y expediente; lo cubren las entradas de `test:ui` de las tres pantallas |
@@ -64,16 +65,17 @@ Core no recibe ninguna petición nueva por el escaneo (spec, "Flujo de acceso").
 
 | Código | Cuándo | Cuerpo | Cabeceras |
 |---|---|---|---|
-| 200 | La cita existe (en cualquier estado) | SVG; decodificado = `id` exacto | `Content-Type: image/svg+xml`, `Cache-Control: private, no-store`, `Content-Disposition: inline; filename="cita.svg"`, `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'` |
-| 400 | `id` no es un UUID | `{"error": "<mensaje de AppointmentId>"}` | JSON |
+| 200 | La cita existe (en cualquier estado) | SVG; decodificado = `id` exacto | `Content-Type: image/svg+xml`, `Cache-Control: private, no-store`, `Content-Disposition: inline; filename="cita.svg"`; además las globales de `SecurityHeaders` (CSP con `script-src 'self' 'nonce-…'` y `object-src 'none'`, `X-Content-Type-Options: nosniff`) |
+| 400 | `id` no es un UUID | `{"error": "Invalid appointment id."}` | JSON |
 | 401 | Sin sesión | `{"message": "Unauthenticated."}` | JSON |
 | 403 | Paciente, staff inactivo o sin permiso | El de `EnsureActiveStaff` / `AuthorizationException` | JSON |
 | 404 | UUID sin cita | `{"error": "Appointment not found."}` | JSON |
 | 429 | Más de 100 peticiones por minuto del mismo usuario | El de `throttle:api` | JSON |
 | 500 | Fallo inesperado (generador o base de datos) | `{"error": "Internal server error"}` | JSON |
 
-- Los textos de 400 y 404 son los mismos de `GET /appointments/{id}`, para que ambas rutas se
-  comporten igual (spec CA3, CA4).
+- El 404 usa el texto de `GET /appointments/{id}` (CA3) y el 400 el de la consulta interna (023,
+  CA4). La CSP no es propia de esta respuesta: `SecurityHeaders` la pone en todas y sobrescribiría
+  cualquier otra (A2).
 - No cambian: `GET /appointments/{id}`, `/internal/appointments/*` ni `/auth/me`.
 
 ### Datos
@@ -89,7 +91,9 @@ Sin migraciones ni tablas. El QR se genera en cada petición.
 - Paciente con sesión pidiendo el QR de **su propia** cita → 403 (CA10).
 - Generador que lanza (mock de `QrCodeGeneratorInterface`) y repositorio que lanza → 500 genérico
   (CA11).
-- Cabeceras `Cache-Control: private, no-store` y `Content-Security-Policy` (CA12).
+- Cabeceras `Cache-Control: private, no-store` (CA12), y la CSP global sin `'unsafe-inline'` en
+  `script-src` y `nosniff` (TM6).
+- Id no UUID → 400 `{"error": "Invalid appointment id."}` (CA4).
 - El SVG no contiene el nombre del paciente ni el del doctor.
 
 **Acceso** (`AppointmentsAccessControlTest`): fila `'GET /appointments/{id}/qr' => $allStaff`. El
@@ -126,12 +130,12 @@ comprobar que muestran solo el UUID.
 |---|---|---|---|---|---|
 | TM1 | Spoofing / Elevation: un paciente, staff inactivo o visitante sin sesión obtiene el QR de una cita y entra con él | A01:2025 · API1:2023 | `GET /appointments/{id}/qr` | `auth:sanctum` + `staff` + `assertCan('appointments.view-detail')` | `AppointmentsAccessControlTest`; `AppointmentQrTest` (paciente con cita propia → 403) |
 | TM2 | Spoofing: alguien que tiene el QR (foto, reenvío) entra en lugar del paciente | A07:2025 · A06:2025 (diseño inseguro) | Puerta (fuera de Core) | Aceptado en la spec para la maqueta: el QR es una credencial al portador. Lo mitigan el administrador, que compara a la persona con el nombre del paciente que devuelve el microservicio (petición a SocketIO 005), y las reglas del microservicio: solo hoy, solo estados abiertos, una entrada. Revisar antes de tener datos reales (R1) | — (fuera de Core; registrado en "Riesgos y mitigaciones") |
-| TM3 | Information disclosure: adivinar el id de otra cita para fabricar su QR | A01:2025 | `UuidIdentifier` | UUID v4 de `Str::uuid()` (122 bits aleatorios). Sin endpoint que enumere citas fuera del staff | `AppointmentQrPropertiesTest` (contenido = id); manual: `/review` de `UuidIdentifier` |
+| TM3 | Information disclosure: adivinar el id de otra cita para fabricar su QR | A01:2025 | `UuidIdentifier` | UUID v4 de `Str::uuid()` (122 bits aleatorios). Sin endpoint que enumere citas fuera del staff | `AppointmentQrPropertiesTest` (`AppointmentId::random()` es UUID versión 4) |
 | TM4 | Information disclosure: el QR o la respuesta quedan en una caché compartida, en el historial o en un proxy | A02:2025 (configuración insegura) | Respuesta del endpoint | `Cache-Control: private, no-store` | `AppointmentQrTest` (cabeceras) |
 | TM5 | Information disclosure: el SVG o el nombre del archivo descargado llevan datos personales | A01:2025 · LFPDPPP | Adaptador; `view-appointment.js` | Solo el UUID en el QR; el archivo se llama `cita-AAAA-MM-DD-HHMM.png`, sin nombre del paciente | `AppointmentQrTest` (sin nombres en el SVG); ui-audit (atributo `download` del enlace) |
-| TM6 | Tampering / XSS: el SVG ejecuta código al abrirse en el panel o directamente en una pestaña | A05:2025 (inyección) | Adaptador; respuesta | El SVG lo genera la librería a partir de un UUID ya validado, sin texto libre. En el panel se pinta como `<img>` (los scripts de un SVG en `<img>` nunca corren). Abierto directo: `Content-Security-Policy: default-src 'none'` y `nosniff` | `ChillerlanQrCodeGeneratorTest` (sin `<script`, `href`); `AppointmentQrTest` (CSP) |
+| TM6 | Tampering / XSS: el SVG ejecuta código al abrirse en el panel o directamente en una pestaña | A05:2025 (inyección) | Adaptador; respuesta | El SVG lo genera la librería a partir de un UUID ya validado, sin texto libre. En el panel se pinta como `<img>` (los scripts de un SVG en `<img>` nunca corren). Abierto directo: la CSP global (`script-src 'self' 'nonce-…'`, sin `unsafe-inline`; `object-src 'none'`) bloquea scripts en línea, y `nosniff` | `ChillerlanQrCodeGeneratorTest` (sin `<script`, `href`); `AppointmentQrTest` (CSP global y `nosniff`) |
 | TM7 | Information disclosure: un fallo del generador filtra rutas o clases | A10:2025 (manejo de errores) | Controlador | `UnexpectedErrorResponse` | `AppointmentQrTest` (500 genérico) |
-| TM8 | Denial of service: pedir muchos QR seguidos para cargar la CPU | A06:2025 · API4:2023 | Endpoint | `throttle:api` (100/min por usuario); generar un QR cuesta ~14 ms y no toca disco | `AppointmentQrTest` (tiempo < 300 ms en local, RNF) |
+| TM8 | Denial of service: pedir muchos QR seguidos para cargar la CPU | A06:2025 · API4:2023 | Endpoint | `throttle:api` (100/min por usuario); generar un QR cuesta ~14 ms y no toca disco | `ChillerlanQrCodeGeneratorTest` (< 150 ms por QR) |
 
 ## Trazabilidad
 | Criterio de aceptación | Cambio(s) | Test(s) |
@@ -139,7 +143,7 @@ comprobar que muestran solo el UUID.
 | CA1: SVG decodificado = id exacto, sin URL, prefijo, JSON ni espacios | Adaptador; caso de uso; controlador; ruta | `AppointmentQrTest` (decodifica la respuesta); `ChillerlanQrCodeGeneratorTest`; `AppointmentQrPropertiesTest` |
 | CA2: mismo contenido en cada petición, nada guardado | Generación sin estado | `AppointmentQrTest` (dos peticiones, mismo contenido decodificado) |
 | CA3: UUID sin cita → 404 | `findById` → `null` → 404 | `AppointmentQrTest` |
-| CA4: id no válido → 400 | `AppointmentId` | `AppointmentQrTest` |
+| CA4: id no válido → 400 | `AppointmentId`; `catch (InvalidArgumentException)` en el controlador | `AppointmentQrTest` |
 | CA5: QR dentro del detalle en citas abiertas, desde agenda, inicio y expediente | `view-appointment-modal`; `view-appointment.js` | ui-audit `agenda-detalle-qr`, `dashboard-detalle-*`, expediente (K1, K4) |
 | CA6: "Descargar QR" descarga una imagen | `view-appointment.js` (PNG desde la imagen; D3) | ui-audit flujo "Descargar QR" · manual: escanear el PNG |
 | CA7: sin QR en completadas o canceladas | `view-appointment.js` | ui-audit `agenda-detalle-completada` (K2) |
@@ -155,8 +159,8 @@ comprobar que muestran solo el UUID.
 | TM5: datos personales en SVG o archivo | Adaptador; nombre del archivo | `AppointmentQrTest`; ui-audit |
 | TM6: SVG con código | Librería + `<img>` + CSP | `ChillerlanQrCodeGeneratorTest`, `AppointmentQrTest` |
 | TM7: detalles internos en 500 | `UnexpectedErrorResponse` | `AppointmentQrTest` |
-| TM8: carga por peticiones masivas | `throttle:api`; generación barata | `AppointmentQrTest` (tiempo) |
-| RNF: < 300 ms en local | Generación en memoria | `AppointmentQrTest` |
+| TM8: carga por peticiones masivas | `throttle:api`; generación barata | `ChillerlanQrCodeGeneratorTest` (tiempo) |
+| RNF: < 300 ms en local | Generación en memoria | `ChillerlanQrCodeGeneratorTest` (< 150 ms por QR; sin medir la petición HTTP, inestable en paralelo) |
 | RNF: corrección de error al menos M | Opciones del adaptador | `ChillerlanQrCodeGeneratorTest` (nivel de corrección leído del resultado decodificado) |
 | RNF: SVG como imagen, nunca como marcado | `<img src>` | manual: `/review` del JS (sin `innerHTML` con la respuesta) |
 | RNF: texto alternativo "Código QR de la cita del <fecha>" | `view-appointment.js` | ui-audit (nombres accesibles) |
@@ -192,9 +196,15 @@ No aplica: la ruta es privada de la API del panel; la spec no crea ni cambia rut
   ejecute nada. Costo: ante un fallo, el aviso es genérico (el navegador no expone el código HTTP),
   lo que basta para CA8.
 - **D3** "Descargar QR" descarga un **PNG** generado en el navegador: dibuja la imagen ya cargada
-  en un `canvas` a 8× y usa `toBlob()`. El SVG no se previsualiza al mandarlo por WhatsApp. Es solo
+  en un `canvas` fijo de 1024 × 1024 px, rellenado antes de blanco (el SVG no tiene fondo y un PNG
+  transparente no se lee en un chat oscuro), con `drawImage(img, 0, 0, 1024, 1024)` (un SVG sin
+  `width`/`height` puede tener `naturalWidth` 0), y usa `toBlob()`. El nombre del archivo queda
+  también en el botón (`data-view-appointment-qr-filename`) para que `ui-audit` lo compruebe. El SVG no se previsualiza al mandarlo por WhatsApp. Es solo
   presentación (P13) y no necesita otro endpoint ni otro formato en la API. El `<a download>` se
   dispara en el momento y su URL se libera enseguida, así que no hace falta cambiar la CSP.
+- **D9** `GET /appointments/{id}` responde 500, no 400, con un id que no es UUID: `UuidIdentifier`
+  lanza `InvalidArgumentException` y su controlador no la captura. Es un bug de la 007/014 fuera de
+  esta spec; se corrige con `/fix`. El QR no copia ese comportamiento (A1).
 - **D4** Nombre del archivo: `cita-AAAA-MM-DD-HHMM.png`, sin datos del paciente (TM5).
 - **D5** `chillerlan/php-qrcode` 6.0.1 → ADR 0007 (P10).
 - **D6** CA1 se prueba sobre la respuesta real: un ayudante de test rasteriza el SVG con GD y lo
@@ -232,3 +242,4 @@ No aplica: la ruta es privada de la API del panel; la spec no crea ni cambia rut
 |---|---|---|
 | 2026-11-04 | Creación en `draft` | /plan 024 |
 | 2026-11-04 | Aprobado, con P14 ❌ aceptado y sin `/design-spec` (D8) | Aprobación del usuario |
+| 2026-11-04 | Correcciones de `/analyze` ronda 1 (A1–A8): 400 como la consulta interna, CSP global, PNG con fondo blanco, tiempo en la prueba de unidad, TM3 con UUID v4; D9 | Decisión del usuario |

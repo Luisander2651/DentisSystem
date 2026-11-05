@@ -36,7 +36,8 @@ recepción no tiene nada que enseñarle o mandarle al paciente.
 - [ ] CA3 · Dado un identificador con forma válida que no corresponde a ninguna cita, cuando se pide
   su QR, entonces responde "no encontrado" (404).
 - [ ] CA4 · Dado un identificador con forma no válida, cuando se pide su QR, entonces responde
-  petición incorrecta (400), igual que la consulta de la cita.
+  petición incorrecta (400) con `{"error": "Invalid appointment id."}`, igual que la consulta
+  interna de la cita (023).
 - [ ] CA5 · Dada una cita asignada o reprogramada, cuando el personal abre su detalle (desde la
   agenda, el inicio o el expediente), entonces el QR de la cita aparece dentro del mismo detalle,
   sin pulsar nada más, junto a los datos de la cita.
@@ -120,7 +121,7 @@ Modo: operar · umbral 80 · mínimo por punto 3 · presupuesto 5 candidatos.
 |---|---|---|---|
 | K1 | QR completo dentro del detalle | Visible a 390, 768 y 1440 px, con al menos 240 × 240 px | CA5 |
 | K2 | Literales | "Descargar QR" presente en citas asignadas o reprogramadas; ausente en completadas y canceladas | CA6, CA7 |
-| K3 | Lectura del QR | Módulos oscuros sobre fondo claro con margen blanco, también en modo oscuro | CA1, CA5 |
+| K3 | Lectura del QR | Módulos oscuros sobre fondo blanco con margen, en pantalla y en el PNG descargado | CA1, CA5, CA6 |
 | K4 | Estabilidad visual | El detalle no salta al cargar el QR (espacio reservado; CLS ≤ 0.1) | CA5, CA8 |
 
 Puertas: las de `design-spec/references/criterios.md` §2, sin cambios. Rúbrica: pesos por defecto.
@@ -146,6 +147,7 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 | 2026-11-04 | supuesto | ¿Quién puede ver el QR? | El mismo personal que ve el detalle de la cita (`appointments.view-detail`) y con los mismos middlewares (`auth:sanctum` + `staff`). | `core-qr-de-citas.md` (SocketIO) |
 | 2026-11-04 | diseño | ¿Dónde se ve el QR? | Dentro del detalle de la cita, sin botón "Ver QR", desde cualquier pantalla que abra el detalle. | usuario |
 | 2026-11-04 | supuesto | ¿Para qué citas se muestra el QR? | Solo asignadas y reprogramadas, las únicas con las que el microservicio deja entrar. El endpoint responde para cualquier cita existente. | /specify |
+| 2026-11-04 | contradicción | CA4 decía "400, igual que la consulta de la cita", pero `GET /appointments/{id}` responde 500 con un id que no es UUID (`InvalidArgumentException` sin capturar). | El QR responde 400 como la consulta interna (023). El 500 del detalle es un bug aparte, para `/fix`. | `/analyze` A1; usuario |
 | 2026-11-04 | brecha | ¿Hace falta un endpoint de validación del QR en Core? | No. El microservicio valida con `GET /internal/appointments/{id}` (023) y aplica sus reglas de entrada y salida con su propia base de asistencias (spec 005 de SocketIO). | usuario; `SocketIO/docs/roadmap.md` |
 | 2026-11-04 | brecha | ¿Cómo se comprueba que quien pasa es el dueño de la cita? | En Core, solo el personal obtiene el QR (CA9, CA10). En la puerta, el administrador compara a la persona con el nombre que le devuelve el microservicio; se propone a SocketIO 005 incluirlo en el ack. | usuario |
 | 2026-11-04 | supuesto | ¿Se guarda la imagen? | No: se genera en cada petición. Sin R2 ni enlaces temporales. | /specify |
@@ -175,3 +177,4 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 |---|---|---|
 | 2026-11-04 | Creada como draft; reemplaza a la 013 | Requisito del microservicio de asistencias (SocketIO); decisión del usuario |
 | 2026-11-04 | QR dentro del detalle, flujo de acceso, sin endpoint de validación en Core; aprobada | Decisiones del usuario; confirmación explícita |
+| 2026-11-04 | CA4 (400 como la consulta interna) y K3 (sin modo oscuro; también el PNG) | `/analyze` A1 y A8; decisión del usuario |
