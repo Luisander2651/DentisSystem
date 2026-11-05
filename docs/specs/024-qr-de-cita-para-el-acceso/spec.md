@@ -28,32 +28,32 @@ recepción no tiene nada que enseñarle o mandarle al paciente.
 - Como responsable de la clínica, quiero que solo el personal pueda obtener el QR de una cita.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dada una cita existente, cuando el personal pide su QR, entonces recibe una imagen SVG
+- [x] CA1 · Dada una cita existente, cuando el personal pide su QR, entonces recibe una imagen SVG
   cuyo contenido decodificado es exactamente el identificador de la cita: sin URL, sin prefijo, sin
   JSON y sin espacios.
-- [ ] CA2 · Dada la misma cita, cuando se pide su QR varias veces, entonces el contenido decodificado
+- [x] CA2 · Dada la misma cita, cuando se pide su QR varias veces, entonces el contenido decodificado
   es siempre el mismo (no se guarda ni caduca nada).
-- [ ] CA3 · Dado un identificador con forma válida que no corresponde a ninguna cita, cuando se pide
+- [x] CA3 · Dado un identificador con forma válida que no corresponde a ninguna cita, cuando se pide
   su QR, entonces responde "no encontrado" (404).
-- [ ] CA4 · Dado un identificador con forma no válida, cuando se pide su QR, entonces responde
+- [x] CA4 · Dado un identificador con forma no válida, cuando se pide su QR, entonces responde
   petición incorrecta (400) con `{"error": "Invalid appointment id."}`, igual que la consulta
   interna de la cita (023).
-- [ ] CA5 · Dada una cita asignada o reprogramada, cuando el personal abre su detalle (desde la
+- [x] CA5 · Dada una cita asignada o reprogramada, cuando el personal abre su detalle (desde la
   agenda, el inicio o el expediente), entonces el QR de la cita aparece dentro del mismo detalle,
   sin pulsar nada más, junto a los datos de la cita.
-- [ ] CA6 · Dado el QR a la vista en el detalle, cuando el personal pulsa "Descargar QR", entonces
+- [x] CA6 · Dado el QR a la vista en el detalle, cuando el personal pulsa "Descargar QR", entonces
   obtiene un archivo de imagen con el QR para mandarlo al paciente.
-- [ ] CA7 · Dada una cita completada o cancelada, cuando se abre su detalle, entonces no aparece el QR
+- [x] CA7 · Dada una cita completada o cancelada, cuando se abre su detalle, entonces no aparece el QR
   (el microservicio no deja entrar con ella).
-- [ ] CA8 · Dado un fallo al obtener el QR, cuando se abre el detalle, entonces el resto del detalle
+- [x] CA8 · Dado un fallo al obtener el QR, cuando se abre el detalle, entonces el resto del detalle
   se muestra igual y en el lugar del QR aparece un aviso en español sin términos técnicos.
-- [ ] CA9 · (abuso) Sin sesión, pido el QR de una cita → 401.
-- [ ] CA10 · (abuso) Como paciente con sesión, pido el QR de una cita ajena (o de cualquier cita
+- [x] CA9 · (abuso) Sin sesión, pido el QR de una cita → 401.
+- [x] CA10 · (abuso) Como paciente con sesión, pido el QR de una cita ajena (o de cualquier cita
   mientras no exista el portal del paciente) → 403, igual que en el resto de las rutas de citas del
   personal, y no recibo ningún QR.
-- [ ] CA11 · (abuso) Como atacante, provoco un fallo al generar el QR → la respuesta es el error
+- [x] CA11 · (abuso) Como atacante, provoco un fallo al generar el QR → la respuesta es el error
   genérico (500) sin detalles internos.
-- [ ] CA12 · (abuso) Como alguien con acceso al navegador o a un proxy, intento recuperar un QR
+- [x] CA12 · (abuso) Como alguien con acceso al navegador o a un proxy, intento recuperar un QR
   descargado antes → la respuesta del QR indica que no debe guardarse en cachés.
 
 ## Fuera de alcance
