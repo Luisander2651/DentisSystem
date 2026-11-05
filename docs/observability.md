@@ -85,6 +85,11 @@ usuario (indicado en cada caso).
   registro de seguimiento en el render de `AuthorizationException` y en `EnsureActiveStaff`, y al
   `/dashboard` del staff inactivo en `ShowDashboardPageController`. Las lecturas del inicio (citas de
   hoy, sin cerrar y sin seguimiento) no llevan datos de salud y no se auditan.
+- Spec 024 (QR de la cita): ningún log nuevo; sus errores inesperados quedan en el
+  `unexpected_error` de siempre. Puntos de emisión para el objetivo 5 (P14 ❌ aceptado): la obtención
+  del QR de una cita (credencial de acceso) en `GetAppointmentQrUseCase`, con actor, cita y
+  resultado; los accesos denegados a `GET /api/v1/appointments/{id}/qr` en `EnsureActiveStaff` y en el
+  render de `AuthorizationException`. Hoy no se registran (OB1.a pendiente).
 
 ## Correlación
 - Identificador por petición: cabecera `X-Request-Id` (propuesta); se acepta del cliente si es
