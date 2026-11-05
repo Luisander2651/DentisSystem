@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use chillerlan\QRCode\Decoder\DecoderResult;
 use chillerlan\QRCode\QRCode;
 use DOMDocument;
 use RuntimeException;
@@ -17,6 +18,14 @@ use RuntimeException;
 trait DecodesQrSvg
 {
     protected function decodeQrSvg(string $svg): string
+    {
+        return (string) $this->decodeQrSvgResult($svg);
+    }
+
+    /**
+     * The whole result of the decoder, with its error correction level and version.
+     */
+    protected function decodeQrSvgResult(string $svg): DecoderResult
     {
         $pixelsPerModule = 8;
         $quietZone = 4;
@@ -56,6 +65,6 @@ trait DecodesQrSvg
         imagepng($image);
         $png = (string) ob_get_clean();
 
-        return (string) (new QRCode)->readFromBlob($png);
+        return (new QRCode)->readFromBlob($png);
     }
 }
