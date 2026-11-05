@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
+        "chillerlan/php-qrcode": "6.0.1",
         "getbrevo/brevo-php": "4.0.16",
         "intervention/image": "4.1.0",
         "intervention/image-laravel": "4.0.0",
