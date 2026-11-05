@@ -128,7 +128,7 @@ it('asks for permission first, then reads the appointment and draws only its id'
 
     expect($svg)->toBe('<svg>'.QR_USE_CASE_APPOINTMENT_ID.'</svg>')
         ->and($log->calls)->toBe(['can:appointments.view-detail', 'repository', 'qr:'.QR_USE_CASE_APPOINTMENT_ID]);
-})->skip('024: pendiente de T021');
+});
 
 it('refuses whoever may not see the detail before reading or drawing anything (abuse)', function (array $granted) {
     $log = new AppointmentQrCallLog;
@@ -140,7 +140,7 @@ it('refuses whoever may not see the detail before reading or drawing anything (a
 })->with([
     'sin permisos' => [[]],
     'otros permisos' => [['appointments.view', 'patients.view']],
-])->skip('024: pendiente de T021');
+]);
 
 it('draws nothing for an appointment that does not exist', function () {
     $log = new AppointmentQrCallLog;
@@ -150,7 +150,7 @@ it('draws nothing for an appointment that does not exist', function () {
 
     expect($svg)->toBeNull()
         ->and($log->calls)->toBe(['can:appointments.view-detail', 'repository']);
-})->skip('024: pendiente de T021');
+});
 
 it('rejects an id that is not a UUID without reading nor drawing', function () {
     $log = new AppointmentQrCallLog;
@@ -159,4 +159,4 @@ it('rejects an id that is not a UUID without reading nor drawing', function () {
     expect(fn () => $useCase->execute(GetAppointmentByIdDTO::create('no-es-uuid')))
         ->toThrow(InvalidArgumentException::class)
         ->and($log->calls)->toBe(['can:appointments.view-detail']);
-})->skip('024: pendiente de T021');
+});

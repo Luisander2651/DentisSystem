@@ -68,4 +68,4 @@ it('keeps the port and the use case of the QR code free of infrastructure and of
 })->with([
     'Support/QrCodeGeneratorInterface.php',
     'UseCases/GetAppointmentQrUseCase.php',
-])->skip('024: pendiente de T021');
+]);
