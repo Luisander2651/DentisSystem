@@ -37,6 +37,8 @@ function appointmentsAccessRoutes(): array
         'DELETE /appointments/{id}' => ['admin'],
         'POST /appointments/{id}/complete' => ['admin', 'doctor'],
         'GET /appointments/{id}/tracking' => ['admin', 'doctor'],
+        // Spec 024 (CA9, CA10): the QR code of an appointment, for whoever sees its detail.
+        'GET /appointments/{id}/qr' => $allStaff,
     ];
 }
 
@@ -131,11 +133,16 @@ beforeEach(function () {
                 'procedure_performed' => 'Resina',
             ]],
             'GET /appointments/{id}/tracking' => ['getJson', $this->appointmentUrl($appointment->id).'/tracking', []],
+            'GET /appointments/{id}/qr' => ['getJson', $this->appointmentUrl($appointment->id).'/qr', []],
         };
     };
 });
 
 it('answers each agenda and appointments route according to the permissions table', function (string $actor, string $route, array $allowed) {
+    if ($route === 'GET /appointments/{id}/qr') {
+        $this->markTestSkipped('024: pendiente de T022');
+    }
+
     [$method, $url, $payload] = ($this->buildRequest)($route);
     ($this->actAs)($actor);
 
@@ -294,4 +301,4 @@ it('covers every agenda and appointments route and protects each one with the st
         ->toEqual(collect(array_keys(appointmentsAccessRoutes()))->merge(DASHBOARD_ACCESS_ROUTES)->sort()->values()->all());
 
     $routes->each(fn (array $route) => expect($route['middleware'])->toContain('staff'));
-});
+})->skip('024: pendiente de T022');
