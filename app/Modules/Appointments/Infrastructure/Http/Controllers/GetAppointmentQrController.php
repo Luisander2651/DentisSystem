@@ -7,10 +7,7 @@ namespace App\Modules\Appointments\Infrastructure\Http\Controllers;
 use App\Core\Authorization\Exceptions\AuthorizationException;
 use App\Core\Http\UnexpectedErrorResponse;
 use App\Modules\Appointments\Aplication\DTOs\GetAppointmentByIdDTO;
-use App\Modules\Appointments\Aplication\Exceptions\AppointmentAplicationExceptions;
 use App\Modules\Appointments\Aplication\UseCases\GetAppointmentQrUseCase;
-use App\Modules\Appointments\Domain\Exceptions\AppointmentException;
-use App\Modules\Appointments\Domain\Exceptions\ValueObjectsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -47,16 +44,11 @@ final class GetAppointmentQrController
                 'Cache-Control' => 'private, no-store',
                 'Content-Disposition' => 'inline; filename="cita.svg"',
             ]);
-        } catch (AppointmentException $e) {
-            return response()->json(['error' => $e->getMessage()], 409);
-        } catch (ValueObjectsException $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
         } catch (InvalidArgumentException) {
             return response()->json(['error' => 'Invalid appointment id.'], 400);
-        } catch (AppointmentAplicationExceptions $e) {
-            return response()->json(['error' => $e->getMessage()], 409);
         } catch (AuthorizationException $e) {
-            return response()->json(['error' => $e->getMessage()], 403);
+            // The 403 of the whole API, rendered in bootstrap/app.php.
+            throw $e;
         } catch (\Exception $e) {
             return UnexpectedErrorResponse::from($e, self::class);
         }
