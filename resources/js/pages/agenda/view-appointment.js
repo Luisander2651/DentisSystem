@@ -24,6 +24,12 @@ import { announceError, failureMessage } from '../../ui/status';
     var editButton = modal.querySelector('[data-view-appointment-edit]');
     var cancelAppointmentButton = modal.querySelector('[data-view-appointment-cancel-appointment]');
     var cancelButtons = modal.querySelectorAll('[data-view-appointment-cancel]');
+    var qrSection = modal.querySelector('[data-view-appointment-qr]');
+    var qrImage = modal.querySelector('[data-view-appointment-qr-image]');
+    var qrError = modal.querySelector('[data-view-appointment-qr-error]');
+    var qrDownload = modal.querySelector('[data-view-appointment-qr-download]');
+    // Spec 024 (D3): the PNG is drawn at this size, on the surface colour, so a phone reads it in a chat.
+    var QR_DOWNLOAD_SIZE = 1024;
 
     if (!generalContainer || !clinicalSection || !clinicalBody) {
         return;
@@ -191,10 +197,92 @@ import { announceError, failureMessage } from '../../ui/status';
         return data;
     }
 
+    function resetQr() {
+        if (!qrSection) return;
+
+        qrSection.classList.add('hidden');
+        qrError.classList.add('hidden');
+        qrImage.classList.remove('invisible');
+        qrImage.onload = null;
+        qrImage.onerror = null;
+        qrImage.removeAttribute('src');
+        qrImage.alt = '';
+        qrDownload.disabled = true;
+        qrDownload.removeAttribute('data-view-appointment-qr-filename');
+    }
+
+    // Spec 024 (CA5, CA8, D2, D4): the image comes straight from the API, so the content
+    // security policy stays as it is and the SVG can run nothing. The file name has no patient data.
+    function showQr(appointmentId, date, time) {
+        if (!qrSection) return;
+
+        try {
+            var filename = 'cita-' + String(date || '') + '-' + String(time || '').slice(0, 5).replace(':', '') + '.png';
+
+            qrSection.classList.remove('hidden');
+            qrDownload.setAttribute('data-view-appointment-qr-filename', filename);
+            qrImage.alt = 'Código QR de la cita del ' + formatDate(date);
+            qrImage.onload = function () {
+                if (activeAppointmentId === appointmentId) {
+                    qrDownload.disabled = false;
+                }
+            };
+            qrImage.onerror = function () {
+                if (activeAppointmentId === appointmentId) {
+                    qrImage.classList.add('invisible');
+                    qrError.classList.remove('hidden');
+                }
+            };
+            qrImage.src = '/api/v1/appointments/' + encodeURIComponent(appointmentId) + '/qr';
+        } catch (qrFailure) {
+            qrImage.classList.add('invisible');
+            qrError.classList.remove('hidden');
+        }
+    }
+
+    // Spec 024 (CA6, D3): an SVG does not preview in a chat, so the download is a PNG drawn here
+    // from the image already shown, on a white background (the SVG has none).
+    function downloadQr() {
+        var filename = qrDownload.getAttribute('data-view-appointment-qr-filename');
+
+        if (!filename || !qrImage.complete) return;
+
+        try {
+            var canvas = document.createElement('canvas');
+            canvas.width = QR_DOWNLOAD_SIZE;
+            canvas.height = QR_DOWNLOAD_SIZE;
+            var context = canvas.getContext('2d');
+            context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-surface').trim();
+            context.fillRect(0, 0, QR_DOWNLOAD_SIZE, QR_DOWNLOAD_SIZE);
+            context.drawImage(qrImage, 0, 0, QR_DOWNLOAD_SIZE, QR_DOWNLOAD_SIZE);
+
+            canvas.toBlob(function (blob) {
+                if (!blob) {
+                    announceError('No pudimos descargar el código QR. Inténtalo de nuevo.');
+                    return;
+                }
+
+                var url = URL.createObjectURL(blob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(function () {
+                    URL.revokeObjectURL(url);
+                }, 0);
+            }, 'image/png');
+        } catch (downloadFailure) {
+            announceError('No pudimos descargar el código QR. Inténtalo de nuevo.');
+        }
+    }
+
     async function open(appointmentId, opener) {
         activeAppointmentId = appointmentId;
         activeAppointmentSummary = null;
         hideError();
+        resetQr();
         generalContainer.innerHTML = '';
         clinicalSection.classList.add('hidden');
         clinicalBody.innerHTML = '';
@@ -232,6 +320,11 @@ import { announceError, failureMessage } from '../../ui/status';
             }
             if (isOpen && cancelAppointmentButton && canCancel) {
                 cancelAppointmentButton.hidden = false;
+            }
+
+            // Spec 024 (CA5, CA7): only an open appointment gets in, so only it shows its QR code.
+            if (isOpen) {
+                showQr(appointmentId, appointment.date, appointment.time);
             }
 
             // Spec 018 (CA3, CA9): the administrator reads every clinical record, the doctor only
@@ -275,9 +368,14 @@ import { announceError, failureMessage } from '../../ui/status';
     }
 
     function closeModal() {
+        resetQr();
         closeDialog(modal);
         activeAppointmentId = null;
         activeAppointmentSummary = null;
+    }
+
+    if (qrDownload) {
+        qrDownload.addEventListener('click', downloadQr);
     }
 
     cancelButtons.forEach(function (button) {
