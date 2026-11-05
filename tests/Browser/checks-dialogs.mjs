@@ -108,9 +108,11 @@ function isOpenInPage(dialogSelector) {
 /**
  * What an entry declares about its own dialog (`expects`, spec 017): the text a control or title
  * shows (`text` + `is`), a control that must not be in sight (`absent`), the control that holds
- * the focus when the dialog opens (`focus`).
+ * the focus when the dialog opens (`focus`). Since spec 024, `image` ({ selector, minWidth,
+ * minHeight }: an image in sight that loads within 3 s and is painted at least that big) and
+ * `attribute` ({ selector, name, matches }: the attribute of an element matches a pattern).
  */
-function expectationsInPage(expects) {
+async function expectationsInPage(expects) {
     const A = window.__audit;
     const shown = (selector) => [...document.querySelectorAll(selector)].find((element) => A.visible(element)) ?? null;
     const failures = [];
@@ -134,6 +136,37 @@ function expectationsInPage(expects) {
 
             if (!active || !active.matches(expectation.focus)) {
                 failures.push({ rule: 'foco inicial en otro control', message: `debía estar en ${expectation.focus} y está en ${active && active !== document.body ? A.describe(active) : 'el documento'}` });
+            }
+        } else if (expectation.image !== undefined) {
+            const { selector, minWidth = 0, minHeight = 0 } = expectation.image;
+            let image = null;
+            let loaded = false;
+
+            for (let waited = 0; waited <= 3000 && !loaded; waited += 100) {
+                image = shown(selector);
+                loaded = image instanceof HTMLImageElement && image.complete && image.currentSrc !== '' && image.naturalWidth + image.naturalHeight > 0;
+
+                if (!loaded) {
+                    await new Promise((done) => setTimeout(done, 100));
+                }
+            }
+
+            if (!loaded) {
+                failures.push({ rule: 'imagen sin cargar', message: image ? `${A.describe(image)} no terminó de cargar en 3 s (${selector})` : `no hay ninguna imagen a la vista (${selector})` });
+            } else {
+                const box = image.getBoundingClientRect();
+
+                if (box.width < minWidth || box.height < minHeight) {
+                    failures.push({ rule: 'imagen más pequeña de lo esperado', message: `${A.describe(image)} mide ${Math.round(box.width)} × ${Math.round(box.height)} px y debía medir al menos ${minWidth} × ${minHeight} px` });
+                }
+            }
+        } else if (expectation.attribute !== undefined) {
+            const { selector, name, matches } = expectation.attribute;
+            const element = document.querySelector(selector);
+            const value = element ? element.getAttribute(name) : null;
+
+            if (value === null || !new RegExp(matches).test(value)) {
+                failures.push({ rule: 'atributo distinto del esperado', message: `${selector} tiene ${name}=${value === null ? 'nada' : `"${value}"`} y debía cumplir /${matches}/` });
             }
         }
     }
