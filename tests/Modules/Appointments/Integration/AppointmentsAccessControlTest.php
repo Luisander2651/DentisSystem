@@ -139,10 +139,6 @@ beforeEach(function () {
 });
 
 it('answers each agenda and appointments route according to the permissions table', function (string $actor, string $route, array $allowed) {
-    if ($route === 'GET /appointments/{id}/qr') {
-        $this->markTestSkipped('024: pendiente de T022');
-    }
-
     [$method, $url, $payload] = ($this->buildRequest)($route);
     ($this->actAs)($actor);
 
@@ -301,4 +297,4 @@ it('covers every agenda and appointments route and protects each one with the st
         ->toEqual(collect(array_keys(appointmentsAccessRoutes()))->merge(DASHBOARD_ACCESS_ROUTES)->sort()->values()->all());
 
     $routes->each(fn (array $route) => expect($route['middleware'])->toContain('staff'));
-})->skip('024: pendiente de T022');
+});

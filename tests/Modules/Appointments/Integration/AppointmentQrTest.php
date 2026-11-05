@@ -50,7 +50,7 @@ it('answers an SVG that holds exactly the appointment id (CA1)', function () {
     $response->assertOk();
     expect($response->headers->get('Content-Type'))->toStartWith('image/svg+xml')
         ->and($this->decodeQrSvg($response->getContent()))->toBe($appointment->id);
-})->skip('024: pendiente de T022');
+});
 
 it('answers the same content every time it is asked (CA2)', function () {
     $this->actingAsAdmin();
@@ -61,7 +61,7 @@ it('answers the same content every time it is asked (CA2)', function () {
 
     expect($this->decodeQrSvg($second))->toBe($this->decodeQrSvg($first))
         ->and($this->decodeQrSvg($second))->toBe($appointment->id);
-})->skip('024: pendiente de T022');
+});
 
 it('answers the QR code of a closed appointment too: who gets in is decided elsewhere', function (string $status) {
     $this->actingAsAdmin();
@@ -71,7 +71,7 @@ it('answers the QR code of a closed appointment too: who gets in is decided else
 
     $response->assertOk();
     expect($this->decodeQrSvg($response->getContent()))->toBe($appointment->id);
-})->with(['completada', 'cancelada', 'reprogramada'])->skip('024: pendiente de T022');
+})->with(['completada', 'cancelada', 'reprogramada']);
 
 it('answers not found, like the detail, for an id without appointment (CA3)', function () {
     $this->actingAsAdmin();
@@ -80,7 +80,7 @@ it('answers not found, like the detail, for an id without appointment (CA3)', fu
     $this->getJson(appointmentQrUrl($id))
         ->assertNotFound()
         ->assertExactJson(['error' => 'Appointment not found.']);
-})->skip('024: pendiente de T022');
+});
 
 it('answers a bad request, like the internal query, for an id that is not a UUID (CA4)', function (string $id) {
     $this->actingAsAdmin();
@@ -92,7 +92,7 @@ it('answers a bad request, like the internal query, for an id that is not a UUID
     'text' => 'no-es-uuid',
     'number' => '123',
     'uuid without dashes' => '9b2e6c1a4f1d4c3e8a7b2d5f0e9c1a34',
-])->skip('024: pendiente de T022');
+]);
 
 it('refuses a patient the QR code of their own appointment (CA10, abuse)', function () {
     $patient = $this->actingAsPatient();
@@ -102,7 +102,7 @@ it('refuses a patient the QR code of their own appointment (CA10, abuse)', funct
 
     $response->assertForbidden();
     expect($response->getContent())->not->toContain('<svg');
-})->skip('024: pendiente de T022');
+});
 
 it('answers a generic 500 when drawing the QR code fails (CA11, abuse)', function () {
     $this->actingAsAdmin();
@@ -113,7 +113,7 @@ it('answers a generic 500 when drawing the QR code fails (CA11, abuse)', functio
     $this->getJson(appointmentQrUrl($appointment->id))
         ->assertStatus(500)
         ->assertExactJson(['error' => 'Internal server error']);
-})->skip('024: pendiente de T022');
+});
 
 it('answers a generic 500 when reading the appointment fails (CA11, abuse)', function () {
     $this->actingAsAdmin();
@@ -123,7 +123,7 @@ it('answers a generic 500 when reading the appointment fails (CA11, abuse)', fun
     $this->getJson(appointmentQrUrl((string) Str::uuid()))
         ->assertStatus(500)
         ->assertExactJson(['error' => 'Internal server error']);
-})->skip('024: pendiente de T022');
+});
 
 it('tells browsers and proxies not to store the QR code (CA12, TM4)', function () {
     $this->actingAsAdmin();
@@ -133,7 +133,7 @@ it('tells browsers and proxies not to store the QR code (CA12, TM4)', function (
 
     expect($cacheControl)->toContain('no-store')
         ->and($cacheControl)->toContain('private');
-})->skip('024: pendiente de T022');
+});
 
 it('keeps the global policy that stops scripts inside the SVG when it is opened directly (TM6)', function () {
     $this->actingAsAdmin();
@@ -146,7 +146,7 @@ it('keeps the global policy that stops scripts inside the SVG when it is opened 
         ->and($directives['script-src'])->not->toContain("'unsafe-inline'")
         ->and($directives['object-src'] ?? '')->toBe("'none'")
         ->and($response->headers->get('X-Content-Type-Options'))->toBe('nosniff');
-})->skip('024: pendiente de T022');
+});
 
 it('keeps the names of the patient and the doctor out of the QR code (TM5)', function () {
     $this->actingAsAdmin();
@@ -161,4 +161,4 @@ it('keeps the names of the patient and the doctor out of the QR code (TM5)', fun
         ->and($svg)->not->toContain('Evaristo')
         ->and($svg)->not->toContain('Lizárraga')
         ->and($this->decodeQrSvg($svg))->toBe($appointment->id);
-})->skip('024: pendiente de T022');
+});
