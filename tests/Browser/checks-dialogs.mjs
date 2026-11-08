@@ -34,7 +34,10 @@
  * that wait) and `tabbable` (a selector Tab reaches from the top of the page); since the review of
  * spec 019, `focused` (the selector that holds the focus at the end), `textIn` ({ selector: text }
  * found in the text of the element, screen-reader-only text included) and `notAnnounced` (a text
- * the regions must never say).
+ * the regions must never say). Since the review of spec 024, the action `waitFor` (a selector that
+ * must come into sight before going on) and the expectation `downloaded` ({ name, type }: a file
+ * the page offered for download, its name matching the pattern `name` and its Blob of type
+ * `type`); while a flow expects it, the page's download links are recorded instead of followed.
  *
  * It runs after the steps of a dialog entry, with the dialog open, and leaves it closed.
  */
@@ -329,6 +332,36 @@ function recordAnnouncementsInPage(fromLoad = false) {
     window.__flowAnnounced = said;
 }
 
+/**
+ * Review of spec 024 (R5): what a download link of the page offers, kept instead of followed, with
+ * the type of the Blob behind its address, so a flow can check the file and not only the click.
+ */
+function recordDownloadsInPage() {
+    const downloads = [];
+    const blobTypes = new Map();
+    const createObjectURL = URL.createObjectURL.bind(URL);
+    const click = HTMLAnchorElement.prototype.click;
+
+    URL.createObjectURL = (object) => {
+        const address = createObjectURL(object);
+        blobTypes.set(address, object instanceof Blob ? object.type : null);
+
+        return address;
+    };
+
+    HTMLAnchorElement.prototype.click = function () {
+        if (this.hasAttribute('download')) {
+            downloads.push({ name: this.download, type: blobTypes.get(this.href) ?? null });
+
+            return;
+        }
+
+        click.call(this);
+    };
+
+    window.__flowDownloads = downloads;
+}
+
 /** Picks the option at a position of a select, as a person would (spec 019). */
 export function selectIndexInPage(selector, index) {
     const field = document.querySelector(selector);
@@ -377,6 +410,7 @@ function flowStateInPage(expect) {
         defined: (expect.globalUndefined ?? []).filter((name) => window[name] !== undefined),
         focused: expect.focused ? document.activeElement?.matches(expect.focused) === true : true,
         focusedOn: document.activeElement ? A.describe(document.activeElement) : 'nada',
+        downloads: window.__flowDownloads ?? [],
         texts: Object.fromEntries(Object.keys(expect.textIn ?? {}).map((selector) => [selector, document.querySelector(selector)?.textContent.replace(/\s+/g, ' ').trim() ?? null])),
     };
 }
@@ -504,6 +538,11 @@ async function runFlows(page, entry, baseUrl) {
 
         await reenter(page, entry, baseUrl);
         await page.evaluate(recordAnnouncementsInPage, Boolean(flow.load));
+
+        if (flow.expect?.downloaded) {
+            await page.evaluate(recordDownloadsInPage);
+        }
+
         stop ??= await page.intercept(responder);
 
         try {
@@ -516,6 +555,8 @@ async function runFlows(page, entry, baseUrl) {
                     await page.evaluate(fillAndSendInPage, action.fillAll, false);
                 } else if (action.click) {
                     await page.click(action.click);
+                } else if (action.waitFor) {
+                    await page.waitFor(visibleInPage, { args: [action.waitFor], what: `"${action.waitFor}" visible` });
                 } else if (action.press) {
                     await page.press(action.press);
                 } else if (action.backdrop) {
@@ -588,6 +629,15 @@ async function runFlows(page, entry, baseUrl) {
 
             Object.entries(expect.textIn ?? {}).filter(([selector, text]) => !(state.texts[selector] ?? '').includes(text))
                 .forEach(([selector, text]) => fail(`${selector} dice "${state.texts[selector] ?? 'nada (no existe)'}" y debía incluir "${text}"`));
+
+            if (expect.downloaded) {
+                const name = new RegExp(expect.downloaded.name);
+                const offered = state.downloads.some((file) => name.test(file.name) && (expect.downloaded.type === undefined || file.type === expect.downloaded.type));
+
+                if (!offered) {
+                    fail(`no se ofreció ningún archivo ${expect.downloaded.name} de tipo ${expect.downloaded.type ?? 'cualquiera'} (${state.downloads.map((file) => `${file.name} ${file.type}`).join('; ') || 'ninguno'})`);
+                }
+            }
 
             if (expect.notAnnounced && state.announced.includes(expect.notAnnounced)) {
                 fail(`se anunció "${state.announced}" y no debía anunciarse "${expect.notAnnounced}"`);

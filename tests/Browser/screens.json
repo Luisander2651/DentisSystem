@@ -1420,10 +1420,10 @@
             ],
             "flows": [
                 {
-                    "name": "Descargar QR no deja errores",
+                    "name": "Descargar QR ofrece el PNG de la cita",
                     "do": [
                         {
-                            "wait": 500
+                            "waitFor": "[data-view-appointment-qr-download]:not([disabled])"
                         },
                         {
                             "click": "[data-view-appointment-qr-download]"
@@ -1435,7 +1435,11 @@
                     "expect": {
                         "open": [
                             "[data-view-appointment-modal]"
-                        ]
+                        ],
+                        "downloaded": {
+                            "name": "^cita-\\d{4}-\\d{2}-\\d{2}-\\d{4}\\.png$",
+                            "type": "image/png"
+                        }
                     }
                 },
                 {
@@ -1459,6 +1463,10 @@
                         "open": [
                             "[data-view-appointment-modal]"
                         ],
+                        "visibleAfter": {
+                            "selector": "[data-view-appointment-qr-error]",
+                            "ms": 0
+                        },
                         "announcedOnce": "No pudimos cargar el código QR",
                         "textIn": {
                             "[data-view-appointment-qr-error]": "No pudimos cargar el código QR",
