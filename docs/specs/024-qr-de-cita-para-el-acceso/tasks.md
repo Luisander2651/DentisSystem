@@ -91,10 +91,19 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 - [x] T051 [P] Documentar el bloque del QR dentro del detalle de la cita — `docs/design/system.md`, `docs/design/system.html` — hecho cuando: el componente aparece con su uso, tamaño mínimo y textos — depende: T023
 - [x] T052 [P] Añadir `GET /api/v1/appointments/{id}/qr` (staff) a "Superficie de ataque" — `docs/security.md` — hecho cuando: la fila está con su control — depende: T022
 
+## Correcciones de /review (ronda 1)
+- [ ] T024 Que una respuesta de otra cita o llegada con el detalle cerrado nunca monte el QR, y limpiar el detalle se cierre como se cierre: en `open()`, tras cada `await`, salir si `activeAppointmentId !== appointmentId`; el `resetQr()` y `activeAppointmentId = null` pasan a un oyente del evento `close` del `<dialog>` (Escape, la X, el fondo y "Cerrar"), como pide `ui/dialog.js`. Test primero en ui-audit, entrada `agenda-cita-detalle-pendiente`: flujo "Una respuesta tardía no monta el QR" que retiene (`hold`) la respuesta de `GET /api/v1/appointments/{id}`, pulsa Escape, la suelta (`release`) y exige que `[data-view-appointment-qr]` siga oculto y `[data-view-appointment-qr-image]` sin `src`; y flujo "Cerrar con Escape limpia el QR" que, con el QR cargado, pulsa Escape y exige la imagen sin `src` — `resources/js/pages/agenda/view-appointment.js`, `tests/Browser/screens.json`, `tests/Browser/checks-dialogs.mjs` (solo si falta una expectativa para "sin atributo") — hecho cuando: los dos flujos fallan sin el cambio (anotado), pasan con él dos veces seguidas en `npm run test:ui -- --only agenda-cita-detalle-pendiente` y las entradas del detalle de inicio y expediente siguen en verde — cubre: CA5, CA6 — depende: T023
+  - nota: añadida por /review: R1, R2
+- [ ] T025 Anunciar el fallo del QR por la región de estado del diálogo: en el `onerror` de `showQr` y en su `catch`, además de mostrar el aviso, `announceError('No pudimos cargar el código QR. Cierra el detalle y vuelve a abrirlo.')`. Test primero: el flujo "Si el QR no carga…" de `agenda-cita-detalle-pendiente` exige `announced` con "No pudimos cargar el código QR" — `resources/js/pages/agenda/view-appointment.js`, `tests/Browser/screens.json` — hecho cuando: el flujo falla sin el cambio (anotado) y pasa con él dos veces seguidas; revisión de accesibilidad: un solo anuncio por fallo (`announcedOnce`) — cubre: CA8 — depende: T024
+  - nota: añadida por /review: R3
+- [ ] T026 Endurecer las pruebas de navegador de CA6 y CA8: el flujo de CA8 exige además `visibleAfter` sobre `[data-view-appointment-qr-error]` (`ms: 0`); el arnés gana la expectativa `downloaded` ({ name, type }), que registra en la página los `click` de enlaces con `download` y el tipo del `Blob` pasado a `URL.createObjectURL`, y el flujo "Descargar QR" espera a que el botón esté habilitado (`waitFor` sobre `[data-view-appointment-qr-download]:not([disabled])`) y exige `downloaded` con nombre `cita-AAAA-MM-DD-HHMM.png` (patrón) y tipo `image/png` — `tests/Browser/checks-dialogs.mjs`, `tests/Browser/screens.json` — hecho cuando: con `downloadQr` saliendo al principio el flujo de CA6 falla, y sin `qrError.classList.remove('hidden')` el de CA8 falla (los dos anotados y revertidos); con el código actual pasan dos veces seguidas — cubre: CA6, CA8 — depende: T025
+  - nota: añadida por /review: R4, R5
+- [ ] T027 Repetir la comprobación de la definición de terminado tras T024–T026: Pint, Pest completa en serie sin fallos nuevos frente a T050, `npm run build`, `ui-audit` completo en local y `aidd.py validate` — hecho cuando: todo pasa y el resultado queda anotado — depende: T024, T025, T026
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: puerto de QR en `Aplication/Support` y su adaptador `Infrastructure/Qr` (`chillerlan/php-qrcode`, ADR 0007); el QR que Core genera y el microservicio de asistencias lee (023)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 024 para el objetivo 5 (obtención del QR en `GetAppointmentQrUseCase`; accesos denegados). Sin cambios en `deployment.md` (sin variables ni pasos nuevos; `composer install` ya va en la imagen)
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -110,10 +119,10 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 | CA2 | T010, T013 | T020, T022 |
 | CA3 | T012, T013 | T021, T022 |
 | CA4 | T012, T013 | T021, T022 |
-| CA5 | T016 | T023 |
-| CA6 | T016 | T023 |
+| CA5 | T016, T024 | T023, T024 |
+| CA6 | T016, T024, T026 | T023, T024 |
 | CA7 | T016 | T023 |
-| CA8 | T016 | T023 |
+| CA8 | T016, T025, T026 | T023, T025 |
 | CA9 | T014 | T022 |
 | CA10 | T012, T013, T014 | T021, T022 |
 | CA11 | T013 | T022 |
@@ -137,8 +146,8 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 | Appointments · Infrastructure | T020 (adaptador), T022 |
 | Core · Providers | T020 |
 | Rutas | T022 |
-| Interfaz | T023 |
-| Pruebas de navegador | T016 |
+| Interfaz | T023, T024, T025 |
+| Pruebas de navegador | T016, T024, T025, T026 |
 | Docs | T051, T052, T090, T091 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
