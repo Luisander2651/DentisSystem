@@ -104,10 +104,16 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 - [x] T027 Repetir la comprobación de la definición de terminado tras T024–T026: Pint, Pest completa en serie sin fallos nuevos frente a T050, `npm run build`, `ui-audit` completo en local y `aidd.py validate` — hecho cuando: todo pasa y el resultado queda anotado — depende: T024, T025, T026
   - nota: 2026-11-08: Pint sin cambios; Pest completa en serie, 2 019 pasan y ninguno falla (igual que T050); `npm run build` correcto; gitleaks sin hallazgos en los commits nuevos; `aidd.py validate` sin errores. `ui-audit` completo no cabía en la memoria del equipo de una vez (se cortó dos veces), así que se corrió en 9 tandas de 12 entradas: 105 entradas a 390, 768 y 1440 px. Los únicos fallos fueron por el límite de la API (429 tras 6 intentos), que una entrada pesada anterior deja casi agotado: `dashboard-administrador-flujos`, `dashboard-registrar-seguimiento`, `agenda-cita-detalle-pendiente`, `agenda-cita-reprogramar` y `agenda-cita-cancelar`. Todas pasan al repetirlas solas o en su tanda; ningún fallo de pantalla.
 
+- [ ] T028 Una sola apertura válida a la vez: `open()` toma un número de apertura (contador del módulo que incrementa al abrir y que el evento `close` también incrementa), y tras cada `await`, en `onload` y en `onerror` del QR sale si ya no es la apertura vigente; las cuatro guardas por id se sustituyen por esa comprobación y `closeModal()` solo cierra el diálogo (la limpieza queda en el oyente de `close`). Test primero en ui-audit, entrada `agenda-cita-detalle-pendiente`: flujo "Reabrir la misma cita no duplica el detalle", que retiene (`hold`, `times: 1`) la primera respuesta del detalle, pulsa Escape, vuelve a abrir la misma cita desde la lista del día, la suelta y exige `absent` de `[data-view-appointment-general] > :nth-child(7)` (seis filas); y flujo "Cerrar A y abrir B no muestra el QR de A", que retiene el detalle de A, pulsa Escape, abre otra cita asignada de la lista del mismo día, suelta y exige `absent` de `[data-view-appointment-qr-image][src*="c9b5cc9b-ca9b-5db8-9750-dcd95f733644"]` — `resources/js/pages/agenda/view-appointment.js`, `tests/Browser/screens.json` — hecho cuando: el flujo de la reapertura falla sin el cambio (anotado), los dos pasan con él dos veces seguidas en `npm run test:ui -- --only agenda-cita-detalle-pendiente`, y los flujos de T024–T026 y las entradas del detalle de inicio y expediente siguen en verde; revisión de accesibilidad: el foco vuelve al control que abrió el detalle — cubre: CA5, CA6 — depende: T027
+  - nota: añadida por /review: R16
+- [ ] T029 Dar tamaño propio al SVG del QR: una salida `SizedQrMarkupSvg` que extiende `QRMarkupSVG` y añade a la raíz `width` y `height` iguales al lado del `viewBox` multiplicado por 8, usada como `outputInterface` en `ChillerlanQrCodeGenerator`. Test primero en `ChillerlanQrCodeGeneratorTest`: la raíz `<svg>` lleva `width` y `height` iguales y positivos, y el SVG se sigue decodificando al texto exacto — `app/Modules/Appointments/Infrastructure/Qr/SizedQrMarkupSvg.php`, `app/Modules/Appointments/Infrastructure/Qr/ChillerlanQrCodeGenerator.php`, `tests/Modules/Appointments/Unit/Infrastructure/ChillerlanQrCodeGeneratorTest.php` — hecho cuando: el test falla sin el cambio y pasa con él; `AppointmentQrTest`, `AppointmentQrPropertiesTest` y `AppointmentsArchitectureTest` siguen en verde; los flujos del QR de ui-audit siguen en verde (el QR se sigue viendo a 240 × 240 px) · verificación manual: en Firefox, "Descargar QR" de una cita asignada descarga un PNG legible con un teléfono — cubre: CA1, CA6 — depende: T027
+  - nota: añadida por /review: R17
+- [ ] T030 Repetir la comprobación de la definición de terminado tras T028–T029: Pint, Pest completa en serie sin fallos nuevos frente a T027, `npm run build`, `ui-audit` completo en local (por tandas si no cabe en memoria) y `aidd.py validate` — hecho cuando: todo pasa y el resultado queda anotado — depende: T028, T029
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: puerto de QR en `Aplication/Support` y su adaptador `Infrastructure/Qr` (`chillerlan/php-qrcode`, ADR 0007); el QR que Core genera y el microservicio de asistencias lee (023)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 024 para el objetivo 5 (obtención del QR en `GetAppointmentQrUseCase`; accesos denegados). Sin cambios en `deployment.md` (sin variables ni pasos nuevos; `composer install` ya va en la imagen)
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -119,12 +125,12 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
-| CA1 | T010, T011, T013 | T020, T022 |
+| CA1 | T010, T011, T013, T029 | T020, T022, T029 |
 | CA2 | T010, T013 | T020, T022 |
 | CA3 | T012, T013 | T021, T022 |
 | CA4 | T012, T013 | T021, T022 |
-| CA5 | T016, T024 | T023, T024 |
-| CA6 | T016, T024, T026 | T023, T024 |
+| CA5 | T016, T024, T028 | T023, T024, T028 |
+| CA6 | T016, T024, T026, T028, T029 | T023, T024, T028, T029 |
 | CA7 | T016 | T023 |
 | CA8 | T016, T025, T026 | T023, T025 |
 | CA9 | T014 | T022 |
@@ -147,11 +153,11 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 |---|---|
 | Dependencias | T002 |
 | Appointments · Aplication | T021, T020 (puerto) |
-| Appointments · Infrastructure | T020 (adaptador), T022 |
+| Appointments · Infrastructure | T020 (adaptador), T022, T029 |
 | Core · Providers | T020 |
 | Rutas | T022 |
-| Interfaz | T023, T024, T025 |
-| Pruebas de navegador | T016, T024, T025, T026 |
+| Interfaz | T023, T024, T025, T028 |
+| Pruebas de navegador | T016, T024, T025, T026, T028 |
 | Docs | T051, T052, T090, T091 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
