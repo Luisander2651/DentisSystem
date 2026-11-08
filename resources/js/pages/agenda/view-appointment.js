@@ -293,6 +293,13 @@ import { announceError, failureMessage } from '../../ui/status';
 
         try {
             var data = await requestJson('/api/v1/appointments/' + appointmentId);
+
+            // Review of spec 024 (R1): an answer for a detail already closed, or for an earlier
+            // appointment, never fills the one in sight (nor mounts its QR code).
+            if (activeAppointmentId !== appointmentId) {
+                return;
+            }
+
             var appointment = data.data || {};
             var normalizedStatus = normalizeAppointmentStatus(appointment.status);
 
@@ -342,8 +349,17 @@ import { announceError, failureMessage } from '../../ui/status';
 
                 try {
                     var trackingData = await requestJson('/api/v1/appointments/' + appointmentId + '/tracking');
+
+                    if (activeAppointmentId !== appointmentId) {
+                        return;
+                    }
+
                     renderClinicalRecord(trackingData.data || {});
                 } catch (trackingError) {
+                    if (activeAppointmentId !== appointmentId) {
+                        return;
+                    }
+
                     clinicalBody.innerHTML = '';
 
                     // Una cita completada puede no tener registro clínico guardado: no es un error.
@@ -363,6 +379,10 @@ import { announceError, failureMessage } from '../../ui/status';
                 }
             }
         } catch (error) {
+            if (activeAppointmentId !== appointmentId) {
+                return;
+            }
+
             showError(error instanceof TypeError ? failureMessage(0) : error.message);
         }
     }
@@ -373,6 +393,19 @@ import { announceError, failureMessage } from '../../ui/status';
         activeAppointmentId = null;
         activeAppointmentSummary = null;
     }
+
+    // Review of spec 024 (R2): Escape, the X and the backdrop close the dialog too, so what it
+    // held is cleared on its `close` event, as ui/dialog.js asks; a detail opened again before the
+    // event arrives keeps its own.
+    modal.addEventListener('close', function () {
+        if (modal.open) {
+            return;
+        }
+
+        resetQr();
+        activeAppointmentId = null;
+        activeAppointmentSummary = null;
+    });
 
     if (qrDownload) {
         qrDownload.addEventListener('click', downloadQr);

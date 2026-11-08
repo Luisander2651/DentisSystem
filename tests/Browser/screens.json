@@ -1464,6 +1464,72 @@
                             "[data-view-appointment-general]": "Paciente"
                         }
                     }
+                },
+                {
+                    "name": "Una respuesta tardía no monta el QR en un detalle cerrado",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/appointments/c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                            "status": 200,
+                            "hold": true,
+                            "body": {
+                                "data": {
+                                    "id": "c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                                    "patient_name": "Paciente de prueba",
+                                    "treatment_name": "Consulta",
+                                    "user_name": "Doctor de prueba",
+                                    "user_id": "1",
+                                    "date": "2026-09-24",
+                                    "time": "10:00:00",
+                                    "status": "asignada"
+                                }
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "press": "Escape"
+                        },
+                        {
+                            "release": true
+                        },
+                        {
+                            "wait": 300
+                        }
+                    ],
+                    "expect": {
+                        "closed": [
+                            "[data-view-appointment-modal]"
+                        ],
+                        "absent": [
+                            "[data-view-appointment-qr]:not(.hidden)",
+                            "[data-view-appointment-qr-image][src]"
+                        ]
+                    }
+                },
+                {
+                    "name": "Cerrar con Escape limpia el QR",
+                    "do": [
+                        {
+                            "wait": 500
+                        },
+                        {
+                            "press": "Escape"
+                        },
+                        {
+                            "wait": 300
+                        }
+                    ],
+                    "expect": {
+                        "closed": [
+                            "[data-view-appointment-modal]"
+                        ],
+                        "absent": [
+                            "[data-view-appointment-qr]:not(.hidden)",
+                            "[data-view-appointment-qr-image][src]"
+                        ]
+                    }
                 }
             ]
         },
