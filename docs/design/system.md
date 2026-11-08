@@ -270,7 +270,8 @@ datos. Título "Código QR de acceso" (`text-base font-bold`), una línea en `te
 "Descargar QR" (`x-ui.button` `secondary`, deshabilitado hasta que la imagen carga), que descarga
 `cita-AAAA-MM-DD-HHMM.png` sin datos del paciente. Texto alternativo: "Código QR de la cita del
 <fecha>". Si la imagen no carga, el QR se oculta y aparece en su lugar un aviso persistente
-(`danger`, `role="alert"`): "No pudimos cargar el código QR. Cierra el detalle y vuelve a abrirlo."
+(`danger`): "No pudimos cargar el código QR. Cierra el detalle y vuelve a abrirlo.", que se
+anuncia una sola vez por la región de estado de la página (`announceError`), no como `role="alert"`.
 Sin valores visuales nuevos.
 
 ### Estados de pantalla

@@ -1459,6 +1459,7 @@
                         "open": [
                             "[data-view-appointment-modal]"
                         ],
+                        "announcedOnce": "No pudimos cargar el código QR",
                         "textIn": {
                             "[data-view-appointment-qr-error]": "No pudimos cargar el código QR",
                             "[data-view-appointment-general]": "Paciente"

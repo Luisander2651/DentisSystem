@@ -211,6 +211,14 @@ import { announceError, failureMessage } from '../../ui/status';
         qrDownload.removeAttribute('data-view-appointment-qr-filename');
     }
 
+    // Review of spec 024 (R3): the notice is seen in the place of the code and said once, by the
+    // status region of the page, like the other errors of the detail.
+    function showQrFailure() {
+        qrImage.classList.add('invisible');
+        qrError.classList.remove('hidden');
+        announceError(qrError.textContent.replace(/\s+/g, ' ').trim());
+    }
+
     // Spec 024 (CA5, CA8, D2, D4): the image comes straight from the API, so the content
     // security policy stays as it is and the SVG can run nothing. The file name has no patient data.
     function showQr(appointmentId, date, time) {
@@ -229,14 +237,12 @@ import { announceError, failureMessage } from '../../ui/status';
             };
             qrImage.onerror = function () {
                 if (activeAppointmentId === appointmentId) {
-                    qrImage.classList.add('invisible');
-                    qrError.classList.remove('hidden');
+                    showQrFailure();
                 }
             };
             qrImage.src = '/api/v1/appointments/' + encodeURIComponent(appointmentId) + '/qr';
         } catch (qrFailure) {
-            qrImage.classList.add('invisible');
-            qrError.classList.remove('hidden');
+            showQrFailure();
         }
     }
 

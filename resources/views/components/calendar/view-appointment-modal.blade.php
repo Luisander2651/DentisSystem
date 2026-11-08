@@ -21,7 +21,7 @@
             <div class="shrink-0 rounded-box border border-field bg-surface p-2">
                 <img class="block size-60" alt="" data-view-appointment-qr-image>
             </div>
-            <p class="hidden rounded-box border border-danger bg-danger-soft px-4 py-3 text-sm font-semibold text-danger" role="alert" data-view-appointment-qr-error>No pudimos cargar el código QR. Cierra el detalle y vuelve a abrirlo.</p>
+            <p class="hidden rounded-box border border-danger bg-danger-soft px-4 py-3 text-sm font-semibold text-danger" data-view-appointment-qr-error>No pudimos cargar el código QR. Cierra el detalle y vuelve a abrirlo.</p>
             <x-ui.button disabled data-view-appointment-qr-download>Descargar QR</x-ui.button>
         </div>
     </section>
