@@ -149,6 +149,13 @@ Crear una cita:
   registrar. El mes del administrador reutiliza `GET /reports/monthly` (spec 019). En `local` y
   `testing`, `App\Core\Middlewares\UiAuditClock` deja que la prueba de navegador fije la hora con la
   cabecera `X-Ui-Audit-Now`; en otro entorno la ignora.
+- QR de la cita (spec 024, [ADR 0007](adr/0007-chillerlan-php-qrcode-para-qr.md)): `GET /appointments/{id}/qr`
+  devuelve un SVG que solo contiene el UUID de la cita. `GetAppointmentQrUseCase` pide
+  `appointments.view-detail` y dibuja con el puerto `QrCodeGeneratorInterface` (`Aplication/Support`);
+  el adaptador `ChillerlanQrCodeGenerator` (`Infrastructure/Qr`) usa `chillerlan/php-qrcode` 6.0.1. No se
+  guarda nada. El detalle de la cita lo muestra con `<img>` y descarga un PNG dibujado en el navegador.
+  El microservicio de asistencias lee ese UUID con la app móvil y valida la cita con
+  `GET /internal/appointments/{id}` (spec 023); Core no recibe nada más por el escaneo.
 - Seguridad: rate limiting `throttle:api` (10/min por IP sin autenticar, 100/min por usuario) y `throttle:report-downloads` (10 descargas del reporte por minuto por administrador, spec 019) sobre la IP real del visitante (`App\Core\Middlewares\TrustCloudflareProxies` sustituye a `TrustProxies` y confía solo en los rangos de Cloudflare de `config/security.php`); `App\Core\Middlewares\SecurityHeaders` añade CSP con nonce (`Vite::useCspNonce`), `X-Frame-Options`, `nosniff` y `Referrer-Policy`; CORS limitado a `APP_URL` sin credenciales. Ver [security.md](security.md).
 
 ## Contrato entre capas

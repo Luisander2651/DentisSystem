@@ -6,8 +6,10 @@ use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Core\Authorization\CurrentActorAuthorizationService;
 use App\Core\Health\CheckDependenciesOnHealth;
 use App\Core\Middlewares\EnsureServiceKey;
+use App\Modules\Appointments\Aplication\Support\QrCodeGeneratorInterface;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\EloquentAppointmentRepository;
+use App\Modules\Appointments\Infrastructure\Qr\ChillerlanQrCodeGenerator;
 use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentCompletionRepositoryInterface;
 use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentTrackingRepositoryInterface;
 use App\Modules\AppointmentTracking\Domain\Repositories\PendingTrackingRepositoryInterface;
@@ -105,6 +107,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             AppointmentsRepositoryInterface::class,
             EloquentAppointmentRepository::class,
+        );
+
+        // Spec 024 (D1, ADR 0007): the QR code of an appointment.
+        $this->app->bind(
+            QrCodeGeneratorInterface::class,
+            ChillerlanQrCodeGenerator::class,
         );
 
         $this->app->bind(

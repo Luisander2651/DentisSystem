@@ -24,12 +24,21 @@ import { announceError, failureMessage } from '../../ui/status';
     var editButton = modal.querySelector('[data-view-appointment-edit]');
     var cancelAppointmentButton = modal.querySelector('[data-view-appointment-cancel-appointment]');
     var cancelButtons = modal.querySelectorAll('[data-view-appointment-cancel]');
+    var qrSection = modal.querySelector('[data-view-appointment-qr]');
+    var qrImage = modal.querySelector('[data-view-appointment-qr-image]');
+    var qrError = modal.querySelector('[data-view-appointment-qr-error]');
+    var qrDownload = modal.querySelector('[data-view-appointment-qr-download]');
+    // Spec 024 (D3): the PNG is drawn at this size, on the surface colour, so a phone reads it in a chat.
+    var QR_DOWNLOAD_SIZE = 1024;
 
     if (!generalContainer || !clinicalSection || !clinicalBody) {
         return;
     }
 
     var activeAppointmentId = null;
+    // Review of spec 024 (R16): each opening gets its number and closing moves it on, so an
+    // answer that arrives late (for this same appointment or another) never fills the detail.
+    var openingCount = 0;
     // What the cancel confirmation names: the patient, the date and the time (spec 017, CA7).
     var activeAppointmentSummary = null;
 
@@ -191,10 +200,99 @@ import { announceError, failureMessage } from '../../ui/status';
         return data;
     }
 
+    function resetQr() {
+        if (!qrSection) return;
+
+        qrSection.classList.add('hidden');
+        qrError.classList.add('hidden');
+        qrImage.classList.remove('invisible');
+        qrImage.onload = null;
+        qrImage.onerror = null;
+        qrImage.removeAttribute('src');
+        qrImage.alt = '';
+        qrDownload.disabled = true;
+        qrDownload.removeAttribute('data-view-appointment-qr-filename');
+    }
+
+    // Review of spec 024 (R3): the notice is seen in the place of the code and said once, by the
+    // status region of the page, like the other errors of the detail.
+    function showQrFailure() {
+        qrImage.classList.add('invisible');
+        qrError.classList.remove('hidden');
+        announceError(qrError.textContent.replace(/\s+/g, ' ').trim());
+    }
+
+    // Spec 024 (CA5, CA8, D2, D4): the image comes straight from the API, so the content
+    // security policy stays as it is and the SVG can run nothing. The file name has no patient data.
+    function showQr(opening, appointmentId, date, time) {
+        if (!qrSection) return;
+
+        try {
+            var filename = 'cita-' + String(date || '') + '-' + String(time || '').slice(0, 5).replace(':', '') + '.png';
+
+            qrSection.classList.remove('hidden');
+            qrDownload.setAttribute('data-view-appointment-qr-filename', filename);
+            qrImage.alt = 'Código QR de la cita del ' + formatDate(date);
+            qrImage.onload = function () {
+                if (opening === openingCount) {
+                    qrDownload.disabled = false;
+                }
+            };
+            qrImage.onerror = function () {
+                if (opening === openingCount) {
+                    showQrFailure();
+                }
+            };
+            qrImage.src = '/api/v1/appointments/' + encodeURIComponent(appointmentId) + '/qr';
+        } catch (qrFailure) {
+            showQrFailure();
+        }
+    }
+
+    // Spec 024 (CA6, D3): an SVG does not preview in a chat, so the download is a PNG drawn here
+    // from the image already shown, on a white background (the SVG has none).
+    function downloadQr() {
+        var filename = qrDownload.getAttribute('data-view-appointment-qr-filename');
+
+        if (!filename || !qrImage.complete) return;
+
+        try {
+            var canvas = document.createElement('canvas');
+            canvas.width = QR_DOWNLOAD_SIZE;
+            canvas.height = QR_DOWNLOAD_SIZE;
+            var context = canvas.getContext('2d');
+            context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-surface').trim();
+            context.fillRect(0, 0, QR_DOWNLOAD_SIZE, QR_DOWNLOAD_SIZE);
+            context.drawImage(qrImage, 0, 0, QR_DOWNLOAD_SIZE, QR_DOWNLOAD_SIZE);
+
+            canvas.toBlob(function (blob) {
+                if (!blob) {
+                    announceError('No pudimos descargar el código QR. Inténtalo de nuevo.');
+                    return;
+                }
+
+                var url = URL.createObjectURL(blob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(function () {
+                    URL.revokeObjectURL(url);
+                }, 0);
+            }, 'image/png');
+        } catch (downloadFailure) {
+            announceError('No pudimos descargar el código QR. Inténtalo de nuevo.');
+        }
+    }
+
     async function open(appointmentId, opener) {
+        var opening = ++openingCount;
         activeAppointmentId = appointmentId;
         activeAppointmentSummary = null;
         hideError();
+        resetQr();
         generalContainer.innerHTML = '';
         clinicalSection.classList.add('hidden');
         clinicalBody.innerHTML = '';
@@ -205,6 +303,11 @@ import { announceError, failureMessage } from '../../ui/status';
 
         try {
             var data = await requestJson('/api/v1/appointments/' + appointmentId);
+
+            if (opening !== openingCount) {
+                return;
+            }
+
             var appointment = data.data || {};
             var normalizedStatus = normalizeAppointmentStatus(appointment.status);
 
@@ -234,6 +337,11 @@ import { announceError, failureMessage } from '../../ui/status';
                 cancelAppointmentButton.hidden = false;
             }
 
+            // Spec 024 (CA5, CA7): only an open appointment gets in, so only it shows its QR code.
+            if (isOpen) {
+                showQr(opening, appointmentId, appointment.date, appointment.time);
+            }
+
             // Spec 018 (CA3, CA9): the administrator reads every clinical record, the doctor only
             // the ones of their own appointments and the assistant none; the API refuses the rest.
             var readsTracking = trackingScope === 'all'
@@ -249,8 +357,17 @@ import { announceError, failureMessage } from '../../ui/status';
 
                 try {
                     var trackingData = await requestJson('/api/v1/appointments/' + appointmentId + '/tracking');
+
+                    if (opening !== openingCount) {
+                        return;
+                    }
+
                     renderClinicalRecord(trackingData.data || {});
                 } catch (trackingError) {
+                    if (opening !== openingCount) {
+                        return;
+                    }
+
                     clinicalBody.innerHTML = '';
 
                     // Una cita completada puede no tener registro clínico guardado: no es un error.
@@ -270,14 +387,34 @@ import { announceError, failureMessage } from '../../ui/status';
                 }
             }
         } catch (error) {
+            if (opening !== openingCount) {
+                return;
+            }
+
             showError(error instanceof TypeError ? failureMessage(0) : error.message);
         }
     }
 
     function closeModal() {
         closeDialog(modal);
+    }
+
+    // Review of spec 024 (R2, R16): however the dialog closes (the buttons, Escape, the X or the
+    // backdrop), its `close` event clears what it held and ends the opening, as ui/dialog.js asks;
+    // a detail opened again before the event arrives keeps its own.
+    modal.addEventListener('close', function () {
+        if (modal.open) {
+            return;
+        }
+
+        openingCount++;
+        resetQr();
         activeAppointmentId = null;
         activeAppointmentSummary = null;
+    });
+
+    if (qrDownload) {
+        qrDownload.addEventListener('click', downloadQr);
     }
 
     cancelButtons.forEach(function (button) {

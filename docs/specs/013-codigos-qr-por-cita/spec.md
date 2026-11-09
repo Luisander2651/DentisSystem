@@ -1,12 +1,18 @@
 ---
 id: 013
 slug: codigos-qr-por-cita
-status: approved
+status: draft                # reemplazada por la 024 (2026-11-04); no se implementa
+superseded_by: 024
 created: 2026-09-22
 extends: [014]
 ---
 
 # 013 · Código QR por cita para el registro automático de entrada
+
+> **Reemplazada por la spec [024](../024-qr-de-cita-para-el-acceso/spec.md) el 2026-11-04 (decisión
+> del usuario). No se implementa.** El QR ahora lo escanea el administrador con la app de
+> asistencias y lleva solo el UUID de la cita. CA23 y CA24 (RS1.c y RS1.b) quedan pendientes sin spec
+> en `docs/security.md`. Se conserva como historial.
 
 > Migrada por `/init` desde `features/QRModule/spec.md` (diseño técnico) y `features/QRModule/plan.md`
 > (plan funcional AI-DLC con preguntas sin responder). Ambos se conservan en
@@ -131,3 +137,4 @@ cambiar su contenido.
 | 2026-09-24 | `extends: [014]` y orden de implementación después de la 014 | Segundo `/analyze 014` (B6); decisión del usuario |
 | 2026-09-24 | CA23 (autenticación separada de pacientes y staff) y CA24 (propiedad del recurso en toda ruta de paciente), traídos desde la spec 014 | Riesgo 1 de `docs/security.md`; decisión del usuario |
 | 2026-10-04 | "Supuestos" y "Aclaraciones" convertidas a la tabla "Decisiones", sin cambiar su contenido | `/init --upgrade` a 1.11.2; decisión del usuario |
+| 2026-11-04 | Reemplazada por la 024; status a draft con `superseded_by: 024` | Requisito del microservicio de asistencias; decisión del usuario |

@@ -891,6 +891,31 @@
                 {
                     "text": "[data-view-appointment-edit]",
                     "is": "Reprogramar"
+                },
+                {
+                    "image": {
+                        "selector": "[data-view-appointment-qr-image]",
+                        "minWidth": 240,
+                        "minHeight": 240
+                    }
+                },
+                {
+                    "text": "[data-view-appointment-qr-download]",
+                    "is": "Descargar QR"
+                },
+                {
+                    "attribute": {
+                        "selector": "[data-view-appointment-qr-download]",
+                        "name": "data-view-appointment-qr-filename",
+                        "matches": "^cita-\\d{4}-\\d{2}-\\d{2}-\\d{4}\\.png$"
+                    }
+                },
+                {
+                    "attribute": {
+                        "selector": "[data-view-appointment-qr-image]",
+                        "name": "alt",
+                        "matches": "^Código QR de la cita del .+"
+                    }
                 }
             ],
             "flows": [
@@ -927,6 +952,31 @@
                 {
                     "text": "[data-view-appointment-edit]",
                     "is": "Reprogramar"
+                },
+                {
+                    "image": {
+                        "selector": "[data-view-appointment-qr-image]",
+                        "minWidth": 240,
+                        "minHeight": 240
+                    }
+                },
+                {
+                    "text": "[data-view-appointment-qr-download]",
+                    "is": "Descargar QR"
+                },
+                {
+                    "attribute": {
+                        "selector": "[data-view-appointment-qr-download]",
+                        "name": "data-view-appointment-qr-filename",
+                        "matches": "^cita-\\d{4}-\\d{2}-\\d{2}-\\d{4}\\.png$"
+                    }
+                },
+                {
+                    "attribute": {
+                        "selector": "[data-view-appointment-qr-image]",
+                        "name": "alt",
+                        "matches": "^Código QR de la cita del .+"
+                    }
                 }
             ],
             "flows": [
@@ -1279,6 +1329,12 @@
                 },
                 {
                     "absent": "[data-view-appointment-cancel-appointment]"
+                },
+                {
+                    "absent": "[data-view-appointment-qr]"
+                },
+                {
+                    "absent": "[data-view-appointment-qr-download]"
                 }
             ]
         },
@@ -1303,6 +1359,12 @@
                 },
                 {
                     "absent": "[data-view-appointment-cancel-appointment]"
+                },
+                {
+                    "absent": "[data-view-appointment-qr]"
+                },
+                {
+                    "absent": "[data-view-appointment-qr-download]"
                 }
             ]
         },
@@ -1329,6 +1391,252 @@
                 {
                     "text": "[data-view-appointment-edit]",
                     "is": "Reprogramar"
+                },
+                {
+                    "image": {
+                        "selector": "[data-view-appointment-qr-image]",
+                        "minWidth": 240,
+                        "minHeight": 240
+                    }
+                },
+                {
+                    "text": "[data-view-appointment-qr-download]",
+                    "is": "Descargar QR"
+                },
+                {
+                    "attribute": {
+                        "selector": "[data-view-appointment-qr-download]",
+                        "name": "data-view-appointment-qr-filename",
+                        "matches": "^cita-\\d{4}-\\d{2}-\\d{2}-\\d{4}\\.png$"
+                    }
+                },
+                {
+                    "attribute": {
+                        "selector": "[data-view-appointment-qr-image]",
+                        "name": "alt",
+                        "matches": "^Código QR de la cita del .+"
+                    }
+                }
+            ],
+            "flows": [
+                {
+                    "name": "Descargar QR ofrece el PNG de la cita",
+                    "do": [
+                        {
+                            "waitFor": "[data-view-appointment-qr-download]:not([disabled])"
+                        },
+                        {
+                            "click": "[data-view-appointment-qr-download]"
+                        },
+                        {
+                            "wait": 300
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-view-appointment-modal]"
+                        ],
+                        "downloaded": {
+                            "name": "^cita-\\d{4}-\\d{2}-\\d{2}-\\d{4}\\.png$",
+                            "type": "image/png"
+                        }
+                    }
+                },
+                {
+                    "name": "Si el QR no carga, el detalle sigue a la vista con un aviso",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/qr",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 500
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-view-appointment-modal]"
+                        ],
+                        "visibleAfter": {
+                            "selector": "[data-view-appointment-qr-error]",
+                            "ms": 0
+                        },
+                        "announcedOnce": "No pudimos cargar el código QR",
+                        "textIn": {
+                            "[data-view-appointment-qr-error]": "No pudimos cargar el código QR",
+                            "[data-view-appointment-general]": "Paciente"
+                        }
+                    }
+                },
+                {
+                    "name": "Una respuesta tardía no monta el QR en un detalle cerrado",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/appointments/c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                            "status": 200,
+                            "hold": true,
+                            "body": {
+                                "data": {
+                                    "id": "c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                                    "patient_name": "Paciente de prueba",
+                                    "treatment_name": "Consulta",
+                                    "user_name": "Doctor de prueba",
+                                    "user_id": "1",
+                                    "date": "2026-09-24",
+                                    "time": "10:00:00",
+                                    "status": "asignada"
+                                }
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "press": "Escape"
+                        },
+                        {
+                            "release": true
+                        },
+                        {
+                            "wait": 300
+                        }
+                    ],
+                    "expect": {
+                        "closed": [
+                            "[data-view-appointment-modal]"
+                        ],
+                        "absent": [
+                            "[data-view-appointment-qr]:not(.hidden)",
+                            "[data-view-appointment-qr-image][src]"
+                        ]
+                    }
+                },
+                {
+                    "name": "Reabrir la misma cita no duplica el detalle",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/appointments/c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                            "status": 200,
+                            "hold": true,
+                            "times": 1,
+                            "body": {
+                                "data": {
+                                    "id": "c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                                    "patient_name": "Paciente de prueba",
+                                    "treatment_name": "Consulta",
+                                    "user_name": "Doctor de prueba",
+                                    "user_id": "1",
+                                    "date": "2026-09-24",
+                                    "time": "10:00:00",
+                                    "status": "asignada"
+                                }
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "press": "Escape"
+                        },
+                        {
+                            "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-view-appointment-trigger][data-appointment-id=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                        },
+                        {
+                            "wait": 500
+                        },
+                        {
+                            "release": true
+                        },
+                        {
+                            "wait": 300
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-view-appointment-modal]"
+                        ],
+                        "absent": [
+                            "[data-view-appointment-general] > :nth-child(7)"
+                        ]
+                    }
+                },
+                {
+                    "name": "Cerrar A y abrir B no muestra el QR de A",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/appointments/c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                            "status": 200,
+                            "hold": true,
+                            "times": 1,
+                            "body": {
+                                "data": {
+                                    "id": "c9b5cc9b-ca9b-5db8-9750-dcd95f733644",
+                                    "patient_name": "Paciente de prueba",
+                                    "treatment_name": "Consulta",
+                                    "user_name": "Doctor de prueba",
+                                    "user_id": "1",
+                                    "date": "2026-09-24",
+                                    "time": "10:00:00",
+                                    "status": "asignada"
+                                }
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "press": "Escape"
+                        },
+                        {
+                            "click": ":is(#modal-appointments-list, [data-agenda-day-list]) [data-view-appointment-trigger][data-appointment-id=\"d8584879-bb42-53c7-b2d3-3317fad3c0a6\"]"
+                        },
+                        {
+                            "wait": 500
+                        },
+                        {
+                            "release": true
+                        },
+                        {
+                            "wait": 300
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-view-appointment-modal]"
+                        ],
+                        "absent": [
+                            "[data-view-appointment-qr-image][src*=\"c9b5cc9b-ca9b-5db8-9750-dcd95f733644\"]"
+                        ]
+                    }
+                },
+                {
+                    "name": "Cerrar con Escape limpia el QR",
+                    "do": [
+                        {
+                            "wait": 500
+                        },
+                        {
+                            "press": "Escape"
+                        },
+                        {
+                            "wait": 300
+                        }
+                    ],
+                    "expect": {
+                        "closed": [
+                            "[data-view-appointment-modal]"
+                        ],
+                        "absent": [
+                            "[data-view-appointment-qr]:not(.hidden)",
+                            "[data-view-appointment-qr-image][src]"
+                        ]
+                    }
                 }
             ]
         },
@@ -2271,6 +2579,12 @@
                 },
                 {
                     "absent": "[data-view-appointment-cancel-appointment]"
+                },
+                {
+                    "absent": "[data-view-appointment-qr]"
+                },
+                {
+                    "absent": "[data-view-appointment-qr-download]"
                 }
             ]
         },
@@ -2292,6 +2606,31 @@
                 },
                 {
                     "absent": "[data-view-appointment-cancel-appointment]"
+                },
+                {
+                    "image": {
+                        "selector": "[data-view-appointment-qr-image]",
+                        "minWidth": 240,
+                        "minHeight": 240
+                    }
+                },
+                {
+                    "text": "[data-view-appointment-qr-download]",
+                    "is": "Descargar QR"
+                },
+                {
+                    "attribute": {
+                        "selector": "[data-view-appointment-qr-download]",
+                        "name": "data-view-appointment-qr-filename",
+                        "matches": "^cita-\\d{4}-\\d{2}-\\d{2}-\\d{4}\\.png$"
+                    }
+                },
+                {
+                    "attribute": {
+                        "selector": "[data-view-appointment-qr-image]",
+                        "name": "alt",
+                        "matches": "^Código QR de la cita del .+"
+                    }
                 }
             ]
         },

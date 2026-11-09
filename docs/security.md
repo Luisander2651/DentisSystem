@@ -58,6 +58,7 @@ Esta tabla es una guía técnica, no asesoría legal: conviene validarla con un 
 | `POST /api/v1/appointments/{id}/complete`, `GET /api/v1/appointments/{id}/tracking` | HTTP | sí, staff activo | `staff` + `assertCan`: administrador cualquier cita; doctor solo las suyas (403 si es de otro doctor); asistente, paciente e inactivo → 403 (spec 018) |
 | `/api/v1/agenda/*`, `GET/PUT /patients/*`, subrecursos de paciente, expediente, `/appointments/*` | HTTP | sí, staff activo | `staff` + `assertCan` por rol (spec 014); pacientes → 403 |
 | `GET /api/v1/agenda/today-summary`, `GET /api/v1/agenda/unclosed` | HTTP | sí, staff activo | `staff` + `assertCan('appointments.view' / 'appointments.view-own')`: administrador y asistente, todas las citas; doctor, solo las suyas (`DoctorScope`; los parámetros de la petición se ignoran); paciente e inactivo → 403. Las sin cerrar, como mucho 10 con el total aparte; las listas no llevan datos clínicos ni de contacto, solo el nombre del paciente (spec 020, TM1, TM6, TM8) |
+| `GET /api/v1/appointments/{id}/qr` | HTTP | sí, staff activo | `staff` + `assertCan('appointments.view-detail')` (spec 024): todo el staff, cualquier cita; paciente → 403. SVG con solo el UUID de la cita, que funciona como credencial al portador en la puerta (riesgo aceptado para la maqueta, plan R1); `Cache-Control: private, no-store`, CSP global y `nosniff`; 400 si el id no es UUID |
 | `GET /api/v1/agenda/without-tracking` | HTTP | sí, staff activo | `staff` + `assertCan('appointment-tracking.create' / 'appointment-tracking.create-own')`: administrador, todas; doctor, solo las suyas; asistente, paciente e inactivo → 403. Como mucho 10, sin datos clínicos (spec 020, TM1, TM3, TM6, TM8) |
 | `POST /api/v1/appointments/{id}/tracking` | HTTP | sí, staff activo | `staff` + `assertCan('appointment-tracking.create' / '…-own')`: administrador cualquier cita; doctor solo las suyas (403 si es de otro); asistente, paciente e inactivo → 403. FormRequest con mensajes en español; solo en una cita `completada` sin seguimiento (409 si no, también en el doble envío); id inexistente o que no es UUID → 404 (spec 020, TM2, TM3, TM5) |
 | Cabecera `X-Ui-Audit-Now` (todas las rutas web y `api`) | HTTP | — | reloj de la prueba de navegador (`UiAuditClock`): fija la hora de la petición solo en los entornos `local` y `testing`, comprobados en cada petición; en cualquier otro entorno, o con un valor inválido, se ignora (spec 020, TM9) |
@@ -108,6 +109,7 @@ Reglas base en `shared/agent-security.md` del plugin. Específicas de este proye
 | ID | Hallazgo | Severidad | Motivo | Aprobado por | Vence |
 |---|---|---|---|---|---|
 | EX1 | RS16.a: vulnerabilidades de npm en herramientas de build y desarrollo (vite, rollup, postcss, nanoid, picomatch, concurrently, shell-quote): 2 críticas, 5 altas | crítica / alta | Prototipo sin producción; los paquetes no llegan al navegador (solo se usan al compilar o en `composer run dev`); axios, que sí llega, se actualizó a 1.20.0 (spec 014, T083). Condición: el servidor de desarrollo de vite (puerto 5173) no se expone fuera de la máquina de desarrollo; hoy `vite.config.js` escucha en `0.0.0.0` y `docker-compose.yml` publica `5173:5173` en todas las interfaces, así que solo se usa en redes de confianza | Dueño del repositorio (decisión del usuario, 2026-09-25) | Al empezar el objetivo 4 del roadmap (primer despliegue al VPS) y como tarde el 2026-12-31 | **Cerrada (spec 015, 2026-09-29)**: `npm audit fix` deja 0 vulnerabilidades (T003); RS16.a mitigada |
+| EX2 | 8 avisos de Symfony en `composer audit` (`symfony/filesystem`, `symfony/http-foundation` ×4 con CVE-2026-118514, `symfony/http-kernel`, `symfony/routing` con CVE-2026-118516 y `symfony/yaml`), corregidos en v7.4.23 | sin severidad publicada | Prototipo sin datos reales. La versión corregida (v7.4.23, publicada el 2026-11-04) no cumple la antigüedad mínima de 7 días (`security.agent.min_package_age_days`) hasta el 2026-11-11. Se libera v0.9.0 (spec 024) antes y se actualiza con un `/chore` en cuanto la versión la cumpla. Mientras tanto, sus 8 identificadores (`PKSA-…`) están en `composer.json` → `config.audit.ignore` para que el check de SCA de CI no bloquee el PR; el `/chore` los quita (decisión del usuario, 2026-11-09) | Dueño del repositorio (decisión del usuario, 2026-11-09) | 2026-11-12 | Abierta |
 
 ## Riesgos conocidos
 Ordenados por severidad. Ninguno bloquea mientras el prototipo no tenga datos reales; **todos los
@@ -124,11 +126,11 @@ Las rutas de pacientes, subrecursos, expediente y citas solo exigen `auth:sanctu
 
 Correcciones:
 - RS1.a Restringir las rutas de pacientes, subrecursos, expediente y citas a staff — estado: mitigada (v0.1.0; spec 014)
-- RS1.b Comprobar la propiedad del recurso — estado: pendiente (spec 013, CA24)
-- RS1.c Fijar el provider del guard `sanctum` — estado: pendiente (spec 013, CA23)
+- RS1.b Comprobar la propiedad del recurso — estado: pendiente (sin spec; la 013, que la cubría con CA24, se reemplazó por la 024 el 2026-11-04)
+- RS1.c Fijar el provider del guard `sanctum` — estado: pendiente (sin spec; la 013, que la cubría con CA23, se reemplazó por la 024 el 2026-11-04)
 - RS1.d Añadir tests de acceso denegado — estado: mitigada (v0.1.0; spec 014): `PatientsAccessControlTest`, `AppointmentsAccessControlTest`, `RolePermissionsTest`
 
-RS1 queda **parcialmente mitigado** hasta que la spec 013 cierre RS1.b y RS1.c.
+RS1 queda **parcialmente mitigado** hasta que una spec cierre RS1.b y RS1.c.
 
 ### RS2 · Alta — Datos de salud sin cifrar en reposo
 

@@ -37,6 +37,8 @@ function appointmentsAccessRoutes(): array
         'DELETE /appointments/{id}' => ['admin'],
         'POST /appointments/{id}/complete' => ['admin', 'doctor'],
         'GET /appointments/{id}/tracking' => ['admin', 'doctor'],
+        // Spec 024 (CA9, CA10): the QR code of an appointment, for whoever sees its detail.
+        'GET /appointments/{id}/qr' => $allStaff,
     ];
 }
 
@@ -131,6 +133,7 @@ beforeEach(function () {
                 'procedure_performed' => 'Resina',
             ]],
             'GET /appointments/{id}/tracking' => ['getJson', $this->appointmentUrl($appointment->id).'/tracking', []],
+            'GET /appointments/{id}/qr' => ['getJson', $this->appointmentUrl($appointment->id).'/qr', []],
         };
     };
 });

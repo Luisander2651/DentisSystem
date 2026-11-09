@@ -262,6 +262,18 @@ negrita, la fecha y la hora, advertencia en `danger` ("Esta acción no se puede 
 "No, mantenerla" (`secondary`, recibe el foco) / "Sí, cancelar la cita" (`danger`). No reutiliza
 `x-ui.confirm-delete-modal` porque ese fija sus textos.
 
+### Código QR de la cita · dentro de `calendar/view-appointment-modal`
+Bloque del detalle de la cita (spec 024), solo en citas asignadas o reprogramadas, después de sus
+datos. Título "Código QR de acceso" (`text-base font-bold`), una línea en `text-muted` y el QR como
+`<img>` de **240 × 240 px** (`size-60`), sobre `bg-surface` con `p-2`, `border-field` y
+`rounded-box`: el marco reserva el espacio, así que el detalle no salta al cargar. Debajo,
+"Descargar QR" (`x-ui.button` `secondary`, deshabilitado hasta que la imagen carga), que descarga
+`cita-AAAA-MM-DD-HHMM.png` sin datos del paciente. Texto alternativo: "Código QR de la cita del
+<fecha>". Si la imagen no carga, el QR se oculta y aparece en su lugar un aviso persistente
+(`danger`): "No pudimos cargar el código QR. Cierra el detalle y vuelve a abrirlo.", que se
+anuncia una sola vez por la región de estado de la página (`announceError`), no como `role="alert"`.
+Sin valores visuales nuevos.
+
 ### Estados de pantalla
 Vacío: texto centrado y completo, sin recortes. Carga: `animate-spin` en el botón que envía. Error:
 mensaje en la región de estado y, si es de un campo, bajo el campo.

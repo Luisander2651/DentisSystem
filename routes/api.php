@@ -6,6 +6,7 @@ use App\Modules\Appointments\Infrastructure\Http\Controllers\DeleteAppointmentCo
 use App\Modules\Appointments\Infrastructure\Http\Controllers\DeleteTreatmentController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAllApointmentsByStatusAndDateController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentByIdController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentQrController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetAppointmentsByPatientIdController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetDoctorsForAppointmentSelectController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetInternalAppointmentByIdController;
@@ -211,6 +212,8 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 // appointments; the use cases check who owns the appointment.
                 Route::post('/{id}/complete', CompleteAppointmentController::class);
                 Route::get('/{id}/tracking', GetAppointmentTrackingByAppointmentIdController::class);
+                // Spec 024: the QR code of the appointment, read by the attendance service at the door.
+                Route::get('/{id}/qr', GetAppointmentQrController::class);
                 // Spec 020: the follow-up of an appointment completed without one.
                 Route::post('/{id}/tracking', RegisterAppointmentTrackingController::class);
             });
