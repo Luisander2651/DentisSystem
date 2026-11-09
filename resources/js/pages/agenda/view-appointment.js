@@ -36,6 +36,9 @@ import { announceError, failureMessage } from '../../ui/status';
     }
 
     var activeAppointmentId = null;
+    // Review of spec 024 (R16): each opening gets its number and closing moves it on, so an
+    // answer that arrives late (for this same appointment or another) never fills the detail.
+    var openingCount = 0;
     // What the cancel confirmation names: the patient, the date and the time (spec 017, CA7).
     var activeAppointmentSummary = null;
 
@@ -221,7 +224,7 @@ import { announceError, failureMessage } from '../../ui/status';
 
     // Spec 024 (CA5, CA8, D2, D4): the image comes straight from the API, so the content
     // security policy stays as it is and the SVG can run nothing. The file name has no patient data.
-    function showQr(appointmentId, date, time) {
+    function showQr(opening, appointmentId, date, time) {
         if (!qrSection) return;
 
         try {
@@ -231,12 +234,12 @@ import { announceError, failureMessage } from '../../ui/status';
             qrDownload.setAttribute('data-view-appointment-qr-filename', filename);
             qrImage.alt = 'Código QR de la cita del ' + formatDate(date);
             qrImage.onload = function () {
-                if (activeAppointmentId === appointmentId) {
+                if (opening === openingCount) {
                     qrDownload.disabled = false;
                 }
             };
             qrImage.onerror = function () {
-                if (activeAppointmentId === appointmentId) {
+                if (opening === openingCount) {
                     showQrFailure();
                 }
             };
@@ -285,6 +288,7 @@ import { announceError, failureMessage } from '../../ui/status';
     }
 
     async function open(appointmentId, opener) {
+        var opening = ++openingCount;
         activeAppointmentId = appointmentId;
         activeAppointmentSummary = null;
         hideError();
@@ -300,9 +304,7 @@ import { announceError, failureMessage } from '../../ui/status';
         try {
             var data = await requestJson('/api/v1/appointments/' + appointmentId);
 
-            // Review of spec 024 (R1): an answer for a detail already closed, or for an earlier
-            // appointment, never fills the one in sight (nor mounts its QR code).
-            if (activeAppointmentId !== appointmentId) {
+            if (opening !== openingCount) {
                 return;
             }
 
@@ -337,7 +339,7 @@ import { announceError, failureMessage } from '../../ui/status';
 
             // Spec 024 (CA5, CA7): only an open appointment gets in, so only it shows its QR code.
             if (isOpen) {
-                showQr(appointmentId, appointment.date, appointment.time);
+                showQr(opening, appointmentId, appointment.date, appointment.time);
             }
 
             // Spec 018 (CA3, CA9): the administrator reads every clinical record, the doctor only
@@ -356,13 +358,13 @@ import { announceError, failureMessage } from '../../ui/status';
                 try {
                     var trackingData = await requestJson('/api/v1/appointments/' + appointmentId + '/tracking');
 
-                    if (activeAppointmentId !== appointmentId) {
+                    if (opening !== openingCount) {
                         return;
                     }
 
                     renderClinicalRecord(trackingData.data || {});
                 } catch (trackingError) {
-                    if (activeAppointmentId !== appointmentId) {
+                    if (opening !== openingCount) {
                         return;
                     }
 
@@ -385,7 +387,7 @@ import { announceError, failureMessage } from '../../ui/status';
                 }
             }
         } catch (error) {
-            if (activeAppointmentId !== appointmentId) {
+            if (opening !== openingCount) {
                 return;
             }
 
@@ -394,20 +396,18 @@ import { announceError, failureMessage } from '../../ui/status';
     }
 
     function closeModal() {
-        resetQr();
         closeDialog(modal);
-        activeAppointmentId = null;
-        activeAppointmentSummary = null;
     }
 
-    // Review of spec 024 (R2): Escape, the X and the backdrop close the dialog too, so what it
-    // held is cleared on its `close` event, as ui/dialog.js asks; a detail opened again before the
-    // event arrives keeps its own.
+    // Review of spec 024 (R2, R16): however the dialog closes (the buttons, Escape, the X or the
+    // backdrop), its `close` event clears what it held and ends the opening, as ui/dialog.js asks;
+    // a detail opened again before the event arrives keeps its own.
     modal.addEventListener('close', function () {
         if (modal.open) {
             return;
         }
 
+        openingCount++;
         resetQr();
         activeAppointmentId = null;
         activeAppointmentSummary = null;
