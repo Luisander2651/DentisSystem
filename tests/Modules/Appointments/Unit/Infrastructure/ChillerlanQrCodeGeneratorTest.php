@@ -35,6 +35,17 @@ it('draws the same code every time for the same text', function () {
     expect($generator->svg(QR_GENERATOR_APPOINTMENT_ID))->toBe($generator->svg(QR_GENERATOR_APPOINTMENT_ID));
 });
 
+it('gives the document a size of its own, so every browser can draw it on a canvas', function () {
+    $svg = (new ChillerlanQrCodeGenerator)->svg(QR_GENERATOR_APPOINTMENT_ID);
+
+    expect(preg_match('/<svg\b[^>]*\bviewBox="0 0 (\d+) (\d+)"[^>]*>/', $svg, $viewBox))->toBe(1)
+        ->and(preg_match('/<svg\b[^>]*\bwidth="(\d+)"/', $svg, $width))->toBe(1)
+        ->and(preg_match('/<svg\b[^>]*\bheight="(\d+)"/', $svg, $height))->toBe(1)
+        ->and((int) $width[1])->toBe((int) $viewBox[1] * 8)
+        ->and((int) $height[1])->toBe((int) $viewBox[2] * 8)
+        ->and($this->decodeQrSvg($svg))->toBe(QR_GENERATOR_APPOINTMENT_ID);
+});
+
 it('uses error correction M', function () {
     $result = $this->decodeQrSvgResult((new ChillerlanQrCodeGenerator)->svg(QR_GENERATOR_APPOINTMENT_ID));
 
