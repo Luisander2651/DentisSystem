@@ -122,7 +122,8 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
   - Sin staging (`deploy.environments: [local, prod]`): la verificación se hace en producción tras T097, con cuentas de prueba. El asistente abre el detalle de una cita asignada desde la agenda y desde el inicio: ve el QR y lo descarga; el PNG y la pantalla, escaneados con un teléfono, muestran solo el UUID (CA1, CA5, CA6). Una cita completada no muestra QR (CA7). En Loki, sin 500 en `/api/v1/appointments/*/qr`.
-- [ ] T096 Aprobación humana para producción
+- [x] T096 Aprobación humana para producción
+  - aprobado por Luisander2651 el 2026-11-09 07:02 para v0.9.0 ("desplegar v0.9.0 a producción")
 - [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
 - [ ] T098 Marcar spec como `released`
 
