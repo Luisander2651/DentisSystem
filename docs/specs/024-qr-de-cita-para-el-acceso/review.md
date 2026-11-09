@@ -5,7 +5,7 @@ round: 3
 date: 2026-11-09
 base: 4c4a8fa
 head: 950d445
-human_signoff: pending
+human_signoff: Luisander2651 2026-11-09
 ---
 
 # Review · 024 QR de cita para el acceso
