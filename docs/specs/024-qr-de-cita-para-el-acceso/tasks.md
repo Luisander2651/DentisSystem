@@ -111,12 +111,13 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: añadida por /review: R17
   - nota: 2026-11-09: el test nuevo de `ChillerlanQrCodeGeneratorTest` falló sin el cambio (sin `width`) y pasa con él; la raíz sale con `width="296" height="296"` para un `viewBox` de 37 × 37. chillerlan 6.0.1 no tiene una opción para el tamaño, así que `SizedQrMarkupSvg` sobrescribe `header()` (salida propia, mecanismo documentado de la librería; revisar al subir de versión, como el ayudante de T003). Generador, propiedades, endpoint y arquitectura en verde (30 tests); los flujos del QR de ui-audit siguen en verde con el QR a 240 × 240 px.
   - nota: verificación manual OK 2026-11-09 (usuario): en Firefox, "Descargar QR" descarga el PNG y el teléfono lee el identificador de la cita.
-- [ ] T030 Repetir la comprobación de la definición de terminado tras T028–T029: Pint, Pest completa en serie sin fallos nuevos frente a T027, `npm run build`, `ui-audit` completo en local (por tandas si no cabe en memoria) y `aidd.py validate` — hecho cuando: todo pasa y el resultado queda anotado — depende: T028, T029
+- [x] T030 Repetir la comprobación de la definición de terminado tras T028–T029: Pint, Pest completa en serie sin fallos nuevos frente a T027, `npm run build`, `ui-audit` completo en local (por tandas si no cabe en memoria) y `aidd.py validate` — hecho cuando: todo pasa y el resultado queda anotado — depende: T028, T029
+  - nota: 2026-11-09: Pint sin cambios; Pest completa en serie, 2 020 pasan y ninguno falla (2 019 de T027 más el test de T029); `npm run build` correcto; gitleaks y semgrep sin hallazgos sobre lo nuevo; `aidd.py validate` sin errores. `ui-audit` en 9 tandas: 105 entradas, 333 visitas a 390, 768 y 1440 px, 0 con fallos (esta vez sin ningún 429).
 
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: puerto de QR en `Aplication/Support` y su adaptador `Infrastructure/Qr` (`chillerlan/php-qrcode`, ADR 0007); el QR que Core genera y el microservicio de asistencias lee (023)
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 024 para el objetivo 5 (obtención del QR en `GetAppointmentQrUseCase`; accesos denegados). Sin cambios en `deployment.md` (sin variables ni pasos nuevos; `composer install` ya va en la imagen)
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

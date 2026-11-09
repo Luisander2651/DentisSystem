@@ -1,7 +1,7 @@
 ---
 id: 024
 slug: qr-de-cita-para-el-acceso
-status: approved
+status: implemented
 created: 2026-11-04
 extends: [007, 023]
 ---
