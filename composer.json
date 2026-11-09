@@ -96,6 +96,18 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": {
+                "PKSA-g499-cm4q-v35y": "Exception EX2 in docs/security.md (until 2026-11-12): fixed in 7.4.23, removed by the Symfony chore",
+                "PKSA-24ph-xkrh-y79j": "Exception EX2 in docs/security.md (until 2026-11-12): fixed in 7.4.23, removed by the Symfony chore",
+                "PKSA-pr6q-2w5s-kzzf": "Exception EX2 in docs/security.md (until 2026-11-12): fixed in 7.4.23, removed by the Symfony chore",
+                "PKSA-nxjs-s6hn-vb6m": "Exception EX2 in docs/security.md (until 2026-11-12): fixed in 7.4.23, removed by the Symfony chore",
+                "PKSA-b2gg-vk1g-6d5q": "Exception EX2 in docs/security.md (until 2026-11-12): fixed in 7.4.23, removed by the Symfony chore",
+                "PKSA-3gxv-7xhq-mgmz": "Exception EX2 in docs/security.md (until 2026-11-12): fixed in 7.4.23, removed by the Symfony chore",
+                "PKSA-y8c5-1b7f-r1gj": "Exception EX2 in docs/security.md (until 2026-11-12): fixed in 7.4.23, removed by the Symfony chore",
+                "PKSA-nktx-f1n1-b4yd": "Exception EX2 in docs/security.md (until 2026-11-12): fixed in 7.4.23, removed by the Symfony chore"
+            }
         }
     },
     "minimum-stability": "stable",
