@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-09
+Código QR de acceso por cita: recepción lo ve en el detalle de la cita y lo descarga para mandárselo al paciente, y en la puerta el administrador lo escanea con la app de asistencias (spec 024).
+
+### Added
+- El detalle de una cita asignada o reprogramada muestra su código QR de acceso, desde la agenda, el inicio o el expediente, con un botón "Descargar QR" que guarda la imagen para mandársela al paciente (spec 024).
+- Si el código QR no se puede cargar, el resto del detalle de la cita se sigue viendo y aparece un aviso en su lugar, que también se anuncia a los lectores de pantalla (spec 024).
+
+### Security
+- Solo el personal con sesión puede obtener el código QR de una cita. El QR solo contiene el identificador de la cita, sin datos del paciente, y no se guarda en la caché del navegador ni de intermediarios (spec 024).
+
 ## [0.8.0] - 2026-11-04
 Consultas para el microservicio de asistencias: confirmar quién inició sesión en la app y leer las citas al escanear el QR de un paciente. Hecho fuera del flujo de specs por decisión del usuario; documentado después en la spec 023 (sin plan ni review).
 
