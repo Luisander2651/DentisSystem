@@ -1,7 +1,8 @@
 ---
 id: 024
 slug: qr-de-cita-para-el-acceso
-status: implemented
+status: released
+released: v0.9.0 (2026-11-09)
 created: 2026-11-04
 extends: [007, 023]
 ---
@@ -179,3 +180,4 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 | 2026-11-04 | QR dentro del detalle, flujo de acceso, sin endpoint de validación en Core; aprobada | Decisiones del usuario; confirmación explícita |
 | 2026-11-04 | CA4 (400 como la consulta interna) y K3 (sin modo oscuro; también el PNG) | `/analyze` A1 y A8; decisión del usuario |
 | 2026-11-04 | Implementada en `feat/024-qr-de-cita-para-el-acceso` | /implement (T001–T091) |
+| 2026-11-09 | Liberada en v0.9.0 | /release (T097, T098) |
