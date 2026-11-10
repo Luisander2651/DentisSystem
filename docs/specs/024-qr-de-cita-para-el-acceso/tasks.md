@@ -125,8 +125,9 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: 2026-11-09, en producción con v0.9.0. El usuario verificó con cuentas de prueba el QR en el detalle de una cita asignada desde la agenda y desde el inicio, la descarga del PNG, la lectura con un teléfono (solo el UUID) y que una cita completada no muestra QR (CA1, CA5, CA6, CA7): todo bien.
 - [x] T096 Aprobación humana para producción
   - aprobado por Luisander2651 el 2026-11-09 07:02 para v0.9.0 ("desplegar v0.9.0 a producción")
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-- [ ] T098 Marcar spec como `released`
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: 2026-11-09, v0.9.0 desplegada por el usuario con `docker/prod/deploy.sh v0.9.0`. Vigilancia externa de 15 min (07:28–07:43, 29 rondas cada 30 s): `/up`, la portada y `/login` siempre 200; el QR sin sesión siempre 401. El usuario revisó Loki: sin 500 ni 429 en `/api/v1/appointments/*/qr`, sin 5xx en general y con el `request_id` de una petición del smoke en sus logs. Sin rollback.
+- [x] T098 Marcar spec como `released`
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

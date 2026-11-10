@@ -137,3 +137,4 @@ Ninguna.
 | 2026-11-04 | Spec creada a partir del cambio ya integrado (PR #44) | `/sync` 2026-11-04, decisión del usuario |
 | 2026-11-04 | Se queda en `draft` como registro del comportamiento; liberado en v0.8.0 sin plan, tareas ni review | Decisión del usuario: liberar como en v0.7.0 |
 | 2026-11-04 | Desplegado en producción con v0.8.0 (verificación local 14/14, remota 30/30, vigilancia de 15 min sin 5xx) | Registro de la liberación en `docs/sync.md` |
+| 2026-11-09 | Comportamiento modificado por 024 en v0.9.0: el QR de la cita lleva el UUID que el microservicio consulta | /release |

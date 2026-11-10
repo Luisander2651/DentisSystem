@@ -38,7 +38,7 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 | 021 | [Inicio de sesión de la app móvil](021-sesion-app-movil/spec.md) | Auth | draft (registro; en v0.7.0 sin plan ni review) | — | — | — |
 | 022 | [Aviso de Privacidad y Términos y Condiciones](022-paginas-legales/spec.md) | Sitio público, registro, Core | draft (registro; en v0.7.0 sin plan ni review) | — | — | — |
 | 023 | [Consultas del microservicio de asistencias](023-consultas-del-microservicio-de-asistencias/spec.md) | Auth, Appointments, Core | draft (registro; en v0.8.0 sin plan ni review) | — | — | — |
-| 024 | [QR de cita para el acceso](024-qr-de-cita-para-el-acceso/spec.md) | Appointments, interfaz de la agenda | implemented | — | — | — |
+| 024 | [QR de cita para el acceso](024-qr-de-cita-para-el-acceso/spec.md) | Appointments, interfaz de la agenda | released (v0.9.0) | — | — | — |
 
 ## Pendientes sin spec
 - **Portal del paciente**: layout `patient.blade.php` sin pantallas funcionales.
