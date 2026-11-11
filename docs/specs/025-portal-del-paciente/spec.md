@@ -1,7 +1,7 @@
 ---
 id: 025
 slug: portal-del-paciente
-status: approved
+status: implemented
 created: 2026-11-08
 extends: [001, 009, 016, 020, 024]
 ---
@@ -31,63 +31,63 @@ ajenas. Esta spec atiende RS1 por completo.
 
 ## Criterios de aceptación
 Portal (paciente activo con sesión):
-- [ ] CA1 · Dado un paciente con al menos una cita asignada o reprogramada para hoy o una fecha
+- [x] CA1 · Dado un paciente con al menos una cita asignada o reprogramada para hoy o una fecha
   posterior, cuando entra a su portal, entonces ve como "Próxima cita" la más cercana de ellas, con
   fecha, hora, tratamiento y doctor, y su QR a la vista sin pulsar nada más.
-- [ ] CA2 · Dado un paciente sin citas asignadas ni reprogramadas desde hoy, cuando entra a su
+- [x] CA2 · Dado un paciente sin citas asignadas ni reprogramadas desde hoy, cuando entra a su
   portal, entonces ve "Aún no tienes una cita agendada" y un enlace a la página de contacto de la
   clínica, sin QR.
-- [ ] CA3 · Dado un paciente con citas, cuando abre su historial, entonces ve todas sus citas, de la
+- [x] CA3 · Dado un paciente con citas, cuando abre su historial, entonces ve todas sus citas, de la
   más reciente a la más antigua, cada una con fecha, hora, tratamiento, doctor y estado (asignada,
   reprogramada, completada o cancelada).
-- [ ] CA4 · Dado un paciente sin ninguna cita, cuando abre su historial, entonces ve "Aún no tienes
+- [x] CA4 · Dado un paciente sin ninguna cita, cuando abre su historial, entonces ve "Aún no tienes
   citas registradas" en lugar de la lista.
-- [ ] CA5 · Dada una cita completada del paciente con seguimiento, cuando abre su detalle, entonces
+- [x] CA5 · Dada una cita completada del paciente con seguimiento, cuando abre su detalle, entonces
   ve las recomendaciones del doctor y cada receta con medicamento, dosis, frecuencia, duración e
   instrucciones.
-- [ ] CA6 · Dada una cita completada del paciente sin recetas o sin seguimiento registrado, cuando
+- [x] CA6 · Dada una cita completada del paciente sin recetas o sin seguimiento registrado, cuando
   abre su detalle, entonces ve "Esta cita no tiene recetas" (y, si no hay recomendaciones, no
   aparece ese apartado), sin aviso de error.
-- [ ] CA7 · Dada una cita asignada o reprogramada del paciente, cuando abre su detalle, entonces ve
+- [x] CA7 · Dada una cita asignada o reprogramada del paciente, cuando abre su detalle, entonces ve
   el QR de la cita (mismo contenido que el de la spec 024: solo el identificador de la cita) y un
   botón "Descargar QR" que le da un archivo de imagen con el QR.
-- [ ] CA8 · Dada una cita completada o cancelada del paciente, cuando abre su detalle, entonces no
+- [x] CA8 · Dada una cita completada o cancelada del paciente, cuando abre su detalle, entonces no
   aparece el QR ni el botón para descargarlo; una cita cancelada tampoco muestra recetas.
-- [ ] CA9 · Dado un fallo al obtener el QR o las recetas, cuando el paciente abre el portal o el
+- [x] CA9 · Dado un fallo al obtener el QR o las recetas, cuando el paciente abre el portal o el
   detalle, entonces el resto se muestra igual y en el lugar de lo que falló aparece un aviso en
   español sin términos técnicos.
-- [ ] CA10 · Dado un paciente que inicia sesión, cuando llega al panel, entonces aterriza en su
+- [x] CA10 · Dado un paciente que inicia sesión, cuando llega al panel, entonces aterriza en su
   portal y el menú solo le ofrece sus pantallas y cerrar sesión: ninguna opción del personal
   (agenda, pacientes, expedientes, usuarios, contenido, reportes).
 
 Seguridad:
-- [ ] CA11 · (abuso) Sin sesión, pido las citas, la próxima cita, las recetas o el QR de un
+- [x] CA11 · (abuso) Sin sesión, pido las citas, la próxima cita, las recetas o el QR de un
   paciente (con su identificador o el de la cita) → se rechaza como no autenticado (401) y no
   recibo ningún dato; si abro el portal en el navegador, me lleva al inicio de sesión.
-- [ ] CA12 · (abuso) Como paciente con sesión, pido las recetas o el QR de una cita de
+- [x] CA12 · (abuso) Como paciente con sesión, pido las recetas o el QR de una cita de
   otro paciente indicando su identificador → recibo la misma respuesta que para una cita que no
   existe (no encontrada, 404), sin ningún dato de la cita ni indicio de que existe.
-- [ ] CA13 · (abuso) Como paciente con sesión, envío el identificador de otro paciente en la
+- [x] CA13 · (abuso) Como paciente con sesión, envío el identificador de otro paciente en la
   petición de mis citas o de mi próxima cita → el identificador se ignora y solo recibo mis propias
   citas: el portal identifica al paciente por su sesión, nunca por un dato que manda el cliente.
-- [ ] CA14 · (abuso) Como paciente con sesión, intento las rutas del personal (expedientes,
+- [x] CA14 · (abuso) Como paciente con sesión, intento las rutas del personal (expedientes,
   pacientes, agenda, detalle o QR de citas del personal, seguimiento clínico) para mí o para otro
   paciente → siguen rechazándose (403), como fija la spec 014, y en el navegador veo "Sin permiso".
-- [ ] CA15 · (abuso) Como paciente cuya cuenta desactivó la clínica mientras tenía la sesión
+- [x] CA15 · (abuso) Como paciente cuya cuenta desactivó la clínica mientras tenía la sesión
   abierta, pido mis citas, mis recetas, mi QR, las de otro paciente o mi expediente → se rechaza
   (403) sin ningún dato y el portal en el navegador muestra "Sin permiso"; al volver a iniciar
   sesión se rechaza como hoy (spec 001).
-- [ ] CA16 · (abuso) Como miembro del personal con sesión, pido las pantallas o los datos del portal
+- [x] CA16 · (abuso) Como miembro del personal con sesión, pido las pantallas o los datos del portal
   del paciente → se rechaza (403); y una sesión de paciente nunca se acepta como sesión de personal
   ni al revés, aunque los identificadores de ambas cuentas coincidieran (RS1.c).
-- [ ] CA17 · (abuso) Como paciente, inspecciono las respuestas del portal → nunca contienen motivo,
+- [x] CA17 · (abuso) Como paciente, inspecciono las respuestas del portal → nunca contienen motivo,
   síntomas, diagnóstico, procedimiento ni observaciones del seguimiento clínico, ni datos de
   contacto de otras personas, ni datos de otros pacientes.
-- [ ] CA18 · (abuso) Como paciente, pido el QR de una de mis citas completadas o canceladas → se
+- [x] CA18 · (abuso) Como paciente, pido el QR de una de mis citas completadas o canceladas → se
   rechaza y no recibo ningún QR.
-- [ ] CA19 · (abuso) Como atacante, provoco un fallo interno en cualquier petición del portal → la
+- [x] CA19 · (abuso) Como atacante, provoco un fallo interno en cualquier petición del portal → la
   respuesta es el error genérico (500) sin detalles internos (P7).
-- [ ] CA20 · (abuso) Como alguien con acceso al navegador o a un proxy compartido, intento recuperar
+- [x] CA20 · (abuso) Como alguien con acceso al navegador o a un proxy compartido, intento recuperar
   respuestas del portal (citas, recetas o QR) guardadas antes → las respuestas indican que no deben
   guardarse en cachés.
 
@@ -242,3 +242,4 @@ Ninguna.
 | 2026-11-08 | Creada en `draft` | /specify |
 | 2026-11-08 | Aprobada | Aprobación del usuario |
 | 2026-11-10 | Extiende 016 y 020; CA11 y CA12 sin "detalle"; RS1.d fuera (ya mitigada) | `/analyze 025` (A3, A9, A17), aprobado por el usuario |
+| 2026-11-11 | `implemented`: los 20 criterios con sus tests en verde | `/implement 025` |
