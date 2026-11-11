@@ -12,6 +12,10 @@
  *   cabecera del panel   CA34        no gap under what the panel header shows (M11)
  *   galería del panel    CA32        a card fits in one screen, shows no internal name or address (M07)
  *                                    and is titled by its description
+ *   primera pantalla     025 K1, K6  what an entry declares: `firstScreen` (selectors that must be in
+ *                                    sight without scrolling), `minImage` ({ selector, minWidth,
+ *                                    minHeight }: an image loaded and painted at least that big) and
+ *                                    `maxCls` (the layout shift of the page at most that much)
  *
  * Dialog entries are left to checks-dialogs. Touching a day changes the screen, so it runs on a
  * visit of its own (`runFresh`).
@@ -179,12 +183,77 @@ function measureInPage(entry, phone, lists, limits) {
     return found;
 }
 
-export function run(page, entry) {
+/**
+ * Spec 025 (K1, K6): what an entry declares about its first screen. Positions are taken from the
+ * top of the document, so a page already scrolled does not hide a failure.
+ */
+function firstScreenInPage(declared) {
+    const A = window.__audit;
+    const found = [];
+    const fail = (rule, message) => found.push({ rule, message });
+    const visibleOne = (selector) => [...document.querySelectorAll(selector)].find(A.visible) ?? null;
+
+    for (const selector of declared.firstScreen ?? []) {
+        const element = visibleOne(selector);
+
+        if (element === null) {
+            fail('fuera de la primera pantalla', `no hay nada a la vista con ${selector}`);
+            continue;
+        }
+
+        const box = element.getBoundingClientRect();
+        const top = box.top + scrollY;
+        const bottom = box.bottom + scrollY;
+
+        if (top < 0 || bottom > innerHeight + 1) {
+            fail('fuera de la primera pantalla', `${A.describe(element)} termina a ${Math.round(bottom)} px y la pantalla mide ${innerHeight} px (${selector})`);
+        }
+    }
+
+    if (declared.minImage) {
+        const { selector, minWidth = 0, minHeight = 0 } = declared.minImage;
+        const image = visibleOne(selector);
+        const loaded = image instanceof HTMLImageElement && image.complete && image.naturalWidth + image.naturalHeight > 0;
+
+        if (!loaded) {
+            fail('imagen sin cargar', image ? `${A.describe(image)} no terminó de cargar (${selector})` : `no hay ninguna imagen a la vista (${selector})`);
+        } else {
+            const box = image.getBoundingClientRect();
+
+            if (box.width + 0.5 < minWidth || box.height + 0.5 < minHeight) {
+                fail('imagen más pequeña de lo esperado', `${A.describe(image)} mide ${Math.round(box.width)} × ${Math.round(box.height)} px y debía medir al menos ${minWidth} × ${minHeight} px`);
+            }
+        }
+    }
+
+    if (declared.maxCls !== undefined) {
+        if (window.__auditCls === null) {
+            fail('salto al cargar sin medir', 'el navegador no mide los saltos de la página');
+        } else if (window.__auditCls > declared.maxCls) {
+            fail('salto al cargar', `la página saltó ${window.__auditCls.toFixed(3)} y el máximo es ${declared.maxCls}`);
+        }
+    }
+
+    return found;
+}
+
+export async function run(page, entry) {
     if (entry.dialog !== undefined) {
         return [];
     }
 
-    return page.evaluate(measureInPage, { id: entry.id, screen: entry.screen, path: entry.path }, page.width < 768, LISTS, { firstScreen: FIRST_SCREEN, emptyCard: EMPTY_CARD, seededGallery: SEEDED_GALLERY });
+    const found = await page.evaluate(measureInPage, { id: entry.id, screen: entry.screen, path: entry.path }, page.width < 768, LISTS, { firstScreen: FIRST_SCREEN, emptyCard: EMPTY_CARD, seededGallery: SEEDED_GALLERY });
+
+    if (entry.firstScreen === undefined && entry.minImage === undefined && entry.maxCls === undefined) {
+        return found;
+    }
+
+    if (entry.minImage) {
+        // The image comes from the API after the page: wait for it, as the dialogs do (3 s).
+        await page.waitFor(`(() => { const image = document.querySelector(${JSON.stringify(entry.minImage.selector)}); return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0; })()`, { timeout: 3000, what: 'la imagen' }).catch(() => {});
+    }
+
+    return found.concat(await page.evaluate(firstScreenInPage, { firstScreen: entry.firstScreen, minImage: entry.minImage, maxCls: entry.maxCls }));
 }
 
 /** Touches the first day with appointments that is not the one already chosen. */

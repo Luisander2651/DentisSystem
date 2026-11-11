@@ -8,6 +8,21 @@
 import { inflateSync } from 'node:zlib';
 
 export const IN_PAGE_LIBRARY = `(() => {
+    // Spec 025 (K6): the layout shift of the page since it started loading, as the browser
+    // measures it, without the shifts that follow an input.
+    window.__auditCls = 0;
+    try {
+        new PerformanceObserver((list) => {
+            for (const shift of list.getEntries()) {
+                if (!shift.hadRecentInput) {
+                    window.__auditCls += shift.value;
+                }
+            }
+        }).observe({ type: 'layout-shift', buffered: true });
+    } catch (unsupported) {
+        window.__auditCls = null;
+    }
+
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 1;
     const context = canvas.getContext('2d', { willReadFrequently: true });
