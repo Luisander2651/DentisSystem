@@ -1,7 +1,7 @@
 ---
 id: 025
 slug: portal-del-paciente
-status: implemented
+status: approved
 created: 2026-11-08
 extends: [001, 009, 016, 020, 024]
 ---

@@ -167,6 +167,18 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: cierre de la fase de pantallas: `ui-audit` completo 333 visitas, 3 tiempos de espera fuera del portal (`agenda-cita-reprogramar@1440` con 429, `contenido-promociones-editar@768`, `usuarios-eliminar@768`) que pasan repetidos solos. Pest en paralelo: 2175 pasan, 2 fallos intermitentes de la línea base (conexión a la base de datos en `AppointmentTracking/Complete*` y `DeployScriptsBehaviourTest` por `git init` > 60 s), que pasan en serie. Pint limpio.
   - nota: verificación manual OK 2026-11-11 (usuario): detalle contra `c3-detalle.html` y `c3-detalle-qr.html` a 390, 768 y 1440 px, recorrido con teclado y QR escaneado en pantalla y en el PNG.
 
+### Correcciones de /review
+- [ ] T033 Importar `Illuminate\Support\Str` en `GuardSeparationTest` en lugar de nombrarlo en línea — `tests/Modules/Auth/Integration/GuardSeparationTest.php` — hecho cuando: `vendor/bin/pint --test --format agent` sobre todos los archivos PHP cambiados desde `impl_base` no da fallos y el test pasa — cubre: CA14, CA16
+  - nota: añadida por /review: R1
+- [ ] T034 Exigir en `PortalUnexpectedErrorTest` que cada doble que lanza el fallo se llame una vez (`->once()`) — `tests/Modules/Appointments/Integration/PortalUnexpectedErrorTest.php` — hecho cuando: el test pasa, y comprobado rompiendo: con el nombre del método esperado cambiado en un doble, ese caso falla — cubre: CA19
+  - nota: añadida por /review: R2
+- [ ] T035 Probar la próxima cita en la frontera de la noche: reloj a las 23:30 de Ciudad de México (ya el día siguiente en UTC) y una cita asignada de ese día a las 23:45, que debe ser la próxima — `tests/Modules/Appointments/Integration/PortalAppointmentsTest.php` — hecho cuando: el caso nuevo pasa con el código actual, y comprobado rompiendo: con "hoy" calculado en UTC en `GetPortalNextAppointmentController`, el caso falla — cubre: CA1
+  - nota: añadida por /review: R3
+- [ ] T036 Llevar el foco al nuevo "Reintentar" de Mis citas cuando la carga vuelve a fallar, como en el inicio — `resources/js/pages/portal/appointments.js`, `tests/Browser/screens.json` — hecho cuando: un flujo nuevo de `portal-mis-citas-fallo` ("Reintentar falla otra vez", con la lista respondida 500 las dos veces) termina con el foco en `[data-portal-history-status] [data-dashboard-retry]`, falla con el código actual y pasa con el cambio; `ui-audit --only portal` dos veces sin fallos · revisión de accesibilidad: foco visible y anuncio una sola vez — cubre: CA9
+  - nota: añadida por /review: R4
+- [ ] T037 Comprobar el detalle de la cita completada por texto y no por posición: la receta, su duración y frecuencia, sus instrucciones y el texto de las recomendaciones — `tests/Browser/screens.json` — hecho cuando: `portal-detalle-completada` no usa selectores de posición en las recetas, comprueba "Amoxicilina 500 mg — 1 cápsula", "7 días · 3 veces al día", "Tomar con alimentos." y "Usar hilo dental a diario.", y `ui-audit --only detalle-portal` pasa dos veces — cubre: CA5
+  - nota: añadida por /review: R5
+
 ## Cierre
 - [x] T050 Verificación completa: `AppointmentsArchitectureTest` extendido a los archivos nuevos de `Aplication/`, Pest en serie, `vendor/bin/pint --dirty --format agent`, `npm run build`, `npm run test:ui` completo, `grep -rn "getMessage()"` y `grep -rn "Log::"` en los archivos nuevos, `python .ai/bin/aidd.py validate` — `tests/Modules/Appointments/Unit/AppointmentsArchitectureTest.php` — hecho cuando: todo pasa, ningún controlador nuevo devuelve `getMessage()`, no hay `Log::` nuevos y los resultados quedan anotados bajo esta tarea · verificación manual: revisar que los textos del portal están en español, en tuteo y sin términos técnicos — depende: T018, T019, T032
   - nota: A12 — medir a mano, en local, la carga de la lista y de la próxima cita con 100 citas (objetivo < 2 s) y anotar el tiempo.
@@ -181,7 +193,7 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: Core (`currentPatientId()`, `EnsureActivePatient`, `NoStoreResponse`), el flujo principal con `auth:sanctum,patient`, la autenticación con dos guards, un apartado "Portal del paciente" (rutas, casos de uso, regla de propiedad y pantallas) y el JS compartido de `resources/js/ui/`; carpetas de componentes al día. Sin deuda de código previo nueva para el roadmap: la línea base vieja de `dashboard-paciente` en `tests/Browser/baseline-1440.json` es un residuo de la prueba de navegador sin efecto (anotado en T030).
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 025 para el objetivo 5 (lectura de recetas, obtención del QR y accesos denegados). Sin cambios en `deployment.md`
   - nota: `observability.md`: apartado de la spec 025 con los puntos de emisión del plan y la señal post-deploy. `deployment.md` sin cambios: ni variables, ni entornos, ni pasos nuevos (los guards son configuración en `config/auth.php`, sin `.env`).
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - nota: los 20 criterios marcados (Pest y `ui-audit` en verde salvo la línea base). gitleaks sobre los 30 commits de la spec (`a72087d..HEAD`): sin hallazgos. `docs/specs/README.md` al día.
 
 ## Despliegue (lo ejecuta `/release`)
@@ -194,25 +206,25 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
-| CA1 | T013, T014, T027, T030 | T013, T014, T025, T026, T027, T030 |
+| CA1 | T013, T014, T027, T030, T035 | T013, T014, T025, T026, T027, T030 |
 | CA2 | T013, T014, T030 | T013, T014, T030 |
 | CA3 | T010, T011, T031 | T010, T011, T024, T031 |
 | CA4 | T011, T031 | T011, T024, T031 |
-| CA5 | T016, T017, T032 | T016, T017, T023, T032 |
+| CA5 | T016, T017, T032, T037 | T016, T017, T023, T032 |
 | CA6 | T016, T017, T032 | T016, T017, T032 |
 | CA7 | T015, T032 | T015, T022, T023, T032 |
 | CA8 | T016, T017, T032 | T016, T017, T032 |
-| CA9 | T030, T031, T032 | T030, T031, T032 |
+| CA9 | T030, T031, T032, T036 | T030, T031, T032, T036 |
 | CA10 | T002, T021, T030 | T002, T021, T030 |
 | CA11 | T011, T014, T015, T017, T020 | T011, T014, T015, T017, T020 |
 | CA12 | T015, T016, T017 | T015, T016, T017 |
 | CA13 | T005, T010, T011, T014 | T005, T010, T011, T014 |
-| CA14 | T002, T018 | T002 |
+| CA14 | T002, T018, T033 | T002 |
 | CA15 | T004, T005, T011, T018, T020, T021 | T004, T005, T020, T021 |
-| CA16 | T002, T004, T011, T018, T020 | T002, T004, T020 |
+| CA16 | T002, T004, T011, T018, T020, T033 | T002, T004, T020 |
 | CA17 | T010, T016, T019 | T010, T016 |
 | CA18 | T015 | T015 |
-| CA19 | T019 | T011, T014, T015, T017 |
+| CA19 | T019, T034 | T011, T014, T015, T017 |
 | CA20 | T004, T011, T014, T015, T017 | T004, T011 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
