@@ -179,7 +179,8 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` si cambió la estructura: autenticación con dos guards (`sanctum` y `patient`) y los middlewares `staff` / `patient`; grupo `/api/v1/portal`; piezas de interfaz compartidas (`x-appointments.qr-block`, `ui/appointment-qr.js`, `ui/prescriptions.js`, `ui/appointments-history.js`)
   - nota: Core (`currentPatientId()`, `EnsureActivePatient`, `NoStoreResponse`), el flujo principal con `auth:sanctum,patient`, la autenticación con dos guards, un apartado "Portal del paciente" (rutas, casos de uso, regla de propiedad y pantallas) y el JS compartido de `resources/js/ui/`; carpetas de componentes al día. Sin deuda de código previo nueva para el roadmap: la línea base vieja de `dashboard-paciente` en `tests/Browser/baseline-1440.json` es un residuo de la prueba de navegador sin efecto (anotado en T030).
-- [ ] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 025 para el objetivo 5 (lectura de recetas, obtención del QR y accesos denegados). Sin cambios en `deployment.md`
+- [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: en `observability.md`, los puntos de emisión de la 025 para el objetivo 5 (lectura de recetas, obtención del QR y accesos denegados). Sin cambios en `deployment.md`
+  - nota: `observability.md`: apartado de la spec 025 con los puntos de emisión del plan y la señal post-deploy. `deployment.md` sin cambios: ni variables, ni entornos, ni pasos nuevos (los guards son configuración en `config/auth.php`, sin `.env`).
 - [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
