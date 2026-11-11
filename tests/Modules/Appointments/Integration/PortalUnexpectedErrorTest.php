@@ -27,7 +27,7 @@ function assertPortalGenericError(TestResponse $response): void
 it('answers a generic 500 when the appointments fail to load', function (string $url) {
     $this->actingAsPatient();
     $this->mock(AppointmentsRepositoryInterface::class)
-        ->shouldReceive('findAllByStatusAndDateOrPatientId')->andThrow(new RuntimeException(PORTAL_FAILURE_DETAIL));
+        ->shouldReceive('findAllByStatusAndDateOrPatientId')->once()->andThrow(new RuntimeException(PORTAL_FAILURE_DETAIL));
 
     assertPortalGenericError($this->getJson($url));
 })->with([
@@ -38,7 +38,7 @@ it('answers a generic 500 when the appointments fail to load', function (string 
 it('answers a generic 500 when an appointment fails to load', function (string $suffix) {
     $this->actingAsPatient();
     $this->mock(AppointmentsRepositoryInterface::class)
-        ->shouldReceive('findById')->andThrow(new RuntimeException(PORTAL_FAILURE_DETAIL));
+        ->shouldReceive('findById')->once()->andThrow(new RuntimeException(PORTAL_FAILURE_DETAIL));
 
     assertPortalGenericError($this->getJson('/api/v1/portal/appointments/9b2e6c1a-4f1d-4c3e-8a7b-2d5f0e9c1a34/'.$suffix));
 })->with(['qr', 'prescriptions']);
@@ -47,7 +47,7 @@ it('answers a generic 500 when the follow-up fails to load', function () {
     $patient = $this->actingAsPatient();
     $appointment = $this->createAppointment(['patient_id' => $patient->id, 'status' => 'completada']);
     $this->mock(AppointmentTrackingRepositoryInterface::class)
-        ->shouldReceive('findByAppointmentId')->andThrow(new RuntimeException(PORTAL_FAILURE_DETAIL));
+        ->shouldReceive('findByAppointmentId')->once()->andThrow(new RuntimeException(PORTAL_FAILURE_DETAIL));
 
     assertPortalGenericError($this->getJson('/api/v1/portal/appointments/'.$appointment->id.'/prescriptions'));
 });
@@ -56,7 +56,7 @@ it('answers a generic 500 when the QR code fails to draw', function () {
     $patient = $this->actingAsPatient();
     $appointment = $this->createAppointment(['patient_id' => $patient->id, 'status' => 'asignada']);
     $this->mock(QrCodeGeneratorInterface::class)
-        ->shouldReceive('svg')->andThrow(new RuntimeException(PORTAL_FAILURE_DETAIL));
+        ->shouldReceive('svg')->once()->andThrow(new RuntimeException(PORTAL_FAILURE_DETAIL));
 
     assertPortalGenericError($this->getJson('/api/v1/portal/appointments/'.$appointment->id.'/qr'));
 });
