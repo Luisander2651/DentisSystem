@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Http;
 
 use App\Core\Authorization\AuthorizationServiceInterface;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -28,6 +29,12 @@ final readonly class ShowDashboardPageController
         $isStaff = $actor instanceof UserModel;
 
         if ($isStaff && ($actor->status ?? null) !== 'active') {
+            abort(403);
+        }
+
+        // Spec 025 (CA15): a patient whose account the clinic deactivated, with a session still
+        // open, gets "Sin permiso" too.
+        if ($actor instanceof PatientModel && ($actor->status ?? null) !== 'active') {
             abort(403);
         }
 

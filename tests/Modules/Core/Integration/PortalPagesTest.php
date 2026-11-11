@@ -47,3 +47,44 @@ it('keeps noindex out of the screens of the staff', function () {
 
     $this->get('/agenda')->assertOk()->assertDontSee('<meta name="robots" content="noindex">', false);
 });
+
+/*
+ * Spec 025 (CA10, CA15): the patient lands on their start and the menu offers only their screens
+ * and signing out; a deactivated patient with a session still open gets "Sin permiso".
+ */
+
+const PORTAL_STAFF_SCREENS = ['/agenda', '/tratamientos', '/pacientes', '/expedientes-clinicos', '/contenido', '/usuarios', '/reportes'];
+
+it('offers the patient only "Inicio", "Mis citas" and signing out', function (string $path) {
+    $this->actingAsPatient();
+
+    $response = $this->get($path)->assertOk();
+
+    $response->assertSee('href="/dashboard"', false);
+    $response->assertSee('href="/mis-citas"', false);
+    $response->assertSee('Cerrar sesión');
+
+    foreach (PORTAL_STAFF_SCREENS as $screen) {
+        $response->assertDontSee('href="'.$screen.'"', false);
+    }
+})->with(['/dashboard', '/mis-citas']);
+
+it('asks search engines not to index the start of the patient', function () {
+    $this->actingAsPatient();
+
+    $this->get('/dashboard')->assertOk()->assertSee('<meta name="robots" content="noindex">', false);
+});
+
+it('shows "Sin permiso" on the start to a deactivated patient (abuse)', function () {
+    $this->actingAsPatient(['status' => 'inactive']);
+
+    $this->get('/dashboard')
+        ->assertForbidden()
+        ->assertSee('No tienes permiso para ver esta pantalla');
+});
+
+it('leaves "Mis citas" out of the menu of the staff', function (string $role) {
+    $role === 'Administrador' ? $this->actingAsAdmin() : $this->actingAsNonAdminUser($role);
+
+    $this->get('/dashboard')->assertOk()->assertDontSee('href="/mis-citas"', false);
+})->with(['Administrador', 'Asistente', 'Doctor']);

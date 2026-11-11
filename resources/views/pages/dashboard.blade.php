@@ -28,6 +28,13 @@
 
 @section('title', 'Inicio - Dentissa')
 
+@unless ($isStaff)
+    {{-- Spec 025 (D8): the start of the patient stays out of search engines. --}}
+    @push('head')
+        <meta name="robots" content="noindex">
+    @endpush
+@endunless
+
 @section('content')
 @if ($isStaff)
 <div
