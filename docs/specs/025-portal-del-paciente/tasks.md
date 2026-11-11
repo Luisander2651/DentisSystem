@@ -2,9 +2,15 @@
 spec: 025-portal-del-paciente
 plan: plan.md
 status: approved
+impl_base: a72087d
 ---
 
 # Tareas · 025 Portal del paciente
+
+> Línea base 2026-11-10 (`a72087d`, rama `feat/025-portal-del-paciente`):
+> - Pest en serie (`memory_limit=1G`): 2 018 pasan y 2 fallan de forma intermitente (`MonthlyReportPerformanceTest`, timeout de conexión a PostgreSQL, y `DeployScriptsBehaviourTest`); los dos pasan al repetirlos solos (1 130 s).
+> - `npm run test:ui` (dos vueltas, mismo resultado): 306 visitas, 3 con fallo, todas en la agenda y ajenas a esta spec: `agenda` @ 1440 (espera de `#next-month`), `agenda-cita-detalle-pendiente` @ 390 (espera de un día del calendario) y `agenda-cita-crear` @ 390 ("no llega a enviar"). No deben aumentar.
+> - `npm audit --audit-level=high`: 0. `composer audit`: solo los 8 avisos de Symfony ignorados por EX2 (vence el 2026-11-12; `/chore` previsto el 2026-11-11).
 
 Formato:
 `- [ ] T### [P] <verbo + qué> — <archivos> — hecho cuando: <criterio> — cubre: CA# — depende: T###`
@@ -59,7 +65,7 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 | P15 Solo el sistema de diseño | ✅ | Las pantallas usan solo componentes existentes (c3); T050 corre los tests de tokens y `ui-audit` completo | test: `OnlyDesignTokensTest`, `DesignTokensTest` y `npm run test:ui` (T050) |
 
 ## Preparación
-- [ ] T001 Fijar la línea base: Pest en serie, `npm run test:ui`, `composer audit` y `npm audit --audit-level=high`; anotar resultados y `impl_base` en este archivo — `docs/specs/025-portal-del-paciente/tasks.md` — hecho cuando: la nota de línea base está escrita, sin vulnerabilidades críticas o altas fuera de la excepción EX2 (o EX2 ya cerrada por el `/chore` de Symfony)
+- [x] T001 Fijar la línea base: Pest en serie, `npm run test:ui`, `composer audit` y `npm audit --audit-level=high`; anotar resultados y `impl_base` en este archivo — `docs/specs/025-portal-del-paciente/tasks.md` — hecho cuando: la nota de línea base está escrita, sin vulnerabilidades críticas o altas fuera de la excepción EX2 (o EX2 ya cerrada por el `/chore` de Symfony)
 - [ ] T002 Separar las sesiones por tipo de cuenta: guard `sanctum` con provider `users`, guard `patient` con provider `patients`, `auth:sanctum,patient` en todos los grupos de rutas y `layouts/error` reconociendo también al paciente; `ActingAsPatient` pasa al guard `patient` y gana un ayudante de token real — `config/auth.php`, `routes/api.php`, `routes/web.php`, `resources/views/layouts/error.blade.php`, `tests/Support/ActingAsPatient.php`, `tests/Modules/Auth/Integration/GuardSeparationTest.php`, `tests/Modules/Core/Integration/GuestRedirectTest.php` — hecho cuando: `GuardSeparationTest` pasa (token real de paciente: el guard `sanctum` no lo reconoce y `patient` sí; token real de personal: al revés; token de paciente en `/api/v1/appointments` → 403, no 401; token de personal → 200), `NotFoundPageTest` y `WebAccessDeniedPagesTest` siguen en verde con el paciente (camino de vuelta a su inicio) y la suite completa está en verde — cubre: CA10, CA14, CA16 — depende: T001
   - nota: A11 — cada petición con otro token empieza sin guards en caché (como `forgetAuthState()` de `AuthIntegrationTestCase`); `GuardSeparationTest` debe fallar si se quita el provider del guard `sanctum`.
   - nota: cuatro archivos de código a propósito: configuración, rutas y `layouts/error` tienen que cambiar juntos para que ninguna sesión quede rechazada a medias (`/analyze 025` A2, A15).
