@@ -6,6 +6,7 @@ use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Str;
 use Tests\Modules\Auth\Integration\AuthIntegrationTestCase;
 
 uses(AuthIntegrationTestCase::class);
@@ -75,7 +76,7 @@ it('answers a patient token on a staff screen with "Sin permiso"', function () {
  * between requests (A11), so every request is read from its own token.
  */
 it('keeps a staff session and a patient session apart even when both accounts share an id', function () {
-    $sharedId = (string) Illuminate\Support\Str::uuid();
+    $sharedId = (string) Str::uuid();
     $staff = $this->createUserWithRole('administrador', ['id' => $sharedId]);
     $patient = $this->createPatient(['id' => $sharedId]);
     $staffToken = $staff->createToken('test')->plainTextToken;

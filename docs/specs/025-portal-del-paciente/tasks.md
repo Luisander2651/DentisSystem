@@ -168,8 +168,9 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: verificación manual OK 2026-11-11 (usuario): detalle contra `c3-detalle.html` y `c3-detalle-qr.html` a 390, 768 y 1440 px, recorrido con teclado y QR escaneado en pantalla y en el PNG.
 
 ### Correcciones de /review
-- [ ] T033 Importar `Illuminate\Support\Str` en `GuardSeparationTest` en lugar de nombrarlo en línea — `tests/Modules/Auth/Integration/GuardSeparationTest.php` — hecho cuando: `vendor/bin/pint --test --format agent` sobre todos los archivos PHP cambiados desde `impl_base` no da fallos y el test pasa — cubre: CA14, CA16
+- [x] T033 Importar `Illuminate\Support\Str` en `GuardSeparationTest` en lugar de nombrarlo en línea — `tests/Modules/Auth/Integration/GuardSeparationTest.php` — hecho cuando: `vendor/bin/pint --test --format agent` sobre todos los archivos PHP cambiados desde `impl_base` no da fallos y el test pasa — cubre: CA14, CA16
   - nota: añadida por /review: R1
+  - nota: `pint --test` sobre los 70 archivos PHP cambiados desde `impl_base`: sin fallos. `GuardSeparationTest`: 7 pasan.
 - [ ] T034 Exigir en `PortalUnexpectedErrorTest` que cada doble que lanza el fallo se llame una vez (`->once()`) — `tests/Modules/Appointments/Integration/PortalUnexpectedErrorTest.php` — hecho cuando: el test pasa, y comprobado rompiendo: con el nombre del método esperado cambiado en un doble, ese caso falla — cubre: CA19
   - nota: añadida por /review: R2
 - [ ] T035 Probar la próxima cita en la frontera de la noche: reloj a las 23:30 de Ciudad de México (ya el día siguiente en UTC) y una cita asignada de ese día a las 23:45, que debe ser la próxima — `tests/Modules/Appointments/Integration/PortalAppointmentsTest.php` — hecho cuando: el caso nuevo pasa con el código actual, y comprobado rompiendo: con "hoy" calculado en UTC en `GetPortalNextAppointmentController`, el caso falla — cubre: CA1
