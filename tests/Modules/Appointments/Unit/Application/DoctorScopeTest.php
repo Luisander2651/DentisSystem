@@ -46,6 +46,11 @@ function doctorScopeAuthorization(array $granted): AuthorizationServiceInterface
         {
             return DOCTOR_SCOPE_ACTOR_ID;
         }
+
+        public function currentPatientId(): string
+        {
+            throw AuthorizationException::unauthenticated();
+        }
     };
 }
 

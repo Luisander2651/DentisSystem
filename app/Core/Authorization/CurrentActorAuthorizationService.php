@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Authorization;
 
 use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel;
 use App\Modules\Users\Domain\ValueObjects\UserRoleId;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Support\Facades\Auth;
@@ -54,6 +55,25 @@ final class CurrentActorAuthorizationService implements AuthorizationServiceInte
 
         if (! $actor instanceof UserModel) {
             throw AuthorizationException::unauthenticated();
+        }
+
+        return (string) $actor->id;
+    }
+
+    /**
+     * Spec 025 (D2, CA15): the status is read on every call, so a session opened before the
+     * clinic deactivated the account no longer works.
+     */
+    public function currentPatientId(): string
+    {
+        $actor = Auth::user();
+
+        if (! $actor instanceof PatientModel) {
+            throw AuthorizationException::unauthenticated();
+        }
+
+        if (($actor->status ?? null) !== 'active') {
+            throw AuthorizationException::inactiveAccount();
         }
 
         return (string) $actor->id;

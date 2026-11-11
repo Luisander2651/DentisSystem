@@ -71,6 +71,11 @@ function trackingAuthorization(TrackingCallLog $log, array $granted): Authorizat
         {
             return TRACKING_AUTH_ACTOR_ID;
         }
+
+        public function currentPatientId(): string
+        {
+            throw AuthorizationException::unauthenticated();
+        }
     };
 }
 
