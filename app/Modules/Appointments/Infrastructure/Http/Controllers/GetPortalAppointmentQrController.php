@@ -44,8 +44,9 @@ final class GetPortalAppointmentQrController
             ]);
         } catch (InvalidArgumentException) {
             return response()->json(['error' => 'Invalid appointment id.'], 400);
-        } catch (AppointmentAplicationExceptions $e) {
-            return response()->json(['error' => $e->getMessage()], 409);
+        } catch (AppointmentAplicationExceptions) {
+            // The only one the use case throws: a closed appointment of the patient.
+            return response()->json(['error' => 'The QR code is only available for open appointments.'], 409);
         } catch (AuthorizationException $e) {
             // The 403 of the whole API, rendered in bootstrap/app.php.
             throw $e;

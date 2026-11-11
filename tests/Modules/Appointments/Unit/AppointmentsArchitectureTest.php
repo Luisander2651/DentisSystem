@@ -69,3 +69,18 @@ it('keeps the port and the use case of the QR code free of infrastructure and of
     'Support/QrCodeGeneratorInterface.php',
     'UseCases/GetAppointmentQrUseCase.php',
 ]);
+
+/*
+ * Spec 025 (P3): the use cases and DTOs of the patient portal live in the Application layer too,
+ * with the same rule: neither Infrastructure, nor facades, nor Eloquent, nor the QR library.
+ */
+it('keeps the use cases and the DTOs of the patient portal free of infrastructure', function (string $file) {
+    expect(appointmentsLayerViolations('Aplication', $file, APPOINTMENTS_APPLICATION_FORBIDDEN))->toBe([]);
+})->with([
+    'DTOs/GetPatientAppointmentsDTO.php',
+    'DTOs/GetPatientNextAppointmentDTO.php',
+    'Exceptions/AppointmentAplicationExceptions.php',
+    'UseCases/GetPatientAppointmentQrUseCase.php',
+    'UseCases/GetPatientAppointmentsUseCase.php',
+    'UseCases/GetPatientNextAppointmentUseCase.php',
+]);
