@@ -12,6 +12,7 @@ use App\Modules\Appointments\Infrastructure\Http\Controllers\GetDoctorsForAppoin
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetInternalAppointmentByIdController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetInternalTodayAppointmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPatientsForAppointmentSelectController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPortalAppointmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodayAppointmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodaySummaryController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentByIdController;
@@ -168,6 +169,12 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::get('/monthly', GetMonthlyReportController::class);
                 Route::get('/monthly/excel', DownloadMonthlyReportController::class)->middleware('throttle:report-downloads');
             });
+        });
+
+        // Spec 025: the patient portal. The patient comes from the session; no-store keeps every
+        // answer, 401 and 403 included, out of browser and proxy caches.
+        Route::middleware(['auth:sanctum,patient', 'patient', 'no-store'])->prefix('portal')->group(function (): void {
+            Route::get('/appointments', GetPortalAppointmentsController::class);
         });
 
         Route::middleware(['auth:sanctum,patient', 'staff'])->group(function (): void {
