@@ -21,7 +21,8 @@ final class PortalAppointmentResource extends JsonResource
         return [
             'id' => $this->resource->Id()->value,
             'date' => $this->resource->Date()->value,
-            'time' => $this->resource->Time()->value,
+            // The contract gives the hour as HH:MM; the database keeps seconds.
+            'time' => substr($this->resource->Time()->value, 0, 5),
             'status' => $this->resource->Status()->value,
             'treatment_name' => $this->resource->TreatmentName()?->value,
             'doctor_name' => $this->resource->UserName()?->full(),

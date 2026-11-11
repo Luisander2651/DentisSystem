@@ -29,6 +29,7 @@ it('gives every appointment of the patient, from the most recent to the oldest',
     expect(array_column($response->json('data'), 'date'))->toBe(['2026-11-26', '2026-11-12', '2026-10-20', '2026-09-14'])
         ->and(array_column($response->json('data'), 'status'))->toBe(['reprogramada', 'asignada', 'completada', 'cancelada'])
         ->and(array_keys($response->json('data.0')))->toBe(['id', 'date', 'time', 'status', 'treatment_name', 'doctor_name'])
+        ->and($response->json('data.0.time'))->toBe('12:00')
         ->and($response->json('data.0.treatment_name'))->toBe('Resina')
         ->and($response->json('data.0.doctor_name'))->toBe('Daniela Prueba');
 });

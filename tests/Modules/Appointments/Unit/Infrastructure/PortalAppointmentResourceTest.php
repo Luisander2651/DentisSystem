@@ -18,7 +18,7 @@ it('gives exactly the six fields of a portal appointment', function () {
     $appointment = AppointmentEntity::fromPrimitives(
         id: '9b2e6c1a-4f1d-4c3e-8a7b-2d5f0e9c1a34',
         date: '2026-11-12',
-        time: '10:30',
+        time: '10:30:00',
         whatsappReminder: true,
         status: 'reprogramada',
         treatmentId: '1',
