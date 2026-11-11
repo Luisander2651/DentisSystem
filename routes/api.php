@@ -97,17 +97,17 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             Route::post('/login', LoginController::class);
             Route::post('/mobile/login', MobileLoginController::class);
             Route::post('/register', RegisterController::class);
-            Route::middleware('auth:sanctum')->group(function (): void {
+            Route::middleware('auth:sanctum,patient')->group(function (): void {
                 Route::post('/logout', LogoutController::class);
             });
-            Route::middleware(['auth:sanctum', 'only.admin'])->group(function (): void {
+            Route::middleware(['auth:sanctum,patient', 'only.admin'])->group(function (): void {
                 Route::get('/me', GetAuthenticatedUserController::class);
             });
             Route::post('/send-reset-password-email', SendResetPasswordEmailController::class);
             Route::post('/reset-password', ResetPasswordController::class);
         });
 
-        Route::middleware(['auth:sanctum', 'only.admin'])->group(function (): void {
+        Route::middleware(['auth:sanctum,patient', 'only.admin'])->group(function (): void {
             Route::prefix('users')->group(function (): void {
                 Route::post('/', RegisterUserController::class);
                 Route::put('/{id}', UpdateUserController::class);
@@ -170,7 +170,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             });
         });
 
-        Route::middleware(['auth:sanctum', 'staff'])->group(function (): void {
+        Route::middleware(['auth:sanctum,patient', 'staff'])->group(function (): void {
             Route::prefix('agenda')->group(function (): void {
                 Route::get('/patients', GetPatientsForAppointmentSelectController::class);
                 Route::get('/doctors', GetDoctorsForAppointmentSelectController::class);

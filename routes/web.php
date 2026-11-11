@@ -43,7 +43,7 @@ Route::get('/reset-password', function () {
     return view('pages.auth.reset-password');
 })->name('password.reset');
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum,patient'])->group(function () {
     Route::get('/logout', function () {
         return view('pages.auth.logout');
     })->name('logout.page');
@@ -68,7 +68,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 });
 
-Route::middleware(['auth:sanctum', 'only.admin'])->group(function () {
+Route::middleware(['auth:sanctum,patient', 'only.admin'])->group(function () {
     Route::get('/usuarios', function () {
         return view('pages.usuarios.index');
     })->name('usuarios.index');

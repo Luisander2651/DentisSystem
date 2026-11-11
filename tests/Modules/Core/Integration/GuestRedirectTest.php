@@ -31,7 +31,7 @@ const GUEST_PROTECTED_SCREENS = [
 
 it('covers every web route that asks for a session', function () {
     $protected = collect(Route::getRoutes()->getRoutes())
-        ->filter(fn (RoutingRoute $route): bool => ! str_starts_with($route->uri(), 'api/') && in_array('auth:sanctum', $route->gatherMiddleware(), true))
+        ->filter(fn (RoutingRoute $route): bool => ! str_starts_with($route->uri(), 'api/') && in_array('auth:sanctum,patient', $route->gatherMiddleware(), true))
         ->map(fn (RoutingRoute $route): string => '/'.str_replace('{patientId}', GUEST_PATIENT_ID, $route->uri()))
         ->sort()
         ->values()

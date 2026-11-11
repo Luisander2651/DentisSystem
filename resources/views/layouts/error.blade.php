@@ -1,10 +1,11 @@
 {{--
     Marco de las páginas de error (403, 404, 405 y 419): la marca, un título, un texto fijo en
     español y el camino de vuelta. No imprime la excepción ni nada de la petición, y no necesita
-    sesión: el enlace de vuelta depende solo de si quien la ve está identificado.
+    sesión: el enlace de vuelta depende solo de si quien la ve está identificado, con una sesión del
+    personal o de paciente (spec 025: cada tipo de cuenta tiene su guard).
 --}}
 @php
-    $signedIn = rescue(fn () => auth('sanctum')->check(), false, false);
+    $signedIn = rescue(fn () => auth('sanctum')->check() || auth('patient')->check(), false, false);
 @endphp
 <!DOCTYPE html>
 <html lang="es">
