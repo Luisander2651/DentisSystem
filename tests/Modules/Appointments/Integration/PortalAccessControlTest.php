@@ -21,6 +21,7 @@ function portalAccessRoutes(): array
     return [
         'GET /portal/appointments',
         'GET /portal/appointments/next',
+        'GET /portal/appointments/{id}/qr',
     ];
 }
 

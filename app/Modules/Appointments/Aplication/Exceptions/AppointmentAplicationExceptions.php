@@ -22,4 +22,13 @@ final class AppointmentAplicationExceptions extends Exception
     {
         return new self('Patient ID cannot be empty');
     }
+
+    /**
+     * Spec 025 (CA18, TM8): a completed or cancelled appointment is no longer a pass to the
+     * clinic, so the portal draws no QR code for it.
+     */
+    public static function qrOnlyForOpenAppointments(): self
+    {
+        return new self('The QR code is only available for open appointments.');
+    }
 }

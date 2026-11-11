@@ -12,6 +12,7 @@ use App\Modules\Appointments\Infrastructure\Http\Controllers\GetDoctorsForAppoin
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetInternalAppointmentByIdController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetInternalTodayAppointmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPatientsForAppointmentSelectController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPortalAppointmentQrController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPortalAppointmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPortalNextAppointmentController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodayAppointmentsController;
@@ -178,6 +179,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             Route::get('/appointments', GetPortalAppointmentsController::class);
             // Before any route with {id}, so "next" is never read as an appointment id.
             Route::get('/appointments/next', GetPortalNextAppointmentController::class);
+            Route::get('/appointments/{id}/qr', GetPortalAppointmentQrController::class);
         });
 
         Route::middleware(['auth:sanctum,patient', 'staff'])->group(function (): void {
