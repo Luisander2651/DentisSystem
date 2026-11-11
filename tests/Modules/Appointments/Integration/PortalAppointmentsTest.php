@@ -95,6 +95,15 @@ it('gives the nearest open appointment from today on, in the clinic time zone', 
         ->and($response->headers->get('Cache-Control'))->toContain('no-store');
 });
 
+it('keeps today of the clinic at night, when the date in UTC is already the next one', function () {
+    $this->travelTo(Carbon::parse('2026-09-17 23:30:00', 'America/Mexico_City'));
+    $patient = $this->actingAsPatient();
+    $tonight = $this->createAppointment(['patient_id' => $patient->id, 'date' => '2026-09-17', 'time' => '23:45', 'status' => 'asignada']);
+    $this->createAppointment(['patient_id' => $patient->id, 'date' => '2026-09-18', 'time' => '09:00', 'status' => 'reprogramada']);
+
+    expect($this->getJson(PORTAL_NEXT_URL)->assertOk()->json('data.id'))->toBe($tonight->id);
+});
+
 it('answers null when no open appointment falls on today or later', function () {
     $this->travelTo(Carbon::parse('2026-09-17 11:40:00', 'America/Mexico_City'));
     $patient = $this->actingAsPatient();
