@@ -853,7 +853,7 @@
                             "[data-portal-next-detail]": "Ver detalle de tu cita del jueves 12 de noviembre"
                         },
                         "absent": [
-                            "[data-view-appointment-qr-download][disabled]",
+                            "[data-portal-section=\"next\"] [data-view-appointment-qr-download][disabled]",
                             "[data-portal-access][hidden]"
                         ]
                     }
@@ -1176,6 +1176,329 @@
                         },
                         "focused": "h1"
                     }
+                }
+            ]
+        },
+        {
+            "id": "portal-detalle-abierta",
+            "screen": "portal",
+            "dialog": "detalle-portal",
+            "dialogSelector": "[data-portal-detail-modal]",
+            "path": "/dashboard",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "steps": [
+                {
+                    "waitFor": "[data-portal-next-detail]"
+                },
+                {
+                    "click": "[data-portal-next-detail]"
+                },
+                {
+                    "waitFor": "[data-portal-detail-general] dd"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "#portal-detail-qr-title",
+                    "is": "Código QR de acceso"
+                },
+                {
+                    "image": {
+                        "selector": "[data-portal-detail-modal] [data-view-appointment-qr-image]",
+                        "minWidth": 240,
+                        "minHeight": 240
+                    }
+                },
+                {
+                    "absent": "[data-portal-detail-modal] [data-view-appointment-qr-download][disabled]"
+                },
+                {
+                    "absent": "[data-portal-detail-prescriptions]"
+                },
+                {
+                    "attribute": {
+                        "selector": "[data-portal-detail-modal] [data-view-appointment-qr-image]",
+                        "name": "alt",
+                        "matches": "^Código QR de acceso de tu cita del jueves 12 de noviembre$"
+                    }
+                }
+            ],
+            "flows": [
+                {
+                    "name": "Descargar QR da el PNG de la cita",
+                    "do": [
+                        {
+                            "waitFor": "[data-portal-detail-modal] [data-view-appointment-qr-download]:not([disabled])"
+                        },
+                        {
+                            "click": "[data-portal-detail-modal] [data-view-appointment-qr-download]"
+                        },
+                        {
+                            "wait": 500
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-portal-detail-modal]"
+                        ],
+                        "textIn": {
+                            "[data-portal-detail-general]": "12/11/2026"
+                        },
+                        "downloaded": {
+                            "name": "^cita-2026-11-12-1030\\.png$",
+                            "type": "image/png"
+                        }
+                    }
+                },
+                {
+                    "name": "si el QR no carga, el detalle sigue a la vista con un aviso",
+                    "answers": [
+                        {
+                            "to": "/qr",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-portal-detail-modal]"
+                        ],
+                        "visibleAfter": {
+                            "selector": "[data-portal-detail-modal] [data-view-appointment-qr-error]",
+                            "ms": 0
+                        },
+                        "announced": "No pudimos cargar el código QR. Cierra el detalle y vuelve a abrirlo.",
+                        "textIn": {
+                            "[data-portal-detail-general]": "12/11/2026"
+                        }
+                    },
+                    "load": true
+                }
+            ]
+        },
+        {
+            "id": "portal-detalle-completada",
+            "screen": "portal",
+            "dialog": "detalle-portal",
+            "dialogSelector": "[data-portal-detail-modal]",
+            "path": "/mis-citas",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "steps": [
+                {
+                    "waitFor": "[data-portal-view-appointment][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
+                },
+                {
+                    "click": "[data-portal-view-appointment][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
+                },
+                {
+                    "waitFor": "[data-portal-detail-prescriptions-list] > div"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "#portal-detail-recommendations-title",
+                    "is": "Recomendaciones"
+                },
+                {
+                    "text": "[data-portal-detail-prescriptions-list] > div:last-child > p:first-child",
+                    "is": "Amoxicilina 500 mg — 1 cápsula"
+                },
+                {
+                    "text": "[data-portal-detail-prescriptions-list] > div:last-child > p:nth-child(2)",
+                    "is": "7 días · 3 veces al día"
+                },
+                {
+                    "absent": "[data-portal-detail-modal] [data-view-appointment-qr]"
+                },
+                {
+                    "absent": "[data-portal-detail-modal] [data-view-appointment-qr-download]"
+                }
+            ]
+        },
+        {
+            "id": "portal-detalle-sin-recetas",
+            "screen": "portal",
+            "dialog": "detalle-portal",
+            "dialogSelector": "[data-portal-detail-modal]",
+            "path": "/mis-citas",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                390,
+                1440
+            ],
+            "steps": [
+                {
+                    "waitFor": "[data-portal-view-appointment][data-appointment-id=\"ce66c7b7-5547-5ab7-a688-938a2d629fdf\"]"
+                },
+                {
+                    "click": "[data-portal-view-appointment][data-appointment-id=\"ce66c7b7-5547-5ab7-a688-938a2d629fdf\"]"
+                },
+                {
+                    "waitFor": "[data-portal-detail-prescriptions-list] > p"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "[data-portal-detail-prescriptions-list]",
+                    "is": "Esta cita no tiene recetas"
+                },
+                {
+                    "absent": "[data-portal-detail-recommendations]"
+                },
+                {
+                    "absent": "[data-portal-detail-prescriptions-error]"
+                },
+                {
+                    "absent": "[data-portal-detail-modal] [data-view-appointment-qr]"
+                }
+            ],
+            "flows": [
+                {
+                    "name": "con recomendaciones y sin recetas (A19)",
+                    "answers": [
+                        {
+                            "to": "/api/v1/portal/appointments/ce66c7b7-5547-5ab7-a688-938a2d629fdf/prescriptions",
+                            "status": 200,
+                            "body": {
+                                "data": {
+                                    "recommendations": "Usar hilo dental a diario.",
+                                    "prescriptions": []
+                                }
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-portal-detail-modal]"
+                        ],
+                        "textIn": {
+                            "[data-portal-detail-recommendations]": "Recomendaciones",
+                            "[data-portal-detail-recommendations-text]": "Usar hilo dental a diario.",
+                            "[data-portal-detail-prescriptions-list]": "Esta cita no tiene recetas"
+                        },
+                        "absent": [
+                            "[data-portal-detail-recommendations].hidden",
+                            "[data-portal-detail-prescriptions-error]:not(.hidden)"
+                        ],
+                        "notAnnounced": "No pudimos cargar"
+                    },
+                    "load": true
+                }
+            ]
+        },
+        {
+            "id": "portal-detalle-cancelada",
+            "screen": "portal",
+            "dialog": "detalle-portal",
+            "dialogSelector": "[data-portal-detail-modal]",
+            "path": "/mis-citas",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                390,
+                1440
+            ],
+            "steps": [
+                {
+                    "waitFor": "[data-portal-view-appointment][data-appointment-id=\"b1dd1a62-a336-51ef-a3b5-2a1bd619032a\"]"
+                },
+                {
+                    "click": "[data-portal-view-appointment][data-appointment-id=\"b1dd1a62-a336-51ef-a3b5-2a1bd619032a\"]"
+                },
+                {
+                    "waitFor": "[data-portal-detail-general] dd"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "[data-portal-detail-general] div:last-child dd",
+                    "is": "Cancelada"
+                },
+                {
+                    "absent": "[data-portal-detail-modal] [data-view-appointment-qr]"
+                },
+                {
+                    "absent": "[data-portal-detail-prescriptions]"
+                },
+                {
+                    "absent": "[data-portal-detail-recommendations]"
+                }
+            ]
+        },
+        {
+            "id": "portal-detalle-fallo",
+            "screen": "portal",
+            "dialog": "detalle-portal",
+            "dialogSelector": "[data-portal-detail-modal]",
+            "path": "/mis-citas",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                390,
+                1440
+            ],
+            "steps": [
+                {
+                    "waitFor": "[data-portal-view-appointment][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
+                },
+                {
+                    "click": "[data-portal-view-appointment][data-appointment-id=\"71e7da1e-263d-594b-8f16-a2bcf1d81efe\"]"
+                },
+                {
+                    "waitFor": "[data-portal-detail-general] dd"
+                }
+            ],
+            "flows": [
+                {
+                    "name": "si las recetas no cargan, el aviso queda en su lugar",
+                    "answers": [
+                        {
+                            "to": "/prescriptions",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-portal-detail-modal]"
+                        ],
+                        "visibleAfter": {
+                            "selector": "[data-portal-detail-prescriptions-error]",
+                            "ms": 0
+                        },
+                        "announcedOnce": "No pudimos cargar las recetas",
+                        "textIn": {
+                            "[data-portal-detail-general]": "06/07/2026"
+                        }
+                    },
+                    "load": true
                 }
             ]
         },

@@ -305,6 +305,9 @@
     </div>
 </div>
 
+<x-portal.appointment-detail-modal />
+
 @vite('resources/js/pages/portal/home.js')
+@vite('resources/js/pages/portal/appointment-detail.js')
 @endif
 @endsection
