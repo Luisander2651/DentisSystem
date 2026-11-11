@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentModel;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\TreatmentModel;
 use App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent\Models\AppointmentTrackingModel;
+use App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent\Models\AppointmentTrackingPrescriptionModel;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\Persistence\Eloquent\Models\CertificationModel;
 use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\Persistence\Eloquent\Models\GalleryImageModel;
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\Persistence\Eloquent\Models\PromotionModel;
@@ -78,7 +79,9 @@ it('seeds one user per role, an inactive staff member, two patients, appointment
 
     expect($appointments->pluck('status')->unique()->sort()->values()->all())
         ->toBe(['asignada', 'cancelada', 'completada', 'reprogramada'])
-        ->and($appointments->every(fn (AppointmentModel $appointment): bool => str_starts_with((string) $appointment->date, UiAuditSeeder::APPOINTMENTS_MONTH)))
+        // Spec 025: besides July, the two open appointments of November that the patient portal shows.
+        ->and($appointments->every(fn (AppointmentModel $appointment): bool => str_starts_with((string) $appointment->date, UiAuditSeeder::APPOINTMENTS_MONTH)
+            || str_starts_with((string) $appointment->date, UiAuditSeeder::PORTAL_MONTH)))
         ->toBeTrue()
         ->and(AppointmentTrackingModel::query()->whereIn('appointment_id', $appointments->pluck('id'))->count())->toBe(1);
 
@@ -87,6 +90,31 @@ it('seeds one user per role, an inactive staff member, two patients, appointment
         ->and(PromotionModel::query()->count())->toBeGreaterThan(0)
         ->and(CertificationModel::query()->count())->toBeGreaterThan(0)
         ->and(TestimonialModel::query()->count())->toBeGreaterThan(0);
+});
+
+it('seeds what the patient portal shows: a next appointment, a later one and two prescriptions (spec 025)', function () {
+    (new UiAuditSeeder)->run();
+
+    $patient = PatientModel::query()->where('email', UiAuditSeeder::PATIENT_EMAIL)->firstOrFail();
+    $empty = PatientModel::query()->where('email', UiAuditSeeder::EMPTY_PATIENT_EMAIL)->firstOrFail();
+
+    $open = AppointmentModel::query()
+        ->where('patient_id', $patient->id)
+        ->whereIn('status', ['asignada', 'reprogramada'])
+        ->where('date', '>=', '2026-09-17')
+        ->orderBy('date')
+        ->get();
+
+    expect($open->map(fn (AppointmentModel $appointment): string => substr((string) $appointment->date, 0, 10).' '.substr((string) $appointment->time, 0, 5).' '.$appointment->status)->all())
+        ->toBe(['2026-11-12 10:30 asignada', '2026-11-26 12:00 reprogramada']);
+
+    $completedWithFollowUp = AppointmentTrackingModel::query()
+        ->whereIn('appointment_id', AppointmentModel::query()->where('patient_id', $patient->id)->where('status', 'completada')->pluck('id'))
+        ->firstOrFail();
+
+    expect($completedWithFollowUp->recommendations)->not->toBeEmpty()
+        ->and(AppointmentTrackingPrescriptionModel::query()->where('appointment_tracking_id', $completedWithFollowUp->id)->count())->toBe(2)
+        ->and(AppointmentModel::query()->where('patient_id', $empty->id)->count())->toBe(0);
 });
 
 it('seeds a second doctor who shares the doctor\'s day, and a completed appointment without follow-up (spec 018)', function () {
