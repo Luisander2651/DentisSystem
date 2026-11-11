@@ -4,6 +4,20 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/). Lo mantiene `/release`.
 
 ## [Unreleased]
+Portal del paciente: cada paciente ve su próxima cita con su código QR de acceso, su historial de citas y las recomendaciones y recetas de sus citas completadas (spec 025).
+
+### Added
+- El paciente que inicia sesión ve en su inicio su próxima cita (fecha, hora, tratamiento y doctor) con su código QR a la vista y un botón para descargarlo; sin cita agendada, un aviso con el enlace a contacto (spec 025).
+- "Mis citas": el historial del paciente, de la más reciente a la más antigua, con el detalle de cada cita: el código QR en las citas por venir y las recomendaciones y recetas en las completadas, o "Esta cita no tiene recetas" (spec 025).
+- Si no se puede cargar la próxima cita, el historial, el QR o las recetas, el resto de la pantalla se sigue viendo y aparece un aviso en su lugar (spec 025).
+
+### Changed
+- El inicio del paciente usa el mismo saludo y las mismas tarjetas que el inicio del personal; el menú del paciente ofrece "Inicio" y "Mis citas" (spec 025).
+
+### Security
+- Las sesiones del personal y de los pacientes van por separado: un paciente no puede usar las rutas del personal ni el personal las del portal, y cada paciente solo ve sus propias citas; una cita de otro paciente responde igual que una que no existe (spec 025).
+- Un paciente desactivado deja de entrar a su portal aunque su sesión no haya caducado (spec 025).
+- Las respuestas del portal no se guardan en la caché del navegador ni de intermediarios, y sus pantallas no se indexan en buscadores (spec 025).
 
 ## [0.9.0] - 2026-11-09
 Código QR de acceso por cita: recepción lo ve en el detalle de la cita y lo descarga para mandárselo al paciente, y en la puerta el administrador lo escanea con la app de asistencias (spec 024).

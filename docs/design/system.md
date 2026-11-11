@@ -231,7 +231,9 @@ franja de 6 px en `primary` a la izquierda: el rosa como acento, no como fondo. 
 "Siguiente cita" (12 px en mayúsculas, `muted`, con un punto `primary`). Debajo, la hora en 40 px /
 700 con cifras tabulares y su insignia de estado, el paciente en 20 px / 700, el tratamiento y el
 doctor en `muted`, las acciones en `secondary` y la línea "Después: …" con las dos citas siguientes
-y cuántas más quedan.
+y cuántas más quedan. Desde la spec 025, el slot `actions` sustituye a los botones del personal; si
+llega vacío no se pinta la fila (el portal del paciente pone sus acciones junto al QR). En el
+portal, la etiqueta es "Próxima cita" y la línea de 20 px lleva la fecha ("Jueves 12 de noviembre").
 
 ### Barra del día · `x-dashboard.day-progress`
 Pieza del inicio del panel (spec 020). Barra apilada de 12 px, `rounded-full` y decorativa
@@ -262,9 +264,12 @@ negrita, la fecha y la hora, advertencia en `danger` ("Esta acción no se puede 
 "No, mantenerla" (`secondary`, recibe el foco) / "Sí, cancelar la cita" (`danger`). No reutiliza
 `x-ui.confirm-delete-modal` porque ese fija sus textos.
 
-### Código QR de la cita · dentro de `calendar/view-appointment-modal`
-Bloque del detalle de la cita (spec 024), solo en citas asignadas o reprogramadas, después de sus
-datos. Título "Código QR de acceso" (`text-base font-bold`), una línea en `text-muted` y el QR como
+### Código QR de la cita · `x-appointments.qr-block` y `resources/js/ui/appointment-qr.js`
+Bloque del detalle de la cita (spec 024; componente propio desde la spec 025, que lo usa también en
+el detalle y en el inicio del portal del paciente), solo en citas asignadas o reprogramadas, después
+de sus datos. Props: `title`, `text`, `headingId` y `wide`; con `wide` (inicio del paciente) va sin
+título, con el texto y los botones junto a la imagen desde 768 px y un slot `actions` para botones
+propios ("Ver detalle"), y su aviso dice "… Vuelve a cargar la página.". Título "Código QR de acceso" (`text-base font-bold`), una línea en `text-muted` y el QR como
 `<img>` de **240 × 240 px** (`size-60`), sobre `bg-surface` con `p-2`, `border-field` y
 `rounded-box`: el marco reserva el espacio, así que el detalle no salta al cargar. Debajo,
 "Descargar QR" (`x-ui.button` `secondary`, deshabilitado hasta que la imagen carga), que descarga
@@ -273,6 +278,16 @@ datos. Título "Código QR de acceso" (`text-base font-bold`), una línea en `te
 (`danger`): "No pudimos cargar el código QR. Cierra el detalle y vuelve a abrirlo.", que se
 anuncia una sola vez por la región de estado de la página (`announceError`), no como `role="alert"`.
 Sin valores visuales nuevos.
+
+### Historial de citas · `records/appointments-history-table` y `resources/js/ui/appointments-history.js`
+Historial del expediente (spec 016, CA27), compartido con "Mis citas" del portal del paciente desde
+la spec 025: una tarjeta por cita por debajo de 768 px y una tabla (Fecha, Hora, Tratamiento,
+Doctor, Estado, Acciones) desde 768 px, de la más reciente a la más antigua, cada una con su
+insignia y un botón "Ver". El título (`title`) y el texto vacío (`emptyText`) son configurables; por
+defecto, "Historial de citas" y "Este paciente aún no tiene citas registradas.". Quien lo llama fija
+los formatos: el expediente muestra la fecha tal cual y la hora en "10:00 AM"; el portal,
+`dd/mm/aaaa` y `HH:MM`. Las recetas de un detalle salen de `resources/js/ui/prescriptions.js`
+(medicamento y dosis como título, duración y frecuencia en una línea, instrucciones debajo).
 
 ### Estados de pantalla
 Vacío: texto centrado y completo, sin recortes. Carga: `animate-spin` en el botón que envía. Error:

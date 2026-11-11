@@ -24,7 +24,7 @@ cuatro vistas Blade sobre un solo layout.
   (`resources/views/layouts/landing.blade.php`); la galería pública carga sus imágenes después con
   JavaScript (SE5).
 - No se indexa: la 404, las pantallas de acceso y las rutas del panel — mecanismo: `noindex` en meta
-  (hoy solo en las páginas de error: SE4).
+  (hoy en las páginas de error y en las dos pantallas del portal del paciente, spec 025: SE4).
 - Páginas de error: 404 propia `resources/views/errors/404.blade.php` (spec 016, con `noindex`);
   rutas privadas sin sesión → redirección a `/login` (`302`).
 - Archivos generados: `robots.txt` estático en `public/`; no hay `sitemap.xml` (SE3).
@@ -45,6 +45,7 @@ cuatro vistas Blade sobre un solo layout.
 | `/terminos-y-condiciones` | sí | ✅ "Términos y Condiciones - Dentissa" | ✅ propia | ❌ | ✅ 1 | ❌ | ❌ | `LegalPagesTest` (2026-11-03, sin auditar en producción) |
 | `/login`, `/register`, `/forgot-password`, `/reset-password` | no (pantallas de acceso) | ➖ | ➖ | ➖ | ✅ 1 | ➖ | ➖ | `GET /login` y `/register` 200 **sin** `noindex` (SE4) |
 | Panel (`/dashboard`, `/agenda`, `/pacientes`…) | no (exigen sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | `GET /agenda` sin sesión → `302` a `/login` |
+| Portal del paciente (`/dashboard` del paciente, `/mis-citas`) | no (exigen sesión de paciente) | ✅ "Inicio - Dentissa", "Mis citas - Dentissa" | ➖ | ➖ | ✅ 1 | ➖ | ➖ | sin sesión → `302` a `/login` (`GuestRedirectTest`); con sesión, `noindex` en meta (spec 025, `PortalPagesTest`) |
 | URL inexistente | no (404) | ✅ "No encontrada - Dentissa" | ➖ | ➖ | ✅ 1 | ➖ | ➖ | `GET /pagina-que-no-existe` → `404`, `noindex`, página propia |
 
 ## Brechas

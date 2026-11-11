@@ -456,6 +456,29 @@
             </div>
         </div>
     </div></div>
+    <h3 class="v-group">Portal del paciente</h3>
+    <p class="v-note">Spec 025. Sin tokens ni componentes nuevos: el inicio del paciente reutiliza la tarjeta de la siguiente cita con la etiqueta "Próxima cita", la fecha en la línea de 20 px y sin fila de acciones (slot `actions` vacío); debajo va el bloque del QR (`x-appointments.qr-block`, variante `wide`) con "Descargar QR" y "Ver detalle". "Mis citas" usa el historial del expediente con título y texto vacío propios y fechas en dd/mm/aaaa. Datos de prueba.</p>
+    <div class="v-stage"><div class="opt">
+        <div class="grid2">
+            <div class="next">
+                <p class="next-label">Próxima cita</p>
+                <p class="next-time"><b>10:30</b><span class="pill warning">Asignada</span></p>
+                <p class="next-patient">Jueves 12 de noviembre</p>
+                <p class="next-meta">Limpieza dental de prueba · Daniela Prueba</p>
+            </div>
+            <div class="card">
+                <h3>Bloque del QR · variante <code>wide</code></h3>
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+                    <div style="width:240px;height:240px;border:1px solid var(--color-field);border-radius:var(--radius-box);background:var(--color-surface);padding:8px;box-sizing:border-box" aria-label="Código QR de acceso de tu cita del jueves 12 de noviembre" role="img"></div>
+                    <div>
+                        <p class="note">Muestra este código en la recepción.</p>
+                        <div class="next-actions"><button class="btn btn-secondary" type="button">Descargar QR</button><button class="btn btn-secondary" type="button">Ver detalle</button></div>
+                    </div>
+                </div>
+                <p class="note" style="margin-top:12px">240 × 240 px con el marco que reserva el espacio. "Descargar QR" se activa cuando la imagen carga; si no carga, el aviso ocupa su lugar: "No pudimos cargar el código QR. Vuelve a cargar la página."</p>
+            </div>
+        </div>
+    </div></div>
     <h3 class="v-group">Formularios</h3>
     <p class="v-note">Un solo campo: 44 px de alto, letra de 16 px (CA29), borde con contraste suficiente (CA7), etiqueta siempre visible.</p>
     <div class="v-stage"><div class="opt">
