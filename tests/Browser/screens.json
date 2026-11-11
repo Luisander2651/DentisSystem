@@ -900,6 +900,9 @@
                     }
                 },
                 {
+                    "absent": "[data-view-appointment-qr-download][disabled]"
+                },
+                {
                     "text": "[data-view-appointment-qr-download]",
                     "is": "Descargar QR"
                 },
@@ -959,6 +962,9 @@
                         "minWidth": 240,
                         "minHeight": 240
                     }
+                },
+                {
+                    "absent": "[data-view-appointment-qr-download][disabled]"
                 },
                 {
                     "text": "[data-view-appointment-qr-download]",
@@ -1398,6 +1404,9 @@
                         "minWidth": 240,
                         "minHeight": 240
                     }
+                },
+                {
+                    "absent": "[data-view-appointment-qr-download][disabled]"
                 },
                 {
                     "text": "[data-view-appointment-qr-download]",
@@ -2613,6 +2622,9 @@
                         "minWidth": 240,
                         "minHeight": 240
                     }
+                },
+                {
+                    "absent": "[data-view-appointment-qr-download][disabled]"
                 },
                 {
                     "text": "[data-view-appointment-qr-download]",
