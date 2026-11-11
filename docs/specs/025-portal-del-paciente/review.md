@@ -5,7 +5,7 @@ round: 2
 date: 2026-11-11
 base: 999a059
 head: 4295666
-human_signoff: pending
+human_signoff: Luisander2651 2026-11-11
 ---
 
 # Review · 025 Portal del paciente
