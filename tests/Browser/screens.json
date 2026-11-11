@@ -1031,6 +1031,155 @@
             ]
         },
         {
+            "id": "portal-mis-citas",
+            "screen": "portal",
+            "path": "/mis-citas",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "flows": [
+                {
+                    "name": "todas sus citas, de la más reciente a la más antigua",
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "#record-appointments-body tr:nth-child(1)": "26/11/2026",
+                            "#record-appointments-body tr:nth-child(2)": "12/11/2026",
+                            "#record-appointments-body tr:nth-child(3) td:nth-child(2)": "16:00",
+                            "#record-appointments-body tr:last-child": "06/07/2026",
+                            "#record-appointments-body tr:nth-child(1) td:nth-child(5)": "Reprogramada",
+                            "#record-appointments-body tr:nth-child(2) td:nth-child(5)": "Asignada",
+                            "#record-appointments-body tr:nth-last-child(2) td:nth-child(5)": "Cancelada",
+                            "#record-appointments-body tr:last-child td:nth-child(5)": "Completada",
+                            "#record-appointments-list li:nth-child(1)": "26/11/2026 · 12:00",
+                            "#record-appointments-list li:last-child": "06/07/2026 · 09:00"
+                        },
+                        "absent": [
+                            "[data-portal-history-status]:not([hidden])"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "portal-mis-citas-vacio",
+            "screen": "portal",
+            "path": "/mis-citas",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                390,
+                1440
+            ],
+            "flows": [
+                {
+                    "name": "sin citas",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/portal/appointments",
+                            "status": 200,
+                            "body": {
+                                "data": []
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "#record-appointments-body": "Aún no tienes citas registradas",
+                            "[data-record-when-empty=\"appointments\"]": "Aún no tienes citas registradas"
+                        },
+                        "absent": [
+                            "#record-appointments-list li",
+                            "[data-record-when-empty=\"appointments\"].hidden",
+                            "[data-portal-history-status]:not([hidden])"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "portal-mis-citas-fallo",
+            "screen": "portal",
+            "path": "/mis-citas",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                390,
+                1440
+            ],
+            "flows": [
+                {
+                    "name": "si el historial no carga, el aviso queda en su lugar",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/portal/appointments",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "visibleAfter": {
+                            "selector": "[data-portal-history-status] [data-dashboard-state=\"error\"]",
+                            "ms": 0
+                        },
+                        "announcedOnce": "No se pudo cargar esta sección.",
+                        "absent": [
+                            "[data-portal-appointments] [data-dashboard-content]:not([hidden])"
+                        ],
+                        "tabbable": "[data-portal-history-status] [data-dashboard-retry]"
+                    }
+                },
+                {
+                    "name": "Reintentar",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/portal/appointments",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            },
+                            "times": 1
+                        }
+                    ],
+                    "do": [
+                        {
+                            "click": "[data-portal-history-status] [data-dashboard-retry]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "#record-appointments-body tr:nth-child(1)": "26/11/2026"
+                        },
+                        "focused": "h1"
+                    }
+                }
+            ]
+        },
+        {
             "id": "portal-menu",
             "screen": "portal",
             "path": "/dashboard",
