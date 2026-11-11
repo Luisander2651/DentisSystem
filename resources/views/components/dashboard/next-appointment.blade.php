@@ -16,10 +16,15 @@
     <p class="mt-3 text-xl font-bold text-ink" data-next-patient></p>
     <p class="mt-1 text-sm text-muted" data-next-detail></p>
     <div class="mt-4 flex flex-wrap gap-3">
-        @if ($canComplete)
-            <x-ui.button data-dashboard-next-complete>Completar</x-ui.button>
-        @endif
-        <x-ui.button data-dashboard-next-detail>Ver detalle</x-ui.button>
+        {{-- Spec 025: the patient portal gives its own actions; without them, those of the staff. --}}
+        @isset($actions)
+            {{ $actions }}
+        @else
+            @if ($canComplete)
+                <x-ui.button data-dashboard-next-complete>Completar</x-ui.button>
+            @endif
+            <x-ui.button data-dashboard-next-detail>Ver detalle</x-ui.button>
+        @endisset
     </div>
     <p class="mt-4 text-sm text-muted" data-next-after hidden></p>
 </div>

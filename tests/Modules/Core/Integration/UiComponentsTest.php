@@ -128,3 +128,25 @@ it('renders the wide QR block of the portal without a title, with the text besid
         ->toContain('data-view-appointment-qr-download')
         ->toContain('<button type="button" data-extra>Ver detalle</button>');
 });
+
+/*
+ * Spec 025 (design.md → Componentes): the next-appointment card of the start, reused by the
+ * patient portal with its own actions; without them it keeps the buttons of the staff.
+ */
+
+it('keeps the staff buttons of the next-appointment card when no actions are given', function (bool $canComplete) {
+    $html = normalizedHtml(Blade::render('<x-dashboard.next-appointment :can-complete="$canComplete" />', ['canComplete' => $canComplete]));
+
+    expect($html)->toContain('data-next-card')
+        ->toContain('data-dashboard-next-detail')
+        ->toContain('Ver detalle')
+        ->and(str_contains($html, 'data-dashboard-next-complete'))->toBe($canComplete);
+})->with([true, false]);
+
+it('puts the given actions in place of the staff buttons of the next-appointment card', function () {
+    $html = normalizedHtml(Blade::render('<x-dashboard.next-appointment><x-slot:actions><button type="button" data-portal-action>Otra acción</button></x-slot:actions></x-dashboard.next-appointment>'));
+
+    expect($html)->toContain('<button type="button" data-portal-action>Otra acción</button>')
+        ->not->toContain('data-dashboard-next-detail')
+        ->not->toContain('data-dashboard-next-complete');
+});
