@@ -95,3 +95,36 @@ it('writes no pill when this month has no data and last month has', function () 
 
     expect($html)->not->toContain('rounded-full')->toContain('julio: 28.6 %');
 });
+
+/*
+ * Spec 025 (design.md → Componentes): the QR block of spec 024, taken out of the detail of the
+ * staff so the patient portal shows the same frame, image, warning and download button.
+ */
+
+it('renders the QR block of the detail with its title, text, frame, warning and download button', function () {
+    $html = normalizedHtml(Blade::render('<x-appointments.qr-block class="mt-4" title="Código QR de acceso" text="Muéstralo o mándalo al paciente para que entre el día de su cita." />'));
+
+    expect($html)->toContain('data-view-appointment-qr')
+        ->toContain('aria-labelledby="view-appointment-qr-title"')
+        ->toContain('<h3 id="view-appointment-qr-title" class="text-base font-bold text-ink">Código QR de acceso</h3>')
+        ->toContain('Muéstralo o mándalo al paciente para que entre el día de su cita.')
+        ->toContain('rounded-box border border-field bg-surface p-2')
+        ->toContain('<img class="block size-60" alt="" data-view-appointment-qr-image>')
+        ->toContain('data-view-appointment-qr-error')
+        ->toContain('No pudimos cargar el código QR.')
+        ->toContain('data-view-appointment-qr-download')
+        ->toContain('Descargar QR')
+        ->and(preg_match('/<section[^>]*class="[^"]*\bhidden\b[^"]*\bmt-4\b|<section[^>]*class="[^"]*\bmt-4\b[^"]*\bhidden\b/', $html))->toBe(1);
+});
+
+it('renders the wide QR block of the portal without a title, with the text beside the image and its own actions', function () {
+    $html = normalizedHtml(Blade::render('<x-appointments.qr-block wide text="Muestra este código en la recepción."><x-slot:actions><button type="button" data-extra>Ver detalle</button></x-slot:actions></x-appointments.qr-block>'));
+
+    expect($html)->not->toContain('<h3')
+        ->not->toContain('aria-labelledby')
+        ->toContain('md:flex-row md:items-center')
+        ->toContain('Muestra este código en la recepción.')
+        ->toContain('data-view-appointment-qr-image')
+        ->toContain('data-view-appointment-qr-download')
+        ->toContain('<button type="button" data-extra>Ver detalle</button>');
+});
