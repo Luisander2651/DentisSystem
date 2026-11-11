@@ -1,9 +1,15 @@
+{{-- Spec 025: the patient portal reuses this table with its own empty text; by default, the texts of the record. --}}
+@props([
+    'title' => 'Historial de citas',
+    'emptyText' => 'Este paciente aún no tiene citas registradas.',
+])
+
 <section class="w-full overflow-hidden rounded-card border border-line bg-surface shadow-sm">
-    <x-ui.section-title title="Historial de citas" class="border-b border-line px-4 py-3" />
+    <x-ui.section-title :title="$title" class="border-b border-line px-4 py-3" />
 
     {{-- Por debajo de md: una tarjeta por cita (spec 016, CA27). --}}
     <ul id="record-appointments-list" class="hidden space-y-3 p-4 md:hidden" data-record-when="appointments"></ul>
-    <p class="px-4 py-6 text-center text-sm text-muted md:hidden" data-record-when-empty="appointments">Este paciente aún no tiene citas registradas.</p>
+    <p class="px-4 py-6 text-center text-sm text-muted md:hidden" data-record-when-empty="appointments">{{ $emptyText }}</p>
 
     <div class="hidden overflow-x-auto md:block">
         <table class="min-w-full border-collapse text-left text-sm text-ink">
@@ -19,7 +25,7 @@
             </thead>
             <tbody id="record-appointments-body" class="bg-surface">
                 <tr class="border-t border-line">
-                    <td colspan="6" class="px-4 py-6 text-center text-sm text-muted">Este paciente aún no tiene citas registradas.</td>
+                    <td colspan="6" class="px-4 py-6 text-center text-sm text-muted">{{ $emptyText }}</td>
                 </tr>
             </tbody>
         </table>

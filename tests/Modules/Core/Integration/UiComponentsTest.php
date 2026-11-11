@@ -150,3 +150,24 @@ it('puts the given actions in place of the staff buttons of the next-appointment
         ->not->toContain('data-dashboard-next-detail')
         ->not->toContain('data-dashboard-next-complete');
 });
+
+/*
+ * Spec 025 (CA3, CA4, design.md → Componentes): the history table of the clinical record, reused
+ * by "Mis citas" with its own empty text; without parameters it keeps the texts of the record.
+ */
+
+it('keeps the texts of the clinical record in the history table by default', function () {
+    $html = normalizedHtml(Blade::render('<x-records.appointments-history-table />'));
+
+    expect($html)->toContain('Historial de citas')
+        ->toContain('Este paciente aún no tiene citas registradas.')
+        ->toContain('id="record-appointments-body"')
+        ->toContain('id="record-appointments-list"');
+});
+
+it('takes the title and the empty text of the history table when given', function () {
+    $html = normalizedHtml(Blade::render('<x-records.appointments-history-table title="Historial de citas" empty-text="Aún no tienes citas registradas" />'));
+
+    expect($html)->toContain('Aún no tienes citas registradas')
+        ->not->toContain('Este paciente aún no tiene citas registradas.');
+});
