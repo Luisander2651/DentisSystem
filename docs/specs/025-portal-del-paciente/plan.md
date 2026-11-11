@@ -1,6 +1,6 @@
 ---
 spec: 025-portal-del-paciente
-status: draft
+status: approved
 constitution_version: 1.2.1
 created: 2026-11-10
 ---
@@ -387,3 +387,4 @@ un teléfono el QR de la pantalla y el PNG descargado.
 | 2026-11-10 | Creación en `draft`; P14 pendiente de aceptación del usuario | /plan 025 |
 | 2026-11-10 | Aprobado, con P14 ❌ aceptado | Aprobación del usuario |
 | 2026-11-10 | Correcciones de `/analyze` ronda 1 (A1, A2, A3, A5, A7, A9, A15, A18): P6 según la constitución 1.2.1, `layouts/error` con el cambio de guards, inicio de c3 con los tests de 016 y 020, arnés de navegador para K1 y K6, `no-store` también en 401 y 403 | Decisiones del usuario |
+| 2026-11-10 | Aprobado de nuevo tras `/analyze` ronda 2 | Aprobación del usuario |
