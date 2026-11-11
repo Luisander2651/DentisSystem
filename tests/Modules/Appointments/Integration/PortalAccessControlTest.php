@@ -20,6 +20,7 @@ function portalAccessRoutes(): array
 {
     return [
         'GET /portal/appointments',
+        'GET /portal/appointments/next',
     ];
 }
 

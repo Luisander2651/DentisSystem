@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Carbon;
 use Tests\Modules\Appointments\Integration\AppointmentsIntegrationTestCase;
 
 uses(AppointmentsIntegrationTestCase::class);
@@ -70,3 +71,43 @@ it('asks browsers and proxies not to keep any answer, errors included', function
     'personal (403)' => ['staff', 403],
     'paciente inactivo (403)' => ['inactive patient', 403],
 ]);
+
+/*
+ * GET /api/v1/portal/appointments/next (spec 025, CA1, CA2): with the clinic's clock at
+ * 2026-09-17 11:40, an open appointment of today counts even when its hour has gone by.
+ */
+
+const PORTAL_NEXT_URL = '/api/v1/portal/appointments/next';
+
+it('gives the nearest open appointment from today on, in the clinic time zone', function () {
+    $this->travelTo(Carbon::parse('2026-09-17 11:40:00', 'America/Mexico_City'));
+    $patient = $this->actingAsPatient();
+    $this->createAppointment(['patient_id' => $patient->id, 'date' => '2026-09-16', 'time' => '18:00', 'status' => 'asignada']);
+    $this->createAppointment(['patient_id' => $patient->id, 'date' => '2026-09-17', 'time' => '16:00', 'status' => 'cancelada']);
+    $this->createAppointment(['patient_id' => $patient->id, 'date' => '2026-09-18', 'time' => '09:00', 'status' => 'reprogramada']);
+    $today = $this->createAppointment(['patient_id' => $patient->id, 'date' => '2026-09-17', 'time' => '09:00', 'status' => 'asignada']);
+
+    $response = $this->getJson(PORTAL_NEXT_URL)->assertOk();
+
+    expect($response->json('data.id'))->toBe($today->id)
+        ->and(array_keys($response->json('data')))->toBe(['id', 'date', 'time', 'status', 'treatment_name', 'doctor_name'])
+        ->and($response->headers->get('Cache-Control'))->toContain('no-store');
+});
+
+it('answers null when no open appointment falls on today or later', function () {
+    $this->travelTo(Carbon::parse('2026-09-17 11:40:00', 'America/Mexico_City'));
+    $patient = $this->actingAsPatient();
+    $this->createAppointment(['patient_id' => $patient->id, 'date' => '2026-09-16', 'time' => '18:00', 'status' => 'asignada']);
+    $this->createAppointment(['patient_id' => $patient->id, 'date' => '2026-09-20', 'time' => '10:00', 'status' => 'completada']);
+
+    $this->getJson(PORTAL_NEXT_URL)->assertOk()->assertExactJson(['data' => null]);
+});
+
+it('ignores the id of another patient sent with the next appointment (abuse)', function () {
+    $this->travelTo(Carbon::parse('2026-09-17 11:40:00', 'America/Mexico_City'));
+    $this->actingAsPatient();
+    $other = $this->createPatient();
+    $this->createAppointment(['patient_id' => $other->id, 'date' => '2026-09-18', 'time' => '09:00', 'status' => 'asignada']);
+
+    $this->getJson(PORTAL_NEXT_URL.'?patient_id='.$other->id)->assertOk()->assertExactJson(['data' => null]);
+});
