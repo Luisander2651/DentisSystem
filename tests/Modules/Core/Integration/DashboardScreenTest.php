@@ -11,7 +11,8 @@ uses(CoreIntegrationTestCase::class);
  * Spec 020 (CA9, CA10, CA11, CA16, A16, A17, A33): the HTML of /dashboard by role, following
  * "Qué ve cada rol" of the plan. The data comes later from the API; here only what the server
  * renders: the header, the sections that exist or not, the actions each role is offered and the
- * pieces that go away. The inactive staff member gets "Sin permiso"; the patient keeps their start.
+ * pieces that go away. The inactive staff member gets "Sin permiso"; the patient gets the start of
+ * spec 025 (c3).
  */
 
 beforeEach(function () {
@@ -165,12 +166,44 @@ it('hands over the month in course to the administrator only', function (string 
     'doctor' => ['Doctor', false],
 ]);
 
-it('keeps the start of the patient, with the whole initial of "Ángela" (A16)', function () {
-    [$page] = dashboardScreen($this, 'paciente');
+/*
+ * Spec 025 (c3, CA1, CA2): the start of the patient takes the greeting of the staff, with the
+ * date and without the hour, and leaves the initial (A16), the e-mail and the role of the old one.
+ */
+it('greets the patient by name with the date, without the initial, the e-mail or the hour', function () {
+    [$page, $html] = dashboardScreen($this, 'paciente');
+    $header = $page->query('//h1')->item(0);
     $texts = array_map(dashboardText(...), iterator_to_array($page->query('//main//*[not(*)]')));
 
-    expect($texts)->toContain('Á')
-        ->and(dashboardText($page->query('//h1')->item(0)))->toBe('¡Hola, Ángela!');
+    expect(dashboardText($header))->toBe('¡Hola, Ángela!')
+        ->and(dashboardText($header->parentNode->parentNode))->toBe('¡Hola, Ángela! Jueves 22 de octubre')
+        ->and($texts)->not->toContain('Á')
+        ->and($html)->not->toContain('angela.inicio@example.test');
+});
+
+it('gives the patient the sections of c3 and none of the staff', function () {
+    [$page] = dashboardScreen($this, 'paciente');
+
+    foreach (['Próxima cita', 'Mis citas', '¿Necesitas cambiar tu cita?'] as $heading) {
+        expect(dashboardRegion($page, $heading))->not->toBeNull("Falta la sección \"{$heading}\".");
+    }
+
+    foreach (['Siguiente cita', 'Cómo va el día', 'Agenda de hoy', 'Acciones rápidas', 'Citas sin cerrar', 'Completadas sin seguimiento'] as $heading) {
+        expect(dashboardRegion($page, $heading))->toBeNull("Sobra la sección \"{$heading}\".");
+    }
+});
+
+it('offers the patient the actions of c3 and the ways to the clinic and to "Mis citas"', function () {
+    [$page] = dashboardScreen($this, 'paciente');
+    $hrefs = fn (string $heading): array => array_map(
+        fn (DOMElement $link): string => (string) parse_url($link->getAttribute('href'), PHP_URL_PATH),
+        iterator_to_array($page->query('.//a', dashboardRegion($page, $heading))),
+    );
+
+    expect(dashboardControls($page, dashboardRegion($page, 'Próxima cita')))->toBe(['Contacta a la clínica', 'Reintentar', 'Descargar QR', 'Ver detalle'])
+        ->and($hrefs('Próxima cita'))->toBe(['/contacto'])
+        ->and($hrefs('Mis citas'))->toBe(['/mis-citas'])
+        ->and($hrefs('¿Necesitas cambiar tu cita?'))->toBe(['/contacto']);
 });
 
 it('refuses the start to an inactive staff member with the "Sin permiso" page (A17)', function () {

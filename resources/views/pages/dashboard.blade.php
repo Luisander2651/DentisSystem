@@ -250,47 +250,61 @@
     @vite('resources/js/pages/patients/create-patient.js')
 @endif
 @else
-<div class="space-y-8">
-    <x-ui.page-hero
-        :title="'¡Hola, '.($user?->first_name ?? 'Usuario').'!'"
-        description="Tu salud dental, siempre a un clic de distancia."
-    >
-        <x-slot:icon>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 2 4 5v6c0 5 3.4 9.74 8 11 4.6-1.26 8-6 8-11V5l-8-3z" />
-            </svg>
-        </x-slot:icon>
+{{--
+    Spec 025 (c3, CA1, CA2, CA9): the start of the patient takes the greeting and the sections of
+    the start of the staff. The next appointment comes from the API (portal/home.js); its QR goes
+    under the card with "Descargar QR" and "Ver detalle". The accesses wait hidden until the next
+    appointment is known, so nothing in sight jumps when it arrives (K6).
+--}}
+<div class="space-y-6" data-portal-home>
+    <section class="{{ $section }} flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between" aria-labelledby="dashboard-title">
+        <div>
+            <h1 id="dashboard-title" class="text-2xl font-bold text-ink md:text-3xl">¡Hola, {{ $user?->first_name }}!</h1>
+            <p class="mt-1 text-sm text-muted">{{ $weekdays[$now->dayOfWeek].' '.$now->day.' de '.$monthName }}</p>
+        </div>
+    </section>
 
-        @if ($user)
-            <x-slot:actions>
-                <div class="flex items-center gap-3 rounded-card border border-line bg-primary-soft p-2 pr-4 shadow-sm">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-box bg-primary-soft font-bold text-ink">
-                        {{ mb_substr($user->first_name ?? 'U', 0, 1) }}
-                    </div>
-                    <div>
-                        <p class="text-sm font-semibold leading-tight text-ink">{{ $user->email ?? 'Sin correo' }}</p>
-                        <p class="text-xs font-semibold text-muted" data-role-label="inicio">Paciente</p>
+    <div class="flex flex-col gap-6 lg:grid lg:grid-cols-12 lg:items-start">
+        <div class="contents lg:col-span-7 lg:flex lg:flex-col lg:gap-6">
+            <section class="{{ $section }} order-1" aria-labelledby="dashboard-next-title" data-portal-section="next">
+                <h2 id="dashboard-next-title" class="flex items-center gap-2 text-min font-bold uppercase tracking-wide text-muted">
+                    <span class="size-2 rounded-full bg-primary" aria-hidden="true"></span>Próxima cita
+                </h2>
+                <p class="{{ $loading }} mt-3" data-dashboard-state="loading">Cargando…</p>
+                <div data-dashboard-state="empty" hidden>
+                    <p class="mt-3 text-xl font-bold text-ink">Aún no tienes una cita agendada</p>
+                    <p class="mt-1 text-sm text-muted">Cuando la clínica te agende una, aquí verás la fecha, la hora y tu código QR de acceso.</p>
+                    <div class="mt-4 flex flex-wrap gap-3">
+                        <x-ui.button href="{{ route('contacto') }}">Contacta a la clínica</x-ui.button>
                     </div>
                 </div>
-            </x-slot:actions>
-        @endif
-    </x-ui.page-hero>
+                @include('pages.dashboard.section-error')
+                <div data-dashboard-content hidden>
+                    <x-dashboard.next-appointment class="mt-3"><x-slot:actions></x-slot:actions></x-dashboard.next-appointment>
+                    <x-appointments.qr-block class="mt-4" wide text="Muestra este código en la recepción.">
+                        <x-slot:actions>
+                            <x-ui.button data-portal-next-detail>Ver detalle</x-ui.button>
+                        </x-slot:actions>
+                    </x-appointments.qr-block>
+                </div>
+            </section>
+        </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="group rounded-card border border-line bg-surface p-4 shadow-sm transition-all hover:shadow-md relative overflow-hidden">
-            <div class="absolute top-2 right-2 p-2 opacity-8">
-                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <path d="M16 2v4M8 2v4M3 10h18" />
-                </svg>
-            </div>
-            <p class="text-xs font-semibold uppercase tracking-widest text-muted">Próxima Cita</p>
-            <p class="mt-1 text-lg font-semibold text-ink">Aún no agendada</p>
-            <p class="text-xs text-muted mt-2">Te avisaremos cuando haya disponibilidad.</p>
+        <div class="contents lg:col-span-5 lg:flex lg:flex-col lg:gap-6">
+            <section class="{{ $section }} order-2" aria-labelledby="portal-appointments-title" data-portal-access hidden>
+                <h2 id="portal-appointments-title" class="{{ $heading }}">Mis citas</h2>
+                <p class="mt-1 text-sm text-muted">Tu historial, con las recetas y recomendaciones de cada cita completada.</p>
+                <a href="{{ route('portal.appointments') }}" class="{{ $link }} mt-2">Ver mis citas</a>
+            </section>
+            <section class="{{ $section }} order-3" aria-labelledby="portal-change-title" data-portal-access="change" hidden>
+                <h2 id="portal-change-title" class="{{ $heading }}">¿Necesitas cambiar tu cita?</h2>
+                <p class="mt-1 text-sm text-muted">Las citas se agendan y se cambian con la clínica.</p>
+                <a href="{{ route('contacto') }}" class="{{ $link }} mt-2">Ir a contacto</a>
+            </section>
         </div>
     </div>
 </div>
 
-@vite('resources/js/pages/dashboard.js')
+@vite('resources/js/pages/portal/home.js')
 @endif
 @endsection

@@ -815,12 +815,259 @@
             ]
         },
         {
-            "id": "dashboard-paciente",
-            "screen": "dashboard",
+            "id": "portal-inicio",
+            "screen": "portal",
             "path": "/dashboard",
             "role": "paciente",
             "now": "2026-09-17T11:40:00-06:00",
-            "serverNow": "2026-09-17T11:40:00-06:00"
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "firstScreen": [
+                "#dashboard-next-title",
+                "[data-next-time]",
+                "[data-next-patient]",
+                "[data-view-appointment-qr-image]",
+                "[data-view-appointment-qr-download]"
+            ],
+            "minImage": {
+                "selector": "[data-view-appointment-qr-image]",
+                "minWidth": 240,
+                "minHeight": 240
+            },
+            "maxCls": 0.1,
+            "flows": [
+                {
+                    "name": "la próxima cita con su QR",
+                    "do": [
+                        {
+                            "waitFor": "[data-view-appointment-qr-image]"
+                        },
+                        {
+                            "wait": 500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-next-time]": "10:30",
+                            "[data-next-patient]": "Jueves 12 de noviembre",
+                            "[data-next-status]": "Asignada",
+                            "[data-portal-next-detail]": "Ver detalle de tu cita del jueves 12 de noviembre"
+                        },
+                        "absent": [
+                            "[data-view-appointment-qr-download][disabled]",
+                            "[data-portal-access][hidden]"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "portal-inicio-vacio",
+            "screen": "portal",
+            "path": "/dashboard",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                390,
+                1440
+            ],
+            "flows": [
+                {
+                    "name": "sin próxima cita",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/portal/appointments/next",
+                            "status": 200,
+                            "body": {
+                                "data": null
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-portal-section=\"next\"]": "Aún no tienes una cita agendada"
+                        },
+                        "visibleAfter": {
+                            "selector": "[data-portal-section=\"next\"] a[href$=\"/contacto\"]",
+                            "ms": 0
+                        },
+                        "absent": [
+                            "[data-view-appointment-qr]:not(.hidden)",
+                            "[data-portal-access=\"change\"]:not([hidden])",
+                            "[data-portal-access=\"\"][hidden]"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "portal-inicio-fallo-qr",
+            "screen": "portal",
+            "path": "/dashboard",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                390,
+                1440
+            ],
+            "flows": [
+                {
+                    "name": "si el QR no carga, la cita sigue a la vista con un aviso",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/qr",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "visibleAfter": {
+                            "selector": "[data-view-appointment-qr-error]",
+                            "ms": 0
+                        },
+                        "announcedOnce": "No pudimos cargar el código QR",
+                        "textIn": {
+                            "[data-next-time]": "10:30",
+                            "[data-next-patient]": "Jueves 12 de noviembre"
+                        },
+                        "absent": [
+                            "[data-portal-access][hidden]"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "portal-inicio-fallo-cita",
+            "screen": "portal",
+            "path": "/dashboard",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                390,
+                1440
+            ],
+            "flows": [
+                {
+                    "name": "si la cita no carga, el aviso queda en su lugar",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/portal/appointments/next",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "visibleAfter": {
+                            "selector": "[data-portal-section=\"next\"] [data-dashboard-state=\"error\"]",
+                            "ms": 0
+                        },
+                        "announcedOnce": "No se pudo cargar esta sección.",
+                        "textIn": {
+                            "[data-portal-section=\"next\"]": "No se pudo cargar esta sección."
+                        },
+                        "absent": [
+                            "[data-portal-access][hidden]",
+                            "[data-view-appointment-qr]:not(.hidden)"
+                        ],
+                        "tabbable": "[data-portal-section=\"next\"] [data-dashboard-retry]"
+                    }
+                },
+                {
+                    "name": "Reintentar",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/portal/appointments/next",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            },
+                            "times": 1
+                        }
+                    ],
+                    "do": [
+                        {
+                            "click": "[data-portal-section=\"next\"] [data-dashboard-retry]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "absent": [
+                            "[data-portal-section=\"next\"] [data-dashboard-state=\"error\"]:not([hidden])"
+                        ],
+                        "textIn": {
+                            "[data-next-time]": "10:30"
+                        },
+                        "focused": "#dashboard-next-title"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "portal-menu",
+            "screen": "portal",
+            "path": "/dashboard",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                390,
+                768
+            ],
+            "steps": [
+                {
+                    "click": "[data-sidebar-toggle]"
+                },
+                {
+                    "waitFor": "[data-sidebar-menu]"
+                }
+            ],
+            "flows": [
+                {
+                    "name": "solo las pantallas del paciente",
+                    "expect": {
+                        "textIn": {
+                            "[data-sidebar-menu]": "Mis citas"
+                        },
+                        "absent": [
+                            "[data-sidebar-menu] a[href*=\"/agenda\"]",
+                            "[data-sidebar-menu] a[href*=\"/pacientes\"]",
+                            "[data-sidebar-menu] a[href*=\"/expedientes\"]",
+                            "[data-sidebar-menu] a[href*=\"/usuarios\"]",
+                            "[data-sidebar-menu] a[href*=\"/contenido\"]",
+                            "[data-sidebar-menu] a[href*=\"/reportes\"]",
+                            "[data-sidebar-menu] a[href*=\"/tratamientos\"]"
+                        ]
+                    }
+                }
+            ]
         },
         {
             "id": "dashboard-menu",

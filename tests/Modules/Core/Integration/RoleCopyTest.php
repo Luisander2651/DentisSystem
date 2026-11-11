@@ -14,6 +14,9 @@ uses(CoreIntegrationTestCase::class);
  * The markup carries three hooks for it: `data-page-badge` on the badge of x-ui.page-hero,
  * `data-role-label="menu"` on the role of the side menu and `data-role-label="inicio"` on the
  * role of the start of the panel. A case waits for the task of ROLE_COPY_PENDING (A61).
+ *
+ * Spec 025 (c3): the start of the patient takes the greeting of the start of the staff, so it
+ * loses the badge and the role as theirs did in spec 020; "Mi cuenta" stays on "Mis citas".
  */
 
 const ROLE_COPY = [
@@ -69,7 +72,7 @@ it('names the role in the badge of the page header', function (string $role, str
 
     expect($texts)->toBe([$badge]);
 })->with([
-    'paciente en su inicio' => ['paciente', '/dashboard'],
+    'paciente en sus citas' => ['paciente', '/mis-citas'],
     'administrador en pacientes' => ['administrador', '/pacientes'],
     'administrador en expedientes' => ['administrador', '/expedientes-clinicos'],
     'asistente en expedientes' => ['asistente', '/expedientes-clinicos'],
@@ -85,24 +88,17 @@ it('shows the role in Spanish in the side menu', function (string $role) {
         ->and(array_unique($texts))->toBe([$label]);
 })->with(array_keys(ROLE_COPY));
 
-it('shows the role in Spanish at the start of the patient', function () {
-    [$actor, , $label] = ROLE_COPY['paciente'];
-
-    $texts = roleCopyTexts($this, 'inicio', $actor, '/dashboard', '//*[@data-role-label="inicio"]');
-
-    expect($texts)->toBe([$label]);
-});
-
 /*
- * Spec 020 (CA11): the start of the staff follows c5. Its header carries neither the badge nor
- * the role next to the greeting; the role stays in the side menu.
+ * Spec 020 (CA11): the start of the staff follows c5, and since spec 025 (c3) the start of the
+ * patient too. Its header carries neither the badge nor the role next to the greeting; the role
+ * stays in the side menu.
  */
-it('leaves the badge and the role out of the start of the staff', function (string $role) {
+it('leaves the badge and the role out of the start', function (string $role) {
     [$actor] = ROLE_COPY[$role];
 
     expect(roleCopyTexts($this, 'badge', $actor, '/dashboard', '//*[@data-page-badge]'))->toBe([])
         ->and(roleCopyTexts($this, 'inicio', $actor, '/dashboard', '//*[@data-role-label="inicio"]'))->toBe([]);
-})->with(['administrador', 'asistente', 'doctor']);
+})->with(array_keys(ROLE_COPY));
 
 it('never shows the internal name of a role', function (string $role) {
     [$actor] = ROLE_COPY[$role];
