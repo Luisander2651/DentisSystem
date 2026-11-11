@@ -151,6 +151,14 @@ it('puts the given actions in place of the staff buttons of the next-appointment
         ->not->toContain('data-dashboard-next-complete');
 });
 
+it('leaves out the row of actions of the next-appointment card when the given actions are empty', function () {
+    $html = normalizedHtml(Blade::render('<x-dashboard.next-appointment><x-slot:actions></x-slot:actions></x-dashboard.next-appointment>'));
+
+    expect($html)->toContain('data-next-card')
+        ->not->toContain('mt-4 flex flex-wrap gap-3')
+        ->not->toContain('data-dashboard-next-detail');
+});
+
 /*
  * Spec 025 (CA3, CA4, design.md → Componentes): the history table of the clinical record, reused
  * by "Mis citas" with its own empty text; without parameters it keeps the texts of the record.
