@@ -22,6 +22,7 @@ function portalAccessRoutes(): array
         'GET /portal/appointments',
         'GET /portal/appointments/next',
         'GET /portal/appointments/{id}/qr',
+        'GET /portal/appointments/{id}/prescriptions',
     ];
 }
 

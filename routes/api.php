@@ -28,6 +28,7 @@ use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\CreatePrescr
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\DeletePrescriptionController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetAppointmentTrackingByAppointmentIdController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetCompletedWithoutTrackingController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetPortalPrescriptionsController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\RegisterAppointmentTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdateAppointmentTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdatePrescriptionController;
@@ -180,6 +181,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             // Before any route with {id}, so "next" is never read as an appointment id.
             Route::get('/appointments/next', GetPortalNextAppointmentController::class);
             Route::get('/appointments/{id}/qr', GetPortalAppointmentQrController::class);
+            Route::get('/appointments/{id}/prescriptions', GetPortalPrescriptionsController::class);
         });
 
         Route::middleware(['auth:sanctum,patient', 'staff'])->group(function (): void {
