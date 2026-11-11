@@ -1339,18 +1339,31 @@
                     "is": "Recomendaciones"
                 },
                 {
-                    "text": "[data-portal-detail-prescriptions-list] > div:last-child > p:first-child",
-                    "is": "Amoxicilina 500 mg — 1 cápsula"
-                },
-                {
-                    "text": "[data-portal-detail-prescriptions-list] > div:last-child > p:nth-child(2)",
-                    "is": "7 días · 3 veces al día"
-                },
-                {
                     "absent": "[data-portal-detail-modal] [data-view-appointment-qr]"
                 },
                 {
                     "absent": "[data-portal-detail-modal] [data-view-appointment-qr-download]"
+                }
+            ],
+            "flows": [
+                {
+                    "name": "recomendaciones y recetas por su texto, sin depender del orden",
+                    "do": [
+                        {
+                            "wait": 500
+                        }
+                    ],
+                    "expect": {
+                        "open": [
+                            "[data-portal-detail-modal]"
+                        ],
+                        "textIn": {
+                            "[data-portal-detail-recommendations-text]": "Usar hilo dental a diario.",
+                            "[data-portal-detail-prescriptions-list]": "Amoxicilina 500 mg — 1 cápsula",
+                            "[data-portal-detail-prescriptions]": "7 días · 3 veces al día",
+                            "[data-portal-detail-modal] [data-dialog-body]": "Tomar con alimentos."
+                        }
+                    }
                 }
             ]
         },
