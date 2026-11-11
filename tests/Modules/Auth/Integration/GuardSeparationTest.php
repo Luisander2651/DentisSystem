@@ -68,3 +68,29 @@ it('answers a patient token on a staff screen with "Sin permiso"', function () {
         ->get('/agenda')
         ->assertForbidden();
 });
+
+/*
+ * Spec 025 (CA16, TM4): a staff account and a patient account that happen to share the same id
+ * still get only what belongs to each, each with its own token. The guards forget their user
+ * between requests (A11), so every request is read from its own token.
+ */
+it('keeps a staff session and a patient session apart even when both accounts share an id', function () {
+    $sharedId = (string) Illuminate\Support\Str::uuid();
+    $staff = $this->createUserWithRole('administrador', ['id' => $sharedId]);
+    $patient = $this->createPatient(['id' => $sharedId]);
+    $staffToken = $staff->createToken('test')->plainTextToken;
+    $patientToken = $patient->createToken('test')->plainTextToken;
+
+    $this->forgetAuthState();
+    $this->withHeader('Authorization', "Bearer {$patientToken}")->getJson('/api/v1/portal/appointments')
+        ->assertOk()->assertExactJson(['data' => []]);
+
+    $this->forgetAuthState();
+    $this->withHeader('Authorization', "Bearer {$patientToken}")->getJson('/api/v1/appointments')->assertForbidden();
+
+    $this->forgetAuthState();
+    $this->withHeader('Authorization', "Bearer {$staffToken}")->getJson('/api/v1/appointments')->assertOk();
+
+    $this->forgetAuthState();
+    $this->withHeader('Authorization', "Bearer {$staffToken}")->getJson('/api/v1/portal/appointments')->assertForbidden();
+});

@@ -68,3 +68,28 @@ it('answers 403 to a patient whose account the clinic deactivated', function (st
         ->assertForbidden()
         ->assertExactJson(['error' => 'Your account is inactive.']);
 })->with(portalAccessRouteDataset());
+
+/*
+ * Spec 025 (CA14, CA15, RS1.a): the portal does not open the routes of the staff to a patient,
+ * active or not, for themselves or for someone else. They keep answering 403, as spec 014 fixed.
+ */
+it('keeps the staff routes closed to a patient, active or not', function (string $route, string $status) {
+    $patient = $this->actingAsPatient(['status' => $status]);
+    $appointment = $this->createAppointment(['patient_id' => $patient->id]);
+
+    $path = '/api/v1'.str_replace(['{patientId}', '{id}'], [$patient->id, $appointment->id], $route);
+
+    $this->getJson($path)->assertForbidden()->assertJsonMissingPath('data');
+})->with([
+    'expediente' => '/patients/{patientId}/record',
+    'pacientes' => '/patients',
+    'paciente' => '/patients/{patientId}',
+    'agenda' => '/agenda/today-appointments',
+    'citas de un paciente' => '/appointments/patient/{patientId}',
+    'detalle de una cita' => '/appointments/{id}',
+    'QR del personal' => '/appointments/{id}/qr',
+    'seguimiento clínico' => '/appointments/{id}/tracking',
+])->with([
+    'activo' => 'active',
+    'inactivo' => 'inactive',
+]);
