@@ -1,6 +1,8 @@
 import { closeDialog, openDialog } from '../../ui/dialog';
 import { stateBadge } from '../../ui/badge';
 import { announceError, failureMessage } from '../../ui/status';
+import { createAppointmentQr, qrFilename } from '../../ui/appointment-qr';
+import { renderPrescriptions } from '../../ui/prescriptions';
 
 (function () {
     if (window.__agendaViewAppointmentInit) {
@@ -24,12 +26,8 @@ import { announceError, failureMessage } from '../../ui/status';
     var editButton = modal.querySelector('[data-view-appointment-edit]');
     var cancelAppointmentButton = modal.querySelector('[data-view-appointment-cancel-appointment]');
     var cancelButtons = modal.querySelectorAll('[data-view-appointment-cancel]');
-    var qrSection = modal.querySelector('[data-view-appointment-qr]');
-    var qrImage = modal.querySelector('[data-view-appointment-qr-image]');
-    var qrError = modal.querySelector('[data-view-appointment-qr-error]');
-    var qrDownload = modal.querySelector('[data-view-appointment-qr-download]');
-    // Spec 024 (D3): the PNG is drawn at this size, on the surface colour, so a phone reads it in a chat.
-    var QR_DOWNLOAD_SIZE = 1024;
+    // Spec 024, shared with the patient portal since spec 025 (resources/js/ui/appointment-qr.js).
+    var qr = createAppointmentQr(modal.querySelector('[data-view-appointment-qr]'));
 
     if (!generalContainer || !clinicalSection || !clinicalBody) {
         return;
@@ -114,42 +112,6 @@ import { announceError, failureMessage } from '../../ui/status';
         container.appendChild(row);
     }
 
-    function renderPrescriptions(container, prescriptions) {
-        container.innerHTML = '';
-
-        if (!prescriptions.length) {
-            var empty = document.createElement('p');
-            empty.className = 'text-sm text-muted';
-            empty.textContent = 'No se registraron prescripciones para esta cita.';
-            container.appendChild(empty);
-            return;
-        }
-
-        prescriptions.forEach(function (prescription) {
-            var card = document.createElement('div');
-            card.className = 'rounded-box border border-line bg-canvas p-3 text-sm';
-
-            var title = document.createElement('p');
-            title.className = 'font-bold text-ink wrap-anywhere';
-            title.textContent = prescription.medication + ' — ' + prescription.dosage;
-            card.appendChild(title);
-
-            var meta = document.createElement('p');
-            meta.className = 'mt-1 text-sm text-muted';
-            meta.textContent = prescription.duration_days + ' días · ' + prescription.daily_frequency + ' veces al día';
-            card.appendChild(meta);
-
-            if (prescription.instructions) {
-                var instructions = document.createElement('p');
-                instructions.className = 'mt-1 text-sm text-ink wrap-anywhere';
-                instructions.textContent = prescription.instructions;
-                card.appendChild(instructions);
-            }
-
-            container.appendChild(card);
-        });
-    }
-
     function renderClinicalRecord(record) {
         clinicalBody.innerHTML = '';
 
@@ -200,99 +162,12 @@ import { announceError, failureMessage } from '../../ui/status';
         return data;
     }
 
-    function resetQr() {
-        if (!qrSection) return;
-
-        qrSection.classList.add('hidden');
-        qrError.classList.add('hidden');
-        qrImage.classList.remove('invisible');
-        qrImage.onload = null;
-        qrImage.onerror = null;
-        qrImage.removeAttribute('src');
-        qrImage.alt = '';
-        qrDownload.disabled = true;
-        qrDownload.removeAttribute('data-view-appointment-qr-filename');
-    }
-
-    // Review of spec 024 (R3): the notice is seen in the place of the code and said once, by the
-    // status region of the page, like the other errors of the detail.
-    function showQrFailure() {
-        qrImage.classList.add('invisible');
-        qrError.classList.remove('hidden');
-        announceError(qrError.textContent.replace(/\s+/g, ' ').trim());
-    }
-
-    // Spec 024 (CA5, CA8, D2, D4): the image comes straight from the API, so the content
-    // security policy stays as it is and the SVG can run nothing. The file name has no patient data.
-    function showQr(opening, appointmentId, date, time) {
-        if (!qrSection) return;
-
-        try {
-            var filename = 'cita-' + String(date || '') + '-' + String(time || '').slice(0, 5).replace(':', '') + '.png';
-
-            qrSection.classList.remove('hidden');
-            qrDownload.setAttribute('data-view-appointment-qr-filename', filename);
-            qrImage.alt = 'Código QR de la cita del ' + formatDate(date);
-            qrImage.onload = function () {
-                if (opening === openingCount) {
-                    qrDownload.disabled = false;
-                }
-            };
-            qrImage.onerror = function () {
-                if (opening === openingCount) {
-                    showQrFailure();
-                }
-            };
-            qrImage.src = '/api/v1/appointments/' + encodeURIComponent(appointmentId) + '/qr';
-        } catch (qrFailure) {
-            showQrFailure();
-        }
-    }
-
-    // Spec 024 (CA6, D3): an SVG does not preview in a chat, so the download is a PNG drawn here
-    // from the image already shown, on a white background (the SVG has none).
-    function downloadQr() {
-        var filename = qrDownload.getAttribute('data-view-appointment-qr-filename');
-
-        if (!filename || !qrImage.complete) return;
-
-        try {
-            var canvas = document.createElement('canvas');
-            canvas.width = QR_DOWNLOAD_SIZE;
-            canvas.height = QR_DOWNLOAD_SIZE;
-            var context = canvas.getContext('2d');
-            context.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-surface').trim();
-            context.fillRect(0, 0, QR_DOWNLOAD_SIZE, QR_DOWNLOAD_SIZE);
-            context.drawImage(qrImage, 0, 0, QR_DOWNLOAD_SIZE, QR_DOWNLOAD_SIZE);
-
-            canvas.toBlob(function (blob) {
-                if (!blob) {
-                    announceError('No pudimos descargar el código QR. Inténtalo de nuevo.');
-                    return;
-                }
-
-                var url = URL.createObjectURL(blob);
-                var link = document.createElement('a');
-                link.href = url;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                setTimeout(function () {
-                    URL.revokeObjectURL(url);
-                }, 0);
-            }, 'image/png');
-        } catch (downloadFailure) {
-            announceError('No pudimos descargar el código QR. Inténtalo de nuevo.');
-        }
-    }
-
     async function open(appointmentId, opener) {
         var opening = ++openingCount;
         activeAppointmentId = appointmentId;
         activeAppointmentSummary = null;
         hideError();
-        resetQr();
+        if (qr) qr.reset();
         generalContainer.innerHTML = '';
         clinicalSection.classList.add('hidden');
         clinicalBody.innerHTML = '';
@@ -339,7 +214,13 @@ import { announceError, failureMessage } from '../../ui/status';
 
             // Spec 024 (CA5, CA7): only an open appointment gets in, so only it shows its QR code.
             if (isOpen) {
-                showQr(opening, appointmentId, appointment.date, appointment.time);
+                if (qr) {
+                    qr.show({
+                        src: '/api/v1/appointments/' + encodeURIComponent(appointmentId) + '/qr',
+                        alt: 'Código QR de la cita del ' + formatDate(appointment.date),
+                        filename: qrFilename(appointment.date, appointment.time),
+                    });
+                }
             }
 
             // Spec 018 (CA3, CA9): the administrator reads every clinical record, the doctor only
@@ -408,14 +289,10 @@ import { announceError, failureMessage } from '../../ui/status';
         }
 
         openingCount++;
-        resetQr();
+        if (qr) qr.reset();
         activeAppointmentId = null;
         activeAppointmentSummary = null;
     });
-
-    if (qrDownload) {
-        qrDownload.addEventListener('click', downloadQr);
-    }
 
     cancelButtons.forEach(function (button) {
         button.addEventListener('click', closeModal);
