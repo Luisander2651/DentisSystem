@@ -50,6 +50,13 @@ Route::middleware(['auth:sanctum,patient'])->group(function () {
 
     Route::get('/dashboard', ShowDashboardPageController::class)->name('dashboard');
 
+    // Spec 025: the patient portal. The data comes from /api/v1/portal, which checks again.
+    Route::middleware('patient')->group(function () {
+        Route::get('/mis-citas', function () {
+            return view('pages.portal.appointments');
+        })->name('portal.appointments');
+    });
+
     Route::middleware('staff:administrador,asistente,doctor')->group(function () {
         Route::get('/expedientes-clinicos', function () {
             return view('pages.records.index');
