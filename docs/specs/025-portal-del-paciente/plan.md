@@ -1,7 +1,7 @@
 ---
 spec: 025-portal-del-paciente
-status: approved
-constitution_version: 1.2.0
+status: draft
+constitution_version: 1.2.1
 created: 2026-11-10
 ---
 
@@ -34,7 +34,7 @@ personal. No hay migraciones ni dependencias nuevas.
 | P3 Capas del módulo | ✅ | Controller invocable → UseCase → Domain Service → repositorio. Los casos de uso no leen `Auth`: piden el paciente a `AuthorizationServiceInterface::currentPatientId()` (D2). AppointmentTracking ya depende de `AppointmentsService` (018); no hay dependencias nuevas entre módulos | manual: `/review` y búsqueda de `use App\\Modules\\*\\Infrastructure` dentro de `Domain/`; test: `AppointmentsArchitectureTest` incluye los archivos nuevos de `Aplication/` |
 | P4 Contrato de API primero | ✅ | Contrato de las cuatro rutas en "Contratos y datos"; ninguna ruta existente cambia su respuesta | test: `PortalAppointmentsTest`, `PortalAppointmentQrTest` y `PortalPrescriptionsTest` fijan cada código HTTP |
 | P5 Autorización en el servidor | ✅ | `auth:sanctum,patient` + `patient` + `currentPatientId()` en el caso de uso + comprobación de pertenencia de la cita. Test de acceso denegado por actor: sin sesión, administrador, asistente, doctor, personal inactivo, paciente inactivo y paciente ajeno | test: `PortalAccessControlTest` (dataset por ruta y actor), `GuardSeparationTest`; manual: `/review` con `shared/security-checklist.md` |
-| P6 Validación con FormRequest | ➖ | Las rutas nuevas no reciben cuerpo ni consulta: solo el id de la cita en la ruta, que valida `AppointmentId` (400, como el QR de la 024). Cualquier parámetro que llegue se ignora (CA13) | test: `PortalAppointmentQrTest` y `PortalPrescriptionsTest` (id no UUID → 400); `PortalAppointmentsTest` (`patient_id` ajeno ignorado) |
+| P6 Validación con FormRequest | ➖ | Las rutas nuevas no reciben cuerpo ni consulta: solo el id de la cita en la ruta, que valida `AppointmentId` y responde 400, como permite P6 desde la versión 1.2.1 (`/analyze 025` A1). Cualquier parámetro que llegue se ignora (CA13) | test: `PortalAppointmentQrTest` y `PortalPrescriptionsTest` (id no UUID → 400); `PortalAppointmentsTest` (`patient_id` ajeno ignorado) |
 | P7 Errores sin detalles internos | ✅ | 500 con `UnexpectedErrorResponse`; 400, 404 y 409 con textos fijos sin datos del paciente | test: `PortalUnexpectedErrorTest` (repositorio y generador que fallan → `{"error": "Internal server error"}`); `grep -rn "getMessage()"` en los controladores nuevos |
 | P8 Secretos fuera del repositorio | ➖ | Sin configuración secreta ni variables nuevas; `config/auth.php` no lee `env()` nuevos | — |
 | P9 Migraciones reversibles | ➖ | Sin migraciones | — |
@@ -54,14 +54,14 @@ personal. No hay migraciones ni dependencias nuevas.
 | Core · Http | `ShowDashboardPageController`: un paciente inactivo recibe 403, como el personal inactivo | Bajo |
 | `bootstrap/app.php` | Alias `patient` y `no-store` | Bajo |
 | Rutas | `routes/api.php` y `routes/web.php`: `auth:sanctum` → `auth:sanctum,patient` en todos los grupos (los middlewares `staff` y `only.admin` siguen rechazando al paciente con 403). Grupo nuevo `portal` (`auth:sanctum,patient`, `patient`, `no-store`) con las cuatro rutas. Web: `/mis-citas` (`auth:sanctum,patient` + `patient`), nombre `portal.appointments` | Medio: `GuestRedirectTest` busca la cadena `auth:sanctum` y hay que ajustarlo |
-| Vistas que leen el guard | `layouts/admin.blade.php` y `layouts/error.blade.php` usan `auth('sanctum')`: pasan a reconocer también al paciente (guard `patient`), para que su menú y su "camino de vuelta" no cambien | Medio: lo cubren las pruebas de páginas de error y `PortalPagesTest` |
+| Vistas que leen el guard | `layouts/error.blade.php` usa `auth('sanctum')` para el "camino de vuelta" de las páginas de error: pasa a reconocer también al paciente (guard `patient`). Va en la misma tarea que el cambio de guards, para que `NotFoundPageTest` y `WebAccessDeniedPagesTest` sigan en verde. `layouts/admin.blade.php` no cambia: el paciente nunca lo pinta (`/analyze 025` A2, A15) | Medio: lo cubren `NotFoundPageTest` y `WebAccessDeniedPagesTest` |
 | Appointments · Aplication | `UseCases/GetPatientAppointmentsUseCase` (todas las citas del paciente, de la más reciente a la más antigua), `GetPatientNextAppointmentUseCase` (la asignada o reprogramada más cercana desde hoy; recibe la fecha de hoy en su DTO), `GetPatientAppointmentQrUseCase` (cita propia y abierta). DTOs `final readonly` con `::create()`. Reutilizan `AppointmentsService` y `QrCodeGeneratorInterface`; sin cambios en el repositorio | Bajo |
 | Appointments · Infrastructure | Controladores invocables `final`: `GetPortalAppointmentsController`, `GetPortalNextAppointmentController`, `GetPortalAppointmentQrController`. Recurso `PortalAppointmentResource` | Bajo |
 | AppointmentTracking · Application | `UseCases/GetPatientPrescriptionsUseCase`: cita propia; si está completada y tiene seguimiento, sus recomendaciones y recetas; en cualquier otro caso, vacío | Bajo |
 | AppointmentTracking · Infrastructure | `GetPortalPrescriptionsController`; recursos `PortalPrescriptionsResource` y `PortalPrescriptionResource` | Bajo |
 | Interfaz · piezas compartidas | Componente nuevo `components/appointments/qr-block.blade.php`, extraído tal cual de `calendar/view-appointment-modal` (que pasa a usarlo). JS: `resources/js/ui/appointment-qr.js` (mostrar, aviso de fallo y descarga en PNG), `resources/js/ui/prescriptions.js` y `resources/js/ui/appointments-history.js`, extraídos de `agenda/view-appointment.js` y `records/index.js`, que pasan a importarlos. `records/appointments-history-table` admite `title` y `empty-text` (por defecto, los actuales). `dashboard/next-appointment` admite un slot `actions` (por defecto, los botones actuales) | **Medio**: el detalle lo comparten agenda, inicio y expediente; sus entradas de `test:ui` no deben cambiar |
-| Interfaz · portal | `pages/dashboard.blade.php` (rama del paciente según c3), `pages/portal/appointments.blade.php` (`x-ui.page-hero` + historial), `components/portal/appointment-detail-modal.blade.php` (`x-ui.dialog`). JS `resources/js/pages/portal/home.js`, `appointments.js` y `appointment-detail.js`, registrados en `vite.config.js`. `x-ui.sidebar`: el rol `paciente` ofrece "Inicio" y "Mis citas". `noindex` en las dos pantallas (D8) | Medio |
-| Pruebas de navegador | `tests/Browser/screens.json`: entradas del portal. `UiAuditSeeder`: la cuenta `paciente` con una cita asignada futura, una reprogramada, una completada con recetas, una completada sin seguimiento y una cancelada; `paciente.vacio` ya existe | Bajo |
+| Interfaz · portal | `pages/dashboard.blade.php` (rama del paciente según c3: el saludo del tablero sustituye a `x-ui.page-hero`, así que el inicio deja la insignia "Mi cuenta", el rol "Paciente" y la inicial; `RoleCopyTest` y `DashboardScreenTest` se ajustan, spec → Decisiones 2026-11-10), `pages/portal/appointments.blade.php` (`x-ui.page-hero` + historial), `components/portal/appointment-detail-modal.blade.php` (`x-ui.dialog`). JS `resources/js/pages/portal/home.js`, `appointments.js` y `appointment-detail.js`, registrados en `vite.config.js`. `x-ui.sidebar`: el rol `paciente` ofrece "Inicio" y "Mis citas". `noindex` en las dos pantallas (D8) | Medio |
+| Pruebas de navegador | `tests/Browser/checks-screens.mjs` (o el `checks-*.mjs` que corresponda): comprobaciones nuevas para entradas de pantalla: elementos dentro de la primera pantalla, tamaño mínimo de una imagen y CLS máximo, declaradas en `screens.json` (`/analyze 025` A5). `tests/Browser/screens.json`: entradas del portal. `UiAuditSeeder`: la cuenta `paciente` con una cita asignada futura, una reprogramada, una completada con recetas, una completada sin seguimiento y una cancelada; `paciente.vacio` ya existe | Bajo |
 | Tests de apoyo | `tests/Support/ActingAsPatient`: `actingAs($patient, 'patient')`; ayudante para pedir con un token real | Medio: lo usan los tests de acceso existentes |
 | Docs | `docs/architecture.md`, `docs/security.md` (RS1.b y RS1.c, superficie de ataque), `docs/observability.md`, `docs/seo.md`, `docs/design/system.md` (bloque del QR como componente), `AGENTS.md` (el portal ya tiene pantallas), `CHANGELOG.md` | Bajo |
 
@@ -128,13 +128,12 @@ Los datos generales del detalle salen de la lista ya cargada (D4); el diálogo s
 o el QR. Accesibilidad: un `h1` por pantalla, el diálogo se abre con `resources/js/ui/dialog.js`
 (foco dentro y de vuelta al botón que lo abrió), avisos por `resources/js/ui/status.js`, controles
 de al menos 44 px, texto alternativo del QR "Código QR de acceso de tu cita del <fecha>" y cada
-botón "Ver" con el nombre de su cita para lectores de pantalla. Revisar con el plugin `design`
-(`design:design-handoff`) antes de `/implement`.
+botón "Ver" con el nombre de su cita para lectores de pantalla.
 
 ### Qué ve cada rol
 | Actor | `/dashboard` | `/mis-citas` | Menú | API `/portal/*` |
 |---|---|---|---|---|
-| Paciente activo | Su inicio (c3) | Su historial | "Inicio", "Mis citas" y "Cerrar sesión"; nada del personal | 200 |
+| Paciente activo | Su inicio (c3: saludo, sin insignia ni rol en el encabezado) | Su historial | "Inicio", "Mis citas" y "Cerrar sesión"; nada del personal | 200 |
 | Paciente inactivo con sesión | "Sin permiso" (403) | "Sin permiso" (403) | — | 403 |
 | Personal activo | Su tablero, sin cambios | "Sin permiso" (403) | Sin "Mis citas" | 403 |
 | Personal inactivo | "Sin permiso", como hoy | "Sin permiso" (403) | — | 403 |
@@ -170,7 +169,8 @@ seguimiento del personal) → 403 (CA14, CA15).
   próxima; asignada ayer (16/09) → no; completada o cancelada hoy → no; hoy 16:00 y mañana 09:00 →
   la de hoy; reprogramada mañana y asignada pasado mañana → la de mañana; sin ninguna → `null`.
 - Campos: exactamente los seis de `PortalAppointment`.
-- Cabecera `Cache-Control: private, no-store` en 200, 401, 403 y 404.
+- Cabecera `Cache-Control: private, no-store` en 200, 401 (sin sesión), 403 (personal y paciente
+  inactivo) y 404, con peticiones reales a las rutas del portal (no basta el test del middleware).
 
 **QR** (`PortalAppointmentQrTest.php`): cita propia asignada y reprogramada → 200 y el SVG
 decodificado (`DecodesQrSvg`) es el id; completada y cancelada → 409 sin SVG (CA18); ajena → 404
@@ -204,8 +204,9 @@ con "Sin permiso" en ambas; personal → `/mis-citas` 403; sin sesión → `/log
 (`GuestRedirectTest`, ajustado). `sitemap.xml` no lista `/mis-citas`.
 
 **Navegador** (`npm run test:ui`, entradas nuevas en `screens.json`, a 390, 768 y 1440 px):
-`portal-inicio` (fecha, hora, QR de 240 × 240 px y "Descargar QR" en la primera pantalla, sin
-salto al cargar: K1, K6), `portal-inicio-vacio` (K2), `portal-inicio-fallo-qr` y
+`portal-inicio` (fecha, hora, QR de al menos 240 × 240 px y "Descargar QR" dentro de la primera
+pantalla y CLS ≤ 0.1, con las comprobaciones nuevas del arnés, que deben fallar si el QR queda
+fuera de la primera pantalla o la tarjeta salta al cargar: K1, K6), `portal-inicio-vacio` (K2), `portal-inicio-fallo-qr` y
 `portal-inicio-fallo-cita` (CA9, con la respuesta simulada), `portal-mis-citas` (K3),
 `portal-mis-citas-vacio` (K2), `portal-detalle-abierta` (QR y descarga), `portal-detalle-completada`
 (recetas), `portal-detalle-sin-recetas`, `portal-detalle-cancelada` (K4), `portal-detalle-fallo`
@@ -321,14 +322,16 @@ un teléfono el QR de la pantalla y el PNG descargado.
   lo demás en Appointments, cada lectura en el módulo dueño del dato.
 - **D4** No hay ruta de "detalle de cita" del portal: los datos generales ya vienen en la lista y
   en la próxima cita, y el diálogo solo pide recetas o QR. Así el fallo de una parte no tumba el
-  resto (CA9) y hay menos superficie. CA11 y CA12 se prueban en las cuatro rutas que existen.
+  resto (CA9) y hay menos superficie. CA11 y CA12 se prueban en las cuatro rutas que existen (spec → Decisiones del 2026-11-10).
 - **D5** Id no UUID → 400 (como el QR de la 024); cita ajena o inexistente → 404 con el mismo
   cuerpo; QR de cita cerrada → 409.
 - **D6** La "próxima cita" y el orden se calculan en el caso de uso sobre las citas del paciente
   que ya devuelve el repositorio, sin tocar su interfaz. La fecha de hoy llega en el DTO desde el
   controlador, como en el tablero.
-- **D7** `Cache-Control: private, no-store` con un middleware de grupo, para que también lo lleven
-  los errores.
+- **D7** Toda respuesta del grupo `portal` lleva `Cache-Control: private, no-store`, también el 401
+  de `auth` y los 403 de `patient`. Laravel ejecuta la autenticación antes que los middlewares de
+  ruta sin prioridad, así que el mecanismo debe cubrir esas respuestas (`/analyze 025` A7); lo
+  comprueban peticiones reales sin sesión, de personal y de paciente inactivo.
 - **D8** `noindex` en las dos pantallas del portal con una etiqueta `meta`, mediante un `@stack` en
   la cabecera de `layouts/dashboard` que solo usan las vistas del portal. El resto del panel no
   cambia.
@@ -370,9 +373,9 @@ un teléfono el QR de la pantalla y el PNG descargado.
   entradas de `test:ui` deben pasar sin tocar sus expectativas.
 - **R4** El QR sigue siendo una credencial al portador (TM12; R1 de la 024). Ahora el paciente
   puede descargarlo y reenviarlo. Aceptado para la maqueta; se revisa antes de cargar datos reales.
-- **R5** Vistas que leen `auth('sanctum')` (`layouts/admin`, `layouts/error`): con el provider
-  fijo dejarían de ver al paciente. Mitigación: se ajustan en la misma tarea de los guards y lo
-  cubren `PortalPagesTest` y las pruebas de páginas de error.
+- **R5** `layouts/error` lee `auth('sanctum')`: con el provider fijo dejaría de ver al paciente y
+  sus páginas 404 y 403 perderían el camino de vuelta. Mitigación: se ajusta en la misma tarea de
+  los guards y lo cubren `NotFoundPageTest` y `WebAccessDeniedPagesTest`.
 - **R6** Correcciones de control de acceso: RS1.b y RS1.c quedan dentro de esta spec; RS1.a y
   RS1.d ya están mitigadas (v0.1.0, spec 014). El estado de cada una lo actualiza `/release`.
 - **R7** P14: sin registro de auditoría, las lecturas de recetas por el paciente no dejan rastro
@@ -383,3 +386,4 @@ un teléfono el QR de la pantalla y el PNG descargado.
 |---|---|---|
 | 2026-11-10 | Creación en `draft`; P14 pendiente de aceptación del usuario | /plan 025 |
 | 2026-11-10 | Aprobado, con P14 ❌ aceptado | Aprobación del usuario |
+| 2026-11-10 | Correcciones de `/analyze` ronda 1 (A1, A2, A3, A5, A7, A9, A15, A18): P6 según la constitución 1.2.1, `layouts/error` con el cambio de guards, inicio de c3 con los tests de 016 y 020, arnés de navegador para K1 y K6, `no-store` también en 401 y 403 | Decisiones del usuario |

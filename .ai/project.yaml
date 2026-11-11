@@ -12,7 +12,7 @@ stack:
   database: "PostgreSQL 16 (Eloquent); Redis 7 (tokens de reset)"
   package_manager: "composer + npm"
 packages: []
-constitution_version: 1.2.0
+constitution_version: 1.2.1
 workflow:
   enforcement: warn            # off | warn (pide aprobación) | block — lo aplica el hook del plugin
   # Flujo AI-DLC previo en pausa: reglas en AIDLC.md, estado en aidlc-docs/aidlc-state.md

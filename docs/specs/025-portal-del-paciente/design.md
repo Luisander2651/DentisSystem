@@ -129,7 +129,7 @@ Ninguno.
 | Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
 |---|---|---|---|---|
 | 2026-11-09 | diseño | ¿Ciclo de candidatos o `exploration: none`? | Ciclo completo; el plan se hace con lo que resulte. Sustituye a la decisión del 2026-11-08 de omitir `/design-spec` | usuario |
-| 2026-11-09 | contradicción | K5 (menú del paciente) hacía fallar `G-sin-js` a 390 px: el menú móvil se abre con un botón y sin JavaScript no se ve | K5 sale de `criterios*.json`; CA10 lo verifica su tarea en `/implement` (test del menú y `npm run test:ui`) | agente |
+| 2026-11-09 | contradicción | K5 (menú del paciente) hacía fallar `G-sin-js` a 390 px: el menú móvil se abre con un botón y sin JavaScript no se ve | K5 sale de `criterios*.json`; CA10 lo verifica su tarea en `/implement` (test del menú y `npm run test:ui`) | usuario (confirmado el 2026-11-10, `/analyze 025` A6) |
 | 2026-11-09 | supuesto | K1 pide el QR completo en la primera pantalla y `evaluate.mjs` no mide imágenes | Se mide con el texto que va justo debajo del QR ("Muestra este código en la recepción") y con "Descargar QR": si ambos están a la vista, el QR también | agente |
 | 2026-11-09 | supuesto | Estados que no caben en una página (historial vacío, detalle de una cita abierta o cancelada, cita sin recetas) | Sin candidato propio: usan las mismas piezas y los literales de la spec; se verifican en `/implement` | agente |
 | 2026-11-09 | diseño | Nombre del historial en el menú | "Mis citas" | agente (c2) |

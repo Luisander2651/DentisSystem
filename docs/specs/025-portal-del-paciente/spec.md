@@ -3,7 +3,7 @@ id: 025
 slug: portal-del-paciente
 status: approved
 created: 2026-11-08
-extends: [001, 009, 024]
+extends: [001, 009, 016, 020, 024]
 ---
 
 # 025 · Portal del paciente
@@ -61,10 +61,10 @@ Portal (paciente activo con sesión):
   (agenda, pacientes, expedientes, usuarios, contenido, reportes).
 
 Seguridad:
-- [ ] CA11 · (abuso) Sin sesión, pido las citas, el detalle de una cita, las recetas o el QR de un
+- [ ] CA11 · (abuso) Sin sesión, pido las citas, la próxima cita, las recetas o el QR de un
   paciente (con su identificador o el de la cita) → se rechaza como no autenticado (401) y no
   recibo ningún dato; si abro el portal en el navegador, me lleva al inicio de sesión.
-- [ ] CA12 · (abuso) Como paciente con sesión, pido el detalle, las recetas o el QR de una cita de
+- [ ] CA12 · (abuso) Como paciente con sesión, pido las recetas o el QR de una cita de
   otro paciente indicando su identificador → recibo la misma respuesta que para una cita que no
   existe (no encontrada, 404), sin ningún dato de la cita ni indicio de que existe.
 - [ ] CA13 · (abuso) Como paciente con sesión, envío el identificador de otro paciente en la
@@ -137,7 +137,7 @@ Seguridad:
 | RS1.a — Restringir las rutas de pacientes, subrecursos, expediente y citas a staff | fuera | Ya mitigada (v0.1.0, spec 014); esta spec la conserva (CA14) → sin cambio |
 | RS1.b — Comprobar la propiedad del recurso | dentro | CA12, CA13, CA15, CA18 |
 | RS1.c — Fijar el provider del guard `sanctum` (una sesión de un tipo de cuenta no vale como la del otro) | dentro | CA16 |
-| RS1.d — Añadir tests de acceso denegado | dentro | CA11–CA16, CA18 (cada actor no autorizado con su test en las rutas nuevas) |
+| RS1.d — Añadir tests de acceso denegado | fuera | Ya mitigada (v0.1.0, spec 014); las rutas nuevas suman sus tests de acceso denegado por actor (CA11–CA16, CA18) como refuerzo → sin cambio |
 
 ## Auditoría
 Esta spec no emite eventos de auditoría: el registro de auditoría aún no existe (objetivo 5 del
@@ -217,6 +217,8 @@ Ninguna.
 | 2026-11-08 | supuesto | Estado vacío de la próxima cita | "Aún no tienes una cita agendada" con enlace a `/contacto`, en lugar del texto actual "Te avisaremos cuando haya disponibilidad" (promete algo que no ocurre) | agente |
 | 2026-11-09 | diseño | ¿Se hace el ciclo de `/design-spec`? | Sí, ciclo completo (sustituye a la decisión del 2026-11-08 de omitirlo): el ciclo aceptó c2 (82/100). K5 se verifica en `/implement` | usuario; [design.md](design.md) |
 | 2026-11-09 | diseño | c2 no reutiliza los componentes existentes | Se descarta c2 y se acepta c3, hecho solo con componentes existentes y sin rúbrica: la cita y su QR juntos en el inicio con la tarjeta de próxima cita y el bloque del QR de la 024 | usuario; [design.md](design.md) |
+| 2026-11-10 | contradicción | El inicio de c3 usa el saludo del tablero y deja fuera la insignia "Mi cuenta", el rol "Paciente" y la inicial que fijan 016 (CA30, `RoleCopyTest`) y 020 (A16, `DashboardScreenTest`) | Se queda el inicio de c3: la 025 extiende 016 y 020 y sus tests se ajustan; el rol del paciente sigue en el menú lateral (`/analyze 025` A3) | usuario |
+| 2026-11-10 | diseño | ¿Hay una petición de "detalle de una cita" en el portal? | No: el detalle se compone con los datos de la lista y las peticiones de recetas y de QR, así que CA11 y CA12 hablan de esas peticiones (plan D4; `/analyze 025` A9) | usuario |
 
 ## Notas para /plan
 - Reutilizar la rama del paciente de `resources/views/pages/dashboard.blade.php` (hoy un marcador),
@@ -239,3 +241,4 @@ Ninguna.
 |---|---|---|
 | 2026-11-08 | Creada en `draft` | /specify |
 | 2026-11-08 | Aprobada | Aprobación del usuario |
+| 2026-11-10 | Extiende 016 y 020; CA11 y CA12 sin "detalle"; RS1.d fuera (ya mitigada) | `/analyze 025` (A3, A9, A17), aprobado por el usuario |
