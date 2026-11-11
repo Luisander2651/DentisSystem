@@ -86,12 +86,20 @@ import { announceError } from '../../ui/status';
             return;
         }
 
-        // As on the start (R7): the focus waits on the title while the list loads again.
+        // As on the start (R7): the focus waits on the title while the list loads again and goes
+        // to the new "Reintentar" if it fails again.
         const title = root.querySelector('h1');
         title.setAttribute('tabindex', '-1');
         title.focus();
         show('loading');
-        load();
+
+        load().then(() => {
+            const again = status.querySelector('[data-dashboard-state="error"]:not([hidden]) [data-dashboard-retry]');
+
+            if (again && (document.activeElement === title || document.activeElement === document.body)) {
+                again.focus();
+            }
+        });
     });
 
     load();

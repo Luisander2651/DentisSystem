@@ -1176,6 +1176,34 @@
                         },
                         "focused": "h1"
                     }
+                },
+                {
+                    "name": "Reintentar falla otra vez",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/portal/appointments",
+                            "status": 500,
+                            "body": {
+                                "error": "Internal server error"
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "click": "[data-portal-history-status] [data-dashboard-retry]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "visibleAfter": {
+                            "selector": "[data-portal-history-status] [data-dashboard-state=\"error\"]",
+                            "ms": 0
+                        },
+                        "focused": "[data-portal-history-status] [data-dashboard-retry]"
+                    }
                 }
             ]
         },
