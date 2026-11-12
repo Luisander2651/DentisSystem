@@ -1,0 +1,93 @@
+{
+  "mode": "operar",
+  "widths": [
+    390,
+    768,
+    1440
+  ],
+  "threshold": 80,
+  "floor": 3,
+  "budget": 5,
+  "tokens": {
+    "colors": [
+      "#d75078",
+      "#dc6588",
+      "#fbe9ee",
+      "#f2b0a6",
+      "#0b1120",
+      "#556274",
+      "#f8fafc",
+      "#ffffff",
+      "#e2e8f0",
+      "#7c8aa0",
+      "#b91c1c",
+      "#fef2f2",
+      "#047857",
+      "#ecfdf5",
+      "#b45309",
+      "#fffbeb",
+      "#1d4ed8",
+      "#eff6ff",
+      "#25d366"
+    ]
+  },
+  "gates": {
+    "contrast": 4.5,
+    "touch": 44,
+    "external_hosts": []
+  },
+  "rubric": {
+    "weights": {
+      "jerarquia": 25,
+      "primera_pantalla": 25,
+      "sistema": 20,
+      "lectura": 15,
+      "plantilla": 15
+    }
+  },
+  "spec": "025-portal-del-paciente",
+  "role": "paciente",
+  "screen": "mis-citas",
+  "kpis": [
+    {
+      "id": "K3",
+      "name": "Historial con sus estados",
+      "type": "visible",
+      "texts": [
+        "Mis citas",
+        "Asignada",
+        "Reprogramada",
+        "Completada",
+        "Cancelada",
+        "Ver"
+      ],
+      "ca": "CA3"
+    },
+    {
+      "id": "K3b",
+      "name": "De la más reciente a la más antigua",
+      "type": "order",
+      "texts": [
+        "26/11/2026",
+        "12/11/2026",
+        "20/10/2026",
+        "14/09/2026"
+      ],
+      "ca": "CA3"
+    },
+    {
+      "id": "K6",
+      "name": "Estabilidad visual",
+      "type": "max_cls",
+      "value": 0.1,
+      "ca": "CA1, CA9"
+    },
+    {
+      "id": "K7",
+      "name": "Títulos en dos líneas como máximo",
+      "type": "max_heading_lines",
+      "value": 2,
+      "ca": "operar"
+    }
+  ]
+}

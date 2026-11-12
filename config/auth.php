@@ -1,5 +1,8 @@
 <?php
 
+use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel;
+use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
+
 return [
 
     /*
@@ -44,6 +47,16 @@ return [
             'driver' => 'sanctum',
             'provider' => 'users',
         ],
+        // Spec 025 (RS1.c): each kind of account has its own token guard, so a patient token is
+        // never taken for a staff session nor the other way round.
+        'sanctum' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
+        'patient' => [
+            'driver' => 'sanctum',
+            'provider' => 'patients',
+        ],
     ],
 
     /*
@@ -66,11 +79,11 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel::class),
+            'model' => env('AUTH_MODEL', UserModel::class),
         ],
         'patients' => [
             'driver' => 'eloquent',
-            'model' => App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel::class,
+            'model' => PatientModel::class,
         ],
 
         // 'users' => [

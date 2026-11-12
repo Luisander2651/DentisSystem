@@ -2,14 +2,17 @@
 
 use App\Core\Authorization\Exceptions\AuthorizationException;
 use App\Core\Http\UnexpectedErrorResponse;
+use App\Core\Middlewares\EnsureActivePatient;
 use App\Core\Middlewares\EnsureActiveStaff;
 use App\Core\Middlewares\EnsureServiceKey;
 use App\Core\Middlewares\InjectSanctumTokenFromCookie;
+use App\Core\Middlewares\NoStoreResponse;
 use App\Core\Middlewares\OnlyAdmin;
 use App\Core\Middlewares\SecurityHeaders;
 use App\Core\Middlewares\TrustCloudflareProxies;
 use App\Core\Middlewares\UiAuditClock;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -66,7 +69,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'only.admin' => OnlyAdmin::class,
             'staff' => EnsureActiveStaff::class,
             'service.key' => EnsureServiceKey::class,
+            'patient' => EnsureActivePatient::class,
+            'no-store' => NoStoreResponse::class,
         ]);
+
+        // Spec 025 (A7): the 401 of the authentication and the 403 of `patient` must also say
+        // no-store, so the header is set outside them.
+        $middleware->prependToPriorityList(before: AuthenticatesRequests::class, prepend: NoStoreResponse::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Spec 014: safety net for the API, for whatever no controller caught.

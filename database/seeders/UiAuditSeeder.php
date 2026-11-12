@@ -67,6 +67,12 @@ final class UiAuditSeeder extends Seeder
     public const APPOINTMENTS_MONTH = '2026-07';
 
     /**
+     * Spec 025: the month of the two open appointments of the patient that the portal shows,
+     * after the clock of the audit (2026-09-17) and away from the months the other screens count.
+     */
+    public const PORTAL_MONTH = '2026-11';
+
+    /**
      * Spec 020 (D16): the day the dashboard of the browser test opens on, at 11:40, in a month
      * no other entry looks at.
      */
@@ -109,6 +115,7 @@ final class UiAuditSeeder extends Seeder
         $this->seedPatient(self::EMPTY_PATIENT_EMAIL, 'Pedro', 'Prueba');
         $treatments = $this->seedTreatments();
         $this->seedAppointments($patient, $staff['doctor'], $treatments);
+        $this->seedPortalAppointments($patient, $staff['doctor'], $treatments);
         $otherDoctor = $this->seedOtherDoctor();
         $this->seedOtherDoctorAppointments($patient, $otherDoctor, $treatments);
         $this->seedDashboard(['doctor' => $staff['doctor'], 'otro' => $otherDoctor], $treatments);
@@ -314,6 +321,39 @@ final class UiAuditSeeder extends Seeder
             'daily_frequency' => 2,
             'instructions' => 'Tomar después de los alimentos.',
             'appointment_tracking_id' => $tracking->id,
+        ]);
+    }
+
+    /**
+     * Spec 025: the patient portal needs a next appointment and a later one, both open, and a
+     * completed appointment with two prescriptions (the first one comes from seedAppointments).
+     */
+    private function seedPortalAppointments(PatientModel $patient, UserModel $doctor, array $treatments): void
+    {
+        $appointments = [
+            ['12', '10:30:00', 'asignada', 0],
+            ['26', '12:00:00', 'reprogramada', 2],
+        ];
+
+        foreach ($appointments as $index => [$day, $time, $status, $treatment]) {
+            AppointmentModel::query()->updateOrCreate(['id' => self::stableId('portal-appointment', $index)], [
+                'date' => self::PORTAL_MONTH.'-'.$day,
+                'time' => $time,
+                'whatsapp_reminder' => false,
+                'status' => $status,
+                'treatment_id' => $treatments[$treatment]->id,
+                'user_id' => $doctor->id,
+                'patient_id' => $patient->id,
+            ]);
+        }
+
+        AppointmentTrackingPrescriptionModel::query()->updateOrCreate(['id' => self::stableId('prescription', 1)], [
+            'medication' => 'Amoxicilina 500 mg',
+            'dosage' => '1 cápsula',
+            'duration_days' => 7,
+            'daily_frequency' => 3,
+            'instructions' => 'Tomar con alimentos.',
+            'appointment_tracking_id' => self::stableId('tracking', 0),
         ]);
     }
 

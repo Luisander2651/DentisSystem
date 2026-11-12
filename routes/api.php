@@ -12,6 +12,9 @@ use App\Modules\Appointments\Infrastructure\Http\Controllers\GetDoctorsForAppoin
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetInternalAppointmentByIdController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetInternalTodayAppointmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPatientsForAppointmentSelectController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPortalAppointmentQrController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPortalAppointmentsController;
+use App\Modules\Appointments\Infrastructure\Http\Controllers\GetPortalNextAppointmentController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodayAppointmentsController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTodaySummaryController;
 use App\Modules\Appointments\Infrastructure\Http\Controllers\GetTreatmentByIdController;
@@ -25,6 +28,7 @@ use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\CreatePrescr
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\DeletePrescriptionController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetAppointmentTrackingByAppointmentIdController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetCompletedWithoutTrackingController;
+use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\GetPortalPrescriptionsController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\RegisterAppointmentTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdateAppointmentTrackingController;
 use App\Modules\AppointmentTracking\Infrastructure\Http\Controllers\UpdatePrescriptionController;
@@ -97,17 +101,17 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             Route::post('/login', LoginController::class);
             Route::post('/mobile/login', MobileLoginController::class);
             Route::post('/register', RegisterController::class);
-            Route::middleware('auth:sanctum')->group(function (): void {
+            Route::middleware('auth:sanctum,patient')->group(function (): void {
                 Route::post('/logout', LogoutController::class);
             });
-            Route::middleware(['auth:sanctum', 'only.admin'])->group(function (): void {
+            Route::middleware(['auth:sanctum,patient', 'only.admin'])->group(function (): void {
                 Route::get('/me', GetAuthenticatedUserController::class);
             });
             Route::post('/send-reset-password-email', SendResetPasswordEmailController::class);
             Route::post('/reset-password', ResetPasswordController::class);
         });
 
-        Route::middleware(['auth:sanctum', 'only.admin'])->group(function (): void {
+        Route::middleware(['auth:sanctum,patient', 'only.admin'])->group(function (): void {
             Route::prefix('users')->group(function (): void {
                 Route::post('/', RegisterUserController::class);
                 Route::put('/{id}', UpdateUserController::class);
@@ -170,7 +174,17 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
             });
         });
 
-        Route::middleware(['auth:sanctum', 'staff'])->group(function (): void {
+        // Spec 025: the patient portal. The patient comes from the session; no-store keeps every
+        // answer, 401 and 403 included, out of browser and proxy caches.
+        Route::middleware(['auth:sanctum,patient', 'patient', 'no-store'])->prefix('portal')->group(function (): void {
+            Route::get('/appointments', GetPortalAppointmentsController::class);
+            // Before any route with {id}, so "next" is never read as an appointment id.
+            Route::get('/appointments/next', GetPortalNextAppointmentController::class);
+            Route::get('/appointments/{id}/qr', GetPortalAppointmentQrController::class);
+            Route::get('/appointments/{id}/prescriptions', GetPortalPrescriptionsController::class);
+        });
+
+        Route::middleware(['auth:sanctum,patient', 'staff'])->group(function (): void {
             Route::prefix('agenda')->group(function (): void {
                 Route::get('/patients', GetPatientsForAppointmentSelectController::class);
                 Route::get('/doctors', GetDoctorsForAppointmentSelectController::class);

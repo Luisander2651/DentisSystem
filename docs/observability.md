@@ -90,6 +90,15 @@ usuario (indicado en cada caso).
   del QR de una cita (credencial de acceso) en `GetAppointmentQrUseCase`, con actor, cita y
   resultado; los accesos denegados a `GET /api/v1/appointments/{id}/qr` en `EnsureActiveStaff` y en el
   render de `AuthorizationException`. Hoy no se registran (OB1.a pendiente).
+- Spec 025 (portal del paciente): ningún log nuevo; sus errores inesperados quedan en el
+  `unexpected_error` de `UnexpectedErrorResponse`, sin datos del paciente. Puntos de emisión para el
+  objetivo 5 (P14 ❌ aceptado): la lectura de recomendaciones y recetas por el paciente (datos de
+  salud) en `GetPatientPrescriptionsUseCase`, con actor, cita y resultado; la obtención del QR de una
+  cita propia (credencial de acceso) en `GetPatientAppointmentQrUseCase`; los accesos denegados en
+  `EnsureActivePatient` (staff o paciente desactivado en el portal), en `EnsureActiveStaff` (paciente
+  en las rutas del personal), el 404 por cita ajena y el 409 del QR de una cita cerrada. Hoy no se
+  registran (OB1.a pendiente). Tras el deploy: sin 500 en `/api/v1/portal/*` y sin un aumento de 401
+  en el resto de la API (señal de un fallo en los guards).
 
 ## Correlación
 - Identificador por petición: cabecera `X-Request-Id` (propuesta); se acepta del cliente si es

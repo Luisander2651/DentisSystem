@@ -19,4 +19,11 @@ interface AuthorizationServiceInterface
      * resource. Throws when there is no staff actor.
      */
     public function currentActorId(): string;
+
+    /**
+     * Spec 025 (D2): the id of the active patient acting, taken from the session and never from
+     * the request. It is the first call of every portal use case, as assertCan() is for staff.
+     * Throws when the actor is not an active patient.
+     */
+    public function currentPatientId(): string;
 }

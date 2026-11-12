@@ -43,12 +43,19 @@ Route::get('/reset-password', function () {
     return view('pages.auth.reset-password');
 })->name('password.reset');
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum,patient'])->group(function () {
     Route::get('/logout', function () {
         return view('pages.auth.logout');
     })->name('logout.page');
 
     Route::get('/dashboard', ShowDashboardPageController::class)->name('dashboard');
+
+    // Spec 025: the patient portal. The data comes from /api/v1/portal, which checks again.
+    Route::middleware('patient')->group(function () {
+        Route::get('/mis-citas', function () {
+            return view('pages.portal.appointments');
+        })->name('portal.appointments');
+    });
 
     Route::middleware('staff:administrador,asistente,doctor')->group(function () {
         Route::get('/expedientes-clinicos', function () {
@@ -68,7 +75,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 });
 
-Route::middleware(['auth:sanctum', 'only.admin'])->group(function () {
+Route::middleware(['auth:sanctum,patient', 'only.admin'])->group(function () {
     Route::get('/usuarios', function () {
         return view('pages.usuarios.index');
     })->name('usuarios.index');

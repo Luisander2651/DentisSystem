@@ -72,7 +72,7 @@ Auth guarda tokens de reset en Redis. Todos persisten en PostgreSQL.
 ## Módulos
 | Módulo | Ruta | Responsabilidad | Depende de |
 |---|---|---|---|
-| Core | `app/Core` | `CurrentActorAuthorizationService::assertCan` (mapa `permiso → roles`), `can()` (la misma comprobación sin lanzar) y `currentActorId()` (id del staff que actúa, para los permisos `*-own`), middlewares `OnlyAdmin`, `EnsureActiveStaff` (alias `staff`) e `InjectSanctumTokenFromCookie`, `UnexpectedErrorResponse`, `UuidIdentifier`, `TrimsPasswordFields` | Users (modelo y roles) |
+| Core | `app/Core` | `CurrentActorAuthorizationService::assertCan` (mapa `permiso → roles`), `can()` (la misma comprobación sin lanzar), `currentActorId()` (id del staff que actúa, para los permisos `*-own`) y `currentPatientId()` (id del paciente activo de la sesión, spec 025), middlewares `OnlyAdmin`, `EnsureActiveStaff` (alias `staff`), `EnsureActivePatient` (alias `patient`), `NoStoreResponse` (alias `no-store`) e `InjectSanctumTokenFromCookie`, `UnexpectedErrorResponse`, `UuidIdentifier`, `TrimsPasswordFields` | Users (modelo y roles) |
 | Auth | `app/Modules/Auth` | Login unificado staff/paciente, registro público de pacientes, logout, reset de contraseña | Users, Patients, Core |
 | Users | `app/Modules/Users` | CRUD del personal (Administrador, Asistente, Doctor) y roles | Core |
 | Patients | `app/Modules/Patients` | Pacientes, contacto, dirección, datos médicos y expediente consolidado | Core |
@@ -86,7 +86,7 @@ Auth guarda tokens de reset en Redis. Todos persisten en PostgreSQL.
 ## Flujo principal
 Crear una cita:
 1. `resources/js/pages/agenda/create-appointment.js` hace `POST /api/v1/appointments` con `credentials: 'include'`.
-2. Middlewares: `throttle:api` → `InjectSanctumTokenFromCookie` (cookie `auth_token` → `Authorization: Bearer`) → `auth:sanctum`.
+2. Middlewares: `throttle:api` → `InjectSanctumTokenFromCookie` (cookie `auth_token` → `Authorization: Bearer`) → `auth:sanctum,patient` (desde la spec 025, que prueba el guard del staff y luego el del paciente) → `staff`.
 3. `CreateAppointmentController` (sin FormRequest) construye `CreateAppointmentDTO` y llama a `RetriveDataForScheduledAppointmenEventUseCase`.
 4. `CreateAppointmentUseCase` crea los value objects, verifica disponibilidad con `ScheduleAvailabilityChecker` y persiste vía `AppointmentsService` → `AppointmentsRepositoryInterface` → `EloquentAppointmentRepository`.
 5. Se lee el paciente y su contacto, se dispara `ScheduledAppointment` y se responde 201.
@@ -107,8 +107,8 @@ Crear una cita:
 - No hay webhooks entrantes.
 
 ## Frontend
-- Componentes y organización: `resources/views/layouts/{admin,app,dashboard,landing,patient,error}`, componentes Blade en `components/{ui,calendar,landing,records}` y páginas en `pages/<sección>/index.blade.php` con sus diálogos al lado. Los componentes `x-ui.*` (botón, campo, marca, diálogo, región de estado, contador, filtro, insignia, registro, subtítulo, encabezado de página) son la única forma de pintar esos elementos (spec 016).
-- JS: un archivo por página en `resources/js/pages/<sección>/<acción>.js`, cada uno declarado a mano como entrada en `vite.config.js`; `fetch` a `/api/v1`. Lo común vive en `resources/js/ui/`: `dialog.js` abre y cierra los `<dialog>` y devuelve el foco, `status.js` anuncia avisos y errores en la región de estado con textos propios en español, y `badge.js` pinta las insignias de estado.
+- Componentes y organización: `resources/views/layouts/{admin,app,dashboard,landing,patient,error}`, componentes Blade en `components/{ui,calendar,landing,records,dashboard,appointments,portal}` y páginas en `pages/<sección>/index.blade.php` con sus diálogos al lado. Los componentes `x-ui.*` (botón, campo, marca, diálogo, región de estado, contador, filtro, insignia, registro, subtítulo, encabezado de página) son la única forma de pintar esos elementos (spec 016).
+- JS: un archivo por página en `resources/js/pages/<sección>/<acción>.js`, cada uno declarado a mano como entrada en `vite.config.js`; `fetch` a `/api/v1`. Lo común vive en `resources/js/ui/`: `dialog.js` abre y cierra los `<dialog>` y devuelve el foco, `status.js` anuncia avisos y errores en la región de estado con textos propios en español, y `badge.js` pinta las insignias de estado. Desde la spec 025, el personal y el portal del paciente comparten además `appointment-qr.js` (el QR de una cita y su descarga en PNG, con el componente `x-appointments.qr-block`), `prescriptions.js` (las tarjetas de recetas) y `appointments-history.js` (el historial de citas del expediente, con los formatos que fije quien lo llama).
 - Estado: sin librería de estado; cada página mantiene su estado en el DOM.
 - Routing: rutas web en español (`/agenda`, `/pacientes`, `/expedientes-clinicos`, `/contenido`) definidas en `routes/web.php`, como closures o, en `/`, `/dashboard` (spec 020) y `/reportes`, con un controlador invocable. Cualquier otra dirección web cae en una ruta de respaldo declarada en `bootstrap/app.php`, fuera del grupo `web`, que responde la página "No encontrada" sin abrir sesión.
 - Design tokens / sistema de diseño: Tailwind 4 CSS-first. `resources/css/app.css` declara en `@theme` los únicos colores, radios y tamaños de control, con la paleta por defecto de Tailwind desactivada; sin modo oscuro. El sistema está en [design/system.md](design/system.md) (2.0.0) y lo hacen cumplir `tests/Modules/Core/Unit/Design` y `npm run test:ui` (`tests/Browser/`), que revisa cada pantalla y diálogo a 390, 768 y 1440 px.
@@ -118,7 +118,7 @@ Crear una cita:
 
 ## Backend
 - Contratos de API: no hay OpenAPI. El contrato implícito son los `JsonResource` de cada módulo; forma de respuesta `{"message"}` en escrituras, `{"error"}` en errores y `{"data": [...]}` en lecturas.
-- Autenticación y autorización: tokens personales de Sanctum en cookie `auth_token` (httpOnly). Dos capas (spec 014): middleware por tipo de actor (`only.admin`, o `staff` para cualquier staff activo y `staff:<roles>` en la web) y `assertCan` en cada caso de uso, con un mapa `permiso → roles` en `CurrentActorAuthorizationService` como única fuente de verdad (todo el staff lee pacientes y expedientes; administrador y asistente editan datos clínicos y gestionan la agenda; el resto es solo del administrador). Spec 018: los permisos "propios" del doctor (`appointments.view-own`, `appointment-tracking.create-own`, `.view-own`) se comprueban con `can()` y el caso de uso compara el dueño de la cita con `currentActorId()`; con `appointments.view-own` el listado se filtra por su id en el repositorio. Detalle y riesgos en [security.md](security.md).
+- Autenticación y autorización: tokens personales de Sanctum en cookie `auth_token` (httpOnly), con un guard por tipo de cuenta desde la spec 025 (`sanctum` para el staff y `patient` para los pacientes). Dos capas (spec 014): middleware por tipo de actor (`only.admin`, o `staff` para cualquier staff activo y `staff:<roles>` en la web; `patient` para el portal) y `assertCan` en cada caso de uso, con un mapa `permiso → roles` en `CurrentActorAuthorizationService` como única fuente de verdad (todo el staff lee pacientes y expedientes; administrador y asistente editan datos clínicos y gestionan la agenda; el resto es solo del administrador). Spec 018: los permisos "propios" del doctor (`appointments.view-own`, `appointment-tracking.create-own`, `.view-own`) se comprueban con `can()` y el caso de uso compara el dueño de la cita con `currentActorId()`; con `appointments.view-own` el listado se filtra por su id en el repositorio. Detalle y riesgos en [security.md](security.md).
 - Manejo de errores (spec 014): los controladores traducen las excepciones de negocio (400, 403, 404, 409, 422) y envían cualquier otra a `UnexpectedErrorResponse` (500 `{"error": "Internal server error"}`, log `unexpected_error` sin el mensaje). `withExceptions` en `bootstrap/app.php` hace de red para `api/*`: 401 siempre en JSON, `AuthorizationException` de Core → 403, lo no capturado → `UnexpectedErrorResponse`, y sin el reporte por defecto de Laravel para esas excepciones.
 - Tiempo (spec 017): la zona de toda la aplicación es la de la clínica, `America/Mexico_City`
   (`APP_TIMEZONE`, valor por defecto en `config/app.php`); rige el "ahora" de las citas, las citas de
@@ -156,6 +156,20 @@ Crear una cita:
   guarda nada. El detalle de la cita lo muestra con `<img>` y descarga un PNG dibujado en el navegador.
   El microservicio de asistencias lee ese UUID con la app móvil y valida la cita con
   `GET /internal/appointments/{id}` (spec 023); Core no recibe nada más por el escaneo.
+- Portal del paciente (spec 025): `config/auth.php` tiene dos guards de Sanctum, `sanctum` (provider
+  `users`, el staff) y `patient` (provider `patients`); las rutas autenticadas usan
+  `auth:sanctum,patient` y después `staff` u `only.admin` (staff) o `patient` (`EnsureActivePatient`:
+  paciente activo; 403 al staff y al paciente desactivado). El grupo `/api/v1/portal`
+  (`auth:sanctum,patient` + `patient` + `no-store`) tiene cuatro lecturas: `GET /appointments`
+  (historial) y `GET /appointments/next` (próxima cita abierta desde hoy) en Appointments, con
+  `GetPatientAppointmentsUseCase` y `GetPatientNextAppointmentUseCase`; `GET /appointments/{id}/qr`
+  (`GetPatientAppointmentQrUseCase`, el mismo puerto de QR de la 024; 409 en una cita cerrada) y, en
+  AppointmentTracking, `GET /appointments/{id}/prescriptions` (`GetPatientPrescriptionsUseCase`: solo
+  recomendaciones y recetas). Cada caso de uso toma el paciente de `currentPatientId()` y comprueba
+  la propiedad antes que el estado: una cita ajena responde 404 como una inexistente. Las pantallas
+  son la rama del paciente de `/dashboard` (`resources/js/pages/portal/home.js`) y `/mis-citas`
+  (`portal/appointments.js`), con el diálogo `components/portal/appointment-detail-modal`
+  (`portal/appointment-detail.js`), ambas con `noindex`.
 - Seguridad: rate limiting `throttle:api` (10/min por IP sin autenticar, 100/min por usuario) y `throttle:report-downloads` (10 descargas del reporte por minuto por administrador, spec 019) sobre la IP real del visitante (`App\Core\Middlewares\TrustCloudflareProxies` sustituye a `TrustProxies` y confía solo en los rangos de Cloudflare de `config/security.php`); `App\Core\Middlewares\SecurityHeaders` añade CSP con nonce (`Vite::useCspNonce`), `X-Frame-Options`, `nosniff` y `Referrer-Policy`; CORS limitado a `APP_URL` sin credenciales. Ver [security.md](security.md).
 
 ## Contrato entre capas

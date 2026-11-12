@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.2.1
 ratified: 2026-09-23
-last_amended: 2026-10-08
+last_amended: 2026-11-10
 status: approved
 ---
 
@@ -42,7 +42,7 @@ Los principios se exigen a todo código **nuevo o modificado**.
 **Por qué:** La API maneja datos de salud y hoy varios endpoints solo exigen `auth:sanctum` (riesgo A01 documentado en [security.md](security.md)).
 
 ### P6. Validación de entrada con FormRequest
-**Regla:** Todo endpoint nuevo, o existente cuya entrada cambia (parámetros, cuerpo o reglas de validación), valida su entrada con un `FormRequest` (reglas en array, mensajes propios), además de las invariantes de los value objects. Entrada inválida → 422. Cambiar solo la autorización o el manejo de errores de un endpoint no obliga a añadirle un `FormRequest`.
+**Regla:** Todo endpoint nuevo, o existente cuya entrada cambia (parámetros, cuerpo o reglas de validación), valida su entrada con un `FormRequest` (reglas en array, mensajes propios), además de las invariantes de los value objects. Entrada inválida → 422. Cambiar solo la autorización o el manejo de errores de un endpoint no obliga a añadirle un `FormRequest`. Un identificador de la ruta que valida un value object (p. ej. un UUID) no necesita `FormRequest`: un valor inválido responde 400 con un texto fijo; el 422 queda para el cuerpo y la consulta.
 **Cómo se verifica:** Test de integración con payload inválido por endpoint; `/review`.
 **Por qué:** Patrón ya adoptado en Auth y Users (SECURITY-05); evita que entradas malformadas degraden a 500.
 
@@ -122,3 +122,4 @@ Los principios se exigen a todo código **nuevo o modificado**.
 | 1.1.1 | 2026-09-24 | Aclara el alcance de P6 (solo cuando cambia la entrada del endpoint) y de P7 (aplica a errores inesperados; los mensajes de negocio no llevan datos personales ni de salud) | `/analyze 014` (A2, A13); aprobado por el usuario |
 | 1.1.2 | 2026-09-24 | Aclara el alcance de P5 (aplica cuando cambia la autorización del endpoint), con el mismo criterio que P6 | `/analyze 014` (B2); aprobado por el usuario |
 | 1.2.0 | 2026-10-08 | Añade P15 (la interfaz usa solo el sistema de diseño) y aclara P2: lo que solo existe en un navegador se prueba con `npm run test:ui` | Spec 016 (CA24); textos aprobados por el usuario el 2026-10-06 |
+| 1.2.1 | 2026-11-10 | Aclara P6: un identificador de la ruta validado por un value object responde 400 sin `FormRequest`; el 422 queda para el cuerpo y la consulta | `/analyze 025` (A1); recoge el criterio ya usado en 023 y 024; aprobado por el usuario |

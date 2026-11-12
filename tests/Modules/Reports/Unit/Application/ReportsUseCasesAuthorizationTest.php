@@ -57,6 +57,11 @@ function reportsAuthorization(ReportsCallLog $log, array $granted): Authorizatio
         {
             return 'administrador';
         }
+
+        public function currentPatientId(): string
+        {
+            throw AuthorizationException::unauthenticated();
+        }
     };
 }
 

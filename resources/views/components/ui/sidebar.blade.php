@@ -15,6 +15,12 @@
             'url' => '/dashboard',
             'icon' => 'home',
         ],
+        // Spec 025: the history of the patient.
+        'mis-citas' => [
+            'label' => 'Mis citas',
+            'url' => '/mis-citas',
+            'icon' => 'calendar',
+        ],
         'agenda' => [
             'label' => 'Agenda',
             'url' => '/agenda',
@@ -56,7 +62,7 @@
         'administrador' => ['inicio', 'agenda', 'tratamientos', 'pacientes', 'expedientes', 'contenido', 'usuarios', 'reportes'],
         'asistente' => ['inicio', 'agenda', 'expedientes'],
         'doctor' => ['inicio', 'agenda', 'expedientes'],
-        'paciente' => ['inicio'],
+        'paciente' => ['inicio', 'mis-citas'],
     ];
 
     $allowedTabs = $roleTabs[$normalizedRole] ?? [];

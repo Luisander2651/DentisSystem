@@ -95,3 +95,87 @@ it('writes no pill when this month has no data and last month has', function () 
 
     expect($html)->not->toContain('rounded-full')->toContain('julio: 28.6 %');
 });
+
+/*
+ * Spec 025 (design.md → Componentes): the QR block of spec 024, taken out of the detail of the
+ * staff so the patient portal shows the same frame, image, warning and download button.
+ */
+
+it('renders the QR block of the detail with its title, text, frame, warning and download button', function () {
+    $html = normalizedHtml(Blade::render('<x-appointments.qr-block class="mt-4" title="Código QR de acceso" text="Muéstralo o mándalo al paciente para que entre el día de su cita." />'));
+
+    expect($html)->toContain('data-view-appointment-qr')
+        ->toContain('aria-labelledby="view-appointment-qr-title"')
+        ->toContain('<h3 id="view-appointment-qr-title" class="text-base font-bold text-ink">Código QR de acceso</h3>')
+        ->toContain('Muéstralo o mándalo al paciente para que entre el día de su cita.')
+        ->toContain('rounded-box border border-field bg-surface p-2')
+        ->toContain('<img class="block size-60" alt="" data-view-appointment-qr-image>')
+        ->toContain('data-view-appointment-qr-error')
+        ->toContain('No pudimos cargar el código QR.')
+        ->toContain('data-view-appointment-qr-download')
+        ->toContain('Descargar QR')
+        ->and(preg_match('/<section[^>]*class="[^"]*\bhidden\b[^"]*\bmt-4\b|<section[^>]*class="[^"]*\bmt-4\b[^"]*\bhidden\b/', $html))->toBe(1);
+});
+
+it('renders the wide QR block of the portal without a title, with the text beside the image and its own actions', function () {
+    $html = normalizedHtml(Blade::render('<x-appointments.qr-block wide text="Muestra este código en la recepción."><x-slot:actions><button type="button" data-extra>Ver detalle</button></x-slot:actions></x-appointments.qr-block>'));
+
+    expect($html)->not->toContain('<h3')
+        ->not->toContain('aria-labelledby')
+        ->toContain('md:flex-row md:items-center')
+        ->toContain('Muestra este código en la recepción.')
+        ->toContain('data-view-appointment-qr-image')
+        ->toContain('data-view-appointment-qr-download')
+        ->toContain('<button type="button" data-extra>Ver detalle</button>');
+});
+
+/*
+ * Spec 025 (design.md → Componentes): the next-appointment card of the start, reused by the
+ * patient portal with its own actions; without them it keeps the buttons of the staff.
+ */
+
+it('keeps the staff buttons of the next-appointment card when no actions are given', function (bool $canComplete) {
+    $html = normalizedHtml(Blade::render('<x-dashboard.next-appointment :can-complete="$canComplete" />', ['canComplete' => $canComplete]));
+
+    expect($html)->toContain('data-next-card')
+        ->toContain('data-dashboard-next-detail')
+        ->toContain('Ver detalle')
+        ->and(str_contains($html, 'data-dashboard-next-complete'))->toBe($canComplete);
+})->with([true, false]);
+
+it('puts the given actions in place of the staff buttons of the next-appointment card', function () {
+    $html = normalizedHtml(Blade::render('<x-dashboard.next-appointment><x-slot:actions><button type="button" data-portal-action>Otra acción</button></x-slot:actions></x-dashboard.next-appointment>'));
+
+    expect($html)->toContain('<button type="button" data-portal-action>Otra acción</button>')
+        ->not->toContain('data-dashboard-next-detail')
+        ->not->toContain('data-dashboard-next-complete');
+});
+
+it('leaves out the row of actions of the next-appointment card when the given actions are empty', function () {
+    $html = normalizedHtml(Blade::render('<x-dashboard.next-appointment><x-slot:actions></x-slot:actions></x-dashboard.next-appointment>'));
+
+    expect($html)->toContain('data-next-card')
+        ->not->toContain('mt-4 flex flex-wrap gap-3')
+        ->not->toContain('data-dashboard-next-detail');
+});
+
+/*
+ * Spec 025 (CA3, CA4, design.md → Componentes): the history table of the clinical record, reused
+ * by "Mis citas" with its own empty text; without parameters it keeps the texts of the record.
+ */
+
+it('keeps the texts of the clinical record in the history table by default', function () {
+    $html = normalizedHtml(Blade::render('<x-records.appointments-history-table />'));
+
+    expect($html)->toContain('Historial de citas')
+        ->toContain('Este paciente aún no tiene citas registradas.')
+        ->toContain('id="record-appointments-body"')
+        ->toContain('id="record-appointments-list"');
+});
+
+it('takes the title and the empty text of the history table when given', function () {
+    $html = normalizedHtml(Blade::render('<x-records.appointments-history-table title="Historial de citas" empty-text="Aún no tienes citas registradas" />'));
+
+    expect($html)->toContain('Aún no tienes citas registradas')
+        ->not->toContain('Este paciente aún no tiene citas registradas.');
+});

@@ -62,6 +62,11 @@ function appointmentQrAuthorization(AppointmentQrCallLog $log, array $granted): 
         {
             return '6f1c1d2e-3a4b-4c5d-8e9f-0a1b2c3d4e5f';
         }
+
+        public function currentPatientId(): string
+        {
+            throw AuthorizationException::unauthenticated();
+        }
     };
 }
 

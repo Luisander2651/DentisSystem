@@ -26,8 +26,17 @@ trait ActingAsPatient
     protected function actingAsPatient(array $overrides = []): PatientModel
     {
         $patient = $this->createPatient($overrides);
-        $this->actingAs($patient, 'sanctum');
+        $this->actingAs($patient, 'patient');
 
         return $patient;
+    }
+
+    /**
+     * Spec 025: sends the next requests with a real token of the patient, so the guards check
+     * the kind of account as in production (actingAs() skips that check).
+     */
+    protected function withPatientToken(PatientModel $patient): static
+    {
+        return $this->withHeader('Authorization', 'Bearer '.$patient->createToken('test')->plainTextToken);
     }
 }

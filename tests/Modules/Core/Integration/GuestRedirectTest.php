@@ -19,6 +19,7 @@ const GUEST_PATIENT_ID = '11111111-2222-4333-8444-555555555555';
 const GUEST_PROTECTED_SCREENS = [
     '/logout',
     '/dashboard',
+    '/mis-citas',
     '/expedientes-clinicos',
     '/expedientes-clinicos/'.GUEST_PATIENT_ID,
     '/usuarios',
@@ -31,7 +32,7 @@ const GUEST_PROTECTED_SCREENS = [
 
 it('covers every web route that asks for a session', function () {
     $protected = collect(Route::getRoutes()->getRoutes())
-        ->filter(fn (RoutingRoute $route): bool => ! str_starts_with($route->uri(), 'api/') && in_array('auth:sanctum', $route->gatherMiddleware(), true))
+        ->filter(fn (RoutingRoute $route): bool => ! str_starts_with($route->uri(), 'api/') && in_array('auth:sanctum,patient', $route->gatherMiddleware(), true))
         ->map(fn (RoutingRoute $route): string => '/'.str_replace('{patientId}', GUEST_PATIENT_ID, $route->uri()))
         ->sort()
         ->values()

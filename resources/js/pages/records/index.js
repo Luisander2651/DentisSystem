@@ -1,4 +1,5 @@
 import { stateBadge } from '../../ui/badge';
+import { renderAppointmentsHistory as renderSharedAppointmentsHistory } from '../../ui/appointments-history';
 import { closeDialog, isBackdropClick, openDialog } from '../../ui/dialog';
 import { announce, failureMessage } from '../../ui/status';
 
@@ -512,86 +513,18 @@ import { announce, failureMessage } from '../../ui/status';
         ].join('');
     }
 
-    function normalizeAppointmentStatus(status) {
-        var normalized = String(status || '').trim().toLowerCase();
-        var mapping = {
-            pending: 'asignada',
-            confirmed: 'asignada',
-            assigned: 'asignada',
-            completed: 'completada',
-            cancelled: 'cancelada',
-            cancelada: 'cancelada',
-            completada: 'completada',
-            asignada: 'asignada',
-            reprogramada: 'reprogramada'
-        };
-
-        return mapping[normalized] || 'asignada';
-    }
-
-    function formatAppointmentTime(time) {
-        var parts = String(time || '').split(':');
-        if (parts.length < 2) return toDisplay(time);
-
-        var hour = parseInt(parts[0], 10);
-        var ampm = hour >= 12 ? 'PM' : 'AM';
-
-        return (hour % 12 || 12) + ':' + parts[1] + ' ' + ampm;
-    }
-
+    // Spec 016 (CA27), shared with the patient portal since spec 025 (ui/appointments-history.js).
     function renderAppointmentsHistory(appointments) {
-        var tbody = document.getElementById('record-appointments-body');
-        if (!tbody) return;
-
-        var cards = document.getElementById('record-appointments-list');
-        var list = Array.isArray(appointments) ? appointments.slice() : [];
+        var list = Array.isArray(appointments) ? appointments : [];
 
         fillSection('appointments', list.length ? {} : null);
 
-        if (!list.length) {
-            if (cards) cards.innerHTML = '';
-            tbody.innerHTML = '<tr class="border-t border-line"><td colspan="6" class="px-4 py-6 text-center text-sm text-muted">Este paciente aún no tiene citas registradas.</td></tr>';
-            return;
-        }
-
-        list.sort(function (a, b) {
-            var aKey = String(a.date || '') + ' ' + String(a.time || '');
-            var bKey = String(b.date || '') + ' ' + String(b.time || '');
-            return bKey.localeCompare(aKey);
+        renderSharedAppointmentsHistory({
+            tbody: document.getElementById('record-appointments-body'),
+            cards: document.getElementById('record-appointments-list'),
+            appointments: list,
+            emptyText: 'Este paciente aún no tiene citas registradas.',
         });
-
-        var viewButtonHtml = function (appointment) {
-            return '<button type="button" data-record-view-appointment data-appointment-id="' + escapeHtml(appointment.id) + '" class="inline-flex min-h-control items-center justify-center rounded-control border border-field bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-canvas">Ver<span class="sr-only"> la cita del ' + escapeHtml(toDisplay(appointment.date)) + '</span></button>';
-        };
-
-        if (cards) {
-            cards.innerHTML = list.map(function (appointment) {
-                return [
-                    '<li class="rounded-box border border-line bg-surface p-3">',
-                    '<div class="flex items-start justify-between gap-3">',
-                    '<p class="text-sm font-semibold text-ink">' + escapeHtml(toDisplay(appointment.date)) + ' · ' + escapeHtml(formatAppointmentTime(appointment.time)) + '</p>',
-                    stateBadge(normalizeAppointmentStatus(appointment.status)),
-                    '</div>',
-                    '<p class="mt-1 text-sm text-ink wrap-anywhere">' + escapeHtml(toDisplay(appointment.treatment_name)) + '</p>',
-                    '<p class="text-sm text-muted wrap-anywhere">' + escapeHtml(toDisplay(appointment.user_name)) + '</p>',
-                    '<div class="mt-3">' + viewButtonHtml(appointment) + '</div>',
-                    '</li>'
-                ].join('');
-            }).join('');
-        }
-
-        tbody.innerHTML = list.map(function (appointment) {
-            return [
-                '<tr class="border-t border-line">',
-                '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(appointment.date)) + '</td>',
-                '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(formatAppointmentTime(appointment.time)) + '</td>',
-                '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(appointment.treatment_name)) + '</td>',
-                '<td class="px-4 py-3 align-top text-ink">' + escapeHtml(toDisplay(appointment.user_name)) + '</td>',
-                '<td class="px-4 py-3 align-top">' + stateBadge(normalizeAppointmentStatus(appointment.status)) + '</td>',
-                '<td class="px-4 py-3 align-top text-ink">' + viewButtonHtml(appointment) + '</td>',
-                '</tr>'
-            ].join('');
-        }).join('');
     }
 
     async function loadAppointments(patientId) {
