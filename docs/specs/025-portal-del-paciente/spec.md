@@ -1,7 +1,8 @@
 ---
 id: 025
 slug: portal-del-paciente
-status: implemented
+status: released
+released: v0.10.0 (2026-11-11)
 created: 2026-11-08
 extends: [001, 009, 016, 020, 024]
 ---
@@ -243,3 +244,5 @@ Ninguna.
 | 2026-11-08 | Aprobada | Aprobación del usuario |
 | 2026-11-10 | Extiende 016 y 020; CA11 y CA12 sin "detalle"; RS1.d fuera (ya mitigada) | `/analyze 025` (A3, A9, A17), aprobado por el usuario |
 | 2026-11-11 | `implemented`: los 20 criterios con sus tests en verde | `/implement 025` |
+| 2026-11-11 | Review: ronda 1 `changes_requested` (R1–R5), ronda 2 `approved` con firma del dueño del repositorio | `/review 025` |
+| 2026-11-11 | `released` en v0.10.0, con el chore de Symfony 7.4.23 | `/release 025` |

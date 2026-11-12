@@ -271,3 +271,4 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 | 2026-10-13 | Vuelve a `draft` desde `implemented` (T092 se reabre): CA42 (navegación según el ancho) y CA43 (enlaces a otra pestaña) nuevos; CA9 también a 768 px; CA13 incluye 768 × 1024 px; CA37 nombra la validación antes de enviar y el anuncio de envío; "Fuera de alcance", "Diseño" y la decisión de anchos al día | `/analyze` ronda 4 (A75, A77, A79, A80, A82, A83, A84, A88, A90); decisión del usuario |
 | 2026-10-13 | Reaprobada tras la edición | Aprobación del usuario |
 | 2026-10-14 | Liberada en v0.2.0 | `/release 016`; aprobación del usuario |
+| 2026-11-11 | Comportamiento modificado por 025 en v0.10.0: el inicio del paciente deja la insignia y el rol del encabezado, como el del personal; el rol sigue en el menú lateral y CA30 se sigue cumpliendo | /release |
