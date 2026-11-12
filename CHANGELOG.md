@@ -19,6 +19,9 @@ Portal del paciente: cada paciente ve su próxima cita con su código QR de acce
 - Un paciente desactivado deja de entrar a su portal aunque su sesión no haya caducado (spec 025).
 - Las respuestas del portal no se guardan en la caché del navegador ni de intermediarios, y sus pantallas no se indexan en buscadores (spec 025).
 
+### Security
+- Actualizados los componentes del framework que procesan las peticiones, las rutas, los archivos YAML y el sistema de archivos, con ocho avisos de seguridad corregidos (chore 2026-11-11-chore-symfony-audit).
+
 ## [0.9.0] - 2026-11-09
 Código QR de acceso por cita: recepción lo ve en el detalle de la cita y lo descarga para mandárselo al paciente, y en la puerta el administrador lo escanea con la app de asistencias (spec 024).
 
