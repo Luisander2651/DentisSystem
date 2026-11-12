@@ -5,6 +5,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+### Security
+- Actualizados los componentes del framework que procesan las peticiones, las rutas, los archivos YAML y el sistema de archivos, con ocho avisos de seguridad corregidos (chore 2026-11-11-chore-symfony-audit).
+
 ## [0.9.0] - 2026-11-09
 Código QR de acceso por cita: recepción lo ve en el detalle de la cita y lo descarga para mandárselo al paciente, y en la puerta el administrador lo escanea con la app de asistencias (spec 024).
 
