@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [SemVer](https://semver.org/lang/es/). Lo mantiene `/release`.
 
 ## [Unreleased]
+
+## [0.10.0] - 2026-11-11
 Portal del paciente: cada paciente ve su próxima cita con su código QR de acceso, su historial de citas y las recomendaciones y recetas de sus citas completadas (spec 025).
 
 ### Added
