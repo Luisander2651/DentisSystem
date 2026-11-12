@@ -18,8 +18,6 @@ Portal del paciente: cada paciente ve su próxima cita con su código QR de acce
 - Las sesiones del personal y de los pacientes van por separado: un paciente no puede usar las rutas del personal ni el personal las del portal, y cada paciente solo ve sus propias citas; una cita de otro paciente responde igual que una que no existe (spec 025).
 - Un paciente desactivado deja de entrar a su portal aunque su sesión no haya caducado (spec 025).
 - Las respuestas del portal no se guardan en la caché del navegador ni de intermediarios, y sus pantallas no se indexan en buscadores (spec 025).
-
-### Security
 - Actualizados los componentes del framework que procesan las peticiones, las rutas, los archivos YAML y el sistema de archivos, con ocho avisos de seguridad corregidos (chore 2026-11-11-chore-symfony-audit).
 
 ## [0.9.0] - 2026-11-09
