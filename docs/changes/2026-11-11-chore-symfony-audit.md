@@ -1,10 +1,11 @@
 ---
 lane: chore
-status: done                 # open → done → released · escalated (→ escalated_to)
+status: released             # open → done → released · escalated (→ escalated_to)
 base: f1829fa                # commit de partida; lo registra la skill al empezar (lo usa lane-check)
 relates: []                  # specs cuyo comportamiento toca ([] si ninguna)
 covers: []
 escalated_to: null           # NNN de la spec si el cambio se escaló al flujo completo
+released: v0.10.0 (2026-11-11)
 ---
 
 # Chore: Symfony a 7.4.23 por los avisos de composer audit

@@ -99,7 +99,7 @@ cómo va el mes.
   "Nuevo usuario", ni la tarjeta del encabezado con la inicial, el correo y el rol (el rol sigue
   en el menú lateral). El título de la pestaña es "Inicio - Dentissa" (cierra 016/R42). En el
   inicio del paciente, el título es también "Inicio - Dentissa" y su inicial se muestra completa
-  aunque lleve acento; así no queda ninguna inicial recortada (cierra 016/R43).
+  aunque lleve acento; así no queda ninguna inicial recortada (cierra 016/R43). → la parte del inicio del paciente, reemplazada por 025 CA1 y CA10 (sin inicial, correo ni rol junto al saludo)
 - [x] CA12 · Dado que una sección del inicio no se puede cargar, cuando falla, entonces esa
   sección muestra "No se pudo cargar esta sección." con un botón "Reintentar" y las demás
   secciones se siguen viendo y usando. Mientras carga, cada sección indica que está cargando.
@@ -119,7 +119,7 @@ cómo va el mes.
 - [x] CA16 · (abuso) Como paciente, staff inactivo o visitante sin sesión, intento obtener
   cualquier dato del tablero por otra vía → se rechaza igual que la agenda (014, 018 CA11). Si
   el staff inactivo entra a `/dashboard`, ve la página "Sin permiso", como en la agenda. El
-  paciente sigue viendo su inicio, sin más cambios que los de CA11.
+  paciente sigue viendo su inicio, sin más cambios que los de CA11. → reemplazado por 025 CA1, CA2 y CA10 (el portal del paciente)
 
 ## Fuera de alcance
 - El recordatorio de WhatsApp de las citas de mañana y la confirmación por WhatsApp.
@@ -301,3 +301,4 @@ Ninguna.
 | 2026-10-23 | Reaprobada tras la edición de /analyze ronda 1 | Aprobación del usuario |
 | 2026-10-25 | CA2: la siguiente cita es la primera de hoy sin cerrar, aunque su hora haya pasado; vuelve a `draft` | Decisión del usuario durante /implement |
 | 2026-10-25 | Reaprobada tras la edición de CA2 | Aprobación del usuario |
+| 2026-11-11 | Comportamiento modificado por 025 en v0.10.0: el inicio del paciente sigue el diseño c3 de la 025, sin inicial, correo ni rol junto al saludo (la inicial de CA11 y la última frase de CA16 quedan reemplazadas) | /release |

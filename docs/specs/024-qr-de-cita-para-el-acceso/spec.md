@@ -181,3 +181,4 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 | 2026-11-04 | CA4 (400 como la consulta interna) y K3 (sin modo oscuro; también el PNG) | `/analyze` A1 y A8; decisión del usuario |
 | 2026-11-04 | Implementada en `feat/024-qr-de-cita-para-el-acceso` | /implement (T001–T091) |
 | 2026-11-09 | Liberada en v0.9.0 | /release (T097, T098) |
+| 2026-11-11 | Comportamiento modificado por 025 en v0.10.0 | /release |

@@ -130,11 +130,11 @@ Las rutas de pacientes, subrecursos, expediente y citas solo exigen `auth:sanctu
 
 Correcciones:
 - RS1.a Restringir las rutas de pacientes, subrecursos, expediente y citas a staff — estado: mitigada (v0.1.0; spec 014)
-- RS1.b Comprobar la propiedad del recurso — estado: en curso (spec 025): las cuatro rutas del portal leen solo las citas del paciente de la sesión (`currentPatientId()` en cada caso de uso; una cita ajena responde 404 igual que una inexistente; `PortalAccessControlTest`)
-- RS1.c Fijar el provider del guard `sanctum` — estado: en curso (spec 025): el guard `sanctum` queda con el provider `users` y el paciente entra por su guard `patient` (provider `patients`); `GuardSeparationTest`
+- RS1.b Comprobar la propiedad del recurso — estado: mitigada (v0.10.0; spec 025): las cuatro rutas del portal leen solo las citas del paciente de la sesión (`currentPatientId()` en cada caso de uso; una cita ajena responde 404 igual que una inexistente; `PortalAccessControlTest`)
+- RS1.c Fijar el provider del guard `sanctum` — estado: mitigada (v0.10.0; spec 025): el guard `sanctum` queda con el provider `users` y el paciente entra por su guard `patient` (provider `patients`); `GuardSeparationTest`
 - RS1.d Añadir tests de acceso denegado — estado: mitigada (v0.1.0; spec 014): `PatientsAccessControlTest`, `AppointmentsAccessControlTest`, `RolePermissionsTest`
 
-RS1 queda **parcialmente mitigado** hasta que se libere la spec 025, que cierra RS1.b y RS1.c.
+RS1 queda **mitigado** (v0.10.0): sus cuatro correcciones están mitigadas.
 
 ### RS2 · Alta — Datos de salud sin cifrar en reposo
 

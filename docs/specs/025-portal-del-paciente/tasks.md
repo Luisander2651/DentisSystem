@@ -203,11 +203,14 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: de nuevo tras las correcciones de /review (T033–T037): Pest en paralelo 2184 pasan, sin fallos; `pint --test` limpio en los archivos de la spec; `ui-audit --only portal` y `--only detalle-portal` sin fallos.
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - Sin staging (`deploy.environments: [local, prod]`): la verificación se hace en producción tras T097, con cuentas de prueba. Como paciente: el inicio muestra la próxima cita con su QR, "Descargar QR" baja un PNG que un teléfono lee como el identificador de la cita, "Mis citas" lista el historial y el detalle de una completada muestra sus recetas (CA1, CA3, CA5, CA7). Como administrador: la agenda y el detalle con QR siguen igual (CA14, CA16). En Loki, sin 500 en `/api/v1/portal/*` y sin aumento de 401 en el resto de la API.
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
-- [ ] T098 Marcar spec como `released`
+  - nota: 2026-11-11, en producción con v0.10.0. El usuario verificó con cuentas de prueba, como paciente, la próxima cita con su QR, el PNG leído con un teléfono, "Mis citas" y el detalle de una completada con sus recetas, y como administrador la agenda y el detalle con QR sin cambios (CA1, CA3, CA5, CA7, CA14, CA16): todo bien. Sin staging: antes, CI del PR #52 en verde (suite y `ui-audit` completos).
+- [x] T096 Aprobación humana para producción
+  - aprobado por Luisander2651 el 2026-11-11 19:47 para v0.10.0 ("desplegar v0.10.0 a producción")
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: 2026-11-11, v0.10.0 desplegada por el usuario con `docker/prod/deploy.sh v0.10.0` (3 min 28 s; `verify.sh --local --in-operation` 14/14) y `verify.sh --remote` 30/30. Vigilancia externa de 15 min (20:12–20:27, 30 rondas cada 30 s): `/up`, la portada y `/login` siempre 200; `/api/v1/portal/appointments` sin sesión siempre 401; `/mis-citas` sin sesión → 302 a `/login` (la vigilancia la pidió como JSON y recibió 401, igual que `/dashboard` antes de esta versión: un fallo de la prueba, no de la app). El usuario revisó Loki: sin 500 en `/api/v1/portal/*`, sin aumento de 401 en el resto de la API y con el `request_id` de una petición de sus pruebas en sus logs. Sin rollback.
+- [x] T098 Marcar spec como `released`
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |

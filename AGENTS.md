@@ -5,7 +5,7 @@ expediente clínico, seguimiento clínico con recetas, catálogo de tratamientos
 contenido del sitio público, con confirmación de citas por WhatsApp. Lo usan el staff
 administrativo y clínico, y los pacientes en su portal (próxima cita con su QR, historial, recetas y
 recomendaciones; spec 025). Etapa: **prototipo**, en
-producción en `dentissapp.com` (v0.8.0) y sin datos reales.
+producción en `dentissapp.com` (v0.10.0) y sin datos reales.
 
 > Antes de cualquier cambio lee [docs/constitution.md](docs/constitution.md). Si algo aquí
 > contradice la constitución, prevalece la constitución.
