@@ -71,6 +71,22 @@ const scenarios = {
             todayHours: D.clinic(new Date('2026-11-16T12:00:00-06:00')).todayHours,
         };
     },
+
+    /* Escape with the folding menu open, closed, and another key. */
+    async escape({ open, key }) {
+        const { closeMenuOnEscape } = await import(new URL('core.js', site));
+        const attributes = new Set(open ? ['open'] : []);
+        let focused = false;
+        let expanded = open ? 'true' : null;
+        const menu = {
+            removeAttribute: (name) => attributes.delete(name),
+            querySelector: () => ({ focus: () => { focused = true; }, setAttribute: (name, value) => { expanded = value; } }),
+        };
+        const doc = { querySelector: (selector) => (selector === 'details.menu-m[open]' && attributes.has('open') ? menu : null) };
+        const handled = closeMenuOnEscape(doc, { key });
+
+        return { handled, open: attributes.has('open'), focused, expanded };
+    },
 };
 
 if (!scenarios[scenario]) {

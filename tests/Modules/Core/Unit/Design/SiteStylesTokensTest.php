@@ -138,14 +138,15 @@ function siteFontFamilyLiterals(string $css): array
 }
 
 /**
- * Custom properties a stylesheet reads with var() that neither the tokens nor the site declare.
+ * Custom properties a stylesheet reads with var() without a fallback that neither the tokens nor
+ * the site declare (one with a fallback, `var(--d, 12px)`, always has a value).
  *
  * @param  list<string>  $declaredElsewhere
  * @return list<string>
  */
 function siteUndeclaredVariables(string $css, array $declaredElsewhere): array
 {
-    preg_match_all('/var\(\s*(--[\w-]+)/', $css, $used);
+    preg_match_all('/var\(\s*(--[\w-]+)\s*\)/', $css, $used);
     preg_match_all('/(--[\w-]+)\s*:/', $css, $local);
 
     return array_values(array_unique(array_diff($used[1], $local[1], $declaredElsewhere)));
@@ -274,6 +275,7 @@ it('lets the allowed forms through (negative controls)', function (string $rule,
     'inherited font family' => ['font family', '.btn{font-family:inherit}'],
     'token variable' => ['undeclared variable', '.a{color:var(--color-ink)}'],
     'variable of the sheet' => ['undeclared variable', '.a{--d:2;transition-delay:calc(var(--d) * 80ms)}'],
+    'variable with its fallback' => ['undeclared variable', '.a{transform:translateX(calc(var(--mx, 0) * var(--d, 12px)))}'],
     'svg painted with the current colour' => ['markup colour', '<path stroke="currentColor" fill="none"/>'],
     'style with a token' => ['markup colour', '<span style="--i: 2">x</span>'],
     'local font' => ['external resource', "@font-face{src:url('../../fonts/inter-tight-400.woff2')}"],
@@ -350,4 +352,28 @@ it('ships every font of the site with its licence', function () {
     }
 
     expect($missing)->toBe([]);
+});
+
+it('keeps the motion exemption of ui-audit to the moving pieces of the public site (spec 026)', function () {
+    $marked = [];
+
+    foreach (siteFiles('resources/views', '.blade.php') as $path => $view) {
+        preg_match_all('/<[a-z]+\b[^>]*data-audit="animado"[^>]*>/i', $view, $tags);
+
+        foreach ($tags[0] as $tag) {
+            preg_match('/class="([^"]*)"/', $tag, $class);
+            $marked[] = $path.' · '.($class[1] ?? '');
+        }
+    }
+
+    expect($marked)->not->toBeEmpty();
+
+    foreach ($marked as $mark) {
+        expect($mark)->toMatch('#^resources/views/site/[\w/-]+\.blade\.php · (marquee|dk-layer|ts-marq|hz-track)$#');
+    }
+
+    $audit = (string) file_get_contents(SITE_STYLES_ROOT.'/tests/Browser/checks-global.mjs');
+
+    expect(substr_count($audit, 'animated(element)'))->toBe(3)
+        ->and($audit)->toContain("element.closest('[data-audit=\"animado\"]')");
 });

@@ -74,3 +74,9 @@ it('stops the scripted motion when the visitor asked for less motion', function 
     expect($result['rootClasses'])->toBe(['js', 'still'])
         ->and($result['reducedMotion'])->toBeTrue();
 });
+
+it('closes the folding menu with Escape and gives the focus back to its button', function () {
+    expect(runSiteScript('escape', ['open' => true, 'key' => 'Escape']))->toBe(['handled' => true, 'open' => false, 'focused' => true, 'expanded' => 'false'])
+        ->and(runSiteScript('escape', ['open' => false, 'key' => 'Escape']))->toBe(['handled' => false, 'open' => false, 'focused' => false, 'expanded' => null])
+        ->and(runSiteScript('escape', ['open' => true, 'key' => 'Enter']))->toBe(['handled' => false, 'open' => true, 'focused' => false, 'expanded' => 'true']);
+});

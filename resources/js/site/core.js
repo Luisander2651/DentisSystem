@@ -134,6 +134,38 @@ function initParallax(doc) {
     });
 }
 
+/** Escape closes the open folding menu and gives the focus back to its button (CA10). */
+export function closeMenuOnEscape(doc, event) {
+    if (event.key !== 'Escape') {
+        return false;
+    }
+
+    const menu = doc.querySelector('details.menu-m[open]');
+
+    if (!menu) {
+        return false;
+    }
+
+    const summary = menu.querySelector('summary');
+
+    menu.removeAttribute('open');
+    summary?.setAttribute('aria-expanded', 'false');
+    summary?.focus();
+
+    return true;
+}
+
+/** The button of a folding menu says whether it is open, as a native <details> does not (CA10). */
+function initMenus(doc) {
+    doc.querySelectorAll('details.menu-m').forEach((menu) => {
+        const summary = menu.querySelector('summary');
+        const sync = () => summary?.setAttribute('aria-expanded', menu.hasAttribute('open') ? 'true' : 'false');
+
+        sync();
+        menu.addEventListener('toggle', sync);
+    });
+}
+
 /** Wires the page: called on import in the browser, and by the tests with a fake document. */
 export function initCore(win = window, doc = document) {
     const D = (win.Dentissa = win.Dentissa || {});
@@ -163,7 +195,10 @@ export function initCore(win = window, doc = document) {
         doc.documentElement.classList.add('still');
     }
 
+    doc.addEventListener('keydown', (event) => closeMenuOnEscape(doc, event));
+
     D.ready(() => {
+        initMenus(doc);
         initTilt(doc, D);
         initParallax(doc);
     });

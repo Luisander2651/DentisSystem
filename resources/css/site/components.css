@@ -58,8 +58,8 @@
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--spacing-control); padding: 0 20px; border-radius: var(--radius-control); font-weight: var(--weight-strong); font-size: 15px; text-decoration: none; border: 1px solid transparent; transition: transform 250ms var(--ease-spring), box-shadow 250ms var(--ease-out), background 200ms, border-color 200ms; white-space: nowrap; cursor: pointer; font-family: inherit; }
 .btn:hover { transform: translateY(-2px); }
 .opt .btn-primary { background: var(--color-primary); color: var(--color-ink); }
-.opt .btn-primary:hover { background: var(--color-primary-deep); color: var(--color-on-dark); box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--color-primary) 80%, transparent); }
-.opt .btn-ghost { background: var(--color-surface); color: var(--color-ink); border-color: var(--color-line); }
+.opt .btn-primary:hover { background: var(--color-primary-hover); color: var(--color-ink); box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--color-primary) 80%, transparent); }
+.opt .btn-ghost { background: var(--color-surface); color: var(--color-ink); border-color: var(--color-field); }
 .opt .btn-wa { background: var(--color-whatsapp); color: var(--color-ink); }
 .opt .btn-wa:hover { color: var(--color-ink); box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--color-whatsapp) 80%, transparent); }
 .opt .btn-light { background: var(--color-surface); color: var(--color-ink); }
@@ -104,7 +104,7 @@
 .cta-sub { color: var(--color-line-strong); font-size: 18px; max-width: 470px; line-height: 1.6; }
 .cta-meta { display: flex; flex-wrap: wrap; gap: 10px 22px; color: var(--color-muted-soft); font-size: 14px; }
 .cta-meta span { display: inline-flex; align-items: center; gap: 8px; }
-.opt .btn-call { color: var(--color-on-dark); border-color: color-mix(in srgb, var(--color-on-dark) 28%, transparent); background: color-mix(in srgb, var(--color-on-dark) 4%, transparent); }
+.opt .btn-call { color: var(--color-on-dark); border-color: var(--color-muted-soft); background: color-mix(in srgb, var(--color-on-dark) 4%, transparent); }
 .opt .btn-call:hover { color: var(--color-on-dark); border-color: var(--color-on-dark); }
 .phone-wrap { position: relative; height: 440px; perspective: 1200px; display: grid; place-items: center; }
 .ph-ghost { position: absolute; left: 50%; top: 50%; width: 300px; height: 400px; margin: -200px 0 0 -150px; border-radius: var(--radius-2xl); border: 1px solid color-mix(in srgb, var(--color-secondary) 28%, transparent); background: color-mix(in srgb, var(--color-on-dark) 3%, transparent); }

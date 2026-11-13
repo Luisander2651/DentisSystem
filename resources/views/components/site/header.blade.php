@@ -37,7 +37,7 @@
         </div>
 
         <details class="menu-m">
-            <summary aria-label="Abrir menú"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"></path></svg></summary>
+            <summary aria-label="Abrir menú" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"></path></svg></summary>
             <div class="menu-panel">
                 @foreach ($pages as $page)
                     <a href="{{ route($page['route']) }}" @if (request()->routeIs($page['route'])) aria-current="page" @endif>{{ $page['label'] }}</a>

@@ -7,22 +7,24 @@
         {
             "id": "inicio",
             "screen": "inicio",
-            "path": "/"
+            "path": "/",
+            "serverNow": "2026-07-22T10:00:00-06:00"
         },
         {
             "id": "inicio-menu",
             "screen": "inicio",
             "path": "/",
+            "serverNow": "2026-07-22T10:00:00-06:00",
             "widths": [
                 390,
                 768
             ],
             "steps": [
                 {
-                    "click": "#mobile-menu-btn"
+                    "click": "details.menu-m > summary"
                 },
                 {
-                    "waitFor": "#mobile-menu"
+                    "waitFor": "details.menu-m[open] .menu-panel"
                 }
             ]
         },
@@ -30,12 +32,13 @@
             "id": "inicio-ancho",
             "screen": "inicio",
             "path": "/",
+            "serverNow": "2026-07-22T10:00:00-06:00",
             "widths": [
                 1024
             ],
             "navigation": {
-                "shown": "nav[aria-label=\"Secciones del sitio\"]",
-                "toggle": "#mobile-menu-btn"
+                "shown": "nav[aria-label=\"Principal\"]",
+                "toggle": "details.menu-m > summary"
             }
         },
         {
