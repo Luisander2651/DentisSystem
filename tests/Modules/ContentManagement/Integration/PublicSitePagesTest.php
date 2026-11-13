@@ -144,3 +144,20 @@ it('opens no other tab without noopener and noreferrer, and loads nothing from a
         expect($url)->not->toMatch('#^(https?:)?//(?!localhost)#');
     }
 });
+
+it('loads the shared script of the site, and every inline script carries the nonce of the policy', function () {
+    $this->withVite();
+
+    $html = $this->get(SITE_TEST_PATH)->assertOk()->getContent();
+    $document = new DOMDocument;
+    @$document->loadHTML('<?xml encoding="UTF-8">'.$html, LIBXML_NOERROR | LIBXML_NOWARNING);
+    $page = new DOMXPath($document);
+    $sources = array_map(fn (DOMElement $script): string => $script->getAttribute('src'), iterator_to_array($page->query('//script[@src]')));
+
+    expect(array_filter($sources, fn (string $src): bool => (bool) preg_match('#/build/assets/core-[\w-]+\.js$#', $src)))->toHaveCount(1)
+        ->and($page->query('//div[contains(@class, "opt")]/@data-clinic-schedule')->length)->toBe(1);
+
+    foreach ($page->query('//script[not(@src)][not(@type="application/ld+json")]') as $inline) {
+        expect($inline->getAttribute('nonce'))->not->toBe('');
+    }
+});
