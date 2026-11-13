@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Promociones\Domain\Entities;
 
+use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\DiscountPercentage;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\EndDate;
+use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionDescription;
 use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionId;
 use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionName;
-use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionDescription;
 use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionStatus;
-use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\DiscountPercentage;
 use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\StartDate;
-use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\EndDate;
-
-use DateTimeImmutable;
 use DateTime;
+use DateTimeImmutable;
 
 final class PromotionEntity
 {
@@ -44,8 +43,8 @@ final class PromotionEntity
             $discountPercentage,
             $startDate,
             $endDate,
-            new DateTimeImmutable(),
-            new DateTimeImmutable()
+            new DateTimeImmutable,
+            new DateTimeImmutable
         );
     }
 
@@ -76,13 +75,13 @@ final class PromotionEntity
     public function activate(): void
     {
         $this->status = PromotionStatus::visible();
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     public function deactivate(): void
     {
         $this->status = PromotionStatus::hidden();
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     public function isActive(): bool
@@ -90,10 +89,22 @@ final class PromotionEntity
         return $this->status->isVisible();
     }
 
+    /**
+     * Whether the promotion runs on the given day (spec 026, CA2): from its start date to its end
+     * date, both included. The caller decides which day "today" is, on the clinic's clock.
+     */
+    public function isCurrentOn(DateTimeImmutable $day): bool
+    {
+        $date = $day->format('Y-m-d');
+
+        return $this->startDate->value <= $date && $date <= $this->endDate->value;
+    }
+
     public function isExpired(): bool
     {
-        $today = new DateTime();
+        $today = new DateTime;
         $endDate = DateTime::createFromFormat('Y-m-d', $this->endDate->value);
+
         return $today > $endDate;
     }
 
@@ -123,7 +134,7 @@ final class PromotionEntity
         if ($status !== null) {
             $this->status = PromotionStatus::fromString($status);
         }
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     // Getters
