@@ -5,6 +5,9 @@
  * (docs/design/system.md 2.1.0); SiteStylesTokensTest keeps it that way.
  */
 
+@import './animations.css';
+@import './components.css';
+
 @font-face {
     font-family: 'Inter Tight';
     font-style: normal;
