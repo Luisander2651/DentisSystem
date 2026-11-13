@@ -403,9 +403,10 @@
 .ph-name b { font-size: 15px; }
 
 /* Accessibility refinements that ui-audit asked for (spec 026 T014, design.md → Resultado 5): the
-   open answer goes on the deep pink so its white text reaches 4.5:1; numbers, months and labels
+   open answer goes on a pink between the main and the deep one (45 % + 55 %), the lightest whose
+   white text reaches 4.5:1 inside its 8 % boxes (4.52:1; 5.19:1 on the card); numbers, months and labels
    reach their contrast and 12 px; controls take the system focus, 44 px targets and radii. */
-.fq-item.on { background: var(--color-primary-deep); box-shadow: 0 40px 70px -40px color-mix(in srgb, var(--color-primary-deep) 75%, transparent); }
+.fq-item.on { background: color-mix(in srgb, var(--color-primary) 45%, var(--color-primary-deep)); box-shadow: 0 40px 70px -40px color-mix(in srgb, var(--color-primary) 75%, transparent); }
 .fq-item.on .fq-n, .fq-in p, .fq-vh, .cal span, .fq-opt { color: var(--color-on-dark); }
 .fq-n { color: var(--color-primary); }
 .cal span { font-size: var(--text-min); }
