@@ -1,9 +1,9 @@
 ---
 id: 026
 slug: nueva-landing
-status: approved
+status: draft
 created: 2026-11-12
-extends: [011, 016]
+extends: [011, 016, 022]
 ---
 
 # 026 · Nueva landing del sitio público
@@ -31,19 +31,19 @@ sitio sigue con el diseño viejo y es difícil de encontrar. Esta spec atiende e
 
 ## Criterios de aceptación
 - [ ] CA1 · Dado un visitante, cuando abre `/`, `/acerca-de-nosotros`, `/galeria` o `/contacto`, entonces ve la página con el diseño nuevo (barra superior, pie y botón flotante de WhatsApp comunes) en las mismas direcciones de hoy, y las páginas de Aviso de Privacidad y Términos y Condiciones usan la misma barra superior y el mismo pie sin cambiar su texto.
-- [ ] CA2 · Dado contenido publicado como visible en "Contenido", cuando un visitante abre el inicio, entonces ve las promociones vigentes ordenadas por la que vence antes, las certificaciones y los testimonios visibles, con los datos que hoy se capturan (nombre, descripción, fechas, porcentaje, imagen) y sin campos que el staff no captura.
+- [ ] CA2 · Dado contenido publicado como visible en "Contenido", cuando un visitante abre el inicio, entonces ve las promociones vigentes ordenadas por la que vence antes, las certificaciones y los testimonios visibles, con los datos que hoy se capturan (nombre, descripción, fechas, porcentaje, imagen; la descripción de una certificación ocupa el lugar de la institución) y sin campos que el staff no captura.
 - [ ] CA3 · Dado que no hay promociones vigentes, certificaciones o testimonios visibles, cuando se abre el inicio, entonces cada sección muestra su estado vacío del diseño (aviso sin promociones activas, sección de certificaciones oculta, invitación "¿Ya nos visitaste?" que lleva a WhatsApp) y no una sección rota.
 - [ ] CA4 · Dado un fallo al leer el contenido, cuando se abre el inicio, entonces la página se muestra con los estados vacíos en lugar de un error (mantiene 011 CA2).
 - [ ] CA5 · Dadas imágenes visibles en la galería de "Contenido", cuando se abre `/galeria`, entonces esas imágenes y sus descripciones vienen en el HTML que entrega el servidor (sin esperar a una carga posterior) y se ven en el recorrido del consultorio; sin imágenes, se muestra un estado vacío. Reemplaza 011 CA3.
-- [ ] CA6 · Dado un visitante en `/contacto`, cuando escribe su nombre y su mensaje y envía, entonces se abre WhatsApp con el mensaje ya escrito hacia el número de la clínica; nada se guarda ni se envía a la clínica por otra vía. Reemplaza 011 CA4 en lo que toca a "sin formulario".
-- [ ] CA7 · Dado cualquier dato de contacto mostrado (teléfono, WhatsApp, correo, dirección, horario, redes), cuando se revisa el sitio, entonces es el mismo que muestra hoy el sitio en producción y no queda ningún texto provisional (p. ej. "[CORREO]").
+- [ ] CA6 · Dado un visitante en `/contacto`, cuando elige un motivo, escribe su mensaje y envía, entonces se abre WhatsApp con el mensaje ya escrito hacia el número de la clínica; nada se guarda ni se envía a la clínica por otra vía; sin JavaScript, la página ofrece un enlace directo a WhatsApp. Reemplaza 011 CA4 en lo que toca a "sin formulario".
+- [ ] CA7 · Dado cualquier dato de contacto mostrado (teléfono, WhatsApp, correo, dirección, horario, redes), cuando se revisa el sitio, entonces solo aparece si la clínica lo confirmó; uno sin confirmar no se muestra ni se publica a los buscadores, y no queda ningún texto provisional ni dato de ejemplo (p. ej. "[CORREO]", `521234567890`). El WhatsApp es obligatorio.
 - [ ] CA8 · Dada la medición de Lighthouse en perfil móvil sobre la build de producción, cuando se mide cada una de las cuatro rutas, entonces obtiene Rendimiento ≥ 90, Accesibilidad 100, Buenas prácticas 100 y SEO 100.
 - [ ] CA9 · Dado un visitante que pidió reducir el movimiento en su sistema, o un navegador sin gráficos 3D, cuando abre el inicio, entonces ve una versión estática del recorrido de tratamientos con el mismo texto y sin animaciones automáticas.
 - [ ] CA10 · Dado un visitante que solo usa teclado o lector de pantalla, cuando recorre las cuatro páginas a 390, 768 y 1440 px, entonces alcanza todos los enlaces y controles (menú, carruseles, selector del antes y después, formulario de contacto) en orden lógico, con foco visible y nombre accesible, y los carruseles automáticos se pueden pausar.
-- [ ] CA11 · Dada cada ruta indexable (las cuatro páginas y las dos legales), cuando se lee su HTML, entonces lleva título y descripción propios y únicos (descripción de 70–160 caracteres), una URL canónica absoluta sobre `https://dentissapp.com` sin barra final, las etiquetas para compartir (título, descripción, tipo, URL igual a la canónica e idioma) y el color de tema de la marca.
+- [ ] CA11 · Dada cada ruta indexable (las cuatro páginas y las dos legales), cuando se lee su HTML, entonces declara el idioma español, lleva título y descripción propios y únicos (descripción de 70–160 caracteres), una URL canónica absoluta sobre `https://dentissapp.com` sin barra final, las etiquetas para compartir (título, descripción, tipo, URL igual a la canónica e idioma) y el color de tema rosa de la marca.
 - [ ] CA12 · Dado un buscador, cuando pide `/sitemap.xml`, entonces recibe las seis rutas indexables con su URL canónica y ninguna ruta de acceso ni del panel; y `robots.txt` declara ese sitemap.
-- [ ] CA13 · Dados el inicio y contacto, cuando se lee su HTML, entonces incluyen los datos estructurados de clínica dental solo con información visible en la página (nombre, dirección, teléfono, horario).
-- [ ] CA17 · Dado el contenido del sitio, cuando se revisan el recorrido de tratamientos del inicio, los servicios y el antes y después de la galería, entonces solo nombran tratamientos que Dentissa ofrece en su catálogo y ninguno que no ofrezca.
+- [ ] CA13 · Dados el inicio y contacto, cuando se lee su HTML, entonces incluyen los datos estructurados de clínica dental solo con información visible y confirmada en la página (nombre, dirección, teléfono, horario).
+- [ ] CA17 · Dado el contenido del sitio, cuando se revisan el recorrido de tratamientos del inicio, los servicios y el antes y después de la galería, entonces solo nombran tratamientos que Dentissa ofrece (los servicios que publica hoy su sitio en producción: Limpieza y Prevención, Ortodoncia, Implantes Dentales, Blanqueamiento Dental y Odontopediatría) y ninguno que no ofrezca.
 - [ ] CA18 · Dado un visitante en `/galeria`, cuando elige un tratamiento en el antes y después, entonces ve un par de fotos de antes y después de ese tratamiento que puede comparar deslizando, también con teclado; hasta tener las fotos reales se usan imágenes de muestra.
 - [ ] CA19 · Dado un enlace de cualquier ruta indexable compartido en WhatsApp o una red social, cuando se genera la vista previa, entonces muestra la imagen general para compartir de 1200×630 con la marca, hecha con el sistema de diseño ampliado, y su texto alternativo.
 - [ ] CA14 · (abuso) Como visitante, intento ver contenido marcado como oculto o una promoción vencida en cualquier página del sitio → no aparece en el HTML, en los datos estructurados ni en el sitemap.
@@ -57,7 +57,8 @@ sitio sigue con el diseño viejo y es difícil de encontrar. Esta spec atiende e
 - Cambios en la pantalla "Contenido" del panel o en cómo el staff publica.
 - Redirecciones de `www` y de la barra final (SE2.b, SE2.c): configuración del servidor → objetivo 7 del roadmap.
 - Formulario de contacto que guarde mensajes o envíe correos; envío de testimonios por pacientes.
-- Corregir la API pública de contenido (011 CA6, listados de un elemento): no la usa el sitio nuevo.
+- Contenido oculto expuesto por la API pública de contenido (011 CA6, `docs/security.md` RS4.a): el sitio nuevo no usa esa API; sigue pendiente → spec de corrección de la API pública.
+- `theme-color` del panel y del portal del paciente (parte de SE8.a) → roadmap, Pendientes y deuda.
 - Analítica, banners de cookies y alta en Search Console.
 
 ## Seguridad y privacidad
@@ -65,7 +66,8 @@ sitio sigue con el diseño viejo y es difícil de encontrar. Esta spec atiende e
   staff; el formulario de contacto no guarda nada y solo abre WhatsApp en el dispositivo del
   visitante.
 - Quién puede hacer qué: cualquier visitante → leer contenido visible y vigente; nadie puede ver
-  contenido oculto ni promociones vencidas desde el sitio.
+  contenido oculto ni promociones vencidas en las páginas del sitio (la API pública de contenido
+  conserva su brecha RS4.a, fuera de alcance).
 - Casos de abuso:
   - Como visitante, intento ver contenido oculto o vencido → no aparece (CA14).
   - Como administrador con una cuenta comprometida, publico contenido con código → se muestra como texto (CA15).
@@ -85,7 +87,9 @@ sitio sigue con el diseño viejo y es difícil de encontrar. Esta spec atiende e
 | SE6.a — Etiquetas para compartir en cada ruta indexable | dentro | CA11 |
 | SE6.b — Imagen general para compartir | dentro | CA19 (última tarea, con el sistema de diseño ya ampliado) |
 | SE7.a — Datos estructurados de clínica dental | dentro | CA13 |
-| SE8.a — `theme-color` en los layouts | dentro | CA11 (layouts del sitio público; los demás layouts → deuda) |
+| SE8.a — `theme-color` en los layouts (sitio público) | dentro | CA11 (rosa de la marca, decisión del usuario) |
+| SE8.a — `theme-color` en los layouts (panel y portal) | fuera | otra superficie → roadmap, Pendientes y deuda |
+| RS4.a — No exponer contenido oculto en la API pública | fuera | el sitio nuevo no usa la API pública; las páginas filtran en el servidor (CA14) → spec de corrección de la API pública |
 
 ## Auditoría
 No aplica: la spec no toca datos sensibles, autenticación ni permisos; solo muestra contenido
@@ -111,7 +115,7 @@ Qué debe lograr cada pantalla:
 - **Galería:** las fotos reales del consultorio que publica el staff y el antes y después con fotos por tratamiento.
 - **Contacto:** escribir por WhatsApp en un paso, ver si la clínica está abierta, dirección, mapa y horario.
 
-Recursos de marca: logotipo y colores del sistema 2.0.0, favicon de la propuesta, fotos de la
+Recursos de marca: logo y favicon reales de la clínica (los del sistema, spec 016 CA15; no el logo dibujado de la propuesta), colores del sistema, fotos de la
 clínica y diplomas de ejemplo en `nueva-landing/…/public/img/dentissa/`.
 
 Qué debe diseñarse: estados vacíos de cada sección con contenido (CA3, CA5), la versión estática del
@@ -124,7 +128,7 @@ Modo: persuadir · umbral 80 · mínimo por punto 3 · presupuesto 5 candidatos.
 
 | ID | Qué se mide | Objetivo | Sale de |
 |---|---|---|---|
-| K1 | La acción principal en la primera pantalla de cada página | "Agenda una Cita" visible sin desplazarse a 390, 768 y 1440 px | CA1 |
+| K1 | La acción principal en la primera pantalla del inicio y de "Acerca de nosotros" | "Agenda una Cita" visible sin desplazarse a 390, 768 y 1440 px | CA1 |
 | K2 | Lighthouse móvil de las cuatro rutas | Rendimiento ≥ 90; Accesibilidad, Buenas prácticas y SEO 100 | CA8 |
 | K3 | Estados vacíos con contenido cero | cada sección muestra su estado vacío sin desbordes | CA3, CA5 |
 | K4 | Movimiento reducido | sin animaciones automáticas y con el texto del recorrido | CA9 |
@@ -159,18 +163,24 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 | 2026-11-12 | contradicción | La propuesta trae CSS propio, colores literales y dos fuentes de Google; P15 y `docs/design/system.md` exigen solo tokens y la fuente del sistema | Ampliar el sistema de diseño con una variante "sitio público" (fuentes servidas desde el sitio y tokens extra) y sustituir los colores literales por tokens, conservando el aspecto | usuario |
 | 2026-11-12 | brecha | ¿Entran las pantallas de acceso de la propuesta? | No: spec aparte, junto con SE4.a | usuario |
 | 2026-11-12 | brecha | Metas de Lighthouse | Móvil: Rendimiento ≥ 90, Accesibilidad 100, Buenas prácticas 100, SEO 100 en las cuatro rutas | usuario |
-| 2026-11-12 | brecha | ¿Qué brechas SEO cierra la spec? | Las que viven en las páginas: SE1.a, SE2.a, SE3.a, SE3.b, SE5.a, SE6.a, SE6.b, SE7.a, SE8.a; fuera SE2.b, SE2.c y SE4.a | usuario |
+| 2026-11-12 | brecha | ¿Qué brechas SEO cierra la spec? | Las que viven en las páginas: SE1.a, SE2.a, SE3.a, SE3.b, SE5.a, SE6.a, SE6.b, SE7.a, SE8.a (solo el sitio público); fuera SE2.b, SE2.c, SE4.a y SE8.a en panel y portal | usuario |
 | 2026-11-12 | brecha | La spec pasa de 10 criterios | Se mantiene junta: el usuario fijó el alcance (sitio + SEO de las páginas) y ya separó las pantallas de acceso | usuario |
 | 2026-11-12 | implícita | ¿De dónde sale el contenido? | Del contenido que el staff publica hoy, sin cambiar cómo se carga ni sus campos; el diseño se adapta | usuario ("adaptándola a lo que ya hay") · `docs/specs/011-sitio-publico/spec.md` |
 | 2026-11-12 | implícita | Direcciones de las páginas | Las de hoy: `/`, `/acerca-de-nosotros`, `/galeria`, `/contacto` | `docs/seo.md` → Inventario de rutas |
 | 2026-11-12 | implícita | Solo contenido visible y promociones vigentes en la zona de la clínica | Se mantiene | `docs/specs/011-sitio-publico/spec.md` CA1, Historial 2026-10-16 |
 | 2026-11-12 | implícita | URL canónica | `https://dentissapp.com`, sin `www` ni barra final | `docs/seo.md` → Reglas del sitio |
 | 2026-11-12 | diseño | Diseño de la spec | Se adopta la propuesta de `nueva-landing/` sin ciclo de candidatos; acta en [design.md](design.md) | usuario |
-| 2026-11-12 | supuesto | Datos de contacto: la propuesta trae marcadores (`[CORREO]`, número de ejemplo) | Se usan los datos que muestra hoy el sitio en producción | agente |
-| 2026-11-12 | supuesto | Las páginas legales comparten el layout del sitio | Adoptan la barra y el pie nuevos sin cambiar su texto y entran en el sitemap como rutas indexables | agente |
+| 2026-11-12 | brecha | Datos de contacto: la propuesta y producción traen marcadores y datos de ejemplo (`[CORREO]`, `521234567890`, `+52 55 1234 5678`, redes genéricas) | Solo se muestran y se publican los datos confirmados; WhatsApp obligatorio | usuario (`/analyze 026` A6) |
+| 2026-11-12 | supuesto | Las páginas legales comparten el layout del sitio | Adoptan la barra y el pie nuevos sin cambiar su texto y entran en el sitemap como rutas indexables; de la 022 se mantienen el texto, el título, la versión, la descripción propia y los enlaces del pie (CA6, CA9, CA10) | agente (`/analyze 026` A9) |
 | 2026-11-12 | brecha | El antes y después de la propuesta es un dibujo con tratamientos de ejemplo | Se muestra con fotos (imágenes de muestra hasta tener las reales) y el contenido se adapta a lo que Dentissa hace: solo tratamientos de su catálogo | usuario |
 | 2026-11-12 | brecha | Campos nuevos de contenido | Certificaciones sin campos nuevos; estrellas de testimonios quedan pendientes en el roadmap | usuario |
 | 2026-11-12 | brecha | Imagen para compartir (SE6.b) | Entra en esta spec como última tarea, cuando el sistema de diseño ampliado ya exista | usuario |
+| 2026-11-12 | brecha | K1 en las cuatro páginas | Solo en inicio y "Acerca de nosotros", donde la propuesta pone el botón | usuario (`/analyze 026` A5) |
+| 2026-11-12 | brecha | Campos del formulario de contacto | Los de la propuesta: motivo y mensaje, sin nombre; sin JavaScript, enlace directo a WhatsApp | usuario (`/analyze 026` A14, A17) |
+| 2026-11-12 | brecha | Logo y favicon | Los reales de la clínica (016 CA15), no los de la propuesta | usuario (`/analyze 026` A10) |
+| 2026-11-12 | brecha | Descripción de las certificaciones | Se muestra en el lugar de la institución | usuario (`/analyze 026` A15) |
+| 2026-11-12 | brecha | `theme-color` | Rosa de la marca en el sitio público; panel y portal fuera | usuario (`/analyze 026` A8) |
+| 2026-11-12 | brecha | Fuente de los tratamientos (CA17) | Los servicios de la landing de producción, no el catálogo de la agenda | usuario (`/analyze 026` A26) |
 | 2026-11-12 | supuesto | El formulario de contacto de la propuesta | Solo compone un mensaje de WhatsApp en el navegador; no es un formulario de contacto en el sentido de 011 "Fuera de alcance" | agente |
 | 2026-11-12 | supuesto | "Abierto / Cerrado" de inicio y contacto | Se calcula con el horario publicado y la hora de la clínica (`America/Mexico_City`), no la del visitante | agente |
 
@@ -202,3 +212,4 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 | 2026-11-12 | Creación | /specify |
 | 2026-11-12 | Antes y después con fotos y tratamientos reales (CA17, CA18); imagen para compartir dentro como última tarea (CA19); estrellas de testimonios pendientes | Aclaración del usuario |
 | 2026-11-12 | Aprobada | Confirmación explícita del usuario |
+| 2026-11-12 | `extends` 022; CA2, CA6, CA7, CA11, CA13, CA17, K1, SE8.a, RS4.a y logo según las decisiones del usuario sobre `/analyze 026` (A5, A6, A8, A9, A10, A14, A15, A17, A18, A26); vuelve a `draft` | `/analyze 026` ronda 1 |

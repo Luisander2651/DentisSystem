@@ -1,6 +1,6 @@
 ---
 spec: 026-nueva-landing
-status: approved
+status: draft
 constitution_version: 1.2.1
 created: 2026-11-12
 ---
@@ -12,8 +12,10 @@ Se trasplanta la propuesta de `nueva-landing/` **sin cambiar su composición**: 
 CSS propio y su JavaScript vanilla entran en el proyecto bajo `resources/views/site/`,
 `resources/css/site/` y `resources/js/site/`, con un layout nuevo `layouts/site.blade.php`. El CSS
 sigue siendo CSS plano (no se reescribe a utilidades de Tailwind, que movería el diseño), pero cada
-color, radio y fuente sale de un `var(--…)` declarado una sola vez en `@theme` de
-`resources/css/app.css`; un test nuevo prohíbe literales en `resources/css/site/`. El contenido
+color, radio, alto de control, fuente y curva sale de un `var(--…)` declarado una sola vez en
+`@theme` de `resources/css/app.css`; un test nuevo prohíbe literales en `resources/css/site/` y
+exige que toda variable usada esté declarada. La barra y el pie usan el logo real de la clínica
+(`x-ui.brand`). El contenido
 deja de ser de ejemplo: datos de la clínica y tratamientos en `config/site.php`, promociones,
 certificaciones y testimonios desde el caso de uso actual, y la galería se renderiza en el servidor
 con un controlador nuevo. Los metadatos SEO, el JSON-LD, el sitemap y la imagen para compartir se
@@ -45,7 +47,7 @@ Conteo: 10 cumplen · 5 no aplican · ninguno viola.
 ## Cambios por módulo
 | Módulo | Cambio | Riesgo |
 |---|---|---|
-| Sistema de diseño (`resources/css/app.css`, `docs/design/system.md`, `system.html`) | Bloque `@theme static` con los tokens del sitio público (colores nuevos, `--font-display`, `--font-serif`, escalas `--space-*`, `--duration-*`, `--ease-spring`); `system.md` 2.1.0 con la variante "sitio público" y la regla de fuentes | Medio: `DesignTokensTest` exige que cada token documentado tenga su par de contraste correcto |
+| Sistema de diseño (`resources/css/app.css`, `docs/design/system.md`, `system.html`, `DesignTokensTest`) | Bloque `@theme static` con los tokens del sitio público (colores nuevos, `--font-display`, `--font-serif`, `--space-*`, `--duration-*`, `--ease-out`, `--ease-spring`, `--weight-*`, `--text-body`, radios `--radius-hair…2xl`, `--spacing-control-lg`); `system.md` 2.1.0 con la variante "sitio público", la regla de fuentes y los componentes del sitio; `DesignTokensTest` lee también ese bloque | Medio: `DesignTokensTest` exige que cada token documentado tenga su valor y su par de contraste |
 | `resources/fonts/` (nuevo) | `inter-tight-{400,500,600,700}.woff2` e `instrument-serif-{regular,italic}.woff2` (subconjunto latino) con `OFL.txt` | Bajo |
 | `resources/css/site/` (nuevo) | Hojas de la propuesta (`base`, `components`, `animations`, `compat`, `pages/{inicio,nosotros,galeria,contacto}.css`) y entrada `site.css` con `@font-face`; `tokens.css` de la propuesta se elimina (sus valores ya están en `@theme`) | Medio: 381 apariciones de color escrito a mano (91 `#fff`, 26 `#d75078`…) y `style` en línea |
 | `resources/js/site/` (nuevo) | `core.js`, `home.js`, `tooth3d.js` (cargado diferido), `gallery.js`, `contact.js`, entradas por página; `forms.js` no entra (es de las pantallas de acceso) | Medio: rendimiento del WebGL en móvil |
@@ -53,7 +55,7 @@ Conteo: 10 cumplen · 5 no aplican · ninguno viola.
 | `resources/views/site/{inicio,nosotros,galeria,contacto}.blade.php` (nuevos) | Vistas de la propuesta con datos de `config/site.php` y del contenido real; `style` en línea → clases | Medio |
 | `resources/views/pages/landing/{aviso-privacidad,terminos}.blade.php` | Pasan a extender `layouts.site` (cuando el interruptor está activo); su texto no cambia | Bajo: `LegalPagesTest` |
 | `config/site.php` (nuevo) | Interruptor `new_landing`, datos de contacto (copiados de las vistas de producción), horario, redes, tratamientos, títulos y descripciones por ruta | Bajo |
-| ContentManagement · `Application/UseCases/GetLandingContentUseCase.php` | Descarta promociones vencidas (`PromotionEntity`, zona `America/Mexico_City`) y las ordena por fin de vigencia | Bajo: hoy la vista vieja muestra también vencidas visibles |
+| ContentManagement · `Application/UseCases/GetLandingContentUseCase.php` y `Modules/Promociones/Domain/Entities/PromotionEntity.php` | La entidad decide si está vigente (inicio y fin) con el reloj de la aplicación en `America/Mexico_City` (hoy `isExpired()` usa `new DateTime()`, que ignora `travelTo` y `UiAuditClock`); el caso de uso descarta las no vigentes y ordena por fin | Bajo: hoy la vista vieja muestra también vencidas visibles |
 | ContentManagement · `Infrastructure/HTTP/Controllers/ShowLandingPageController.php` | Vista según el interruptor | Bajo |
 | ContentManagement · `Infrastructure/HTTP/Controllers/ShowGalleryPageController.php` (nuevo) | Galería renderizada en el servidor con imágenes `visible`, caché de 10 min y degradación a vacío | Bajo |
 | Core · `app/Core/Http/ShowSitemapController.php` (nuevo, junto a `ShowDashboardPageController`) | `GET /sitemap.xml` desde las rutas indexables de `config/site.php` | Bajo |
@@ -61,7 +63,7 @@ Conteo: 10 cumplen · 5 no aplican · ninguno viola.
 | `public/robots.txt` | Línea `Sitemap: https://dentissapp.com/sitemap.xml` | Bajo |
 | `public/images/site/` (nuevo) | Fotos de la propuesta (`data-origen="generada"`) y pares de antes y después de muestra con `CREDITOS.md` | Bajo |
 | `tests/Browser/make-brand-assets.mjs`, `public/images/brand/compartir.png` | La última tarea añade la tarjeta 1200×630 al generador existente (Chrome sin interfaz, sin dependencias) | Bajo |
-| `tests/Browser/screens.json` y `baseline-1440.json` | Pantallas del sitio con sus estados (con y sin contenido, menú, antes y después) | Medio: la línea base de composición cambia |
+| `tests/Browser/screens.json`, `baseline-1440.json` y `database/seeders/UiAuditSeeder.php` | Cada tarea de página actualiza sus pantallas y su línea base (selectores del sitio nuevo); los datos de ui-audit producen varias promociones, ≥ 4 testimonios, galería con 0/1/≥ 3 imágenes e inicio vacío | Medio: la línea base de composición cambia |
 | `vite.config.js` | Entradas `resources/css/site/site.css` y `resources/js/site/*.js` | Bajo |
 | `.env.example` | `SITE_NEW_LANDING=true` | Bajo |
 
@@ -83,7 +85,7 @@ Archivos que **no** se tocan hasta después de liberar (decisión del usuario): 
 | Propuesta | Real | Nota |
 |---|---|---|
 | promoción `titulo`, `descripcion`, `porcentaje`, `inicio`, `fin` | `name`, `description`, `discount_percentage`, `start_date`, `end_date` | vigentes y ordenadas en el servidor |
-| certificación `titulo`, `institucion`, `tipo`, `fecha`, `imagen_url` | `name`, —, —, `date`, `image_url` | se quitan institución y tipo; sin imagen → diploma de la propuesta |
+| certificación `titulo`, `institucion`, `tipo`, `fecha`, `imagen_url` | `name`, `description`, —, `date`, `image_url` | la descripción ocupa el lugar de la institución (decisión del usuario); se quita el tipo; sin imagen → diploma de la propuesta |
 | testimonio `nombre`, `texto`, `calificacion`, `fecha` | `author`, `description`, —, — | sin estrellas ni fecha (pendiente en el roadmap) |
 | galería (dibujos `.frame-art`) | `url`, `description` de imágenes `visible` | `<img>` con `alt` = descripción |
 
@@ -91,16 +93,17 @@ Archivos que **no** se tocan hasta después de liberar (decisión del usuario): 
 ```php
 'new_landing' => (bool) env('SITE_NEW_LANDING', true),
 'name' => 'Dentissa', 'url' => 'https://dentissapp.com',
-'contact' => ['whatsapp' => '…', 'phone' => '…', 'email' => '…', 'address' => '…', 'maps_url' => '…', 'instagram' => '…', 'facebook' => '…'],
+'contact' => ['whatsapp' => '…', 'phone' => null, 'email' => null, 'address' => '…', 'maps_url' => '…', 'instagram' => null, 'facebook' => null],  // null = no confirmado: no se muestra ni va al JSON-LD
 'schedule' => [1 => ['09:00', '19:00'], …, 6 => ['09:00', '14:00'], 0 => null],
 'treatments' => ['Limpieza y Prevención', 'Ortodoncia', 'Implantes Dentales', 'Blanqueamiento Dental', 'Odontopediatría'],
 'pages' => ['/' => ['title' => …, 'description' => …], …],   // seis rutas indexables
 ```
-Los valores de contacto y horario se copian de las vistas que hoy sirve producción
-(`resources/views/pages/landing/contacto.blade.php`, `components/landing/footer.blade.php`); los
-tratamientos, de la sección "Nuestros Servicios" del inicio actual (decisión del usuario). Si
-producción tiene un dato provisional (p. ej. el número `521234567890`), la tarea lo marca como
-bloqueo y pregunta al usuario el real.
+Producción solo tiene datos de ejemplo (`521234567890`, `+52 55 1234 5678`, `contacto@dentissa.com`,
+redes genéricas): solo se cargan los que el usuario confirme; los demás quedan en `null` y la
+vista y el JSON-LD los omiten (decisión del usuario, `/analyze 026` A6). El WhatsApp es obligatorio:
+sin él, T003 se bloquea. Los tratamientos salen de la sección "Nuestros Servicios" del inicio
+actual (decisión del usuario) y sus textos (también los del antes y después) los pinta el servidor
+desde config, no el JS. `site.url` es igual a `seo.site_url`.
 
 **Pantallas y estados** (de `design.md` → Pantallas): inicio con y sin contenido (cupón/boletos o
 franja vacía; certificaciones ocultas sin registros; invitación "¿Ya nos visitaste?" con 0
@@ -122,14 +125,22 @@ contraste, toque) a 390, 768 y 1440 px.
     una canónica, Open Graph, `theme-color` = `--color-primary`, JSON-LD que se parsea, sitemap y
     robots, `og:image` válido.
 - **Unidad de JS con Node** (patrón de `PublicGalleryScriptTest`): `SiteScriptsTest` con un
-  `render-site-scripts.mjs` que carga `contact.js` y `core.js` en un DOM mínimo: compositor de
-  WhatsApp (marcado → texto literal codificado), estado abierto/cerrado con hora fijada en la zona de
-  la clínica.
+  `render-site-scripts.mjs` que carga los scripts del sitio en un DOM mínimo: compositor de
+  WhatsApp (motivo + mensaje, marcado → texto literal codificado), estado abierto/cerrado con hora
+  fijada en la zona de la clínica, `home.js` sin filtrar ni reordenar promociones (con el reloj del
+  navegador en otra zona, la que vence hoy para la clínica sigue visible).
 - **Diseño**: `SiteStylesTokensTest` (`tests/Modules/Core/Unit/Design/`) — ningún `#…`, `rgb(`,
-  `hsl(` ni `font-family` literal en `resources/css/site/**` ni `style=` con color en
-  `resources/views/site/**`, con control positivo; fuentes servidas desde `resources/fonts` y ningún
-  `fonts.googleapis`/`bunny` en el sitio. `DesignTokensTest` cubre los tokens nuevos.
-- **Navegador**: `npm run test:ui` con pantallas nuevas en `screens.json`; `evaluate.mjs` de
+  `hsl(`, `border-radius` en px ni `min-height`/`height` en px de un control (`btn`, `seg`, campos)
+  literal en `resources/css/site/**`; `font-family` literal solo dentro de `@font-face`; toda
+  `var(--x)` usada tiene su token declarado en `app.css` o se define en la propia hoja; ningún
+  `style=` con color en las vistas del sitio; ningún término de tratamiento descartado en
+  `resources/js/site/**`; fuentes desde `resources/fonts` con su licencia y ningún host externo. Cada
+  regla con control positivo y negativo. `DesignTokensTest` cubre los tokens nuevos (lee también el
+  bloque `@theme static`).
+- **Estructura**: `PageStructureTest` (016) sigue exigiendo el logo y el favicon de la marca en las
+  rutas públicas que adoptan el layout nuevo.
+- **Navegador**: `npm run test:ui` — cada tarea de página actualiza sus entradas de `screens.json` y
+  su línea base y deja `--only <pantalla>` en verde; `evaluate.mjs` de
   `design-spec` con `design/criterios.json` sobre la build servida en local (Playwright global,
   decisión del usuario) en cada tarea de página.
 - **Lighthouse** (decisión del usuario): manual en Chrome, perfil móvil, sobre la build de
@@ -142,6 +153,10 @@ contraste, toque) a 390, 768 y 1440 px.
 - Testimonios: 1 → sin carrusel; 2 → carrusel; 3 → sin cinta; 4 → con cinta.
 - Certificaciones: 0 → la sección no está en el HTML; 1 → presente.
 - Descripción SEO: 69 caracteres falla, 70 pasa; 160 pasa, 161 falla (el test recorre las seis).
+- Vigencia con el reloj de la aplicación: el test usa `travelTo` y `UiAuditClock` la respeta (la
+  promoción sembrada por `UiAuditSeeder` sigue visible en el estado "con contenido").
+- Galería: 0 imágenes → aviso; 1 → un marco sin recorrido (el caso que ya falló, ficha
+  2026-10-17); 3 → recorrido horizontal.
 - Abierto/Cerrado: lunes 18:59 → "Abierto"; 19:00 → "Cerrado"; sábado 13:59 abierto, 14:00 cerrado;
   domingo cerrado. Con el reloj del navegador en otra zona (UTC), el resultado es el de la clínica.
 - Interruptor: `true` → `site.*`; `false` → vistas viejas (un caso por ruta).
@@ -149,7 +164,9 @@ contraste, toque) a 390, 768 y 1440 px.
 **Entradas nuevas**: contenido publicado con `<script>`, `"` o `</script>` en nombre o descripción
 → texto escapado en HTML y en JSON-LD (`JSON_HEX_TAG`); descripción de imagen vacía → `alt=""` y
 la imagen sigue; `image_url` vacía en certificación → diploma de la propuesta. Formulario de
-contacto vacío → no abre WhatsApp y muestra el error del campo.
+contacto vacío → no abre WhatsApp y muestra el error del campo. Sin JavaScript, el
+formulario no tiene `action` externo (la CSP `form-action 'self'` lo bloquearía) y la página muestra
+un enlace directo a WhatsApp (decisión del usuario, A17).
 
 ## Modelo de amenazas
 No hay datos sensibles ni autenticación; aplica por las entradas externas (contenido que publica el
@@ -157,11 +174,11 @@ staff y texto del visitante en el formulario).
 
 | ID | Amenaza (STRIDE) | Categoría OWASP | Componente | Control | Test |
 |---|---|---|---|---|---|
-| TM1 | Information disclosure: contenido oculto o promoción vencida en el HTML, el JSON-LD o el sitemap | A01:2025 | `GetLandingContentUseCase`, `ShowGalleryPageController`, sitemap | Filtro `visible` y vigencia en el servidor; el sitemap solo lista rutas de config | `PublicSiteContentTest` y `PublicGalleryPageTest`: oculto y vencido ausentes del HTML y del JSON-LD |
+| TM1 | Information disclosure: contenido oculto o promoción vencida en el HTML, el JSON-LD o el sitemap | A01:2025 | `GetLandingContentUseCase`, `ShowGalleryPageController`, sitemap | Filtro `visible` y vigencia en el servidor; el sitemap solo lista rutas de config. Riesgo restante fuera de alcance: la API pública de contenido (RS4.a) | `PublicSiteContentTest` y `PublicGalleryPageTest`: oculto y vencido ausentes del HTML y del JSON-LD |
 | TM2 | Tampering → XSS almacenado por contenido publicado con marcado | A05:2025 (Injection) | vistas `site.*`, JSON-LD | Solo la salida escapada de Blade (nunca la salida sin escapar `{!! !!}`) para contenido; JSON-LD con `json_encode(JSON_HEX_TAG\|JSON_HEX_AMP\|JSON_UNESCAPED_UNICODE)`; CSP actual sin `unsafe-inline` en scripts | `PublicSiteContentTest`: `<script>` en nombre y descripción sale escapado; JSON-LD con `</script>` sigue parseando |
 | TM3 | Tampering → XSS en el DOM desde el formulario o datos en atributos | A05:2025 | `contact.js`, `gallery.js`, `home.js` | `textContent` y `encodeURIComponent`; ningún `innerHTML` con datos | `SiteScriptsTest`: mensaje con `<img onerror>` llega codificado a la URL de WhatsApp y no crea nodos; lint en `/review`: `grep innerHTML resources/js/site` |
 | TM4 | Spoofing: pestaña abierta por un enlace externo controla la página (tabnabbing) | A05:2025 | enlaces a WhatsApp, Maps, redes | `rel="noopener noreferrer"` en todo `target="_blank"` | `PublicSitePagesTest`: todo `target=_blank` lleva `noopener` |
-| TM5 | DoS: páginas públicas consultan la base en cada visita | A06:2025 (Insecure design) | inicio y galería | Caché de 10 min (como hoy) y rate limiting existente | `PublicGalleryPageTest`: segunda petición sin consulta a la base (contador de consultas) |
+| TM5 | DoS: páginas públicas consultan la base en cada visita | A06:2025 (Insecure design) | inicio y galería | Caché de 10 min (como hoy) | `PublicGalleryPageTest`: segunda petición sin consulta a la base (contador de consultas) |
 
 Cobertura de abuso: CA14 → TM1 · CA15 → TM2 · CA16 → TM3.
 
@@ -169,28 +186,28 @@ Cobertura de abuso: CA14 → TM1 · CA15 → TM2 · CA16 → TM3.
 | Criterio de aceptación | Cambio(s) | Test(s) |
 |---|---|---|
 | CA1: cuatro páginas con el diseño nuevo en las mismas rutas; legales con barra y pie nuevos | `layouts/site`, `site.*`, `routes/web.php`, legales | integración · `PublicSitePagesTest` · cada ruta 200 con `header`/`footer`/botón de WhatsApp del sitio; legales igual y su `h1` sin cambios; interruptor apagado → vista vieja · `evaluate.mjs` K1 · verificación manual: comparar cada página con la propuesta a 390 y 1440 |
-| CA2: promociones vigentes ordenadas, certificaciones y testimonios visibles con campos reales | `GetLandingContentUseCase`, `site.inicio` | integración · `PublicSiteContentTest` · vigentes en orden de fin; ocultas fuera; sin campos inexistentes (no hay estrellas ni institución) |
+| CA2: promociones vigentes ordenadas, certificaciones y testimonios visibles con campos reales | `PromotionEntity`, `GetLandingContentUseCase`, `site.inicio` | unidad · `GetLandingContentUseCaseTest` · fronteras con `travelTo` · integración · `PublicSiteContentTest` · vigentes en orden de fin; ocultas fuera; descripción de la certificación en el lugar de la institución; sin estrellas ni tipo |
 | CA3: estados vacíos de cada sección | `site.inicio` | integración · `PublicSiteContentTest` · sin contenido: franja sin promociones, sin sección de certificaciones, invitación con enlace a WhatsApp · `ui-audit` pantalla `inicio-vacio` |
 | CA4: fallo al leer → página con estados vacíos | `ShowLandingPageController` | integración · `PublicSiteContentTest` · el caso de uso lanza → 200, estados vacíos, `Log::error` |
 | CA5: galería en el HTML del servidor; vacío | `ShowGalleryPageController`, `site.galeria` | integración · `PublicGalleryPageTest` · `<img>` con `src` y `alt` en la respuesta sin JS; oculta fuera; sin imágenes → estado vacío; fallo → vacío · `evaluate.mjs` G-sin-js |
-| CA6: compositor abre WhatsApp con el mensaje; nada se guarda | `contact.js`, `site.contacto` | unidad JS · `SiteScriptsTest` · URL `https://wa.me/<num>?text=` con nombre y mensaje · integración · `PublicSitePagesTest` · el formulario no tiene `action` al servidor ni `@csrf` |
-| CA7: datos de contacto = producción, sin marcadores | `config/site.php`, vistas | integración · `PublicSitePagesTest` · teléfono, correo, dirección, horario y redes de config en las cuatro páginas y el pie; ninguna aparición de `[CORREO`, `[CORREO DE CONTACTO]`, `521234567890` salvo que sea el real · verificación manual: comparar con producción en T092 |
+| CA6: compositor abre WhatsApp con motivo y mensaje; nada se guarda; enlace sin JS | `contact.js`, `site.contacto` | unidad JS · `SiteScriptsTest` · URL `https://wa.me/<num>?text=` con motivo y mensaje · integración · `PublicSitePagesTest` · el formulario no tiene `action` ni `@csrf`; hay un enlace directo a WhatsApp visible sin JS |
+| CA7: solo datos confirmados, sin marcadores ni ejemplos | `config/site.php`, vistas | unidad · `SiteConfigTest` · rechaza los valores de ejemplo conocidos · integración · `PublicSitePagesTest` · un dato en `null` no aparece en ninguna página ni en el JSON-LD; ninguna aparición de `[CORREO`, `521234567890`, `+52 55 1234 5678` ni de las redes genéricas |
 | CA8: Lighthouse móvil ≥ 90 / 100 / 100 / 100 | carga diferida, fuentes locales con precarga, imágenes con tamaño | `evaluate.mjs` K2a–K2d por página · verificación manual: Lighthouse móvil en Chrome sobre la build de producción local (T092) y sobre producción (T095), registrado en `review.md` y `docs/seo.md` |
 | CA9: movimiento reducido o sin WebGL → versión estática | `tooth3d.js`, `inicio.css` | `evaluate.mjs` G-reducido y K4a · `ui-audit` con `prefers-reduced-motion` · unidad JS · `SiteScriptsTest` · sin `WebGLRenderingContext` no crea el lienzo y deja la versión estática |
 | CA10: teclado y lector de pantalla; carruseles con pausa | vistas y `home.js`, `gallery.js` | `npm run test:ui` · foco visible, orden, nombres accesibles a 390/768/1440 · `evaluate.mjs` G-foco, G-toque · verificación manual: NVDA en inicio y galería |
-| CA11: título, descripción, canónica, Open Graph y `theme-color` por ruta indexable | `components/site/seo`, `config/site.php` | integración · `PublicSiteSeoTest` · seis rutas: valores únicos, 70–160 caracteres, canónica absoluta sin barra, `og:url` = canónica, `og:locale=es_MX`, `theme-color` = token |
+| CA11: idioma, título, descripción, canónica, Open Graph y `theme-color` por ruta indexable | `layouts/site`, `components/site/seo`, `config/site.php` | integración · `PublicSiteSeoTest` · seis rutas: `lang="es"`, valores únicos, 70–160 caracteres, una sola meta description (las legales con su `@section` como única fuente), canónica absoluta sin barra, `og:url` = canónica, `og:locale=es_MX`, `theme-color` = `--color-primary` |
 | CA12: sitemap con seis rutas; robots lo declara | `ShowSitemapController`, `public/robots.txt` | integración · `PublicSiteSeoTest` · XML válido con seis `loc` y ninguna de acceso o panel; `robots.txt` contiene la línea `Sitemap:` |
-| CA13: JSON-LD `Dentist` en inicio y contacto con datos visibles | `components/site/seo` | integración · `PublicSiteSeoTest` · JSON-LD parseable, `@type` `Dentist`, nombre, dirección, teléfono y horario iguales a los visibles en la página; ausente en otras rutas |
+| CA13: JSON-LD `Dentist` en inicio y contacto con datos visibles y confirmados | `components/site/seo` | integración · `PublicSiteSeoTest` · JSON-LD parseable, `@type` `Dentist`, nombre, dirección, teléfono y horario iguales a los visibles; un dato en `null` no aparece; ausente en otras rutas |
 | CA14 (abuso): oculto o vencido no aparece | TM1 | integración · `PublicSiteContentTest`, `PublicGalleryPageTest` |
 | CA15 (abuso): contenido con código se muestra como texto | TM2 | integración · `PublicSiteContentTest` |
 | CA16 (abuso): marcado en el formulario → texto literal | TM3 | unidad JS · `SiteScriptsTest` |
-| CA17: solo tratamientos de Dentissa | `config/site.php → treatments`, `site.inicio`, `site.galeria` | integración · `PublicSitePagesTest` · cada tratamiento nombrado en recorrido, servicios y selector del antes y después está en la lista; ningún nombre fuera de ella (lista de términos de la propuesta descartados) |
+| CA17: solo tratamientos de Dentissa | `config/site.php → treatments`, `site.inicio`, `site.galeria`, `gallery.js` | integración · `PublicSitePagesTest` · cada tratamiento nombrado en recorrido, servicios y selector está en la lista; ninguno de la lista de términos descartados · `SiteStylesTokensTest` · ningún término descartado en `resources/js/site/**` |
 | CA18: antes y después con fotos por tratamiento, comparable con teclado | `site.galeria`, `gallery.js`, `public/images/site/antes-despues/` | integración · `PublicGalleryPageTest` · un par de `<img>` por tratamiento del selector con `data-origen` · `npm run test:ui` · el control deslizante responde a flechas · `evaluate.mjs` K7 |
 | CA19: imagen para compartir 1200×630 | `make-brand-assets.mjs`, `public/images/brand/compartir.png`, `components/site/seo` | integración · `PublicSiteSeoTest` · `og:image` absoluto en las seis rutas, archivo existe, 1200×630, ≤ 300 kB, `og:image:alt` · verificación manual: tarjeta contra `system.html#compartir` (última tarea) y vista previa real en WhatsApp en T095 |
 | TM1 | filtro en el servidor | integración · `PublicSiteContentTest`, `PublicGalleryPageTest` · oculto y vencido ausentes |
 | TM2 | escape de Blade y JSON-LD | integración · `PublicSiteContentTest` · marcado escapado |
 | TM3 | `textContent`, `encodeURIComponent` | unidad JS · `SiteScriptsTest` · mensaje con marcado codificado |
-| TM4 | `rel="noopener noreferrer"` | integración · `PublicSitePagesTest` · todo `target=_blank` lleva `noopener` |
+| TM4 | `rel="noopener noreferrer"` | integración · `PublicSitePagesTest` · todo `target=_blank` de las seis rutas lleva `noopener noreferrer` |
 | TM5 | caché de 10 min | integración · `PublicGalleryPageTest` · segunda petición sin consulta |
 | RNF: WCAG 2.1 AA | vistas, CSS | `npm run test:ui` y puertas de `evaluate.mjs` (contraste, toque, foco) |
 | RNF: sin servicios de terceros para mostrarse | layout, CSS | `SiteStylesTokensTest` · ningún host externo en `<link>`/`<script>`/`@import`/`@font-face` · `evaluate.mjs` G-red (salvo origen de imágenes de R2 en galería) |
@@ -218,7 +235,8 @@ No toca datos sensibles, autenticación ni permisos: sin eventos de auditoría.
 | `/sitemap.xml` | no (archivo) | — | — | — | — | — | `PublicSiteSeoTest` |
 
 - Valores comunes: `og:site_name` = "Dentissa"; `og:locale` = `es_MX`; `og:type` = `website`;
-  `theme-color` = `#d75078` (`--color-primary`, el de la propuesta y el del sistema); JSON-LD con
+  `theme-color` = `#d75078` (`--color-primary`, el de la propuesta; decisión del usuario, A8) solo en
+  el layout del sitio; `lang="es"` en el layout; JSON-LD con
   `name`, `address` (`PostalAddress`), `telephone`, `openingHoursSpecification` y `url` desde
   `config/site.php`. Sin `twitter:*` (exclusión: las redes leen Open Graph).
 - Renderizado de las rutas nuevas: igual que `seo.rendering` (`ssr`); la galería deja de depender de JS (SE5.a).
@@ -226,8 +244,9 @@ No toca datos sensibles, autenticación ni permisos: sin eventos de auditoría.
   rutas, estática, generada con `make-brand-assets.mjs` (Chrome sin interfaz, sin dependencias). Datos
   que obligan a regenerarla: nombre y frase principal; `PublicSiteSeoTest` compara esa frase con
   `config/site.php`.
-- Brechas `SE`: SE1.a, SE2.a, SE3.a, SE3.b, SE5.a, SE6.a, SE6.b, SE7.a, SE8.a dentro; SE2.b, SE2.c,
-  SE4.a fuera → roadmap objetivo 7 y spec de pantallas de acceso.
+- Brechas `SE`: SE1.a, SE2.a, SE3.a, SE3.b, SE5.a, SE6.a, SE6.b y SE7.a dentro; SE8.a **parcial**
+  (dentro el sitio público; panel y portal → roadmap); SE2.b, SE2.c y SE4.a fuera → roadmap objetivo
+  7 y spec de pantallas de acceso. SE8 no se da por cerrada.
 
 ## Rollout
 - Feature flag: `site.new_landing` (`SITE_NEW_LANDING`, por defecto `true`). Con `false`, las cuatro
@@ -269,6 +288,13 @@ No toca datos sensibles, autenticación ni permisos: sin eventos de auditoría.
 - **Sitemap dinámico** (controlador) en lugar de archivo estático, para que salga de la misma lista
   que los metadatos.
 - **Lighthouse manual** + medidas automáticas (decisión del usuario, 2026-11-12).
+- **Correcciones de `/analyze 026` ronda 1** (decisiones del usuario, 2026-11-12): radios, altos y
+  componentes del sitio al sistema 2.1.0 (A1); K1 solo en inicio y nosotros, con criterios por
+  página (A5); solo datos de contacto confirmados (A6); `theme-color` rosa solo en el sitio (A8);
+  logo y favicon reales (A10); formulario de motivo y mensaje (A14); descripción de la certificación
+  como institución (A15); sin `action` externo y enlace de respaldo (A17).
+- **El menú plegable y la barra viven en `components.css`** (común), no en las hojas de página, para
+  que funcionen en las páginas legales (A13).
 - **Archivos viejos** se conservan hasta después de liberar y se borran con un `/chore` solo cuando
   el usuario lo confirme (decisión del usuario, 2026-11-12); de ahí el interruptor.
 - **Playwright global** en el equipo para `evaluate.mjs` (decisión del usuario, 2026-11-12); no

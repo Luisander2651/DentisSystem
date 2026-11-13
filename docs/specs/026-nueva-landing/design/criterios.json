@@ -1,29 +1,145 @@
 {
   "spec": "026-nueva-landing",
   "mode": "persuadir",
-  "widths": [390, 768, 1440],
-  "threshold": 80, "floor": 3, "budget": 5,
-  "note": "Sin ciclo de candidatos (design.md: exploration none, decisión del usuario). Estos criterios se miden con evaluate.mjs sobre las páginas reales servidas en local durante /implement y /review.",
-  "pages": ["/", "/acerca-de-nosotros", "/galeria", "/contacto"],
-  "tokens": { "colors": ["#d75078", "#dc6588", "#fbe9ee", "#f2b0a6", "#0b1120", "#556274", "#f8fafc", "#ffffff", "#e2e8f0", "#7c8aa0", "#b91c1c", "#fef2f2", "#047857", "#ecfdf5", "#b45309", "#fffbeb", "#1d4ed8", "#eff6ff", "#25d366", "#a3345a", "#cbd5e1", "#94a3b8", "#eef2f6", "#f3c9d5", "#f6d3dd", "#fdf1ee", "#bfe9d6", "#000000"] },
-  "gates": { "contrast": 4.5, "touch": 44, "external_hosts": [] },
+  "widths": [
+    390,
+    768,
+    1440
+  ],
+  "threshold": 80,
+  "floor": 3,
+  "budget": 5,
+  "note": "Sin ciclo de candidatos (design.md: exploration none). Criterios comunes; evaluate.mjs no filtra por página, así que cada página se mide con su archivo criterios-<página>.json (estos mismos más los KPI propios).",
+  "pages": {
+    "/": "criterios-inicio.json",
+    "/acerca-de-nosotros": "criterios-nosotros.json",
+    "/galeria": "criterios-galeria.json",
+    "/contacto": "criterios-contacto.json"
+  },
+  "tokens": {
+    "colors": [
+      "#d75078",
+      "#dc6588",
+      "#fbe9ee",
+      "#f2b0a6",
+      "#0b1120",
+      "#556274",
+      "#f8fafc",
+      "#ffffff",
+      "#e2e8f0",
+      "#7c8aa0",
+      "#b91c1c",
+      "#fef2f2",
+      "#047857",
+      "#ecfdf5",
+      "#b45309",
+      "#fffbeb",
+      "#1d4ed8",
+      "#eff6ff",
+      "#25d366",
+      "#a3345a",
+      "#cbd5e1",
+      "#94a3b8",
+      "#eef2f6",
+      "#f3c9d5",
+      "#f6d3dd",
+      "#fdf1ee",
+      "#bfe9d6",
+      "#000000"
+    ]
+  },
+  "gates": {
+    "contrast": 4.5,
+    "touch": 44,
+    "external_hosts": []
+  },
   "kpis": [
-    { "id": "K1", "name": "Acción principal en la primera pantalla", "type": "above_fold", "text": "Agenda una Cita", "ca": "CA1" },
-    { "id": "K2a", "name": "Estabilidad visual", "type": "max_cls", "value": 0.1, "ca": "CA8" },
-    { "id": "K2b", "name": "Pintado del contenido principal en local", "type": "max_lcp_ms", "value": 2500, "ca": "CA8" },
-    { "id": "K2c", "name": "JavaScript por página", "type": "max_js_bytes", "value": 61440, "ca": "CA8" },
-    { "id": "K2d", "name": "Peso de la primera visita", "type": "max_bytes", "value": 921600, "ca": "CA8" },
-    { "id": "K2e", "name": "Titulares", "type": "max_heading_lines", "value": 3, "ca": "CA10" },
-    { "id": "K2f", "name": "Fuentes de marca cargadas", "type": "fonts_loaded", "families": ["Inter Tight", "Instrument Serif"], "ca": "CA1" },
-    { "id": "K4a", "name": "Escena del diente (solo inicio)", "type": "scenes", "value": 1, "page": "/", "ca": "CA9" },
-    { "id": "K4b", "name": "Fondos propios (solo inicio)", "type": "custom_background", "value": 3, "page": "/", "ca": "CA1" },
-    { "id": "K7", "name": "Antes y después (solo galería)", "type": "visible", "texts": ["Antes", "Después"], "page": "/galeria", "ca": "CA18" }
+    {
+      "id": "K2a",
+      "name": "Estabilidad visual",
+      "type": "max_cls",
+      "value": 0.1,
+      "ca": "CA8"
+    },
+    {
+      "id": "K2b",
+      "name": "Pintado del contenido principal en local",
+      "type": "max_lcp_ms",
+      "value": 2500,
+      "ca": "CA8"
+    },
+    {
+      "id": "K2c",
+      "name": "JavaScript por página",
+      "type": "max_js_bytes",
+      "value": 61440,
+      "ca": "CA8"
+    },
+    {
+      "id": "K2d",
+      "name": "Peso de la primera visita",
+      "type": "max_bytes",
+      "value": 921600,
+      "ca": "CA8"
+    },
+    {
+      "id": "K2e",
+      "name": "Titulares",
+      "type": "max_heading_lines",
+      "value": 3,
+      "ca": "CA10"
+    },
+    {
+      "id": "K2f",
+      "name": "Fuentes de marca cargadas",
+      "type": "fonts_loaded",
+      "families": [
+        "Inter Tight",
+        "Instrument Serif"
+      ],
+      "ca": "CA1"
+    }
   ],
   "manual": [
-    { "id": "K3", "name": "Estados vacíos sin promociones, certificaciones, testimonios ni imágenes", "ca": "CA3, CA5", "how": "test de integración del HTML + ui-audit con contenido vacío" },
-    { "id": "K5", "name": "Teclado: menú, carruseles con pausa, antes y después y formulario", "ca": "CA10, CA18", "how": "ui-audit (foco y teclado) a 390, 768 y 1440" },
-    { "id": "K2", "name": "Lighthouse móvil: Rendimiento ≥ 90, Accesibilidad, Buenas prácticas y SEO 100", "ca": "CA8", "how": "Lighthouse sobre la build de producción en local y tras liberar" },
-    { "id": "K8", "name": "Tarjeta para compartir 1200×630 (§7 de spec-mode)", "ca": "CA19", "how": "última tarea, con el sistema ya ampliado" }
+    {
+      "id": "K3",
+      "name": "Estados vacíos sin promociones, certificaciones, testimonios ni imágenes",
+      "ca": "CA3, CA5",
+      "how": "test de integración del HTML + ui-audit con contenido vacío"
+    },
+    {
+      "id": "K5",
+      "name": "Teclado: menú, carruseles con pausa, antes y después y formulario",
+      "ca": "CA10, CA18",
+      "how": "ui-audit (foco y teclado) a 390, 768 y 1440"
+    },
+    {
+      "id": "K2",
+      "name": "Lighthouse móvil: Rendimiento ≥ 90, Accesibilidad, Buenas prácticas y SEO 100",
+      "ca": "CA8",
+      "how": "Lighthouse sobre la build de producción en local y tras liberar"
+    },
+    {
+      "id": "K8",
+      "name": "Tarjeta para compartir 1200×630 (§7 de spec-mode)",
+      "ca": "CA19",
+      "how": "última tarea, con el sistema ya ampliado"
+    },
+    {
+      "id": "K9",
+      "name": "Galería con 0, 1, 2 y ≥ 3 imágenes (design.md → Pantallas)",
+      "ca": "CA5",
+      "how": "PublicGalleryPageTest y ui-audit con los estados de UiAuditSeeder"
+    }
   ],
-  "rubric": { "weights": { "jerarquia": 22, "primera_pantalla": 22, "sistema": 17, "lectura": 12, "plantilla": 12, "riqueza": 15 } }
+  "rubric": {
+    "weights": {
+      "jerarquia": 22,
+      "primera_pantalla": 22,
+      "sistema": 17,
+      "lectura": 12,
+      "plantilla": 12,
+      "riqueza": 15
+    }
+  }
 }
