@@ -33,7 +33,7 @@ usuario.
 | P5 Autorización en el servidor | ➖ | Rutas públicas de solo lectura cuya autorización no cambia; el contenido oculto se filtra en el servidor (CA14, TM1) | — |
 | P6 Validación con FormRequest | ➖ | Ninguna entrada nueva llega al servidor: el formulario de contacto abre WhatsApp en el navegador | — |
 | P7 Errores sin detalles internos | ✅ | Las páginas degradan a estados vacíos y registran con `Log::error` sin el mensaje en la respuesta (CA4) | test: `PublicSiteContentTest` fuerza la excepción del caso de uso → 200 con estados vacíos y sin texto de la excepción |
-| P8 Secretos fuera del repositorio | ✅ | Variables nuevas `SITE_NEW_LANDING` y `SITE_WHATSAPP` leídas solo en `config/site.php` y añadida a `.env.example`; datos de contacto públicos en config | test: CI `gitleaks`; lint: `grep -rn "env(" app/` sin resultados en código tocado |
+| P8 Secretos fuera del repositorio | ✅ | Variables nuevas `SITE_NEW_LANDING` y `SITE_*` de contacto leídas solo en `config/site.php` y añadida a `.env.example`; datos de contacto públicos en config | test: CI `gitleaks`; lint: `grep -rn "env(" app/` sin resultados en código tocado |
 | P9 Migraciones reversibles | ➖ | Sin migraciones | — |
 | P10 Dependencias nuevas con ADR | ✅ | Ninguna dependencia en `composer.json` ni `package.json`. Fuentes OFL como archivos `woff2` versionados; Playwright solo global en el equipo del desarrollador (decisión del usuario) | manual: diff de `composer.json`/`package.json` en `/review` (debe ser vacío) |
 | P11 Datos sensibles y modelo de amenazas | ✅ | No toca datos sensibles; hay modelo de amenazas por las entradas externas (contenido publicado y formulario) | manual: `aidd.py validate` (sección presente); revisión de `Log::` en `/review` |
@@ -65,7 +65,7 @@ Conteo: 10 cumplen · 5 no aplican · ninguno viola.
 | `tests/Browser/make-brand-assets.mjs`, `public/images/brand/compartir.png` | La última tarea añade la tarjeta 1200×630 al generador existente (Chrome sin interfaz, sin dependencias) | Bajo |
 | `tests/Browser/screens.json`, `baseline-1440.json`, `checks-composition.mjs` y `database/seeders/UiAuditSeeder.php` | Cada tarea de página actualiza sus pantallas, añade su entrada `ADMITTED` (026 CA1 sustituye 016 CA22) y regenera solo su línea base; los datos de ui-audit tienen contenido rico (tres promociones vigentes, cuatro testimonios, tres imágenes de galería). Los estados vacíos y por cantidad se prueban con Pest y a mano (decisión del usuario, A32) | Medio: la línea base de composición cambia |
 | `vite.config.js` | Entradas `resources/css/site/site.css` y `resources/js/site/*.js` | Bajo |
-| `.env.example` | `SITE_NEW_LANDING=true`, `SITE_WHATSAPP=` | Bajo |
+| `.env.example` | `SITE_NEW_LANDING=true` y las variables `SITE_*` de contacto vacías | Bajo |
 
 Archivos que **no** se tocan hasta después de liberar (decisión del usuario): `resources/views/pages/landing/{inicio,acerca,galeria,contacto}.blade.php`, `resources/views/components/landing/{nav,footer}.blade.php`, `resources/js/pages/landing/{inicio,galeria}.js`, `tests/Modules/ContentManagement/Unit/PublicGalleryScriptTest.php` y `render-public-gallery.mjs`.
 
@@ -93,18 +93,20 @@ Archivos que **no** se tocan hasta después de liberar (decisión del usuario): 
 ```php
 'new_landing' => (bool) env('SITE_NEW_LANDING', true),
 'name' => 'Dentissa', 'url' => 'https://dentissapp.com',
-'contact' => ['whatsapp' => env('SITE_WHATSAPP', '521234567890'), 'whatsapp_provisional' => …, 'phone' => null, 'email' => null, 'address' => '…', 'maps_url' => '…', 'instagram' => null, 'facebook' => null],  // null = no confirmado: no se muestra ni va al JSON-LD
+'contact' => ['whatsapp' => …, 'phone' => …, 'email' => …, 'address' => …, 'maps_url' => …, 'instagram' => …, 'facebook' => …],  // cada valor: real (variable SITE_*) o provisional por defecto
+'provisional' => ['whatsapp' => true, 'phone' => true, …],  // true mientras use el valor provisional: se muestra, pero no va al JSON-LD
 'schedule' => [1 => ['09:00', '19:00'], …, 6 => ['09:00', '14:00'], 0 => null],
 'treatments' => ['Limpieza y Prevención', 'Ortodoncia', 'Implantes Dentales', 'Blanqueamiento Dental', 'Odontopediatría'],
 'pages' => ['/' => ['title' => …, 'description' => …], …],   // seis rutas indexables
 ```
-Producción solo tiene datos de ejemplo (`521234567890`, `+52 55 1234 5678`, `contacto@dentissa.com`,
-redes genéricas, y la dirección y el horario de la propuesta): solo se cargan los que el usuario
-confirme (sin dirección no hay enlaces de mapa; sin horario no hay "Abierto/Cerrado"); los demás quedan en `null` y la
-vista y el JSON-LD los omiten (decisión del usuario, `/analyze 026` A6). El WhatsApp es obligatorio: mientras no
-haya uno real se usa el provisional `521234567890` (enmienda de CA7 pedida por el usuario), con
-`whatsapp_provisional` en `true` mientras coincida con ese valor; el número se cambia con la variable
-`SITE_WHATSAPP` sin tocar las vistas, y el provisional no va al JSON-LD. Los tratamientos salen de la sección "Nuestros Servicios" del inicio
+Producción solo tiene datos de ejemplo. Por la enmienda de CA7 pedida por el usuario, todos los
+datos de contacto usan valores provisionales coherentes (WhatsApp `521234567890`, teléfono
+`+52 55 1234 5678`, correo `contacto@dentissa.com`, la dirección y el horario de la propuesta,
+`https://instagram.com/dentissa_clinic` y una página de Facebook de la clínica) hasta que la clínica
+dé los reales, cada uno con su variable `SITE_*` (vacía o ausente → provisional) y su marca en
+`provisional`. Se muestran en las páginas (mapa, "Abierto/Cerrado" y redes incluidos) y quedan fuera
+del JSON-LD mientras sean provisionales; el JSON-LD sale con nombre y URL y suma cada dato al
+volverse real. Los tratamientos salen de la sección "Nuestros Servicios" del inicio
 actual (decisión del usuario) y sus textos (también los del antes y después) los pinta el servidor
 desde config, no el JS. `site.url` es igual a `seo.site_url`.
 
@@ -195,13 +197,13 @@ Cobertura de abuso: CA14 → TM1 · CA15 → TM2 · CA16 → TM3.
 | CA4: fallo al leer → página con estados vacíos | `ShowLandingPageController` | integración · `PublicSiteContentTest` · el caso de uso lanza → 200, estados vacíos, `Log::error` |
 | CA5: galería en el HTML del servidor; vacío | `ShowGalleryPageController`, `site.galeria` | integración · `PublicGalleryPageTest` · `<img>` con `src` y `alt` en la respuesta sin JS; oculta fuera; sin imágenes → estado vacío; fallo → vacío · `evaluate.mjs` G-sin-js |
 | CA6: compositor abre WhatsApp con motivo y mensaje; nada se guarda; enlace sin JS | `contact.js`, `site.contacto` | unidad JS · `SiteScriptsTest` · URL `https://wa.me/<num>?text=` con motivo y mensaje · integración · `PublicSitePagesTest` · el formulario no tiene `action` ni `@csrf`; hay un enlace directo a WhatsApp visible sin JS |
-| CA7: solo datos confirmados, sin marcadores ni ejemplos, salvo el WhatsApp provisional | `config/site.php`, vistas | unidad · `SiteConfigTest` · rechaza los valores de ejemplo conocidos salvo el WhatsApp provisional, que marca `whatsapp_provisional` · integración · `PublicSitePagesTest` · un dato en `null` no aparece en ninguna página ni en el JSON-LD; ninguna aparición de `[CORREO`, `+52 55 1234 5678` ni de las redes genéricas; con otro `SITE_WHATSAPP`, todos los enlaces de WhatsApp usan ese número |
+| CA7: dato real o provisional marcado, sin marcadores | `config/site.php`, vistas | unidad · `SiteConfigTest` · cada dato tiene valor; con su variable vacía o ausente usa el provisional y lo marca, con otro valor lo desmarca; ningún marcador `[…]` · integración · `PublicSitePagesTest` · cada dato de config aparece en el pie y en contacto; con otra variable `SITE_*`, todas las apariciones (textos y enlaces) usan el valor nuevo; ningún `[CORREO` |
 | CA8: Lighthouse móvil ≥ 90 / 100 / 100 / 100 | carga diferida, fuentes locales con precarga, imágenes con tamaño | `evaluate.mjs` K2a–K2d por página · verificación manual: Lighthouse móvil en Chrome sobre la build de producción local (T092) y sobre producción (T095), registrado en `review.md` y `docs/seo.md` |
 | CA9: movimiento reducido o sin WebGL → versión estática | `tooth3d.js`, `inicio.css` | `evaluate.mjs` G-reducido y K4a (desde el diente) · unidad JS · `SiteScriptsTest` · sin `WebGLRenderingContext` no crea el lienzo y deja la versión estática |
 | CA10: teclado y lector de pantalla; carruseles con pausa | vistas y `home.js`, `gallery.js` | `npm run test:ui` · foco visible, orden, nombres accesibles a 390/768/1440 · `evaluate.mjs` G-foco, G-toque · verificación manual: NVDA en inicio y galería |
 | CA11: idioma, título, descripción, canónica, Open Graph y `theme-color` por ruta indexable | `layouts/site`, `components/site/seo`, `config/site.php` | integración · `PublicSiteSeoTest` · seis rutas: `lang="es"`, valores únicos, 70–160 caracteres, una sola meta description (las legales con su `@section` como única fuente), canónica absoluta sin barra, `og:url` = canónica, `og:locale=es_MX`, `theme-color` = `--color-primary` |
 | CA12: sitemap con seis rutas; robots lo declara | `ShowSitemapController`, `public/robots.txt` | integración · `PublicSiteSeoTest` · XML válido con seis `loc` y ninguna de acceso o panel; `robots.txt` contiene la línea `Sitemap:` |
-| CA13: JSON-LD `Dentist` en inicio y contacto con datos visibles y confirmados | `components/site/seo` | integración · `PublicSiteSeoTest` · JSON-LD parseable, `@type` `Dentist`, nombre, dirección, teléfono y horario iguales a los visibles; un dato en `null` no aparece; ausente en otras rutas |
+| CA13: JSON-LD `Dentist` en inicio y contacto con datos visibles y confirmados | `components/site/seo` | integración · `PublicSiteSeoTest` · JSON-LD parseable, `@type` `Dentist`, nombre, dirección, teléfono y horario iguales a los visibles; un dato marcado como provisional no aparece en el JSON-LD; ausente en otras rutas |
 | CA14 (abuso): oculto o vencido no aparece | TM1 | integración · `PublicSiteContentTest`, `PublicGalleryPageTest` |
 | CA15 (abuso): contenido con código se muestra como texto | TM2 | integración · `PublicSiteContentTest` |
 | CA16 (abuso): marcado en el formulario → texto literal | TM3 | unidad JS · `SiteScriptsTest` |
@@ -295,7 +297,7 @@ No toca datos sensibles, autenticación ni permisos: sin eventos de auditoría.
 - **Lighthouse manual** + medidas automáticas (decisión del usuario, 2026-11-12).
 - **Correcciones de `/analyze 026` ronda 1** (decisiones del usuario, 2026-11-12): radios, altos y
   componentes del sitio al sistema 2.1.0 (A1); K1 solo en inicio y nosotros, con criterios por
-  página (A5); solo datos de contacto confirmados (A6); `theme-color` rosa solo en el sitio (A8);
+  página (A5); datos de contacto confirmados o provisionales marcados (A6 y enmienda de CA7); `theme-color` rosa solo en el sitio (A8);
   logo y favicon reales (A10); formulario de motivo y mensaje (A14); descripción de la certificación
   como institución (A15); sin `action` externo y enlace de respaldo (A17).
 - **El menú plegable y la barra viven en `components.css`** (común), no en las hojas de página, para
@@ -338,9 +340,10 @@ No toca datos sensibles, autenticación ni permisos: sin eventos de auditoría.
   `SiteStylesTokensTest` impide que quede alguno.
 - **Imágenes de muestra y generadas en producción**: `max_samples` y `data-origen` las listan;
   `/review` y `/release` las bloquean salvo decisión del usuario.
-- **WhatsApp provisional en producción** (`521234567890`, enmienda de CA7 pedida por el usuario): los
-  mensajes de los visitantes no llegan a la clínica hasta que se ponga el real en `SITE_WHATSAPP`;
-  `review.md` y el release lo anotan como dato pendiente de la clínica.
+- **Datos de contacto provisionales en producción** (enmienda de CA7 pedida por el usuario): los
+  mensajes de WhatsApp y las llamadas no llegan a la clínica y la dirección no es la suya hasta que se
+  pongan los reales en las variables `SITE_*`; `review.md` y el release los anotan como datos
+  pendientes de la clínica.
 - **Spec grande (19 criterios)**: tareas por página, cada una verde por sí misma.
 - **Dos versiones del sitio conviviendo** hasta el `/chore`: `OnlyDesignTokensTest` sigue cubriendo
   las vistas viejas; el interruptor tiene su test.

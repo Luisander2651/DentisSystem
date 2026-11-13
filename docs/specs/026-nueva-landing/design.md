@@ -37,7 +37,7 @@ La implementación solo puede cambiar lo que obliga la spec, la constitución o 
 2b. **Marca:** el logo y el favicon son los reales de la clínica (`x-ui.brand`, spec 016 CA15), no
    el logo dibujado de la propuesta; el resto de la barra y el pie no cambia.
 2. **Fuentes:** Inter Tight e Instrument Serif (OFL) se sirven desde el propio sitio, sin Google Fonts.
-3. **Contenido real:** solo datos de contacto confirmados, incluidos dirección, horario y mapa (CA7), salvo el WhatsApp provisional `521234567890` hasta tener el real, tratamientos de la lista de servicios (CA17),
+3. **Contenido real:** datos de contacto reales cuando la clínica los dé y, mientras tanto, valores provisionales marcados (CA7), así que se conservan el mapa, "Abierto/Cerrado" y las redes de la propuesta; tratamientos de la lista de servicios (CA17),
    promociones, certificaciones, testimonios y galería desde "Contenido" (CA2, CA5), y se quita lo
    que no tiene dato (tipo y estrellas; la descripción de la certificación ocupa el lugar de la institución).
 4. **Antes y después:** el dibujo CSS se sustituye por pares de fotos por tratamiento, con el mismo

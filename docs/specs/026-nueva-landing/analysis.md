@@ -1,21 +1,22 @@
 ---
 result: pass
-round: 4
+round: 5
 mode: delta
 constitution_version: 1.2.1
 date: 2026-11-12
-spec_sha: 72fa72b54342
-plan_sha: 8ecdfea79ec0
-tasks_sha: ad8fa8ee9fcc
+spec_sha: 3233f63145f1
+plan_sha: c0da9029d1bb
+tasks_sha: 4b4bf4e7bbeb
 ---
 
 # Análisis · 026 Nueva landing del sitio público
 
 ## Resumen
-`pass`. Delta pequeño (≈ 24 KB, sin cambio estructural) hecho sin subagente, releyendo desde cero
-las secciones afectadas: la enmienda de CA7 pedida por el usuario (WhatsApp provisional
-`521234567890` hasta tener el real) y su reflejo en `design.md`, plan (Contratos, Trazabilidad CA7,
-P8, `.env.example`, Riesgos) y tareas (T003, T026, T091, T092). Sin hallazgos abiertos.
+`pass`. Delta pequeño sin subagente, releyendo desde cero lo afectado: segunda enmienda de CA7
+pedida por el usuario (todos los datos de contacto con valores provisionales marcados, no solo el
+WhatsApp, para conservar mapa, "Abierto/Cerrado" y redes de la propuesta) y su reflejo en
+`design.md`, plan (Contratos, Trazabilidad CA7 y CA13, P8, `.env.example`, Riesgos, Decisiones) y
+tareas (T003, T008, T011, T022, T026, T091, T092). Sin hallazgos.
 Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 0
 
 ## Cobertura
@@ -23,21 +24,17 @@ Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 0
 |---|---|
 | Criterios con rebanada (test e implementación) | 19 / 19 |
 | Amenazas con control y test | 5 / 5 |
-| Principios de la constitución evaluados | 15 / 15 (solo P8 cambia: variable nueva `SITE_WHATSAPP` en config y `.env.example`) |
+| Principios de la constitución evaluados | 15 / 15 (P8: variables `SITE_*` de contacto en config y `.env.example`) |
 
 ## Seguimiento de rondas anteriores
-| ID | Severidad | Estado | Evidencia |
-|---|---|---|---|
-| A50 | ALTA | resuelto | T014 (marcado), T015 (comportamiento, test y entrada de diálogo) |
-| A51 | BAJA | aceptado | notas de T014 y T019 |
-| A52 | MEDIA | resuelto | T019 sin el dibujo; T020 con `galeria.css` |
-| A53 | BAJA | resuelto | Cobertura CA10 |
-
-Comprobado en el delta: CA7 (spec) admite solo el WhatsApp como provisional; el plan ya no afirma
-"ninguna aparición de `521234567890`" (Trazabilidad CA7) y la prueba cubre el cambio de número por
-`SITE_WHATSAPP`; el JSON-LD no publica el WhatsApp mientras es provisional (spec CA7, T026); un
-`SITE_WHATSAPP=` vacío cae en el provisional (nota de T003); T091 documenta la variable; T092 deja el
-dato pendiente en `review.md`.
+Sin hallazgos abiertos de la ronda 4. Comprobado en el delta:
+- CA7 y CA13 son coherentes: los provisionales se muestran y nunca van al JSON-LD (T011, T026).
+- Ninguna tarea ni fila del plan sigue exigiendo que un dato sin confirmar desaparezca de la página
+  (se quitaron las condiciones de `null` de T008, T022 y plan CA7) ni que el mapa o
+  "Abierto/Cerrado" dependan de datos confirmados.
+- Cada valor provisional tiene su variable `SITE_*` (vacía o ausente → provisional) y su marca; el
+  cambio de valor se prueba en `SiteConfigTest` (T003) y `PublicSitePagesTest` (T022).
+- T092 y Riesgos dejan los datos provisionales como pendientes de la clínica en `review.md`.
 
 ## Hallazgos nuevos
 Ninguno.
