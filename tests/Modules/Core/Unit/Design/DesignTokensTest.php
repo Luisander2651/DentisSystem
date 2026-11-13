@@ -8,6 +8,10 @@ declare(strict_types=1);
  * system relies on reaches its contrast; Tailwind's default palette is gone, so a colour
  * outside the system does not even compile; and no two tokens fight for the same utility.
  *
+ * Spec 026 (A2, A42): the public site adds its tokens in a `@theme static` block, which this test
+ * reads too, and checks every namespace it adds (radii with digits, fonts, curves, weights,
+ * spacing scale and durations).
+ *
  * While views are still being migrated, `@theme` keeps the old colour names they use between
  * the markers TRANSITIONAL_START and TRANSITIONAL_END. That block must be gone once
  * pending-files.php is empty.
@@ -43,6 +47,12 @@ const TOKEN_PAIRS = [
     'focus outline on a dark surface' => ['on-dark', 'ink', 3.0],
     'pink as an accent' => ['primary', 'surface', 3.0],
     'action icons on a card' => ['muted', 'surface', 3.0],
+    'text on the deep pink call to action' => ['on-dark', 'primary-deep', 4.5],
+    'text on the alternate section background' => ['ink', 'canvas-alt', 4.5],
+    'secondary text on the alternate section background' => ['muted', 'canvas-alt', 4.5],
+    'secondary text on the soft secondary background' => ['muted', 'secondary-soft', 4.5],
+    'decorative text on a dark surface' => ['muted-soft', 'ink', 4.5],
+    'open state on its tint' => ['ink', 'success-tint', 4.5],
 ];
 
 function tokensStylesheet(): string
@@ -65,7 +75,7 @@ function tokensWithoutTransitional(string $css): string
  */
 function tokensDeclared(string $css): array
 {
-    preg_match_all('/@theme\s*\{(.*?)\n\}/s', $css, $blocks);
+    preg_match_all('/@theme(?:\s+static)?\s*\{(.*?)\n\}/s', $css, $blocks);
     preg_match_all('/(--[a-z0-9-]+|--[a-z]+-\*)\s*:\s*([^;]+);/', implode("\n", $blocks[1]), $declarations, PREG_SET_ORDER);
 
     $tokens = [];
@@ -84,7 +94,7 @@ function tokensDeclared(string $css): array
  */
 function tokensDocumented(string $prefix): array
 {
-    preg_match_all('/^\| `(--'.$prefix.'-[a-z-]+)` \| `?([^|`]+?)`? \|/m', (string) file_get_contents(TOKENS_ROOT.'/docs/design/system.md'), $rows, PREG_SET_ORDER);
+    preg_match_all('/^\| `(--'.$prefix.'-[a-z0-9-]+)` \| `?([^|`]+?)`? \|/m', (string) file_get_contents(TOKENS_ROOT.'/docs/design/system.md'), $rows, PREG_SET_ORDER);
 
     $tokens = [];
 
@@ -149,6 +159,16 @@ it('detects two tokens that would share a utility (control)', function () {
     expect(tokenCollisions(tokensDeclared($css)))->toBe(['field']);
 });
 
+it('reads the tokens of a static theme block too (control)', function () {
+    $css = "@theme {\n    --color-ink: #0b1120;\n}\n\n@theme static {\n    --radius-2xl: 32px;\n    --ease-spring: cubic-bezier(.2, .8, .2, 1);\n}";
+
+    expect(tokensDeclared($css))->toBe([
+        '--color-ink' => '#0b1120',
+        '--radius-2xl' => '32px',
+        '--ease-spring' => 'cubic-bezier(.2, .8, .2, 1)',
+    ]);
+});
+
 it('declares every documented token with its documented value', function (string $prefix) {
     $declared = tokensDeclared(tokensWithoutTransitional(tokensStylesheet()));
     $documented = tokensDocumented($prefix);
@@ -158,7 +178,16 @@ it('declares every documented token with its documented value', function (string
     foreach ($documented as $name => $value) {
         expect($declared[$name] ?? 'sin declarar')->toBe($value, $name);
     }
-})->with(['color', 'radius', 'spacing', 'text']);
+})->with(['color', 'radius', 'spacing', 'text', 'font', 'ease', 'weight', 'space', 'duration']);
+
+it('documents the tokens of the public site (spec 026)', function (string $token) {
+    $documented = array_merge(...array_map(
+        fn (string $prefix): array => tokensDocumented($prefix),
+        ['color', 'radius', 'spacing', 'font', 'ease', 'weight', 'text', 'space', 'duration'],
+    ));
+
+    expect($documented)->toHaveKey($token);
+})->with(['--color-primary-deep', '--color-enamel', '--radius-hair', '--radius-2xl', '--spacing-control-lg', '--font-display', '--font-serif', '--ease-spring', '--weight-strong', '--text-body', '--space-8', '--duration-base']);
 
 it('declares no colour the design system does not document', function () {
     $declared = array_filter(
