@@ -40,7 +40,7 @@ usuario.
 | P14 Trazabilidad | ✅ | No toca datos sensibles ni auth: sin eventos de auditoría. El único log nuevo (fallo al leer la galería) usa contexto estructurado y hereda `X-Request-Id` del middleware existente | test: `PublicSiteContentTest` afirma el `Log::error` con contexto; manual: revisión en `/review` |
 | P15 La interfaz usa solo el sistema de diseño | ✅ | Tokens nuevos primero en `system.md` y `@theme` (T001); CSS del sitio solo con `var(--…)`; vistas sin `style` con color | test: `OnlyDesignTokensTest`, `DesignTokensTest` y el nuevo `SiteStylesTokensTest`; `npm run test:ui` en CI |
 
-Conteo: 10 ✅ · 5 ➖ · 0 ❌.
+Conteo: 10 cumplen · 5 no aplican · ninguno viola.
 
 ## Cambios por módulo
 | Módulo | Cambio | Riesgo |
