@@ -42,6 +42,11 @@ Referencias fijas de las tareas de página:
   dejar `ui-audit` en rojo entre medias (A3, A4). Los avisos del validador por número de archivos
   cuentan también tests, imágenes y fuentes.
 
+Línea base (2026-11-12, Pest en serie con 1 GB, antes de T001): 2206 pasan y 2 fallan en
+`DashboardScreenTest` ("relation roles does not exist"), que pasan al repetirlos solos: fue el fallo
+intermitente de base de datos ya registrado en el roadmap, agravado por un test lanzado a la vez sobre
+la misma base. Sin fallos propios de la línea base.
+
 ## Constitution Check
 Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 
@@ -79,7 +84,9 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 - [x] T004 [P] Crear `SiteStylesTokensTest` con control positivo y negativo por regla: en `resources/css/site/**` ningún `#…`, `rgb(`, `hsl(`, `border-radius` en px ni `min-height`/`height` en px de un control (`btn`, `seg`, campos); `font-family` literal solo dentro de `@font-face`; toda `var(--x)` usada está declarada en `app.css` o en la propia hoja; en `resources/views/site/**` y `components/site/**` ningún `style=` con color ni `fill`/`stroke` literal; en `resources/js/site/**` ningún color literal (`#…`, `rgb(`, `hsl(`) ni término de tratamiento descartado (lista del test) (A30); ningún host externo en `@import`, `@font-face`, `<link>` o `<script>` del sitio; cada `woff2` de `resources/fonts` con su licencia — `tests/Modules/Core/Unit/Design/SiteStylesTokensTest.php` — hecho cuando: los controles detectan cada caso, el test pasa sobre las carpetas aún vacías y la suite está en verde — cubre: CA1, CA8, CA17
   - nota: 17 controles positivos y 18 negativos en verde; las cinco comprobaciones reales pasan sobre las carpetas aún vacías. Comprobado rompiendo: con `components.css`, `tooth3d.js` e `inicio.blade.php` de la propuesta copiados un momento a las carpetas del sitio, fallan tres comprobaciones (colores `rgb(`/`#fff`/`#cbd5e1`, radios en px, `--primary-deep` sin declarar, colores en `style` y `stroke`); retirados.
   - nota: los términos descartados son tratamientos que Dentissa no ofrece (endodoncia, periodoncia, carillas, coronas, prótesis, diseño de sonrisa, cirugía maxilofacial, bruxismo); la propuesta no nombra ninguno.
-- [ ] T005 [P] Ampliar los datos de `ui-audit` con contenido rico para el sitio: tres promociones vigentes y una vencida, cuatro testimonios, tres imágenes de galería, con la vigencia sobre `UiAuditClock` (los estados vacíos y por cantidad no van a `ui-audit`: decisión del usuario, A32) — `database/seeders/UiAuditSeeder.php`, `tests/Modules/Core/Integration/UiAuditSeederTest.php` — hecho cuando: `UiAuditSeederTest` pasa (cantidades y vigencia con el reloj de ui-audit) y la suite está en verde — cubre: CA2, CA5
+- [x] T005 [P] Ampliar los datos de `ui-audit` con contenido rico para el sitio: tres promociones vigentes y una vencida, cuatro testimonios, tres imágenes de galería, con la vigencia sobre `UiAuditClock` (los estados vacíos y por cantidad no van a `ui-audit`: decisión del usuario, A32) — `database/seeders/UiAuditSeeder.php`, `tests/Modules/Core/Integration/UiAuditSeederTest.php` — hecho cuando: `UiAuditSeederTest` pasa (cantidades y vigencia con el reloj de ui-audit) y la suite está en verde — cubre: CA2, CA5
+  - nota: el caso nuevo de `UiAuditSeederTest` falló por aserción (1 vigente, 0 vencidas, 1 testimonio y 2 imágenes visibles) y pasa después; `UiAuditSeederTest` y `DashboardScreenTest` completos: 47 pasan. Promociones vigentes el 2026-07-22 con fin el 25, el 28 y el 31 de julio, y una vencida en junio; testimonios C, D y E visibles; imagen "Sala de rayos X". `--clean` las borra porque amplían las constantes `PROMOTION_NAMES` y `TESTIMONIAL_AUTHORS`.
+  - nota: la vigencia en `ui-audit` depende del reloj del servidor: la entrada `inicio` de `screens.json` necesitará `serverNow` (T014).
 
 ## Implementación
 
