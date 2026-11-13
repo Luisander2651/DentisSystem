@@ -1,0 +1,161 @@
+---
+spec: 026-nueva-landing
+status: approved
+exploration: none
+threshold: 80
+floor: 3
+budget: 5
+accepted: none
+score: 0
+system_version: 2.0.0
+created: 2026-11-12
+updated: 2026-11-12
+---
+
+# Diseño · 026 Nueva landing del sitio público
+
+Hecho con `/design-spec 026` sobre `docs/design/system.md` (2.0.0). Criterios en la spec ("Criterios
+de diseño") y en `design/criterios.json`. **Sin ciclo de candidatos**: ver "Resultado".
+
+## Candidatos
+
+Ninguno. No se generaron candidatos por decisión del usuario (ver "Decisiones").
+
+## Resultado
+
+**Sin diseño nuevo: se adopta la propuesta entregada.** El diseño aceptado es el de
+`nueva-landing/dentissa-laravel/` (vistas `pages/inicio`, `nosotros`, `galeria`, `contacto`, el
+layout `layouts/dentissa` y los componentes `header`, `footer` y `whatsapp-float`), tal como está.
+El usuario lo eligió y no quiere alternativas que muevan su composición, tipografía ni movimiento.
+
+La implementación solo puede cambiar lo que obliga la spec, la constitución o una puerta, y siempre
+**sin cambiar la composición**:
+
+1. **Tokens:** cada color literal pasa a un token con su mismo valor (ver "Cambios a incorporar al
+   sistema"); los `style` en línea de las vistas pasan a clases.
+2. **Fuentes:** Inter Tight e Instrument Serif (OFL) se sirven desde el propio sitio, sin Google Fonts.
+3. **Contenido real:** datos de contacto de producción (CA7), tratamientos del catálogo (CA17),
+   promociones, certificaciones, testimonios y galería desde "Contenido" (CA2, CA5), y se quita lo
+   que no tiene dato (institución, tipo y estrellas).
+4. **Antes y después:** el dibujo CSS se sustituye por pares de fotos por tratamiento, con el mismo
+   control deslizante y el mismo selector (CA18).
+5. **Correcciones de puertas:** si al medir las páginas reales falla una puerta o un KPI
+   (contraste, toque, foco, movimiento reducido, sin JavaScript, peso), se corrige ese detalle con
+   el cambio mínimo y se registra como `refinado` en "Decisiones".
+
+Los criterios de `design/criterios.json` se miden con `evaluate.mjs` sobre las páginas reales
+servidas en local en la tarea que construye cada página, y otra vez en `/review`. La rúbrica no se
+puntúa: la composición ya está aceptada por el usuario.
+
+| Puerta o KPI | Objetivo | Medido | |
+|---|---|---|---|
+| Puertas de `criterios.md` §2 | todas | en `/implement`, por página | — |
+| K1 · Acción principal en la primera pantalla (CA1) | "Agenda una Cita" a la vista a 390, 768 y 1440 | en `/implement` | — |
+| K2a–K2f · Calidad de carga (CA8, CA10) | CLS ≤ 0.1 · LCP ≤ 2.5 s · JS ≤ 60 kB · primera visita ≤ 900 kB · titulares ≤ 3 líneas · las dos fuentes cargadas | en `/implement` | — |
+| K4a, K4b · Riqueza del inicio (CA1, CA9) | ≥ 1 escena · ≥ 3 fondos propios | en `/implement` | — |
+| K7 · Antes y después (CA18) | "Antes" y "Después" visibles | en `/implement` | — |
+| K2, K3, K5, K8 (verificación en la tarea) | Lighthouse, estados vacíos, teclado, tarjeta | tests y `ui-audit` | — |
+
+## Imágenes de muestra
+
+| Imagen | Dónde | Fuente y licencia | Qué la sustituye |
+|---|---|---|---|
+| `recepcion.webp`, `consulta.webp`, `consultorio.webp`, `odontopediatria.webp`, `radiografia.webp`, `sonrisa.webp` | inicio, nosotros y galería (fotos fijas de la propuesta) | venían con la propuesta; por su aspecto parecen **generadas**, no fotos de la clínica — origen por confirmar con el usuario | fotos reales de la clínica; mientras tanto `data-origen="generada"` |
+| `diploma-horizontal.svg`, `diploma-vertical.svg` | respaldo de certificaciones sin imagen | dibujos de la propuesta | la imagen que el staff sube a cada certificación |
+| Pares de antes y después (por descargar) | galería, por tratamiento | bancos libres (Unsplash/Pexels), con autor y licencia en el repo; `data-origen="muestra"` | fotos reales de casos con consentimiento del paciente |
+
+`/review` y `/release` exigen `max_samples: 0` salvo decisión del usuario.
+
+## Pantallas
+
+| Pantalla y estado | Ancho menor | Intermedio | Ancho mayor | Criterios |
+|---|---|---|---|---|
+| Inicio · con contenido | `pages/inicio.blade.php` a 390 | 768 | 1440 | CA1, CA2, CA8, CA9, CA17 |
+| Inicio · sin promociones, certificaciones ni testimonios | igual | igual | igual | CA3, CA4 |
+| Acerca de nosotros | `pages/nosotros.blade.php` | 768 | 1440 | CA1, CA7 |
+| Galería · con imágenes / sin imágenes | `pages/galeria.blade.php` | 768 | 1440 | CA5, CA17, CA18 |
+| Contacto | `pages/contacto.blade.php` | 768 | 1440 | CA6, CA7, CA16 |
+| Aviso de privacidad y Términos (barra y pie nuevos) | vistas actuales | 768 | 1440 | CA1 |
+| Tarjeta para compartir 1200×630 | — | — | — | CA19 (última tarea; `spec-mode.md` §7) |
+
+## Componentes
+
+- **Del sistema:** marca (`x-ui.brand`) en barra y pie; botón de WhatsApp con `--color-whatsapp` y
+  texto en tinta; región de estado para avisos.
+- **Exclusivos del sitio público** (de la propuesta, se conservan): barra superior con página activa,
+  pie, botón flotante de WhatsApp, botones `btn` (primario, fantasma, grande), subrayado a mano
+  (`hl`), recorrido 3D del diente con su versión estática, cupón y boletos de promociones, fila
+  deslizable de certificaciones, carrusel y cinta de testimonios, preguntas frecuentes, recorrido
+  horizontal del consultorio, antes y después con selector, compositor de mensaje de WhatsApp y
+  estado "Abierto / Cerrado".
+
+## Cambios a incorporar al sistema
+
+La primera tarea los aplica a `system.md` (versión **2.1.0**: añade una variante "sitio público"
+sin cambiar los tokens existentes) y `system.html`, y a `@theme` de `resources/css/app.css`.
+
+| Token, componente o regla | Modo | Valor (menor) | Valor (mayor) | Motivo |
+|---|---|---|---|---|
+| `--font-display` (Inter Tight 400–700) | fijo | autoalojada | — | tipografía de la propuesta; sin servicios externos |
+| `--font-serif` (Instrument Serif, normal e itálica) | fijo | autoalojada | — | acentos de la propuesta |
+| `--color-primary-deep` | fijo | `#a3345a` | — | rosa oscuro de la propuesta (fondos de llamada) |
+| `--color-line-strong` | fijo | `#cbd5e1` | — | bordes y separadores sobre superficies |
+| `--color-muted-soft` | fijo | `#94a3b8` | — | iconos y texto decorativo sobre tinta (no texto sobre claro) |
+| `--color-canvas-alt` | fijo | `#eef2f6` | — | fondo alterno de secciones |
+| `--color-primary-tint`, `--color-primary-tint-2`, `--color-secondary-soft` | fijo | `#f3c9d5` · `#f6d3dd` · `#fdf1ee` | — | fondos y degradados decorativos rosados |
+| `--color-success-tint` | fijo | `#bfe9d6` | — | estado "Abierto" |
+| `#fff`, `#000` → `--color-surface`/`--color-on-dark` e `--color-ink` | — | — | — | literales de la propuesta mapeados a tokens existentes (sombras: `--color-ink` con opacidad) |
+| Escalas `--space-1…8`, `--duration-fast/base`, `--ease-spring` | fijo | las de `tokens.css` | — | ritmo y movimiento de la propuesta |
+| Títulos del sitio público (`h-xl`, `h-lg`) | fluido 390–1440 | los de la propuesta | | sustituyen la fila "Título del sitio público" de Tipografía |
+| Regla de fuentes | — | — | — | "Fuentes: del sistema" pasa a "del sistema en el panel; Inter Tight e Instrument Serif autoalojadas en el sitio público" |
+| Tarjeta para compartir | fijo | 1200×630 | — | la define la última tarea (CA19) |
+
+Los valores exactos de las fuentes, los títulos fluidos y cada opacidad se copian de
+`nueva-landing/…/css/dentissa/tokens.css` y de las hojas de página; si un color de la propuesta no
+cumple contraste donde pinta texto, se corrige en ese uso (refinado), no en el token.
+
+## Movimiento
+
+La propuesta trae unas 55 animaciones CSS y dos scripts de movimiento (`tooth3d.js`, `home.js`).
+Se conservan, agrupadas en estas fichas; todas respetan ya `prefers-reduced-motion` en sus hojas.
+
+### M-1 — Entradas de sección (`rise`, `reveal`, `reveal3d`)
+- **Propósito y frecuencia:** evitar cambios bruscos al llegar a cada sección; una vez por visita.
+- **Disparador:** entrada en pantalla; una sola vez. **Propiedades:** `transform`, `opacity`.
+- **Reducido:** sin desplazamiento, visible desde el inicio · **Sin JavaScript:** todo visible (puerta `G-aparece`, `G-sin-js`) · **Táctil:** igual.
+
+### M-2 — Recorrido 3D del diente (inicio)
+- **Propósito:** explicar los tratamientos que ofrece la clínica; ligado al scroll en un escenario sticky.
+- **Disparador:** scroll; se repite. **Técnica:** WebGL sin librerías, cargado diferido para no bloquear el LCP.
+- **Reducido o sin WebGL:** imagen estática y los cuatro textos visibles (CA9) · **Sin JavaScript:** textos completos · **Táctil:** mismo recorrido.
+- **Coste:** ~13 kB de JS sin comprimir dentro del presupuesto de 60 kB de la página.
+
+### M-3 — Carruseles y cintas (testimonios, certificaciones, marquesina)
+- **Propósito:** mostrar varios elementos en poco espacio; se repiten.
+- **Reglas:** con botón de pausa y pausa al tener el foco o fuera de pantalla (CA10, WCAG 2.2.2); sin movimiento automático en modo reducido.
+
+### M-4 — Decorativos de fondo (orbes, partículas, rejilla, flotantes)
+- **Propósito:** riqueza visual del sitio (peso 15 de `riqueza`); se repiten.
+- **Reglas:** solo `transform`/`opacity`, `aria-hidden`, pausados fuera de pantalla y eliminados en modo reducido; nunca cruzan un texto.
+
+### M-5 — Respuesta de controles y formularios (botones, preguntas frecuentes, compositor)
+- **Propósito:** confirmar acciones; varias por visita, 100–250 ms. **Reducido:** sin desplazamiento.
+
+## Accesibilidad
+
+- **Contraste, toque y foco:** puertas `G-contraste`, `G-toque`, `G-foco` medidas en `/implement`.
+  Riesgo conocido: textos sobre los degradados rosados y `--color-muted-soft` como texto.
+- **Encabezados y estructura:** un `h1` por página (la propuesta ya lo cumple), `h2` por sección.
+- **Teclado:** menú, carruseles (con pausa), selector y control del antes y después, compositor de
+  WhatsApp, en orden de lectura (CA10).
+- **Decorativos ocultos:** subrayados SVG, orbes, partículas y el lienzo del diente con `aria-hidden`.
+
+## Decisiones
+
+| Fecha | Tipo | Pregunta / conflicto | Decisión | Fuente |
+|---|---|---|---|---|
+| 2026-11-12 | diseño | ¿Ciclo de candidatos para la 026? | No: se adopta la propuesta de `nueva-landing/` tal cual; solo se adapta donde lo exigen la spec, la constitución o una puerta. Acta con `exploration: none` | usuario |
+| 2026-11-12 | diseño | Criterios de diseño | Aprobados; se miden sobre las páginas reales en `/implement` y `/review`, no sobre candidatos. Rúbrica sin puntuar | usuario |
+| 2026-11-12 | brecha | Recursos | Se permite descargar las fuentes (OFL) y fotos de muestra de antes y después de bancos libres, con fuente y licencia | usuario |
+| 2026-11-12 | supuesto | Origen de las fotos de la propuesta | Parecen generadas; se marcan `generada` y se listan para sustituirlas por fotos reales | agente |
+| 2026-11-12 | cierre | Aprobación del acta | Aprobada | usuario |

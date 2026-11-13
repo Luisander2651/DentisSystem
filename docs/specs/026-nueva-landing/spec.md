@@ -98,7 +98,7 @@ desplazarse y un diente en 3D que recorre los tratamientos. Se conserva ese aspe
 [docs/design/system.md](../../design/system.md), que se **amplía** con una variante "sitio público"
 (las dos fuentes, servidas desde el propio sitio, y los tokens extra de espaciado, duración y
 movimiento); los colores sueltos de la propuesta se sustituyen por tokens. `/design-spec 026`
-documenta la propuesta como primer candidato y la mide.
+dejó el acta en [design.md](design.md): se adopta la propuesta tal cual, sin ciclo de candidatos, y solo se adapta donde lo exigen esta spec, la constitución o una puerta.
 
 Pantallas: inicio, acerca de nosotros, galería y contacto, más la barra superior, el pie y el botón
 de WhatsApp que comparten con las páginas legales.
@@ -124,7 +124,7 @@ Modo: persuadir · umbral 80 · mínimo por punto 3 · presupuesto 5 candidatos.
 
 | ID | Qué se mide | Objetivo | Sale de |
 |---|---|---|---|
-| K1 | La acción principal en la primera pantalla del inicio | "Agenda tu cita" visible sin desplazarse a 390 y 1440 px | CA1 |
+| K1 | La acción principal en la primera pantalla de cada página | "Agenda una Cita" visible sin desplazarse a 390, 768 y 1440 px | CA1 |
 | K2 | Lighthouse móvil de las cuatro rutas | Rendimiento ≥ 90; Accesibilidad, Buenas prácticas y SEO 100 | CA8 |
 | K3 | Estados vacíos con contenido cero | cada sección muestra su estado vacío sin desbordes | CA3, CA5 |
 | K4 | Movimiento reducido | sin animaciones automáticas y con el texto del recorrido | CA9 |
@@ -133,7 +133,9 @@ Modo: persuadir · umbral 80 · mínimo por punto 3 · presupuesto 5 candidatos.
 | K7 | Antes y después | par de fotos por tratamiento del catálogo, comparable con puntero y teclado a 390 y 1440 px | CA17, CA18 |
 | K8 | Tarjeta para compartir | 1200×630, marca legible a tamaño de miniatura | CA19 |
 
-Puertas: las de `design-spec/references/criterios.md` §2. Rúbrica: pesos por defecto; `riqueza` 15
+Detalle medible (CLS ≤ 0.1, LCP local ≤ 2.5 s, JavaScript ≤ 60 kB y primera visita ≤ 900 kB por página, titulares ≤ 3 líneas, fuentes cargadas, ≥ 1 escena y ≥ 3 fondos propios en el inicio) en [design/criterios.json](design/criterios.json); se mide sobre las páginas reales en `/implement` y `/review`.
+
+Puertas: las de `design-spec/references/criterios.md` §2. Rúbrica (no se puntúa: el diseño lo aceptó el usuario): pesos por defecto; `riqueza` 15
 porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 
 ## Requisitos no funcionales
@@ -163,6 +165,7 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 | 2026-11-12 | implícita | Direcciones de las páginas | Las de hoy: `/`, `/acerca-de-nosotros`, `/galeria`, `/contacto` | `docs/seo.md` → Inventario de rutas |
 | 2026-11-12 | implícita | Solo contenido visible y promociones vigentes en la zona de la clínica | Se mantiene | `docs/specs/011-sitio-publico/spec.md` CA1, Historial 2026-10-16 |
 | 2026-11-12 | implícita | URL canónica | `https://dentissapp.com`, sin `www` ni barra final | `docs/seo.md` → Reglas del sitio |
+| 2026-11-12 | diseño | Diseño de la spec | Se adopta la propuesta de `nueva-landing/` sin ciclo de candidatos; acta en [design.md](design.md) | usuario |
 | 2026-11-12 | supuesto | Datos de contacto: la propuesta trae marcadores (`[CORREO]`, número de ejemplo) | Se usan los datos que muestra hoy el sitio en producción | agente |
 | 2026-11-12 | supuesto | Las páginas legales comparten el layout del sitio | Adoptan la barra y el pie nuevos sin cambiar su texto y entran en el sitemap como rutas indexables | agente |
 | 2026-11-12 | brecha | El antes y después de la propuesta es un dibujo con tratamientos de ejemplo | Se muestra con fotos (imágenes de muestra hasta tener las reales) y el contenido se adapta a lo que Dentissa hace: solo tratamientos de su catálogo | usuario |
