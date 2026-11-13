@@ -1,6 +1,6 @@
 ---
 spec: 026-nueva-landing
-status: draft
+status: approved
 constitution_version: 1.2.1
 created: 2026-11-12
 ---

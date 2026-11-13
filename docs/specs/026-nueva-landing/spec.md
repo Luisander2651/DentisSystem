@@ -1,7 +1,7 @@
 ---
 id: 026
 slug: nueva-landing
-status: draft
+status: approved
 created: 2026-11-12
 extends: [011, 016, 022]
 ---
@@ -213,3 +213,4 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 | 2026-11-12 | Antes y después con fotos y tratamientos reales (CA17, CA18); imagen para compartir dentro como última tarea (CA19); estrellas de testimonios pendientes | Aclaración del usuario |
 | 2026-11-12 | Aprobada | Confirmación explícita del usuario |
 | 2026-11-12 | `extends` 022; CA2, CA6, CA7, CA11, CA13, CA17, K1, SE8.a, RS4.a y logo según las decisiones del usuario sobre `/analyze 026` (A5, A6, A8, A9, A10, A14, A15, A17, A18, A26); vuelve a `draft` | `/analyze 026` ronda 1 |
+| 2026-11-12 | Aprobada de nuevo | Confirmación explícita del usuario |

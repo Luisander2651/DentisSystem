@@ -1,6 +1,6 @@
 ---
 spec: 026-nueva-landing
-status: draft
+status: approved
 exploration: none
 threshold: 80
 floor: 3
@@ -172,3 +172,4 @@ Se conservan, agrupadas en estas fichas; todas respetan ya `prefers-reduced-moti
 | 2026-11-12 | refinado | `/analyze 026` A5: K1 en las cuatro páginas | K1 solo en inicio y nosotros; criterios por página | usuario |
 | 2026-11-12 | refinado | `/analyze 026` A10: logo y favicon | Los reales de la clínica | usuario |
 | 2026-11-12 | refinado | `/analyze 026` A22: galería con 0, 1–2 y ≥ 3 imágenes | Estados definidos en Pantallas | agente (sobre la propuesta) |
+| 2026-11-12 | cierre | Aprobación del acta tras `/analyze 026` ronda 1 | Aprobada | usuario |
