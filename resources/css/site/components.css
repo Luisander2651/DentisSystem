@@ -142,3 +142,15 @@
     .phone { width: 270px; }
     .ph-ghost { display: none; }
 }
+
+/* Footer layout (inline styles of the proposal footer moved to classes, spec 026 T008) */
+.ft-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 40px; }
+.ft-col { display: flex; flex-direction: column; gap: 10px; }
+.ft-brand { gap: 18px; }
+.opt .ft .ft-logo { color: var(--color-on-dark); }
+.ft-text { font-size: 15px; }
+.ft-social { display: flex; gap: 10px; }
+.ft-title { margin: 0 0 8px; color: var(--color-on-dark); font-size: 12px; font-weight: var(--weight-strong); letter-spacing: 0.16em; text-transform: uppercase; }
+.ft-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; padding-top: 28px; margin-top: 64px; border-top: 1px solid color-mix(in srgb, var(--color-on-dark) 10%, transparent); font-size: 14px; }
+.ft-legal { display: flex; gap: 20px; }
+.menu-wa { margin-top: 6px; }
