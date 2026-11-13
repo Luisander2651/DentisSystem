@@ -135,6 +135,32 @@ function initParallax(doc) {
 }
 
 /** Escape closes the open folding menu and gives the focus back to its button (CA10). */
+/**
+ * M-1: each section enters once per visit. A block gets `in` the first time it reaches the screen and
+ * is no longer watched; without IntersectionObserver every block gets it at once. Without JavaScript
+ * or with less motion the CSS shows them from the first frame.
+ */
+export function revealOnce(doc, win) {
+    const blocks = [...doc.querySelectorAll('.reveal, .reveal3d')];
+
+    if (!('IntersectionObserver' in win)) {
+        blocks.forEach((block) => block.classList.add('in'));
+
+        return;
+    }
+
+    const observer = new win.IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { rootMargin: '0px 0px -8% 0px' });
+
+    blocks.forEach((block) => observer.observe(block));
+}
+
 export function closeMenuOnEscape(doc, event) {
     if (event.key !== 'Escape') {
         return false;
@@ -201,6 +227,7 @@ export function initCore(win = window, doc = document) {
         initMenus(doc);
         initTilt(doc, D);
         initParallax(doc);
+        revealOnce(doc, win);
     });
 
     return D;

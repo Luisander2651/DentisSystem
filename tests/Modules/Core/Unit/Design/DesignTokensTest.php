@@ -48,6 +48,7 @@ const TOKEN_PAIRS = [
     'pink as an accent' => ['primary', 'surface', 3.0],
     'action icons on a card' => ['muted', 'surface', 3.0],
     'text on the deep pink call to action' => ['on-dark', 'primary-deep', 4.5],
+    'text on the open answer of the questions' => ['on-dark', 'primary-strong', 4.5],
     'text on the alternate section background' => ['ink', 'canvas-alt', 4.5],
     'secondary text on the alternate section background' => ['muted', 'canvas-alt', 4.5],
     'secondary text on the soft secondary background' => ['muted', 'secondary-soft', 4.5],
@@ -187,7 +188,7 @@ it('documents the tokens of the public site (spec 026)', function (string $token
     ));
 
     expect($documented)->toHaveKey($token);
-})->with(['--color-primary-deep', '--color-enamel', '--radius-hair', '--radius-2xl', '--spacing-control-lg', '--font-display', '--font-serif', '--ease-spring', '--weight-strong', '--text-body', '--space-8', '--duration-base']);
+})->with(['--color-primary-deep', '--color-primary-strong', '--color-enamel', '--radius-hair', '--radius-2xl', '--spacing-control-lg', '--font-display', '--font-serif', '--ease-spring', '--weight-strong', '--text-body', '--space-8', '--duration-base']);
 
 it('declares no colour the design system does not document', function () {
     $declared = array_filter(

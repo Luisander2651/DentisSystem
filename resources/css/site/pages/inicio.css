@@ -321,10 +321,6 @@
 @keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
 @keyframes marquee{to{transform:translateX(-50%)}}
 @keyframes bounce-dot{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-6px);opacity:1}}
-@supports (animation-timeline: view()){
-.reveal{animation:rise linear both;animation-timeline:view();animation-range:entry 0% entry 70%}
-.reveal3d{animation:rise3d linear both;animation-timeline:view();animation-range:entry 0% entry 80%}
-}
 @media (prefers-reduced-motion:reduce){.msg{opacity:1}.typing{display:none}}
 @media (max-width:920px){
 .nav-links,.hdr-cta{display:none}
@@ -403,10 +399,10 @@
 .ph-name b { font-size: 15px; }
 
 /* Accessibility refinements that ui-audit asked for (spec 026 T014, design.md → Resultado 5): the
-   open answer goes on a pink between the main and the deep one (45 % + 55 %), the lightest whose
+   open answer goes on primary-strong, between the main pink and the deep one (45 % + 55 %), the lightest whose
    white text reaches 4.5:1 inside its 8 % boxes (4.52:1; 5.19:1 on the card); numbers, months and labels
    reach their contrast and 12 px; controls take the system focus, 44 px targets and radii. */
-.fq-item.on { background: color-mix(in srgb, var(--color-primary) 45%, var(--color-primary-deep)); box-shadow: 0 40px 70px -40px color-mix(in srgb, var(--color-primary) 75%, transparent); }
+.fq-item.on { background: var(--color-primary-strong); box-shadow: 0 40px 70px -40px color-mix(in srgb, var(--color-primary) 75%, transparent); }
 .fq-item.on .fq-n, .fq-in p, .fq-vh, .cal span, .fq-opt { color: var(--color-on-dark); }
 .fq-n { color: var(--color-primary); }
 .cal span { font-size: var(--text-min); }
@@ -463,3 +459,60 @@
    section off screen hold the progress of the carousel and the ribbon. */
 .hold .ts-dot.on i, .hold .ts-track { animation-play-state: paused; }
 .ts-pause[aria-pressed='true'] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-on-dark); }
+
+/* Still version of the 3D tour (spec 026 T016, CA9, M-2): without JavaScript, with less motion or
+   without WebGL there is no scroll scene; a still frame of the tooth (drawn by tooth3d.js with the
+   tokens) and the four treatments with the same texts. While the tooth loads, only the first step shows. */
+.tour-still { display: none; }
+html:not(.js) .tour, .still .tour, .tour.tour-static { height: auto; padding: var(--space-8) 0; }
+html:not(.js) .tour-sticky, .still .tour-sticky, .tour-static .tour-sticky { position: static; min-height: 0; padding-top: 0; }
+html:not(.js) .tour-stage, .still .tour-stage, .tour-static .tour-stage { height: 420px; }
+html:not(.js) .tour-still, .still .tour-still, .tour-static .tour-still { display: block; position: absolute; left: 50%; top: 50%; z-index: 2; width: min(420px, 100%); height: auto; transform: translate(-50%, -50%); }
+html:not(.js) .tour .bar, .still .tour .bar, .tour-static .bar,
+html:not(.js) .scroll-hint, .still .scroll-hint, .tour-static .scroll-hint { display: none; }
+html:not(.js) .tour-copy, .still .tour-copy, .tour-static .tour-copy { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: var(--space-6); align-items: start; }
+html:not(.js) .tour-copy > :not(.if), .still .tour-copy > :not(.if), .tour-static .tour-copy > :not(.if) { grid-column: 1 / -1; justify-self: start; }
+html:not(.js) .tour-step, .still .tour-step, .tour-static .tour-step { min-height: 0; animation: none; }
+.js:not(.still) .tour:not(.tour-static):not(.tour-live) .if ~ .if { display: none; }
+
+/* Still version of the welcome (spec 026 T016, CA9): without JavaScript or with less motion the
+   photo deck is not a scroll scene. The copy keeps its place, the photos follow in a grid and the
+   closing message after them, all in sight. */
+html:not(.js) .vw, .still .vw { height: auto; }
+html:not(.js) .vw-sticky, .still .vw-sticky { position: static; height: auto; overflow: visible; }
+html:not(.js) .vw-grid, .still .vw-grid { height: auto; padding-bottom: var(--space-6); }
+html:not(.js) .vw-right, .still .vw-right, html:not(.js) .vw-hint, .still .vw-hint { display: none; }
+html:not(.js) .dk-layer, .still .dk-layer { position: static; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); max-width: 1200px; margin: 0 auto; padding: 0 24px; perspective: none; transform-style: flat; pointer-events: auto; }
+html:not(.js) .opt .dk-card, .still .opt .dk-card { position: relative; width: auto; height: auto; aspect-ratio: 1; opacity: 1; transform: none; will-change: auto; }
+html:not(.js) .dk-end, .still .dk-end { position: static; transform: none; opacity: 1; pointer-events: auto; margin: var(--space-7) auto var(--space-8); }
+@media (max-width: 600px) { html:not(.js) .dk-layer, .still .dk-layer { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); } }
+
+/* Certifications (spec 026 T016, manual review 2026-11-13): with three or fewer the row is centred
+   only while it fits; when it overflows (768 and 390 px) it starts at the edge and scrolls, instead of
+   spilling on both sides with the first frame out of reach. On phones one frame fills the view and
+   the next one peeks. */
+.cf-row.few { justify-content: flex-start; }
+.cf-row.few > .cf:first-child { margin-left: auto; }
+.cf-row.few > .cf:last-child { margin-right: auto; }
+@media (max-width: 600px) { .cf-row { gap: var(--space-5); scroll-padding-inline: 24px; } .cf { width: min(280px, 76vw); scroll-snap-align: start; } }
+
+/* 3D tour on tablets (spec 026 T016, manual review 2026-11-13): the stacked layout of phones left a
+   small tooth over left-aligned text with empty space below; between 601 and 920 px the tooth grows
+   and the copy is centred under it. */
+@media (min-width: 601px) and (max-width: 920px) {
+    .tour-stage { height: 460px; }
+    .tour-stage .cv, .tour-stage .orbits, .tour-stage .plate, .tour-stage .pt { scale: 0.82; }
+    .tour-copy { align-items: center; text-align: center; gap: var(--space-4); }
+    .tour-step { min-height: 128px; align-items: center; }
+    .tour-copy .bar { width: min(400px, 100%); }
+}
+
+/* Certifications head on tablets and phones (spec 026 T016, manual review 2026-11-13): the count
+   becomes a rule that leads from the title to the frames, and the gap before them shrinks. */
+@media (max-width: 920px) {
+    .cf-head { display: grid; justify-content: stretch; gap: var(--space-5); align-items: start; }
+    .cf-count { display: flex; align-items: baseline; gap: var(--space-2); font-size: 18px; }
+    .cf-count b { font-size: 36px; margin-right: 0; }
+    .cf-count::after { content: ""; flex: 1; align-self: center; height: 1px; margin-left: var(--space-2); background: var(--color-line-strong); }
+    .cf-row { padding-top: var(--space-6); }
+}

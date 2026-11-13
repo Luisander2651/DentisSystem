@@ -139,3 +139,46 @@ it('keeps the focus inside the certificate viewer, wrapping at both ends', funct
         ->and(runSiteScript('trap', ['focusables' => $controls, 'current' => 'cerrar', 'backwards' => true])['next'])->toBe('enlace')
         ->and(runSiteScript('trap', ['focusables' => $controls, 'current' => 'fuera', 'backwards' => false])['next'])->toBe('cerrar');
 });
+
+/**
+ * @return array<string, mixed>
+ */
+function tourWith(bool $webgl, bool $reducedMotion, bool $context = true): array
+{
+    return runSiteScript('tooth', ['webgl' => $webgl, 'context' => $context, 'reducedMotion' => $reducedMotion, 'tokens' => [
+        '--color-enamel' => '#ff0000', '--color-enamel-white' => ' #00ff00', '--color-primary' => '#0000ff',
+        '--color-secondary' => '#808080', '--color-enamel-rim' => '#fff', '--color-env-dark' => '#000',
+        '--color-env-light' => '#eee', '--color-metal' => '#ccc', '--color-blush' => '#ddd',
+        '--color-primary-deep' => '#111', '--color-ink' => '#222',
+    ]]);
+}
+
+it('keeps the still tour, with no canvas, in a browser without 3D graphics (CA9)', function () {
+    expect(tourWith(webgl: false, reducedMotion: false))->toMatchArray(['drawn' => false, 'classes' => ['tour-static'], 'canvases' => [], 'colours' => []]);
+});
+
+it('keeps the still tour, with no canvas, when the visitor asked for less motion (CA9)', function () {
+    expect(tourWith(webgl: true, reducedMotion: true))->toMatchArray(['drawn' => false, 'classes' => ['tour-static'], 'canvases' => [], 'colours' => []]);
+});
+
+it('falls back to the still tour when the browser refuses the WebGL context', function () {
+    expect(tourWith(webgl: true, reducedMotion: false, context: false))->toMatchArray(['drawn' => false, 'classes' => ['tour-static'], 'canvases' => []]);
+});
+
+it('draws the tooth with the colours of the tokens, none written in the script (A30)', function () {
+    $tour = tourWith(webgl: true, reducedMotion: false);
+
+    expect($tour)->toMatchArray(['drawn' => true, 'classes' => ['tour-live'], 'canvases' => ['pt pt-b', 'cv', 'pt pt-f']])
+        ->and($tour['colours'])->toMatchArray([
+            'uEnamel' => [1, 0, 0],
+            'uEnamelWhite' => [0, 1, 0],
+            'uPrimary' => [0, 0, 1],
+            'uSecondary' => [0.502, 0.502, 0.502],
+            'uEnamelRim' => [1, 1, 1],
+        ]);
+});
+
+it('lets each section enter once: it keeps its place after leaving the screen and is no longer watched (M-1)', function () {
+    expect(runSiteScript('reveal', ['observer' => true, 'entering' => ['a', 'c']]))->toBe(['shown' => ['a', 'c'], 'unobserved' => ['a', 'c']])
+        ->and(runSiteScript('reveal', ['observer' => false, 'entering' => []]))->toBe(['shown' => ['a', 'b', 'c'], 'unobserved' => []]);
+});

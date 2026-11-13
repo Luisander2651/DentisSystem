@@ -117,6 +117,94 @@ const scenarios = {
         return { next: trappedFocus(focusables, current, backwards) };
     },
 
+    /*
+     * The 3D tour with or without WebGL and with or without less motion. A fake WebGL context
+     * records the colours the shader receives; the tokens come from `tokens`.
+     */
+    async tooth({ webgl, context = true, reducedMotion, tokens }) {
+        const { initTooth } = await import(new URL('tooth3d.js', site));
+        const colours = {};
+        const gl = new Proxy({
+            getShaderParameter: () => true,
+            getProgramParameter: () => true,
+            getAttribLocation: () => 0,
+            getUniformLocation: (_, name) => name,
+            uniform3f: (name, ...rgb) => {
+                colours[name] = rgb;
+            },
+        }, { get: (target, key) => target[key] ?? (() => ({})) });
+        const inserted = [];
+        const tourClasses = classList();
+        const stage = {
+            querySelector: () => null,
+            insertBefore: (element) => inserted.push(element),
+        };
+        const doc = {
+            documentElement: {},
+            querySelector: (selector) => (selector === '[data-ref="Tour"]' ? { classList: tourClasses, querySelector: () => stage } : null),
+            createElement: () => {
+                const element = {
+                    attributes: {},
+                    removed: false,
+                    classList: classList(),
+                    setAttribute: (name, value) => {
+                        element.attributes[name] = value;
+                    },
+                    getContext: (type) => (type === 'webgl' && context ? gl : null),
+                    remove: () => {
+                        element.removed = true;
+                    },
+                };
+
+                return element;
+            },
+        };
+        const win = {
+            ...(webgl ? { WebGLRenderingContext: function WebGLRenderingContext() {} } : {}),
+            Dentissa: { reducedMotion: () => Boolean(reducedMotion), setIf: () => {} },
+            getComputedStyle: () => ({ getPropertyValue: (token) => tokens[token] ?? '' }),
+            performance: { now: () => 0 },
+            requestAnimationFrame: () => 0,
+        };
+        const drawn = initTooth(win, doc);
+
+        return {
+            drawn,
+            classes: tourClasses.values(),
+            canvases: inserted.filter((element) => !element.removed).map((element) => element.className),
+            colours,
+        };
+    },
+
+    /* Section entrances: which blocks get `in`, and which stop being watched. */
+    async reveal({ observer, entering }) {
+        const { revealOnce } = await import(new URL('core.js', site));
+        const blocks = ['a', 'b', 'c'].map((name) => ({ name, classList: classList() }));
+        const unobserved = [];
+        let callback = null;
+        const win = observer
+            ? {
+                IntersectionObserver: class {
+                    constructor(fn) {
+                        callback = fn;
+                    }
+
+                    observe() {}
+
+                    unobserve(target) {
+                        unobserved.push(target.name);
+                    }
+                },
+            }
+            : {};
+
+        revealOnce({ querySelectorAll: () => blocks }, win);
+        callback?.(blocks.map((block) => ({ target: block, isIntersecting: entering.includes(block.name) })));
+        callback?.(blocks.map((block) => ({ target: block, isIntersecting: false })));
+
+        return { shown: blocks.filter((block) => block.classList.contains('in')).map((block) => block.name), unobserved };
+    },
+
     /* The coupon and tickets as the server orders them: none removed nor reordered. */
     async promos({ tickets, at }) {
         const RealDate = Date;

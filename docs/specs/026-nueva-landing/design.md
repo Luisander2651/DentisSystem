@@ -54,8 +54,8 @@ puntúa: la composición ya está aceptada por el usuario.
 |---|---|---|---|
 | Puertas de `criterios.md` §2 | todas | en `/implement`, por página | — |
 | K1 · Acción principal en la primera pantalla (CA1) | "Agenda una Cita" a la vista a 390, 768 y 1440 en inicio y "Acerca de nosotros" | en `/implement` | — |
-| K2a–K2f · Calidad de carga (CA8, CA10) | CLS ≤ 0.1 · LCP ≤ 2.5 s · JS ≤ 60 kB · primera visita ≤ 900 kB · titulares ≤ 3 líneas · las dos fuentes cargadas | en `/implement` | — |
-| K4a, K4b · Riqueza del inicio (CA1, CA9) | ≥ 1 escena · ≥ 3 fondos propios | en `/implement` | — |
+| K2a–K2f · Calidad de carga (CA8, CA10) | CLS ≤ 0.1 · LCP ≤ 2.5 s · JS ≤ 60 kB · primera visita ≤ 900 kB sin contar las imágenes que sube el staff (refinado 2026-11-13) · titulares ≤ 3 líneas · las dos fuentes cargadas | en `/implement` | — |
+| K4a, K4b · Riqueza del inicio (CA1, CA9) | ≥ 1 escena · ≥ 2 fondos propios (refinado 2026-11-13) | en `/implement` | — |
 | K7 · Antes y después (CA18) | "Antes" y "Después" visibles | en `/implement` | — |
 | K2, K3, K5, K8 (verificación en la tarea) | Lighthouse, estados vacíos, teclado, tarjeta | tests y `ui-audit` | — |
 
@@ -142,6 +142,12 @@ Se conservan, agrupadas en estas fichas; todas respetan ya `prefers-reduced-moti
 - **Reducido o sin WebGL:** imagen estática y los cuatro textos visibles (CA9) · **Sin JavaScript:** textos completos · **Táctil:** mismo recorrido.
 - **Coste:** ~13 kB de JS sin comprimir dentro del presupuesto de 60 kB de la página.
 
+### M-6 — Bienvenida con mazo de fotos (inicio; añadida 2026-11-13)
+- **Marca de escena:** el contenedor sticky de la bienvenida lleva `data-scene`, como el recorrido.
+- **Propósito:** presentar la clínica; al bajar, el texto se aparta y las fotos se abren en abanico hasta el mensaje "Un ambiente cálido y seguro". Ligado al scroll en un escenario sticky; las fotos pasan solas cada 4.2 s mientras el mazo está cerrado.
+- **Puerta `G-aparece`:** excepción aceptada solo en esta escena: el texto, las fotos del fondo del mazo y el mensaje final se ocultan a propósito mientras siguen en pantalla; cada uno aparece en algún punto del recorrido y en la versión estática.
+- **Reducido o sin JavaScript:** sin escena: el texto con sus botones, las fotos en cuadrícula y el mensaje final, todo visible (puertas `G-reducido`, `G-sin-js`) · **Táctil:** mismo recorrido.
+
 ### M-3 — Carruseles y cintas (testimonios, certificaciones, marquesina)
 - **Propósito:** mostrar varios elementos en poco espacio; se repiten.
 - **Reglas:** con botón de pausa y pausa al tener el foco o fuera de pantalla (CA10, WCAG 2.2.2); sin movimiento automático en modo reducido.
@@ -183,3 +189,9 @@ Se conservan, agrupadas en estas fichas; todas respetan ya `prefers-reduced-moti
 | 2026-11-13 | refinado | Estado vacío de promociones: una franja sencilla no le daba título a la sección | Se adopta el estado vacío de la propuesta revisada (`nueva-landing/dentissa-laravel/`, la anterior queda en `dentissa-laravel-old/`): sección con `h2` y dibujo; sus rosas `#e48aa5` y `#f7dbe3` pasan a `--color-primary-hover` y `--color-primary-tint-2` | usuario |
 | 2026-11-13 | refinado | "Avísame de la próxima" prometía un aviso que la clínica no envía | Texto y botón pasan a "Pregúntanos por WhatsApp" con el mensaje "Hola, ¿tienen alguna promoción disponible?" | usuario |
 | 2026-11-13 | refinado | Pregunta abierta del acordeón: `primary-deep` se veía oscuro y el rosa principal no llega a 4.5:1 con texto blanco (3.96:1) | Mezcla 45 % `primary` + 55 % `primary-deep` (≈ `#ba4168`): el rosa más claro cuyo texto blanco llega a 4.5:1 dentro de los recuadros (4.52:1) y 5.19:1 en la tarjeta; se probó texto en tinta sobre el rosa principal y se descartó | usuario |
+| 2026-11-13 | refinado | La bienvenida es una escena de scroll que oculta el texto a propósito y falla `G-aparece`; no tenía ficha de movimiento | Se conserva: ficha M-6 con la excepción de `G-aparece` solo para ella; sin JavaScript y con movimiento reducido tiene versión estática con todo visible | usuario |
+| 2026-11-13 | refinado | K4b pedía ≥ 3 fondos propios, fijado sin medir la propuesta, que tiene dos dibujados (rejilla de la llamada final y escenario del diente) | K4b ≥ 2; no se añade ningún fondo | usuario |
+| 2026-11-13 | refinado | K2d contaba una certificación de 848 kB subida en local | K2d mide la página sin las imágenes que sube el staff; reducirlas al subir va al roadmap | usuario |
+| 2026-11-13 | refinado | M-2 pedía imagen estática del diente y no existía | `diente.webp`, un cuadro del propio diente dibujado con los tokens (`data-origen="dibujada"`); las seis fotos de la propuesta pasan de 1300 a 880 px (≈ 570 → 222 kB) | agente (puertas de la tarea T016) |
+| 2026-11-13 | refinado | Revisión manual: certificaciones a 768 y 390 px con los marcos cortados y el contador suelto | La fila centrada se desbordaba por los dos lados (el primer marco quedaba fuera de alcance): solo se centra si cabe; en teléfono un marco y el siguiente asomando; el contador pasa a línea que une el título con los marcos | usuario |
+| 2026-11-13 | refinado | Revisión manual: recorrido 3D a 768 px raro (diente pequeño, texto a la izquierda, huecos) | Entre 601 y 920 px el diente crece y el texto se centra bajo él | usuario |

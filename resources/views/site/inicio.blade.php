@@ -44,7 +44,7 @@
 
 @section('content')
 <section id="explora" class="vw" data-ref="VwSec" aria-label="Bienvenida a Dentissa">
-    <div class="vw-sticky">
+    <div class="vw-sticky" data-scene>
         <div class="wrap vw-grid">
             <div class="vw-copy" data-ref="VwCopy">
                 <span class="eyebrow rise"><span class="dot"></span>Odontología integral · Ciudad de México</span>
@@ -69,7 +69,7 @@
 
         <div class="dk-layer" data-audit="animado" data-ref="DkLayer" role="group" aria-label="Fotos de la clínica Dentissa">
             @foreach ($photos as [$file, $alt])
-                <figure class="dk-card" data-i="{{ $loop->index }}"><img src="{{ asset('images/site/'.$file) }}" alt="{{ $alt }}" width="1300" height="1300" data-origen="generada" @if ($loop->first) fetchpriority="high" @else loading="lazy" @endif></figure>
+                <figure class="dk-card" data-i="{{ $loop->index }}"><img src="{{ asset('images/site/'.$file) }}" alt="{{ $alt }}" width="880" height="880" data-origen="generada" @if ($loop->first) fetchpriority="high" @else loading="lazy" @endif></figure>
             @endforeach
         </div>
 
@@ -96,12 +96,10 @@
 
 <section class="tour" data-ref="Tour" aria-label="Recorrido 3D por nuestros tratamientos">
     <div class="tour-sticky wrap" data-scene>
-        <div class="tour-stage">
+        <div class="tour-stage" data-bg>
             <div class="plate"></div>
+            <img class="tour-still" src="{{ asset('images/site/diente.webp') }}" alt="" width="720" height="720" loading="lazy" data-origen="dibujada">
             <div class="orbits" aria-hidden="true"><div class="orb o1"><i></i></div><div class="orb o2"><i></i></div></div>
-            <canvas class="pt pt-b" data-ref="TPtB" aria-hidden="true"></canvas>
-            <canvas class="cv" data-ref="TourCv" role="img" aria-label="Diente 3D que cambia según el tratamiento"></canvas>
-            <canvas class="pt pt-f" data-ref="TPtF" aria-hidden="true"></canvas>
             <div class="orbits front" aria-hidden="true"><div class="orb o1"><i></i></div><div class="orb o2"><i></i></div></div>
         </div>
         <div class="tour-copy">
@@ -402,7 +400,7 @@
 <section class="cta-section">
     <div class="wrap">
         <div class="cta3d reveal3d" data-surface="dark">
-            <div class="cta-grid" aria-hidden="true"></div>
+            <div class="cta-grid" data-bg></div>
             <div class="cta-copy">
                 <span class="kicker cta-kicker">Agenda hoy</span>
                 <h2 class="h-lg cta-title">Tu próxima sonrisa está a <span class="hl">un mensaje{!! $underline !!}</span> de distancia</h2>

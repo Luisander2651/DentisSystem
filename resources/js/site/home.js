@@ -103,7 +103,8 @@ function initDeck(doc, win, D) {
     const slot = D.ref('VwSlot');
     const layer = D.ref('DkLayer');
 
-    if (!section || !slot || !layer) {
+    /* With less motion there is no scene: the welcome stays in its still version (CSS `.still`, CA9). */
+    if (!section || !slot || !layer || D.reducedMotion()) {
         return;
     }
 
@@ -149,7 +150,7 @@ function initDeck(doc, win, D) {
         });
     });
     win.setInterval(() => {
-        if (fly || opened > 0.04 || hover >= 0 || D.reducedMotion() || doc.hidden) {
+        if (fly || opened > 0.04 || hover >= 0 || doc.hidden) {
             return;
         }
 
@@ -171,8 +172,7 @@ function initDeck(doc, win, D) {
 
         const span = box.height - sticky.offsetHeight;
         const progress = span > 0 ? clamp(-box.top / span) : 0;
-        /* With less motion the deck stays open in its fan, still (CA9). */
-        const e = D.reducedMotion() ? 1 : ease(clamp((progress - 0.05) / 0.7));
+        const e = ease(clamp((progress - 0.05) / 0.7));
         opened = e;
         const stage = sticky.getBoundingClientRect();
         const target = slot.getBoundingClientRect();
@@ -270,6 +270,12 @@ function initFaq(doc) {
             const on = item === open;
             item.classList.toggle('on', on);
             buttonOf(item)?.setAttribute('aria-expanded', on ? 'true' : 'false');
+            /* A folded answer is out of reach of screen readers and the keyboard. */
+            const answer = item.querySelector('.fq-a');
+
+            if (answer) {
+                answer.inert = !on;
+            }
         });
     };
 

@@ -32,6 +32,7 @@
       "#eff6ff",
       "#25d366",
       "#a3345a",
+      "#ba4168",
       "#cbd5e1",
       "#94a3b8",
       "#eef2f6",
@@ -117,7 +118,7 @@
       "id": "K4b",
       "name": "Fondos propios (solo inicio)",
       "type": "custom_background",
-      "value": 3,
+      "value": 2,
       "ca": "CA1"
     }
   ],

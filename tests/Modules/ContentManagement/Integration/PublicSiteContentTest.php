@@ -211,3 +211,17 @@ it('never serves the promotions of one day on another, whatever was cached first
     $this->travelTo(CarbonImmutable::parse('2026-11-12 12:00', 'America/Mexico_City'));
     expect(homeText(homePage($this), '//*[@data-pm="title"]'))->toBe('Solo en noviembre');
 });
+
+it('serves the tour with its four treatments and a still tooth, and no canvas until the script draws one (CA9)', function () {
+    $page = homePage($this);
+    $still = $page->query('//section[@data-ref="Tour"]//img[contains(@class, "tour-still")]')->item(0);
+
+    expect($page->query('//section[@data-ref="Tour"]//canvas')->length)->toBe(0)
+        ->and($page->query('//section[@data-ref="Tour"]//*[contains(@class, "tour-step")]/h2')->length)->toBe(4)
+        ->and($still)->not->toBeNull()
+        ->and($still->getAttribute('src'))->toEndWith('/images/site/diente.webp')
+        ->and($still->getAttribute('alt'))->toBe('')
+        ->and($still->getAttribute('data-origen'))->toBe('dibujada')
+        ->and([$still->getAttribute('width'), $still->getAttribute('height')])->toBe(['720', '720'])
+        ->and(file_exists(public_path('images/site/diente.webp')))->toBeTrue();
+});

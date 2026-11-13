@@ -25,6 +25,7 @@ Para pasar de **prototipo** a **MVP** con una clínica real:
 - Specs 001–012 revisadas y pasadas de `inferred` a `approved` (cumplido el 2026-09-23).
 
 ## Pendientes y deuda
+- Imágenes que sube el staff (certificaciones, galería): se guardan y se sirven tal como llegan, sin reducir ni comprimir; una certificación PNG de 848 kB pesaba más que todo el inicio. Redimensionar y comprimir al subir; fuera de la spec 026 (decisión del usuario, 2026-11-13).
 - Testimonios: calificación con estrellas (1 a 5) capturada en "Contenido" y mostrada en la landing; fuera de la spec 026 (decisión del usuario, 2026-11-12).
 - SEO técnico, mejoras de severidad baja de [seo.md](seo.md) (decisión del usuario, 2026-10-15): SE6.a y SE6.b, Open Graph e imagen general para compartir desde la tarjeta del sistema de diseño (que aún no la define); SE7.a, datos estructurados `Dentist` con los datos visibles del inicio y de contacto; SE8.a, `theme-color` en los layouts. Las cuatro las cubre la spec 026 en el sitio público.
 - Aceptados sin tarea en la review de la spec 025 (v0.10.0; decisión del usuario, 2026-11-11):

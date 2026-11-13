@@ -13,6 +13,8 @@
 @keyframes ring { from { transform: scale(1); opacity: 0.7; } to { transform: scale(1.6); opacity: 0; } }
 
 .rise { animation: rise 900ms var(--ease-out) both; }
+/* M-1 without JavaScript: the entrance needs no script, but the page shows everything from the first frame. */
+html:not(.js) .rise { animation: none; }
 .d1 { animation-delay: 100ms; }
 .d2 { animation-delay: 220ms; }
 .d3 { animation-delay: 340ms; }
@@ -20,11 +22,11 @@
 .d5 { animation-delay: 620ms; }
 .spin { animation: spin 60s linear infinite; }
 
-/* M-1: section entrances tied to the scroll, only where the browser supports it. */
-@supports (animation-timeline: view()) {
-    .reveal { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% entry 70%; }
-    .reveal3d { animation: rise3d linear both; animation-timeline: view(); animation-range: entry 0% entry 80%; }
-}
+/* M-1: section entrances, once per visit: core.js adds `in` when a block first reaches the screen.
+   Without JavaScript or with less motion (`.still`) nothing waits: every block is visible. */
+.js:not(.still) .reveal:not(.in), .js:not(.still) .reveal3d:not(.in) { opacity: 0; }
+.js:not(.still) .reveal.in { animation: rise 900ms var(--ease-out) both; }
+.js:not(.still) .reveal3d.in { animation: rise3d 1000ms var(--ease-out) both; }
 
 .still *, .still *::before, .still *::after { animation: none !important; }
 
