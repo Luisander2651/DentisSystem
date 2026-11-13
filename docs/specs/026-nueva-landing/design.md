@@ -1,6 +1,6 @@
 ---
 spec: 026-nueva-landing
-status: draft
+status: approved
 exploration: none
 threshold: 80
 floor: 3
@@ -178,3 +178,4 @@ Se conservan, agrupadas en estas fichas; todas respetan ya `prefers-reduced-moti
 | 2026-11-12 | refinado | `/analyze 026` A30: colores del JS | Tokens decorativos del esmalte; el JS lee los tokens al dibujar | usuario |
 | 2026-11-12 | refinado | `/analyze 026` A32: estados por cantidad | Pest y revisión manual; `ui-audit` en CI con contenido | usuario |
 | 2026-11-12 | refinado | `/analyze 026` A34, A36, A37, A44, A47 | Escena marcada; visor de certificaciones documentado; dirección, horario y mapa confirmados o fuera; textos alineados; `tokens.colors` = paleta del sistema | agente (sobre las decisiones del usuario) |
+| 2026-11-12 | cierre | Aprobación del acta tras `/analyze 026` ronda 2 | Aprobada | usuario |
