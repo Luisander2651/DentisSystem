@@ -161,3 +161,26 @@ it('loads the shared script of the site, and every inline script carries the non
         expect($inline->getAttribute('nonce'))->not->toBe('');
     }
 });
+
+it('serves the legal pages with the bar and footer of the new site, keeping their text', function (string $path, string $title) {
+    $page = sitePage($this, $path);
+
+    expect($page->query('//header[contains(@class, "hdr")]')->length)->toBe(1)
+        ->and($page->query('//footer[contains(@class, "ft")]')->length)->toBe(1)
+        ->and(siteTexts($page, '//h1'))->toBe([$title])
+        ->and(siteTexts($page, '//title'))->toBe(["{$title} - Dentissa"])
+        ->and($page->query('//meta[@name="description"]')->length)->toBe(1);
+})->with([
+    'privacy notice' => ['/aviso-de-privacidad', 'Aviso de Privacidad'],
+    'terms' => ['/terminos-y-condiciones', 'Términos y Condiciones'],
+]);
+
+it('serves the legal pages with the previous layout when the new landing is off', function (string $path) {
+    config(['site.new_landing' => false]);
+
+    $page = sitePage($this, $path);
+
+    expect($page->query('//header[contains(@class, "hdr")]')->length)->toBe(0)
+        ->and($page->query('//footer[contains(@class, "ft")]')->length)->toBe(0)
+        ->and($page->query('//*[@id="mobile-menu-btn"]')->length)->toBe(1);
+})->with(['/aviso-de-privacidad', '/terminos-y-condiciones']);

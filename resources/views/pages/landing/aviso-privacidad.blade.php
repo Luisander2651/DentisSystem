@@ -1,4 +1,4 @@
-@extends('layouts.landing')
+@extends(config('site.new_landing') ? 'layouts.site' : 'layouts.landing')
 
 @section('title', 'Aviso de Privacidad - Dentissa')
 @section('description', 'Qué datos personales trata Dentissa, para qué los usa, con quién los comparte y cómo ejercer tus derechos de acceso, rectificación, cancelación y oposición.')

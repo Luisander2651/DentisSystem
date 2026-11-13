@@ -30,6 +30,8 @@
         </main>
 
         <x-site.footer />
+
+        <x-ui.status />
     </div>
 </body>
 </html>

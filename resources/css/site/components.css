@@ -9,7 +9,7 @@
 
 .opt a { color: var(--color-primary-deep); }
 .wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-.opt .logo { display: inline-flex; align-items: center; gap: 10px; font-weight: var(--weight-strong); font-size: 20px; color: var(--color-ink); text-decoration: none; letter-spacing: -0.015em; }
+.opt .logo { display: inline-flex; align-items: center; gap: 10px; min-height: var(--spacing-control); font-weight: var(--weight-strong); font-size: 20px; color: var(--color-ink); text-decoration: none; letter-spacing: -0.015em; }
 
 /* Top bar */
 @keyframes hdrIn { from { opacity: 0; transform: translateY(-24px); } }
@@ -19,7 +19,7 @@
 @supports (animation-timeline: scroll()) { .hdr-in::after { animation: prog linear both; animation-timeline: scroll(root); } }
 @keyframes prog { to { transform: scaleX(1); } }
 .logo-txt { display: flex; flex-direction: column; line-height: 1.05; }
-.logo-txt small { font-size: 10.5px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-muted); margin-top: 4px; }
+.logo-txt small { font-size: var(--text-min); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-muted); margin-top: 4px; }
 .opt .hdr .nav-links { display: flex; gap: 2px; padding: 4px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-canvas-alt) 75%, transparent); border: 1px solid color-mix(in srgb, var(--color-line) 80%, transparent); }
 .opt .hdr .nav-links a { position: relative; padding: 8px 15px; border-radius: var(--radius-sm); color: var(--color-muted); font-weight: 500; font-size: 14.5px; text-decoration: none; transition: color 200ms; z-index: 0; }
 .opt .hdr .nav-links a::after { content: ''; position: absolute; inset: 0; border-radius: var(--radius-sm); background: var(--color-surface); box-shadow: 0 4px 12px -6px color-mix(in srgb, var(--color-ink) 30%, transparent); transform: scale(0.7); opacity: 0; transition: transform 350ms var(--ease-spring), opacity 200ms; z-index: -1; }
@@ -40,7 +40,7 @@
 
 /* Folding menu, below 920 px on every page */
 .menu-m { display: none; position: relative; }
-.menu-m summary { list-style: none; width: var(--spacing-control); height: var(--spacing-control); display: grid; place-items: center; border-radius: var(--radius-control); border: 1px solid var(--color-line); background: var(--color-surface); cursor: pointer; }
+.menu-m summary { list-style: none; width: var(--spacing-control); height: var(--spacing-control); display: grid; place-items: center; border-radius: var(--radius-control); border: 1px solid var(--color-field); background: var(--color-surface); cursor: pointer; }
 .menu-m summary::-webkit-details-marker { display: none; }
 .menu-panel { position: absolute; right: 0; top: 58px; width: 250px; padding: 8px; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-box); box-shadow: 0 24px 48px -20px color-mix(in srgb, var(--color-ink) 30%, transparent); display: flex; flex-direction: column; gap: 2px; }
 .menu-m[open] .menu-panel { animation: rise 260ms var(--ease-out) both; }
@@ -93,7 +93,7 @@
 .opt .ft a:hover { color: var(--color-secondary); }
 .ft h4 { margin: 0 0 18px; color: var(--color-on-dark); font-size: 12px; font-weight: var(--weight-strong); letter-spacing: 0.16em; text-transform: uppercase; }
 .ft .logo-txt small { color: var(--color-muted-soft); }
-.opt .social { width: var(--spacing-control); height: var(--spacing-control); border-radius: var(--radius-control); display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--color-on-dark) 14%, transparent); color: var(--color-on-dark); transition: transform 300ms var(--ease-spring), background 250ms, border-color 250ms; }
+.opt .social { width: var(--spacing-control); height: var(--spacing-control); border-radius: var(--radius-control); display: grid; place-items: center; border: 1px solid var(--color-field); color: var(--color-on-dark); transition: transform 300ms var(--ease-spring), background 250ms, border-color 250ms; }
 .opt .social:hover { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-ink); transform: translateY(-3px); }
 
 /* Call to action with the WhatsApp phone */
@@ -154,3 +154,7 @@
 .ft-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; padding-top: 28px; margin-top: 64px; border-top: 1px solid color-mix(in srgb, var(--color-on-dark) 10%, transparent); font-size: 14px; }
 .ft-legal { display: flex; gap: 20px; }
 .menu-wa { margin-top: 6px; }
+
+/* Accessibility of the shared bar and footer (spec 026 T010, ui-audit): links of the footer reach
+   the 44 px touch target. */
+.ft-col a, .ft-legal a { display: inline-flex; align-items: center; min-height: var(--spacing-control); }

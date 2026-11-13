@@ -19,6 +19,11 @@
 
 export const ADMITTED = [
     {
+        criterion: '026 CA1',
+        entries: ['aviso-privacidad', 'terminos'],
+        difference: 'Las páginas legales pasan a la barra y el pie del sitio nuevo (spec 026, que sustituye 016 CA22 en las pantallas públicas); su texto, su título y su índice no cambian.',
+    },
+    {
         criterion: 'CA9, CA10',
         entries: ['pacientes'],
         difference: 'Los filtros por estado dejan de ser un control segmentado dentro de una caja y pasan a ser filtros del sistema (x-ui.chip) de 44 px, en el mismo lugar. Aspecto aprobado por el usuario en la vista previa de pacientes (2026-10-08).',

@@ -9,7 +9,7 @@
     $phoneHref = 'tel:'.preg_replace('/[^\d+]/', '', $contact['phone']);
     $schedule = \App\Core\Http\PublicSiteSchedule::fromConfig()->lines();
 @endphp
-<footer class="ft">
+<footer class="ft" data-surface="dark">
     <div class="wrap ft-grid">
         <div class="ft-col ft-brand">
             <a href="{{ route('inicio') }}" class="logo ft-logo">
