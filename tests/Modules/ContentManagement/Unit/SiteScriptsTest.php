@@ -80,3 +80,62 @@ it('closes the folding menu with Escape and gives the focus back to its button',
         ->and(runSiteScript('escape', ['open' => false, 'key' => 'Escape']))->toBe(['handled' => false, 'open' => false, 'focused' => false, 'expanded' => null])
         ->and(runSiteScript('escape', ['open' => true, 'key' => 'Enter']))->toBe(['handled' => false, 'open' => true, 'focused' => false, 'expanded' => 'true']);
 });
+
+it('counts what is left of a promotion on the clinic\'s calendar, whatever the visitor\'s zone', function (string $at, string $left) {
+    expect(runSiteScript('promotion', ['start' => '2026-11-01', 'end' => '2026-11-12', 'at' => $at])['left'])->toBe($left);
+})->with([
+    'ends today, noon in the clinic' => ['2026-11-12T12:00:00-06:00', 'Termina hoy'],
+    'ends today, 23:30 in the clinic (already the 13th in UTC+1)' => ['2026-11-13T06:30:00+01:00', 'Termina hoy'],
+    'ends tomorrow' => ['2026-11-11T12:00:00-06:00', 'Termina mañana'],
+    'ends tomorrow, 23:30 in the clinic (already the 12th in UTC+1)' => ['2026-11-12T06:30:00+01:00', 'Termina mañana'],
+    'ends in five days' => ['2026-11-07T12:00:00-06:00', 'Quedan 5 días'],
+]);
+
+it('fills the bar of a promotion with what is left, never below 4 %', function () {
+    expect(runSiteScript('promotion', ['start' => '2026-11-01', 'end' => '2026-11-11', 'at' => '2026-11-06T12:00:00-06:00'])['bar'])->toBe(50)
+        ->and(runSiteScript('promotion', ['start' => '2026-11-01', 'end' => '2026-11-11', 'at' => '2026-11-11T12:00:00-06:00'])['bar'])->toBe(4);
+});
+
+it('shows the promotions in the order of the server and removes none, with the visitor in another zone (A16)', function () {
+    $result = runSiteScript('promos', [
+        'at' => '2026-11-12T06:30:00+01:00',
+        'tickets' => [
+            ['pct' => '20', 'title' => 'Vence el 20', 'desc' => 'Algo', 'from' => '01 nov', 'to' => '20 nov', 'start' => '2026-11-01', 'end' => '2026-11-20'],
+            ['pct' => '10', 'title' => 'Vence el 12', 'desc' => '', 'from' => '01 nov', 'to' => '12 nov', 'start' => '2026-11-01', 'end' => '2026-11-12'],
+            ['pct' => '30', 'title' => 'Vence el 15', 'desc' => 'Algo', 'from' => '01 nov', 'to' => '15 nov', 'start' => '2026-11-01', 'end' => '2026-11-15'],
+        ],
+    ]);
+
+    expect($result['title'])->toBe('Vence el 20')
+        ->and($result['left'])->toBe('Quedan 9 días')
+        ->and($result['of'])->toBe('1 de 3 activas')
+        ->and(array_column($result['tickets'], 'hidden'))->toBe([true, false, false])
+        ->and(array_column($result['tickets'], 'left'))->toBe(['Quedan 9 días', 'Termina mañana', 'Quedan 4 días']);
+});
+
+it('advances the testimonials on their own unless paused or held by the focus, the pointer or the screen', function () {
+    $seen = runSiteScript('carousel', ['count' => 3, 'actions' => [
+        ['tick', null], ['hold', 'focus'], ['tick', null], ['release', 'focus'], ['tick', null],
+        ['togglePause', null], ['tick', null], ['next', null], ['togglePause', null], ['tick', null],
+    ]]);
+
+    expect(array_column($seen, 'current'))->toBe([1, 1, 1, 1, 2, 2, 2, 0, 0, 1])
+        ->and(array_column($seen, 'moving'))->toBe([true, false, false, true, true, false, false, false, true, true]);
+});
+
+it('never advances the testimonials on its own when the visitor asked for less motion, only with the buttons', function () {
+    $seen = runSiteScript('carousel', ['count' => 3, 'still' => true, 'actions' => [
+        ['tick', null], ['release', 'focus'], ['tick', null], ['togglePause', null], ['togglePause', null], ['tick', null], ['next', null],
+    ]]);
+
+    expect(array_column($seen, 'current'))->toBe([0, 0, 0, 0, 0, 0, 1])
+        ->and(array_column($seen, 'moving'))->toBe([false, false, false, false, false, false, false]);
+});
+
+it('keeps the focus inside the certificate viewer, wrapping at both ends', function () {
+    $controls = ['cerrar', 'enlace'];
+
+    expect(runSiteScript('trap', ['focusables' => $controls, 'current' => 'enlace', 'backwards' => false])['next'])->toBe('cerrar')
+        ->and(runSiteScript('trap', ['focusables' => $controls, 'current' => 'cerrar', 'backwards' => true])['next'])->toBe('enlace')
+        ->and(runSiteScript('trap', ['focusables' => $controls, 'current' => 'fuera', 'backwards' => false])['next'])->toBe('cerrar');
+});

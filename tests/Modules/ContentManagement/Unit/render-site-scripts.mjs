@@ -87,6 +87,83 @@ const scenarios = {
 
         return { handled, open: attributes.has('open'), focused, expanded };
     },
+
+    /* Remaining time of a promotion, on the clinic's calendar. */
+    async promotion({ start, end, at }) {
+        const { promotionLeft, promotionBar, clinicDate } = await import(new URL('home.js', site));
+        const now = new Date(at);
+
+        return { left: promotionLeft(end, now), bar: promotionBar(start, end, now), today: clinicDate(now) };
+    },
+
+    /* A carousel driven by a list of actions. */
+    async carousel({ count, actions, still = false }) {
+        const { createCarousel } = await import(new URL('home.js', site));
+        const carousel = createCarousel(count, () => {}, { still });
+        const seen = [];
+
+        for (const [action, argument] of actions) {
+            carousel[action](argument);
+            seen.push({ after: action, current: carousel.current, moving: carousel.moving });
+        }
+
+        return seen;
+    },
+
+    /* Where Tab moves the focus inside a dialog. */
+    async trap({ focusables, current, backwards }) {
+        const { trappedFocus } = await import(new URL('home.js', site));
+
+        return { next: trappedFocus(focusables, current, backwards) };
+    },
+
+    /* The coupon and tickets as the server orders them: none removed nor reordered. */
+    async promos({ tickets, at }) {
+        const RealDate = Date;
+        globalThis.Date = class extends RealDate {
+            constructor(...parts) {
+                super(...(parts.length ? parts : [at]));
+            }
+
+            static now() {
+                return new RealDate(at).getTime();
+            }
+        };
+
+        const { initPromos } = await import(new URL('home.js', site));
+        const fields = {};
+        const field = (name) => (fields[name] ??= { textContent: '', hidden: false, style: {} });
+        const buttons = tickets.map((ticket) => {
+            const left = { textContent: '' };
+
+            return {
+                hidden: false,
+                attributes: ticket,
+                left,
+                getAttribute: (name) => ticket[name.replace('data-', '')] ?? null,
+                querySelector: () => left,
+                addEventListener: () => {},
+            };
+        });
+        const root = {
+            querySelectorAll: () => buttons,
+            querySelector: (selector) => {
+                const match = selector.match(/data-pm="(\w+)"/);
+
+                return match ? field(match[1]) : null;
+            },
+        };
+
+        initPromos(root);
+        globalThis.Date = RealDate;
+
+        return {
+            title: fields.title.textContent,
+            left: fields.left.textContent,
+            of: fields.of.textContent,
+            tickets: buttons.map((button) => ({ title: button.attributes.title, hidden: button.hidden, left: button.left.textContent })),
+        };
+    },
 };
 
 if (!scenarios[scenario]) {

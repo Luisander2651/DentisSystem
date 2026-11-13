@@ -254,6 +254,7 @@
                     <p class="lb-text" data-lb="inst"></p>
                     <p class="lb-text lb-date">Fecha: <span data-lb="date"></span></p>
                 </div>
+                <x-ui.status placement="dialog" />
             </div>
         </div>
     </section>
@@ -276,6 +277,7 @@
                     @if ($tests->count() > 1)
                         <div class="ts-nav">
                             <button class="ts-btn" type="button" data-pressable data-ts-prev aria-label="Testimonio anterior"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></button>
+                            <button class="ts-btn ts-pause" type="button" data-pressable data-ts-pause aria-pressed="false" aria-label="Pausar los testimonios"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"></path></svg></button>
                             <span class="ts-num"><b data-ts-pos>01</b> / {{ str_pad((string) $tests->count(), 2, '0', STR_PAD_LEFT) }}</span>
                             <button class="ts-btn" type="button" data-pressable data-ts-next aria-label="Siguiente testimonio"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
                         </div>
@@ -325,7 +327,7 @@
         </div>
         <div class="fq-list reveal">
             <div class="fq-item on">
-                <button class="fq-q" type="button" data-pressable data-action="fq0" data-controls="fqa0"><span class="fq-n">01</span><span class="fq-t">¿Cada cuánto debo hacerme una limpieza?</span><span class="fq-pm" aria-hidden="true"></span></button>
+                <button class="fq-q" type="button" data-pressable data-action="fq0"><span class="fq-n">01</span><span class="fq-t">¿Cada cuánto debo hacerme una limpieza?</span><span class="fq-pm" aria-hidden="true"></span></button>
                 <div class="fq-a" id="fqa0"><div><div class="fq-in">
                     <p>Recomendamos una limpieza dental profesional <b>cada 6 meses</b>. Así previenes el sarro, detectas a tiempo posibles caries y mantienes tus encías sanas.</p>
                     <div class="fq-viz" aria-hidden="true">
@@ -336,7 +338,7 @@
             </div>
 
             <div class="fq-item on">
-                <button class="fq-q" type="button" data-pressable data-action="fq1" data-controls="fqa1"><span class="fq-n">02</span><span class="fq-t">¿Qué tipos de ortodoncia ofrecen?</span><span class="fq-pm" aria-hidden="true"></span></button>
+                <button class="fq-q" type="button" data-pressable data-action="fq1"><span class="fq-n">02</span><span class="fq-t">¿Qué tipos de ortodoncia ofrecen?</span><span class="fq-pm" aria-hidden="true"></span></button>
                 <div class="fq-a" id="fqa1"><div><div class="fq-in">
                     <p>Tenemos <b>tres opciones</b> para que elijas la que mejor va con tu estilo de vida y presupuesto.</p>
                     <div class="fq-viz fq-opts">
@@ -348,7 +350,7 @@
             </div>
 
             <div class="fq-item on">
-                <button class="fq-q" type="button" data-pressable data-action="fq2" data-controls="fqa2"><span class="fq-n">03</span><span class="fq-t">¿Duele ponerse un implante?</span><span class="fq-pm" aria-hidden="true"></span></button>
+                <button class="fq-q" type="button" data-pressable data-action="fq2"><span class="fq-n">03</span><span class="fq-t">¿Duele ponerse un implante?</span><span class="fq-pm" aria-hidden="true"></span></button>
                 <div class="fq-a" id="fqa2"><div><div class="fq-in">
                     <p>El procedimiento se realiza con <b>anestesia local</b>. Las molestias posteriores son mínimas y se controlan con analgésicos recetados.</p>
                     <div class="fq-viz" aria-hidden="true">
@@ -361,7 +363,7 @@
             </div>
 
             <div class="fq-item on">
-                <button class="fq-q" type="button" data-pressable data-action="fq3" data-controls="fqa3"><span class="fq-n">04</span><span class="fq-t">¿Aceptan seguros de gastos médicos?</span><span class="fq-pm" aria-hidden="true"></span></button>
+                <button class="fq-q" type="button" data-pressable data-action="fq3"><span class="fq-n">04</span><span class="fq-t">¿Aceptan seguros de gastos médicos?</span><span class="fq-pm" aria-hidden="true"></span></button>
                 <div class="fq-a" id="fqa3"><div><div class="fq-in">
                     <p>Trabajamos con <b>reembolso</b> para la mayoría de las aseguradoras de gastos médicos mayores y te entregamos factura e informe médico.</p>
                     <div class="fq-viz" aria-hidden="true">

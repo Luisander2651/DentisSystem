@@ -1,5 +1,6 @@
 /*
- * Public site (spec 026): entry of the home page. Brings its stylesheet; home.js (T015) and the
- * 3D tooth (T016) join it.
+ * Public site (spec 026): entry of the home page. Brings its stylesheet and its behaviour; the 3D
+ * tooth (T016) joins it.
  */
 import '../../../css/site/pages/inicio.css';
+import '../home.js';

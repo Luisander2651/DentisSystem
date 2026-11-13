@@ -42,6 +42,22 @@
             }
         },
         {
+            "id": "inicio-visor-certificado",
+            "screen": "inicio",
+            "dialog": "visor-certificado",
+            "dialogSelector": "[data-lb] [role=\"dialog\"]",
+            "path": "/",
+            "serverNow": "2026-07-22T10:00:00-06:00",
+            "steps": [
+                {
+                    "click": "[data-cf]"
+                },
+                {
+                    "waitFor": "[data-lb]:not([hidden]) [role=\"dialog\"]"
+                }
+            ]
+        },
+        {
             "id": "acerca",
             "screen": "acerca",
             "path": "/acerca-de-nosotros"
