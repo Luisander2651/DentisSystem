@@ -1,82 +1,96 @@
 ---
 result: fail
-round: 1
+round: 2
 mode: full
 constitution_version: 1.2.1
 date: 2026-11-12
-spec_sha: f086ea63a1c5
-plan_sha: 0ae131b0f061
-tasks_sha: 2fc16211530f
+spec_sha: a13a0791891e
+plan_sha: 703ebe2404a5
+tasks_sha: b24670a453e5
 ---
 
 # Análisis · 026 Nueva landing del sitio público
 
 ## Resumen
-`fail`: un hallazgo crítico (P15: radios, tamaños y componentes de la propuesta fuera del sistema)
-y siete altos que dejarían la suite en rojo en tareas intermedias (`DesignTokensTest` con
-`@theme static`, `ui-audit` con selectores viejos, entradas de Vite sin cargar) o que hacen el
-diseño incumplible (K1 en galería y contacto, datos de contacto de ejemplo, vigencia con reloj real,
-SE8.a parcial). Análisis hecho por un subagente independiente; cada hallazgo se verificó en los
-archivos. Las decisiones del usuario están abajo; las correcciones van por `/specify --edit`,
-`/design-spec --fix`, `/plan --fix` y `/tasks --fix`.
-Conteo: CRÍTICA 1 · ALTA 7 · MEDIA 15 · BAJA 6
+`fail`: de los 29 hallazgos de la ronda 1, 25 quedaron resueltos y 4 se resolvieron con efecto
+nuevo. Hay un hallazgo crítico nuevo (colores escritos a mano en el JS del diente 3D y de la
+galería, P15) y cuatro altos que dejarían la suite en rojo: la línea base de composición congelada
+por 016 CA22, `ui-audit` con un solo conjunto de datos, `core.js` fuera del manifest y K4a sin
+escena medible. Ronda completa (las tareas se regeneraron) con un subagente independiente; cada
+hallazgo verificado en los archivos.
+Conteo: CRÍTICA 1 · ALTA 4 · MEDIA 6 · BAJA 9
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
-| Criterios con rebanada (test e implementación) | 19 / 19 (con reservas en CA1, CA6, CA7) |
-| Amenazas con control y test | 5 / 5 (con reservas en TM4, TM5) |
+| Criterios con rebanada (test e implementación) | 19 / 19 (con reservas en CA3, CA7, CA9, CA10) |
+| Amenazas con control y test | 5 / 5 |
 | Principios de la constitución evaluados | 15 / 15 |
 
 ## Seguimiento de rondas anteriores
-Primera ronda.
+| ID | Severidad | Estado | Evidencia |
+|---|---|---|---|
+| A1 | CRÍTICA | resuelto | `design.md` → Cambios (radios, altos, componentes); T001, T004 |
+| A2 | ALTA | resuelto | T001: `DesignTokensTest` lee `@theme static` (resto → A42) |
+| A3 | ALTA | resuelto con efecto nuevo (→ A31) | cada tarea de página actualiza `ui-audit`, pero `ADMITTED` no está en ninguna |
+| A4 | ALTA | resuelto con efecto nuevo (→ A33) | entradas por página; `core.js` fuera del manifest |
+| A5 | ALTA | resuelto | K1 solo en `criterios-inicio/nosotros.json` |
+| A6 | ALTA | resuelto en parte (→ A37) | contacto cubierto; dirección, horario y mapa sin confirmar |
+| A7 | ALTA | resuelto | T013 con `PromotionEntity` y `travelTo` (caché → A46) |
+| A8 | ALTA | resuelto | SE8.a partida; texto de `seo.md` → A45 |
+| A9 | MEDIA | resuelto | `extends` 022; T010 |
+| A10 | MEDIA | resuelto | T008 con logo y favicon reales |
+| A11 | MEDIA | resuelto | T004 (`@font-face`) |
+| A12 | MEDIA | resuelto | T004 y T001 |
+| A13 | MEDIA | resuelto | T007, T010 |
+| A14 | MEDIA | resuelto | CA6, T022, T023 |
+| A15 | MEDIA | resuelto | CA2, T014 (texto de `design.md` → A44) |
+| A16 | MEDIA | resuelto | T015 |
+| A17 | MEDIA | resuelto con efecto nuevo (→ A35) | sin `action`, el formulario se envía a `/contacto` |
+| A18 | MEDIA | resuelto | RS4.a fuera; TM1 |
+| A19 | MEDIA | resuelto | T008, T011, T026 |
+| A20 | MEDIA | resuelto | T020, T004 |
+| A21 | MEDIA | resuelto con efecto nuevo (→ A32) | escenarios del seeder sin forma de usarlos en `ui-audit` |
+| A22 | MEDIA | resuelto | `design.md` → Pantallas (caso de 2 → A41) |
+| A23 | MEDIA | resuelto | T006, T021 |
+| A24 | BAJA | resuelto | T025 |
+| A25 | BAJA | resuelto | plan TM5 |
+| A26 | BAJA | resuelto | CA17 (restos → A44) |
+| A27 | BAJA | resuelto | T019 (texto de TM1 → A44) |
+| A28 | BAJA | resuelto | T011 |
+| A29 | BAJA | resuelto | T028, T003 |
 
 ## Hallazgos nuevos
 | ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
 |---|---|---|---|---|---|
-| A1 | Constitución (P15) | CRÍTICA | plan → Enfoque; T001, T004, T006 | La propuesta usa ~90 `border-radius` fuera de la escala 12/16/24/full (10, 14, 18, 28, 32, 2, 3 px…), tamaños sueltos (`min-height:46px`) y controles propios no documentados; solo los colores pasan a tokens y ningún test lo comprueba | El sistema 2.1.0 incorpora la escala de radios, los tamaños y los componentes del sitio público (decisión del usuario); `SiteStylesTokensTest` rechaza `border-radius`/`min-height` literales con control positivo · `/design-spec 026 --fix`, `/plan --fix`, `/tasks --fix` |
-| A2 | Constitución (P2) | ALTA | T001; `DesignTokensTest` (`/@theme\s*\{/`) | La expresión no lee `@theme static {` ni un bloque `:root`; los tokens nuevos salen "sin declarar" y la suite queda en rojo | Los tokens del bloque elegido los lee `DesignTokensTest` (valor y contraste); T001 incluye el test · `/tasks --fix` |
-| A3 | Constitución (P2) | ALTA | T013, T016, T017, T020 vs T023; `tests/Browser/screens.json` | `screens.json` y `baseline-1440.json` usan selectores y composición del sitio viejo (`#mobile-menu-btn`, `#gallery-lightbox`…); `npm run test:ui` falla en CI desde T013 hasta T023 | Cada tarea de página deja `npm run test:ui -- --only <pantalla>` en verde con sus entradas y línea base; T023 solo añade estados · `/tasks --fix` |
-| A4 | Constitución (P2) | ALTA | T007/T008, T013–T015, T017/T018, T020/T021; `vite.config.js` | Los scripts y hojas se crean en tareas distintas de la vista que los carga; o la vista apunta a una entrada inexistente o el script no se conecta; `inicio/nosotros/contacto.css` no se registran | Cada hoja y script se registra y carga en la misma tarea que lo crea; test que afirma que el HTML carga su script · `/tasks --fix` |
-| A5 | Ambigüedad | ALTA | spec → Criterios de diseño K1; `criterios.json` | "Agenda una Cita" solo existe en inicio y nosotros; K1 fallaría en galería y contacto | K1 solo en inicio y nosotros (decisión del usuario) · `/specify --edit`, `/design-spec --fix` |
-| A6 | Ambigüedad (supuesto) | ALTA | spec → Decisiones "Datos de contacto"; CA7; T003 | Los datos de producción son de ejemplo (WhatsApp `521234567890`, teléfono `+52 55 1234 5678`, correo de otro dominio, redes genéricas) | Solo se muestran y van al JSON-LD los datos confirmados; el WhatsApp es obligatorio (T003 se bloquea sin él) (decisión del usuario); `SiteConfigTest` rechaza los valores de ejemplo · `/specify --edit`, `/tasks --fix` |
-| A7 | Pruebas que no prueban | ALTA | T012; `PromotionEntity::isExpired()` | `new DateTime()` ignora el reloj de la app (`travelTo`, `UiAuditClock`); no hay "aún no empieza"; la entidad no está en T012 | Vigencia con el reloj de la aplicación en `America/Mexico_City` para inicio y fin; la entidad entra en T012; test con `travelTo` en las tres fronteras · `/tasks --fix` |
-| A8 | Cobertura de riesgos | ALTA | spec → Cobertura SE8.a; plan → Descubribilidad | SE8.a pide `theme-color` en todos los layouts; la 026 solo cubre el sitio con otro valor y deja el resto como "deuda" sin destino | SE8.a parcial: dentro el sitio público (rosa de la marca, decisión del usuario), fuera panel y portal → roadmap; SE8 no se cierra · `/specify --edit`, `/plan --fix` |
-| A9 | Inconsistencia (extends) | MEDIA | spec frontmatter; 022 CA6, CA9, CA10 | Cambia barra, pie y sitemap de las legales sin `extends: 022` | Añadir 022 a `extends` y declarar qué criterios de la 022 se mantienen; `LegalPagesTest` y `ui-audit` de legales en T009 · `/specify --edit` |
-| A10 | Inconsistencia (016) | MEDIA | spec → Diseño; 016 CA15; `PageStructureTest` | La propuesta trae su logo SVG y otro favicon; `PageStructureTest` exige el logo y favicon de la marca | Logo y favicon reales de la clínica (decisión del usuario); T007 pasa `PageStructureTest` · `/specify --edit`, `/design-spec --fix`, `/tasks --fix` |
-| A11 | Inconsistencia | MEDIA | T004 vs T005 | T004 prohíbe `font-family` literal y T005 lo necesita en `@font-face` | Literal permitido solo dentro de `@font-face`, con controles · `/tasks --fix` |
-| A12 | Cobertura | MEDIA | T001; CSS de la propuesta | `--ease-out`, `--weight-strong`, `--weight-regular`, `--text-body` usados y no declarados | Toda `var(--…)` del CSS del sitio tiene token declarado o es local; regla en `SiteStylesTokensTest` · `/tasks --fix` |
-| A13 | Constitución (P2) | MEDIA | T009; `pages/*.css` | El menú plegable vive en las hojas de página; las legales no lo tendrían | La barra funciona igual en cualquier página del layout; `ui-audit` de legales a 390/768/1024 en T009 · `/tasks --fix` |
-| A14 | Inconsistencia | MEDIA | CA6, T021 vs propuesta | La propuesta no tiene campo de nombre | Motivo + mensaje, sin nombre (decisión del usuario) · `/specify --edit`, `/tasks --fix` |
-| A15 | Inconsistencia (datos) | MEDIA | CA2; plan → Contratos | El plan descarta la descripción de certificaciones, que sí se captura | Se muestra en el lugar de la institución (decisión del usuario) · `/specify --edit`, `/plan --fix` |
-| A16 | Constitución (P13) | MEDIA | T014; `home.js` | `home.js` vuelve a filtrar y ordenar promociones con el reloj del visitante | El JS no filtra ni reordena; `SiteScriptsTest` con otra zona horaria · nota de T014 |
-| A17 | Seguridad (CSP) | MEDIA | `SecurityHeaders` `form-action 'self'`; formulario de contacto | El envío sin JS a `wa.me` lo bloquea la CSP | Sin `action` externo; sin JS, enlace de respaldo a WhatsApp (decisión del usuario); `PublicSitePagesTest` lo afirma · `/tasks --fix` |
-| A18 | Seguridad | MEDIA | spec → Fuera de alcance, Seguridad; plan TM1 | 011 CA6 es el contenido oculto en la API pública (RS4.a), no "listados de un elemento"; la afirmación "nadie ve lo oculto" no cubre la API | Corregir la referencia, RS4.a fuera con destino, la afirmación limitada al HTML; TM1 nombra el riesgo restante · `/specify --edit`, `/plan --fix` |
-| A19 | Pruebas que no prueban | MEDIA | layout de la propuesta (`lang` del locale `en`) | El sitio saldría con `lang="en"` | `lang="es"` en el layout; `PublicSiteSeoTest` en las seis rutas · nota de T007 y T010 |
-| A20 | Pruebas que no prueban | MEDIA | T022; `gallery.js` (`BA_INFO`) | Textos de tratamientos dentro del JS, fuera del alcance del test de HTML | Textos de tratamientos desde el servidor; regla sobre `resources/js/site/**` · `/tasks --fix` |
-| A21 | Cobertura | MEDIA | T023; `UiAuditSeeder` | Los datos de ui-audit no producen varias promociones, carrusel, cinta ni estados vacíos | `ui-audit` puede producir cada estado de `design.md` → Pantallas; `UiAuditSeederTest` · `/tasks --fix` |
-| A22 | Ambigüedad | MEDIA | CA5; `design.md` → Pantallas | La propuesta no define galería vacía ni con N imágenes | `design.md` define vacío y N imágenes; `PublicGalleryPageTest` con 0 y 1 · `/design-spec --fix` |
-| A23 | Seguridad (descargas) | MEDIA | T005, T019 | Sin herramienta declarada para el subconjunto ni procedencia verificable | Origen, versión y hash de cada archivo descargado en `OFL.txt`/`CREDITOS.md`, herramienta fuera de `package.json` · nota de T005 y T019 |
-| A24 | Pruebas que no prueban | BAJA | T007/TM4 | TM4 solo sobre el layout y solo `noopener` | Todo `target=_blank` de las seis rutas con `noopener noreferrer` · nota de T022 |
-| A25 | Cobertura (TM) | BAJA | plan TM5 | "Rate limiting existente" no aplica a rutas web | Quitarlo; el control es la caché · `/plan --fix` |
-| A26 | Inconsistencia | BAJA | CA17 vs plan | "catálogo" en la spec, lista de servicios en el plan | Alinear CA17 y registrar la decisión en la spec · `/specify --edit` |
-| A27 | Pruebas que no prueban | BAJA | T017; T024 | Falta el caso de una imagen (ya falló antes); "oculto en JSON-LD" no prueba nada | Caso de 1 imagen; CA14 por HTML y sitemap · nota de T017 y T024 |
-| A28 | Inconsistencia | BAJA | T010 vs vistas legales | Dos fuentes de título y descripción legales | Una sola fuente; `LegalPagesTest` y `PublicSiteSeoTest` · nota de T010 |
-| A29 | Cobertura de riesgos | BAJA | `docs/seo.md` SE3.a; `site.url` | seo.md dice cuatro rutas; URL duplicada | T026 actualiza SE3.a a seis; `SiteConfigTest`: `site.url` = `seo.site_url` · nota de T003 y T026 |
+| A30 | Constitución (P15) | CRÍTICA | T016, T020, T004; `tooth3d.js` (shader `vec3`, partículas `rgb(`); `gallery.js` (`#e3cf9d`…) | Colores escritos a mano en el JS; `OnlyDesignTokensTest` dejaría T016/T020 en rojo y los `vec3` no los ve nadie | Todo color que pinta el JS del sitio sale de un token leído en ejecución; los tonos del esmalte se añaden como tokens decorativos (decisión del usuario); regla en `SiteStylesTokensTest` sobre `resources/js/site/**` con controles · `/design-spec --fix`, `/plan --fix`, `/tasks --fix` |
+| A31 | Constitución (P2) / extends 016 | ALTA | T010, T014, T017, T019, T022; `checks-composition.mjs` (`ADMITTED`); 016 CA22 | La línea base solo se reescribe con una entrada `ADMITTED`; ningún archivo de tarea la toca y la spec no declara que sustituye 016 CA22 | La spec declara que 026 CA1 sustituye 016 CA22 en las seis pantallas públicas; cada tarea de página añade su entrada `ADMITTED`; `ui-audit --only <pantalla>` en verde · `/specify --edit`, `/tasks --fix` |
+| A32 | Constitución (P2) | ALTA | T005, T024; `ui-audit.mjs`; `tests.yml` (`ui:audit-data` una vez) | `ui-audit` no puede tener varios conjuntos de datos en una ejecución | Estados vacíos y por cantidad con Pest y revisión manual; `ui-audit` en CI solo con contenido (decisión del usuario) · `/plan --fix`, `/tasks --fix` |
+| A33 | Constitución (P2) | ALTA | T006, T009 | `core.js` cargado por el layout fuera del manifest; recoger `pages/` vacía o ausente puede romper el build | Toda entrada que carga una vista está en el manifest desde su tarea; la recogida funciona con la carpeta vacía; `npm run build` en T006 y `PublicSitePagesTest` 200 en T009 · `/tasks --fix` |
+| A34 | Ambigüedad / P2 | ALTA | `criterios-inicio.json` K4a; T014, T016 | La propuesta no tiene `data-scene`; K4a siempre 0, y T014 lo exige antes de T016 | El recorrido se marca como escena sin cambiar la composición; K4a se mide desde T016 · `/design-spec --fix`, `/tasks --fix` |
+| A35 | Seguridad (P11) | MEDIA | T022 | Sin `action`, el formulario se envía con `GET /contacto?…` y el mensaje acaba en los registros | El formulario no puede enviar nada al servidor (sin JS solo queda el enlace; con JS se impide el envío); `PublicSitePagesTest` y `SiteScriptsTest` · `/plan --fix`, `/tasks --fix` |
+| A36 | Inconsistencia (016 CA12, CA13, CA26) | MEDIA | propuesta `inicio.blade.php` (visor de certificaciones `role="dialog"`); T014, T015 | El visor de certificaciones no está en plan, tareas ni `ui-audit` | El visor se documenta como componente del sitio y cumple 016 CA12, CA13 y CA26 (foco, Escape, retorno); entrada de diálogo en `ui-audit`; parte de CA10 · `/design-spec --fix`, `/tasks --fix` |
+| A37 | Cobertura (CA7) | MEDIA | T003, T017; plan; `design.md` | Dirección, horario y enlaces de mapa vienen de ejemplos y nadie los confirma ni los vigila | Dirección, horario y mapa siguen la regla de A6 (confirmados o `null`, y sin ellos no aparecen ni el mapa ni "Abierto/Cerrado"); `PublicSitePagesTest` en las seis rutas · `/specify --edit`, `/plan --fix`, `/tasks --fix` |
+| A38 | Pruebas que no prueban | MEDIA | `evaluate.mjs` (G-red solo en archivos, G-imagenes); T014, T019 | G-red no se evalúa con URL; las imágenes del staff no llevan `data-origen` | El RNF de terceros se apoya en `SiteStylesTokensTest` y en una comprobación de hosts en `PublicSitePagesTest`; las imágenes del staff declaran `data-origen="propia"` · `/plan --fix`, `/tasks --fix` |
+| A39 | Constitución (P2) | MEDIA | T020 vs T021 | El comparador llega con el dibujo CSS (colores literales) antes que las fotos | Comparador y fotos en la misma tarea; `OnlyDesignTokensTest` y `ui-audit galeria` en verde · `/tasks --fix` |
+| A40 | Inconsistencia (022, 016) | MEDIA | T008 vs T010 | T008 no exige lo que `LegalPagesTest`/`PageStructureTest` piden al layout (título, una meta description, enlaces legales con `route()`, sin `href="#"`) | El test de T008 comprueba esos puntos · `/tasks --fix` |
+| A41 | Pruebas que no prueban | BAJA | T014, T019 | Faltan 3 testimonios (sin cinta) y 2 imágenes (fila estática) | Añadir los dos casos · nota de T014 y T019 |
+| A42 | Pruebas que no prueban | BAJA | T001 | `DesignTokensTest` no compara `--radius-2xl`, `--space-*`, `--duration-*`, `--ease-*`, `--weight-*`, `--font-*` | El test cubre cada espacio nuevo con control · nota de T001 |
+| A43 | Pruebas que no prueban | BAJA | T003 | Sin controles de frontera 69/70/160/161 | Añadir controles · nota de T003 |
+| A44 | Inconsistencia | BAJA | spec K7 y Notas ("catálogo"); `design.md` Resultado 3; plan TM1 | Textos que contradicen A6, A15, A26, A27 | Alinear textos · `/specify --edit`, `/design-spec --fix`, `/plan --fix` |
+| A45 | Cobertura de riesgos | BAJA | T028; `seo.md` SE8.a | T028 no reescribe el valor de SE8.a | T028 actualiza el texto · nota de T028 |
+| A46 | Ambigüedad | BAJA | `ShowLandingPageController`; plan → Rollout | La caché vieja o una promoción que vence a medianoche siguen hasta 10 min | La caché del inicio usa una clave nueva y expira como tarde a la medianoche de la clínica · `/plan --fix`, nota de T014 |
+| A47 | Pruebas que no prueban | BAJA | `criterios*.json` → `tokens.colors` | Incluye `#000000`, que no es token | La lista es exactamente la paleta del sistema · `/design-spec --fix` |
+| A48 | Inconsistencia | BAJA | plan → Trazabilidad CA9 | `ui-audit` no emula movimiento reducido | Quitarlo; CA9 lo cubren G-reducido y `SiteScriptsTest` · `/plan --fix` |
+| A49 | Seguridad (CSP) | BAJA | T007, T009 | Un script en línea para la marca de JS necesita el nonce | Todo script en línea lleva el nonce de Vite; `PublicSitePagesTest` · nota de T009 |
 
 ## Decisiones pendientes del usuario
 Resueltas el 2026-11-12:
-- A1 → ampliar el sistema 2.1.0 con radios, tamaños y componentes del sitio público.
-- A6 → solo datos confirmados; lo no confirmado no se muestra ni va al JSON-LD; WhatsApp obligatorio.
-- A5 → K1 solo en inicio y nosotros.
-- A14 → formulario de la propuesta (motivo + mensaje), sin nombre.
-- A10 → logo y favicon reales de la clínica.
-- A15 → descripción de la certificación en el lugar de la institución.
-- A17 → sin `action` externo; sin JS, enlace de respaldo a WhatsApp; la CSP no cambia.
-- A8 → `theme-color` rosa de la marca en el sitio público; panel y portal pendientes; SE8 no se cierra.
+- A30 → los colores del JS se leen de los tokens al dibujar; los tonos del esmalte se añaden como tokens decorativos.
+- A32 → estados vacíos y por cantidad con Pest y revisión manual; `ui-audit` en CI con contenido.
 
 ## Enmiendas propuestas a la constitución
-- P15 (PATCH): que "Cómo se verifica" incluya las hojas CSS fuera de `@theme` (color, radio y tamaño de control), no solo `OnlyDesignTokensTest`/`DesignTokensTest`. No bloquea; la decide el usuario.
+- P15 (PATCH): que "Cómo se verifica" cubra las hojas CSS fuera de `@theme` y los colores que pinta el JS en lienzo o WebGL. No bloquea; la decide el usuario.
 
 ## Aceptados
-Ninguno todavía: todas las correcciones se aplican en spec, diseño, plan y tareas antes de la ronda 2.
+Ninguno: todo se corrige antes de la ronda 3.

@@ -1,6 +1,6 @@
 ---
 spec: 026-nueva-landing
-status: approved
+status: draft
 exploration: none
 threshold: 80
 floor: 3
@@ -37,9 +37,9 @@ La implementación solo puede cambiar lo que obliga la spec, la constitución o 
 2b. **Marca:** el logo y el favicon son los reales de la clínica (`x-ui.brand`, spec 016 CA15), no
    el logo dibujado de la propuesta; el resto de la barra y el pie no cambia.
 2. **Fuentes:** Inter Tight e Instrument Serif (OFL) se sirven desde el propio sitio, sin Google Fonts.
-3. **Contenido real:** datos de contacto de producción (CA7), tratamientos del catálogo (CA17),
+3. **Contenido real:** solo datos de contacto confirmados, incluidos dirección, horario y mapa (CA7), tratamientos de la lista de servicios (CA17),
    promociones, certificaciones, testimonios y galería desde "Contenido" (CA2, CA5), y se quita lo
-   que no tiene dato (institución, tipo y estrellas).
+   que no tiene dato (tipo y estrellas; la descripción de la certificación ocupa el lugar de la institución).
 4. **Antes y después:** el dibujo CSS se sustituye por pares de fotos por tratamiento, con el mismo
    control deslizante y el mismo selector (CA18).
 5. **Correcciones de puertas:** si al medir las páginas reales falla una puerta o un KPI
@@ -113,8 +113,9 @@ sin cambiar los tokens existentes) y `system.html`, y a `@theme` de `resources/c
 | `#fff`, `#000` → `--color-surface`/`--color-on-dark` e `--color-ink` | — | — | — | literales de la propuesta mapeados a tokens existentes (sombras: `--color-ink` con opacidad) |
 | Escalas `--space-1…8`, `--duration-fast/base`, `--ease-out`, `--ease-spring`, `--weight-regular`, `--weight-strong`, `--text-body` | fijo | las de `tokens.css` | — | ritmo, movimiento y pesos que usa la propuesta (toda `var(--…)` del CSS del sitio tiene token) |
 | Radios del sitio: `--radius-hair` 3px (2–6) · `--radius-sm` 10px (8–11) · `--radius-md` 14px · `--radius-lg` 20px (18–22) · `--radius-xl` 28px (26–30) · `--radius-2xl` 32px (32–40); se conservan `control` 12, `box` 16, `card` 24 y `full` | fijo | — | — | la propuesta usa ~20 radios distintos; se agrupan en una escala con diferencias de 4 px como máximo. Formas en `%` (círculos, el diente) se admiten |
+| `--color-enamel`, `--color-enamel-white` y los demás tonos que pinta el diente 3D | fijo | los del shader de la propuesta | — | colores decorativos del modelo 3D (esmalte natural y blanqueado); el JS los lee del CSS al arrancar junto con `--color-primary` y `--color-secondary`, y no escribe ningún color (decisión del usuario, A30) |
 | `--spacing-control-lg` 52px | fijo | — | — | botón grande de la propuesta (52–54 px); el normal usa `--spacing-control` (44) |
-| Componentes del sitio público en `system.md` → Componentes: botón del sitio (`btn` primario, fantasma y grande), barra con menú plegable, pie con botón flotante de WhatsApp, selector segmentado, carrusel con pausa, comparador de antes y después, compositor de WhatsApp | — | — | — | se documentan como componentes exclusivos del sitio público (no sustituyen a `x-ui.*` en el panel) |
+| Componentes del sitio público en `system.md` → Componentes: botón del sitio (`btn` primario, fantasma y grande), barra con menú plegable, pie con botón flotante de WhatsApp, selector segmentado, carrusel con pausa, comparador de antes y después, compositor de WhatsApp, visor de certificaciones (diálogo con foco atrapado, Escape y retorno del foco, como 016 CA12, CA13 y CA26) | — | — | — | se documentan como componentes exclusivos del sitio público (no sustituyen a `x-ui.*` en el panel) |
 | Títulos del sitio público (`h-xl`, `h-lg`) | fluido 390–1440 | los de la propuesta | | sustituyen la fila "Título del sitio público" de Tipografía |
 | Regla de fuentes | — | — | — | "Fuentes: del sistema" pasa a "del sistema en el panel; Inter Tight e Instrument Serif autoalojadas en el sitio público" |
 | Tarjeta para compartir | fijo | 1200×630 | — | la define la última tarea (CA19) |
@@ -134,6 +135,7 @@ Se conservan, agrupadas en estas fichas; todas respetan ya `prefers-reduced-moti
 - **Reducido:** sin desplazamiento, visible desde el inicio · **Sin JavaScript:** todo visible (puerta `G-aparece`, `G-sin-js`) · **Táctil:** igual.
 
 ### M-2 — Recorrido 3D del diente (inicio)
+- **Marca de escena:** el contenedor sticky del recorrido lleva `data-scene` (sin cambio visual), para que K4a lo mida desde que existe el diente (A34).
 - **Propósito:** explicar los tratamientos que ofrece la clínica; ligado al scroll en un escenario sticky.
 - **Disparador:** scroll; se repite. **Técnica:** WebGL sin librerías, cargado diferido para no bloquear el LCP.
 - **Reducido o sin WebGL:** imagen estática y los cuatro textos visibles (CA9) · **Sin JavaScript:** textos completos · **Táctil:** mismo recorrido.
@@ -173,3 +175,6 @@ Se conservan, agrupadas en estas fichas; todas respetan ya `prefers-reduced-moti
 | 2026-11-12 | refinado | `/analyze 026` A10: logo y favicon | Los reales de la clínica | usuario |
 | 2026-11-12 | refinado | `/analyze 026` A22: galería con 0, 1–2 y ≥ 3 imágenes | Estados definidos en Pantallas | agente (sobre la propuesta) |
 | 2026-11-12 | cierre | Aprobación del acta tras `/analyze 026` ronda 1 | Aprobada | usuario |
+| 2026-11-12 | refinado | `/analyze 026` A30: colores del JS | Tokens decorativos del esmalte; el JS lee los tokens al dibujar | usuario |
+| 2026-11-12 | refinado | `/analyze 026` A32: estados por cantidad | Pest y revisión manual; `ui-audit` en CI con contenido | usuario |
+| 2026-11-12 | refinado | `/analyze 026` A34, A36, A37, A44, A47 | Escena marcada; visor de certificaciones documentado; dirección, horario y mapa confirmados o fuera; textos alineados; `tokens.colors` = paleta del sistema | agente (sobre las decisiones del usuario) |

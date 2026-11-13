@@ -1,7 +1,7 @@
 ---
 id: 026
 slug: nueva-landing
-status: approved
+status: draft
 created: 2026-11-12
 extends: [011, 016, 022]
 ---
@@ -30,13 +30,13 @@ sitio sigue con el diseño viejo y es difícil de encontrar. Esta spec atiende e
   atraer pacientes nuevos.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dado un visitante, cuando abre `/`, `/acerca-de-nosotros`, `/galeria` o `/contacto`, entonces ve la página con el diseño nuevo (barra superior, pie y botón flotante de WhatsApp comunes) en las mismas direcciones de hoy, y las páginas de Aviso de Privacidad y Términos y Condiciones usan la misma barra superior y el mismo pie sin cambiar su texto.
+- [ ] CA1 · Dado un visitante, cuando abre `/`, `/acerca-de-nosotros`, `/galeria` o `/contacto`, entonces ve la página con el diseño nuevo (barra superior, pie y botón flotante de WhatsApp comunes) en las mismas direcciones de hoy, y las páginas de Aviso de Privacidad y Términos y Condiciones usan la misma barra superior y el mismo pie sin cambiar su texto. Reemplaza 016 CA22 (composición conservada) en esas seis pantallas.
 - [ ] CA2 · Dado contenido publicado como visible en "Contenido", cuando un visitante abre el inicio, entonces ve las promociones vigentes ordenadas por la que vence antes, las certificaciones y los testimonios visibles, con los datos que hoy se capturan (nombre, descripción, fechas, porcentaje, imagen; la descripción de una certificación ocupa el lugar de la institución) y sin campos que el staff no captura.
 - [ ] CA3 · Dado que no hay promociones vigentes, certificaciones o testimonios visibles, cuando se abre el inicio, entonces cada sección muestra su estado vacío del diseño (aviso sin promociones activas, sección de certificaciones oculta, invitación "¿Ya nos visitaste?" que lleva a WhatsApp) y no una sección rota.
 - [ ] CA4 · Dado un fallo al leer el contenido, cuando se abre el inicio, entonces la página se muestra con los estados vacíos en lugar de un error (mantiene 011 CA2).
 - [ ] CA5 · Dadas imágenes visibles en la galería de "Contenido", cuando se abre `/galeria`, entonces esas imágenes y sus descripciones vienen en el HTML que entrega el servidor (sin esperar a una carga posterior) y se ven en el recorrido del consultorio; sin imágenes, se muestra un estado vacío. Reemplaza 011 CA3.
 - [ ] CA6 · Dado un visitante en `/contacto`, cuando elige un motivo, escribe su mensaje y envía, entonces se abre WhatsApp con el mensaje ya escrito hacia el número de la clínica; nada se guarda ni se envía a la clínica por otra vía; sin JavaScript, la página ofrece un enlace directo a WhatsApp. Reemplaza 011 CA4 en lo que toca a "sin formulario".
-- [ ] CA7 · Dado cualquier dato de contacto mostrado (teléfono, WhatsApp, correo, dirección, horario, redes), cuando se revisa el sitio, entonces solo aparece si la clínica lo confirmó; uno sin confirmar no se muestra ni se publica a los buscadores, y no queda ningún texto provisional ni dato de ejemplo (p. ej. "[CORREO]", `521234567890`). El WhatsApp es obligatorio.
+- [ ] CA7 · Dado cualquier dato de contacto (teléfono, WhatsApp, correo, dirección, horario, mapa, redes), cuando se revisa el sitio, entonces solo aparece si la clínica lo confirmó; uno sin confirmar no se muestra ni se publica a los buscadores (sin dirección no hay mapa; sin horario no hay "Abierto/Cerrado"), y no queda ningún texto provisional ni dato de ejemplo (p. ej. "[CORREO]", `521234567890`). El WhatsApp es obligatorio.
 - [ ] CA8 · Dada la medición de Lighthouse en perfil móvil sobre la build de producción, cuando se mide cada una de las cuatro rutas, entonces obtiene Rendimiento ≥ 90, Accesibilidad 100, Buenas prácticas 100 y SEO 100.
 - [ ] CA9 · Dado un visitante que pidió reducir el movimiento en su sistema, o un navegador sin gráficos 3D, cuando abre el inicio, entonces ve una versión estática del recorrido de tratamientos con el mismo texto y sin animaciones automáticas.
 - [ ] CA10 · Dado un visitante que solo usa teclado o lector de pantalla, cuando recorre las cuatro páginas a 390, 768 y 1440 px, entonces alcanza todos los enlaces y controles (menú, carruseles, selector del antes y después, formulario de contacto) en orden lógico, con foco visible y nombre accesible, y los carruseles automáticos se pueden pausar.
@@ -134,7 +134,7 @@ Modo: persuadir · umbral 80 · mínimo por punto 3 · presupuesto 5 candidatos.
 | K4 | Movimiento reducido | sin animaciones automáticas y con el texto del recorrido | CA9 |
 | K5 | Teclado y foco | todos los controles alcanzables con foco visible a 390, 768 y 1440 px | CA10 |
 | K6 | Colores fuera de tokens | 0 | constitución P15 |
-| K7 | Antes y después | par de fotos por tratamiento del catálogo, comparable con puntero y teclado a 390 y 1440 px | CA17, CA18 |
+| K7 | Antes y después | par de fotos por tratamiento de la lista de servicios (CA17), comparable con puntero y teclado a 390 y 1440 px | CA17, CA18 |
 | K8 | Tarjeta para compartir | 1200×630, marca legible a tamaño de miniatura | CA19 |
 
 Detalle medible (CLS ≤ 0.1, LCP local ≤ 2.5 s, JavaScript ≤ 60 kB y primera visita ≤ 900 kB por página, titulares ≤ 3 líneas, fuentes cargadas, ≥ 1 escena y ≥ 3 fondos propios en el inicio) en [design/criterios.json](design/criterios.json); se mide sobre las páginas reales en `/implement` y `/review`.
@@ -172,7 +172,7 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 | 2026-11-12 | diseño | Diseño de la spec | Se adopta la propuesta de `nueva-landing/` sin ciclo de candidatos; acta en [design.md](design.md) | usuario |
 | 2026-11-12 | brecha | Datos de contacto: la propuesta y producción traen marcadores y datos de ejemplo (`[CORREO]`, `521234567890`, `+52 55 1234 5678`, redes genéricas) | Solo se muestran y se publican los datos confirmados; WhatsApp obligatorio | usuario (`/analyze 026` A6) |
 | 2026-11-12 | supuesto | Las páginas legales comparten el layout del sitio | Adoptan la barra y el pie nuevos sin cambiar su texto y entran en el sitemap como rutas indexables; de la 022 se mantienen el texto, el título, la versión, la descripción propia y los enlaces del pie (CA6, CA9, CA10) | agente (`/analyze 026` A9) |
-| 2026-11-12 | brecha | El antes y después de la propuesta es un dibujo con tratamientos de ejemplo | Se muestra con fotos (imágenes de muestra hasta tener las reales) y el contenido se adapta a lo que Dentissa hace: solo tratamientos de su catálogo | usuario |
+| 2026-11-12 | brecha | El antes y después de la propuesta es un dibujo con tratamientos de ejemplo | Se muestra con fotos (imágenes de muestra hasta tener las reales) y el contenido se adapta a lo que Dentissa hace: solo los tratamientos que ofrece (ver la fila de A26) | usuario |
 | 2026-11-12 | brecha | Campos nuevos de contenido | Certificaciones sin campos nuevos; estrellas de testimonios quedan pendientes en el roadmap | usuario |
 | 2026-11-12 | brecha | Imagen para compartir (SE6.b) | Entra en esta spec como última tarea, cuando el sistema de diseño ampliado ya exista | usuario |
 | 2026-11-12 | brecha | K1 en las cuatro páginas | Solo en inicio y "Acerca de nosotros", donde la propuesta pone el botón | usuario (`/analyze 026` A5) |
@@ -182,6 +182,8 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 | 2026-11-12 | brecha | `theme-color` | Rosa de la marca en el sitio público; panel y portal fuera | usuario (`/analyze 026` A8) |
 | 2026-11-12 | brecha | Fuente de los tratamientos (CA17) | Los servicios de la landing de producción, no el catálogo de la agenda | usuario (`/analyze 026` A26) |
 | 2026-11-12 | supuesto | El formulario de contacto de la propuesta | Solo compone un mensaje de WhatsApp en el navegador; no es un formulario de contacto en el sentido de 011 "Fuera de alcance" | agente |
+| 2026-11-12 | brecha | Composición conservada de las pantallas públicas (016 CA22) | 026 CA1 sustituye 016 CA22 en `/`, `/acerca-de-nosotros`, `/galeria`, `/contacto`, `/aviso-de-privacidad` y `/terminos-y-condiciones`: su composición es la de la propuesta | usuario (rediseño aprobado; `/analyze 026` A31) |
+| 2026-11-12 | brecha | Dirección, horario y mapa de la propuesta son de ejemplo | Siguen la regla de los datos de contacto: solo si se confirman | usuario (`/analyze 026` A6, A37) |
 | 2026-11-12 | supuesto | "Abierto / Cerrado" de inicio y contacto | Se calcula con el horario publicado y la hora de la clínica (`America/Mexico_City`), no la del visitante | agente |
 
 ## Notas para /plan
@@ -203,7 +205,7 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 - Medir Lighthouse en CI o en `npm run test:ui` si es viable sin dependencias nuevas; si no, medición
   manual registrada en `review.md` y en `docs/seo.md`.
 - La imagen para compartir (CA19) es la **última tarea**, después de incorporar los tokens y las fuentes al sistema de diseño; la tarjeta se añade a `docs/design/system.md`.
-- El antes y después pasa de dibujo CSS a pares de imágenes estáticas de muestra por tratamiento; los tratamientos se toman del catálogo (módulo Appointments) o se fijan a los que hoy existen en él, según decida el plan.
+- El antes y después pasa de dibujo CSS a pares de imágenes estáticas de muestra por tratamiento; los tratamientos son los de la lista de servicios de CA17 (no el catálogo de la agenda).
 - Al liberar, actualizar `docs/seo.md` (inventario y estado de SE1–SE8) y el roadmap (objetivo 7 y deuda SEO).
 
 ## Historial
@@ -213,4 +215,5 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 | 2026-11-12 | Antes y después con fotos y tratamientos reales (CA17, CA18); imagen para compartir dentro como última tarea (CA19); estrellas de testimonios pendientes | Aclaración del usuario |
 | 2026-11-12 | Aprobada | Confirmación explícita del usuario |
 | 2026-11-12 | `extends` 022; CA2, CA6, CA7, CA11, CA13, CA17, K1, SE8.a, RS4.a y logo según las decisiones del usuario sobre `/analyze 026` (A5, A6, A8, A9, A10, A14, A15, A17, A18, A26); vuelve a `draft` | `/analyze 026` ronda 1 |
+| 2026-11-12 | 026 CA1 sustituye 016 CA22 en las seis pantallas públicas; CA7 incluye dirección, horario y mapa; textos de K7 y Notas alineados con CA17; vuelve a `draft` | `/analyze 026` ronda 2 (A31, A37, A44) |
 | 2026-11-12 | Aprobada de nuevo | Confirmación explícita del usuario |
