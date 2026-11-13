@@ -75,6 +75,7 @@ puntúa: la composición ya está aceptada por el usuario.
 |---|---|---|---|---|
 | Inicio · con contenido | `pages/inicio.blade.php` a 390 | 768 | 1440 | CA1, CA2, CA8, CA9, CA17 |
 | Inicio · sin promociones, certificaciones ni testimonios | igual | igual | igual | CA3, CA4 |
+| Inicio · sin promociones (refinado 2026-11-13) | sección propia: etiqueta "Promociones", `h2` "Por ahora no hay promociones activas", dibujo con anillos, un `%` en contorno y tres cupones flotantes, y dos acciones ("Pregúntanos por WhatsApp" y "Ver tratamientos"; sin prometer un aviso que no existe) | | | CA3 |
 | Acerca de nosotros | `pages/nosotros.blade.php` | 768 | 1440 | CA1, CA7 |
 | Galería · con imágenes / sin imágenes | `pages/galeria.blade.php` | 768 | 1440 | CA5, CA17, CA18 |
 | Galería · 0 imágenes | el recorrido del consultorio muestra el aviso de la propuesta "Muy pronto añadiremos las fotos" con el enlace a WhatsApp, sin barra de recorrido | | | CA5 |
@@ -179,3 +180,5 @@ Se conservan, agrupadas en estas fichas; todas respetan ya `prefers-reduced-moti
 | 2026-11-12 | refinado | `/analyze 026` A32: estados por cantidad | Pest y revisión manual; `ui-audit` en CI con contenido | usuario |
 | 2026-11-12 | refinado | `/analyze 026` A34, A36, A37, A44, A47 | Escena marcada; visor de certificaciones documentado; dirección, horario y mapa confirmados o fuera; textos alineados; `tokens.colors` = paleta del sistema | agente (sobre las decisiones del usuario) |
 | 2026-11-12 | cierre | Aprobación del acta tras `/analyze 026` ronda 2 | Aprobada | usuario |
+| 2026-11-13 | refinado | Estado vacío de promociones: una franja sencilla no le daba título a la sección | Se adopta el estado vacío de la propuesta revisada (`nueva-landing/dentissa-laravel/`, la anterior queda en `dentissa-laravel-old/`): sección con `h2` y dibujo; sus rosas `#e48aa5` y `#f7dbe3` pasan a `--color-primary-hover` y `--color-primary-tint-2` | usuario |
+| 2026-11-13 | refinado | "Avísame de la próxima" prometía un aviso que la clínica no envía | Texto y botón pasan a "Pregúntanos por WhatsApp" con el mensaje "Hola, ¿tienen alguna promoción disponible?" | usuario |

@@ -17,7 +17,10 @@ use Throwable;
 
 final readonly class ShowLandingPageController
 {
-    /** A new key: the previous one cached promotions without the validity filter (spec 026, A46). */
+    /**
+     * A new key: the previous one cached promotions without the validity filter (spec 026, A46).
+     * The clinic's day is part of it, so that one day never serves the promotions of another.
+     */
     private const CACHE_KEY = 'landing.content.visible.v2';
 
     private const CACHE_TTL_MINUTES = 10;
@@ -51,7 +54,7 @@ final readonly class ShowLandingPageController
     {
         try {
             return Cache::remember(
-                self::CACHE_KEY,
+                self::CACHE_KEY.'.'.CarbonImmutable::now(self::CLINIC_TIMEZONE)->toDateString(),
                 $this->cacheUntil(),
                 function () use ($request): array {
                     $content = $this->useCase->execute(

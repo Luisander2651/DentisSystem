@@ -96,7 +96,11 @@ it('says there are no promotions when none is current, and never shows a hidden 
     $html = $page->document->saveHTML();
 
     expect($page->query('//*[@data-pm-empty]')->length)->toBe(1)
-        ->and(homeText($page, '//*[@data-pm-empty]'))->toContain('Por ahora no hay promociones activas')
+        ->and(homeText($page, '//*[@data-pm-empty]//h2'))->toBe('Por ahora no hay promociones activas')
+        ->and($page->query('//*[@data-pm-empty]//a[starts-with(@href, "https://wa.me/")][contains(@href, "?text=")][contains(., "Pregúntanos por WhatsApp")]')->length)->toBe(1)
+        ->and($page->query('//*[@data-pm-empty]//a[@href="#servicios"]')->length)->toBe(1)
+        ->and($page->query('//*[@data-pm-empty]//*[contains(@class, "pm-none-art")][@aria-hidden="true"]')->length)->toBe(1)
+        ->and(homeText($page, '//*[@data-pm-empty]'))->not->toContain('te avisamos')
         ->and($html)->not->toContain('Promoción oculta')
         ->and($html)->not->toContain('Promoción vencida');
 });
@@ -196,4 +200,14 @@ it('marks the photos of the proposal as generated and gives every image its size
     }
 
     expect($page->query('//img[@fetchpriority="high"]')->length)->toBe(1);
+});
+
+it('never serves the promotions of one day on another, whatever was cached first', function () {
+    homePromotion('Solo en noviembre', '2026-11-30');
+
+    $this->travelTo(CarbonImmutable::parse('2026-12-05 12:00', 'America/Mexico_City'));
+    expect(homePage($this)->query('//*[@data-pm-empty]')->length)->toBe(1);
+
+    $this->travelTo(CarbonImmutable::parse('2026-11-12 12:00', 'America/Mexico_City'));
+    expect(homeText(homePage($this), '//*[@data-pm="title"]'))->toBe('Solo en noviembre');
 });

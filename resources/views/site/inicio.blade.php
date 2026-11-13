@@ -148,14 +148,28 @@
 <section class="section section-flush" id="promociones">
     <div class="wrap" data-promos>
         @if ($promos->isEmpty())
-            <div class="pm-empty reveal" data-pm-empty>
-                <span class="pm-empty-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg></span>
-                <div class="pm-empty-text"><b>Por ahora no hay promociones activas</b><p>Pregúntanos por WhatsApp: a veces tenemos descuentos que aún no publicamos.</p></div>
-                <a class="btn btn-wa" href="{{ $whatsapp }}">Preguntar por WhatsApp</a>
+            <div class="pm-none reveal3d" data-pm-empty>
+                <div class="pm-none-art" aria-hidden="true">
+                    <span class="rings spin pm-none-ring-1"></span>
+                    <span class="rings pm-none-ring-2"></span>
+                    <span class="pm-pct"></span>
+                    <span class="pm-gt t1"></span>
+                    <span class="pm-gt t2"></span>
+                    <span class="pm-gt t3"></span>
+                </div>
+                <div class="pm-none-copy">
+                    <span class="kicker">Promociones</span>
+                    <h2 class="h-lg">Por ahora no hay <span class="hl">promociones{!! $underline !!}</span> activas</h2>
+                    <p class="lead pm-none-lead">Lanzamos descuentos por temporada y a veces tenemos alguno que aún no publicamos. Pregúntanos por WhatsApp.</p>
+                    <div class="pm-none-acts">
+                        <a class="btn btn-wa btn-lg" href="{{ $whatsapp }}?text={{ rawurlencode('Hola, ¿tienen alguna promoción disponible?') }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.4L3 21z"></path></svg>Pregúntanos por WhatsApp</a>
+                        <a class="pm-none-link" href="#servicios">Ver tratamientos</a>
+                    </div>
+                </div>
             </div>
         @else
             <div data-pm-any>
-                <div class="coupon reveal3d">
+                <div class="coupon reveal3d" data-surface="dark">
                     <div class="pm-in swA" data-pm-card>
                         <div class="pm-left">
                             <span class="rings spin pm-ring-1" aria-hidden="true"></span>
@@ -187,7 +201,7 @@
                         <div class="pm-more-h"><span class="kicker">Otras promociones activas</span><small>Toca un cupón para verlo en grande</small></div>
                         <div class="pm-tix">
                             @foreach ($promos as $promo)
-                                <button class="tix" type="button" data-promo data-pct="{{ $promo['discount_percentage'] }}" data-title="{{ $promo['name'] }}" data-desc="{{ $promo['description'] }}" data-from="{{ $date($promo['start_date']) }}" data-to="{{ $date($promo['end_date']) }}" data-start="{{ $promo['start_date'] }}" data-end="{{ $promo['end_date'] }}" aria-label="Ver promoción {{ $promo['name'] }}, {{ $promo['discount_percentage'] }}% de descuento" @if ($loop->first) hidden @endif><span class="tix-pct">{{ $promo['discount_percentage'] }}<small>%</small></span><span class="tix-body"><b>{{ $promo['name'] }}</b><small>Hasta el {{ $date($promo['end_date']) }} · <span data-left>&nbsp;</span></small></span></button>
+                                <button class="tix" type="button" data-pressable data-promo data-pct="{{ $promo['discount_percentage'] }}" data-title="{{ $promo['name'] }}" data-desc="{{ $promo['description'] }}" data-from="{{ $date($promo['start_date']) }}" data-to="{{ $date($promo['end_date']) }}" data-start="{{ $promo['start_date'] }}" data-end="{{ $promo['end_date'] }}" aria-label="Ver promoción {{ $promo['name'] }}, {{ $promo['discount_percentage'] }}% de descuento" @if ($loop->first) hidden @endif><span class="tix-pct">{{ $promo['discount_percentage'] }}<small>%</small></span><span class="tix-body"><b>{{ $promo['name'] }}</b><small>Hasta el {{ $date($promo['end_date']) }} · <span data-left>&nbsp;</span></small></span></button>
                             @endforeach
                         </div>
                     </div>

@@ -423,3 +423,37 @@
 .fq-opt, .fq-tags span { background: color-mix(in srgb, var(--color-surface) 8%, transparent); }
 .meter-l, .steps span { color: var(--color-on-dark); }
 .steps em { color: var(--color-primary-deep); }
+
+/* Empty state of the promotions, revised proposal (spec 026 T029, design.md → refinado 2026-11-13). */
+.pm-none { position: relative; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: center; border-radius: var(--radius-2xl); background: var(--color-primary-soft); border: 1.5px dashed var(--color-primary-tint); overflow: hidden; }
+.pm-none-art { position: relative; min-height: 360px; display: grid; place-items: center; overflow: hidden; }
+.pm-none-art .rings { border-color: color-mix(in srgb, var(--color-primary) 20%, transparent); }
+.pm-none-ring-1 { width: 300px; height: 300px; margin: -150px 0 0 -150px; border-style: dashed; }
+.pm-none-ring-2 { width: 420px; height: 420px; margin: -210px 0 0 -210px; }
+.pm-pct { position: relative; font-family: var(--font-serif); font-style: italic; font-size: clamp(150px, 16vw, 230px); line-height: 1; color: transparent; -webkit-text-stroke: 2px var(--color-primary-hover); user-select: none; }
+.pm-pct::before { content: '%'; }
+.pm-gt { position: absolute; width: 132px; height: 56px; border: 1.5px dashed var(--color-primary-hover); border-radius: var(--radius-control); background: color-mix(in srgb, var(--color-surface) 55%, transparent); transform: rotate(var(--r)); animation: pmfloat 6s ease-in-out infinite; }
+.pm-gt::before { content: ''; position: absolute; left: 40px; top: 8px; bottom: 8px; border-left: 1.5px dashed var(--color-primary-tint); }
+.pm-gt::after { content: ''; position: absolute; left: 54px; right: 16px; top: 20px; height: 6px; border-radius: var(--radius-hair); background: var(--color-primary-tint); box-shadow: 0 12px 0 -1px var(--color-primary-tint-2); }
+.pm-gt.t1 { left: 9%; top: 16%; --r: -10deg; }
+.pm-gt.t2 { right: 8%; top: 30%; --r: 8deg; animation-delay: -2s; }
+.pm-gt.t3 { left: 20%; bottom: 13%; --r: 4deg; animation-delay: -4s; }
+@keyframes pmfloat { 0%, 100% { transform: translateY(0) rotate(var(--r)); } 50% { transform: translateY(-10px) rotate(var(--r)); } }
+.pm-none-copy { position: relative; padding: 56px 56px 56px 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.pm-none-lead { max-width: 460px; }
+.pm-none-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 6px; }
+.opt .pm-none-link { display: inline-flex; align-items: center; min-height: var(--spacing-control); font-weight: 600; text-decoration: none; color: var(--color-ink); padding-bottom: 3px; background: linear-gradient(var(--color-primary), var(--color-primary)) left bottom / 100% 2px no-repeat; transition: background-size 400ms var(--ease-spring), color 200ms; }
+.opt .pm-none-link:hover { color: var(--color-primary-deep); background-size: 0% 2px; background-position: right bottom; }
+@media (max-width: 920px) {
+    .pm-none { grid-template-columns: 1fr; }
+    .pm-none-art { min-height: 230px; }
+    .pm-pct { font-size: 150px; }
+    .pm-gt { width: 104px; height: 46px; }
+    .pm-none-copy { padding: 0 24px 36px; }
+}
+
+/* Coupon and tickets, refinements that ui-audit asked for once it could see them (spec 026 T029). */
+.tix { border-color: var(--color-field); border-radius: var(--radius-card); }
+.tix:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 2px; }
+.tix-pct { color: var(--color-primary-deep); }
+.opt .pm-more-link { display: inline-flex; align-items: center; min-height: var(--spacing-control); }
