@@ -65,7 +65,7 @@ iconos).
 | `--color-info` | `#1d4ed8` | `text-info` | "Reprogramada" | 6.16:1 sobre `--color-info-soft` |
 | `--color-info-soft` | `#eff6ff` | `bg-info-soft` | Fondo de ese estado | `--color-info` encima 6.16:1 |
 | `--color-whatsapp` | `#25d366` | `bg-whatsapp` | Botón de WhatsApp, con texto en tinta | `--color-ink` encima 9.49:1 |
-| `--color-primary-deep` | `#a3345a` | `var(--color-primary-deep)` (sitio público) | Fondos de llamada del sitio público, con texto en `on-dark` | `--color-on-dark` encima 6.57:1 |
+| `--color-primary-deep` | `#a3345a` | `var(--color-primary-deep)` (sitio público) | Fondos de llamada del sitio público, con texto en `on-dark`; texto de las etiquetas (`kicker`) sobre fondos claros | `--color-on-dark` encima 6.57:1 · 6.57:1 sobre `--color-surface` · 6.28:1 sobre `--color-canvas` · 5.84:1 sobre `--color-canvas-alt` · 5.94:1 sobre `--color-secondary-soft` |
 | `--color-line-strong` | `#cbd5e1` | `var(--color-line-strong)` (sitio público) | Bordes y separadores marcados del sitio público | decorativo |
 | `--color-muted-soft` | `#94a3b8` | `var(--color-muted-soft)` (sitio público) | Iconos y texto decorativo sobre tinta; nunca texto sobre claro | 7.34:1 sobre `--color-ink` |
 | `--color-canvas-alt` | `#eef2f6` | `var(--color-canvas-alt)` (sitio público) | Fondo alterno de secciones | `--color-ink` encima 16.74:1 · `--color-muted` encima 5.51:1 |
