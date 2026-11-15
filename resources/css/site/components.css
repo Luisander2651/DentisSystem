@@ -13,7 +13,9 @@
 
 /* Top bar */
 @keyframes hdrIn { from { opacity: 0; transform: translateY(-24px); } }
-.opt .hdr { position: sticky; top: 14px; z-index: 50; padding: 0 24px; animation: hdrIn 900ms var(--ease-spring) both; }
+.opt .hdr { position: sticky; top: 14px; z-index: 50; padding: 0 24px; }
+/* The bar enters only with JavaScript: without it, it is there from the first frame (G-sin-js). */
+.js .opt .hdr { animation: hdrIn 900ms var(--ease-spring) both; }
 .hdr-in { position: relative; max-width: 1200px; margin: 0 auto; min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 10px 0 12px; border-radius: var(--radius-lg); background: color-mix(in srgb, var(--color-surface) 74%, transparent); backdrop-filter: blur(18px) saturate(1.6); -webkit-backdrop-filter: blur(18px) saturate(1.6); border: 1px solid color-mix(in srgb, var(--color-line) 90%, transparent); box-shadow: 0 20px 44px -30px color-mix(in srgb, var(--color-ink) 45%, transparent), inset 0 1px 0 color-mix(in srgb, var(--color-surface) 90%, transparent); }
 .hdr-in::after { content: ''; position: absolute; left: 22px; right: 22px; bottom: -1px; height: 2px; border-radius: var(--radius-hair); background: var(--color-secondary); transform-origin: left; transform: scaleX(0); pointer-events: none; }
 @supports (animation-timeline: scroll()) { .hdr-in::after { animation: prog linear both; animation-timeline: scroll(root); } }

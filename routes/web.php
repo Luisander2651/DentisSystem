@@ -16,7 +16,7 @@ Route::get('/galeria', function () {
 })->name('galeria');
 
 Route::get('/acerca-de-nosotros', function () {
-    return view('pages.landing.acerca');
+    return view(config('site.new_landing') ? 'site.nosotros' : 'pages.landing.acerca');
 })->name('acerca');
 
 Route::get('/aviso-de-privacidad', function () {

@@ -184,3 +184,49 @@ it('serves the legal pages with the previous layout when the new landing is off'
         ->and($page->query('//footer[contains(@class, "ft")]')->length)->toBe(0)
         ->and($page->query('//*[@id="mobile-menu-btn"]')->length)->toBe(1);
 })->with(['/aviso-de-privacidad', '/terminos-y-condiciones']);
+
+it('serves "Acerca de nosotros" with the new site, one main heading and its own title', function () {
+    $page = sitePage($this, '/acerca-de-nosotros');
+
+    expect($page->query('//header[contains(@class, "hdr")]')->length)->toBe(1)
+        ->and($page->query('//footer[contains(@class, "ft")]')->length)->toBe(1)
+        ->and($page->query('//h1')->length)->toBe(1)
+        ->and(siteTexts($page, '//title'))->toBe([config('site.pages./acerca-de-nosotros.title')])
+        ->and(array_map(fn (DOMElement $meta): string => $meta->getAttribute('content'), iterator_to_array($page->query('//meta[@name="description"]'))))
+        ->toBe([config('site.pages./acerca-de-nosotros.description')]);
+});
+
+it('takes the WhatsApp link, the address and the hours of "Acerca de nosotros" from the configuration', function () {
+    config([
+        'site.contact.whatsapp' => '5215598765432',
+        'site.contact.address' => 'Calle de Prueba 45, Colonia Norte',
+    ]);
+
+    $page = sitePage($this, '/acerca-de-nosotros');
+    $main = '//main';
+    $whatsappLinks = array_filter(siteHrefs($page, "{$main}//a"), fn (string $href): bool => str_contains($href, 'wa.me'));
+
+    expect($whatsappLinks)->not->toBeEmpty()
+        ->and(array_unique(array_map(fn (string $href): string => strtok($href, '?'), $whatsappLinks)))->toBe(['https://wa.me/5215598765432'])
+        ->and(implode(' ', siteTexts($page, $main)))->toContain('Calle de Prueba 45, Colonia Norte')
+        ->not->toContain('521234567890')
+        ->not->toContain('Av. Universidad 1200')
+        ->toContain('Claro, los sábados abrimos de 9:00 a. m. – 2:00 p. m.')
+        ->not->toContain('..');
+});
+
+it('presents each person of the team by name and a phrase of their own, without buttons or years', function () {
+    $page = sitePage($this, '/acerca-de-nosotros');
+    $cards = '//main//*[contains(concat(" ", normalize-space(@class), " "), " flip ")]';
+
+    expect($page->query($cards)->length)->toBe(3)
+        ->and($page->query("{$cards}//a")->length)->toBe(0)
+        ->and($page->query("{$cards}//blockquote")->length)->toBe(3)
+        ->and(implode(' ', siteTexts($page, $cards)))->not->toContain('años de experiencia');
+});
+
+it('serves "Acerca de nosotros" with the previous page when the new landing is off', function () {
+    config(['site.new_landing' => false]);
+
+    $this->get('/acerca-de-nosotros')->assertOk()->assertViewIs('pages.landing.acerca');
+});
