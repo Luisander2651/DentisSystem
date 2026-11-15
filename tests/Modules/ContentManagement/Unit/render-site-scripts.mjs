@@ -205,6 +205,81 @@ const scenarios = {
         return { shown: blocks.filter((block) => block.classList.contains('in')).map((block) => block.name), unobserved };
     },
 
+    /* The pinned tour of the gallery: its progress, the turn of each photo and when it pins (T019). */
+    async galleryTour({ reduced, positions = [], tilts = [] }) {
+        const { tourProgress, frameTilt, initTour } = await import(new URL('gallery.js', site));
+        const section = { classList: classList(), style: { values: {}, setProperty(key, value) { this.values[key] = value; } } };
+        const view = { scrollLeft: 120, clientWidth: 1000, attributes: { tabindex: '0' }, removeAttribute(key) { delete this.attributes[key]; } };
+        const track = { scrollWidth: 3000, children: [], style: section.style };
+        const pinned = { offsetHeight: 720 };
+        section.querySelector = (selector) => ({ '.hz-sticky': pinned, '.hz-view': view, '.hz-track': track })[selector] ?? null;
+        section.getBoundingClientRect = () => ({ top: 92, bottom: 2812, height: 2720 });
+        const win = {
+            innerHeight: 900,
+            innerWidth: 1440,
+            matchMedia: () => ({ matches: reduced }),
+            getComputedStyle: () => ({ top: '92px' }),
+            requestAnimationFrame: (fn) => fn(),
+            addEventListener: () => {},
+        };
+        const pinnedTour = initTour(section, win);
+
+        return {
+            pinned: pinnedTour,
+            scrub: section.classList.contains('is-scrub'),
+            height: section.style.values['--hz-height'] ?? null,
+            focusable: 'tabindex' in view.attributes,
+            progress: positions.map((sectionTop) => tourProgress({ pinTop: 92, sectionTop, sectionHeight: 2720, pinnedHeight: 720 })),
+            tilts: tilts.map((centre) => frameTilt(centre, 1440)),
+        };
+    },
+
+    /* The photos of the gallery tour that load only when they come near the view (T019). */
+    async galleryPhotos({ observer, entering }) {
+        const { loadPhotosNearView } = await import(new URL('gallery-photos.js', site));
+        const photos = ['a', 'b', 'c'].map((name) => {
+            const attributes = { 'data-src': `https://imagenes.example.com/${name}.webp`, src: 'data:image/gif;base64,R0lGOD' };
+
+            return {
+                name,
+                getAttribute: (key) => attributes[key] ?? null,
+                setAttribute: (key, value) => { attributes[key] = value; },
+                removeAttribute: (key) => { delete attributes[key]; },
+                attributes,
+            };
+        });
+        const view = { querySelectorAll: (selector) => (selector === 'img[data-src]' ? photos : []) };
+        const unobserved = [];
+        let callback = null;
+        let options = null;
+        const win = observer
+            ? {
+                IntersectionObserver: class {
+                    constructor(fn, settings) {
+                        callback = fn;
+                        options = settings;
+                    }
+
+                    observe() {}
+
+                    unobserve(target) {
+                        unobserved.push(target.name);
+                    }
+                },
+            }
+            : {};
+
+        loadPhotosNearView(view, win);
+        callback?.(photos.map((photo) => ({ target: photo, isIntersecting: entering.includes(photo.name) })));
+
+        return {
+            loaded: photos.filter((photo) => photo.attributes.src.startsWith('https://')).map((photo) => photo.name),
+            waiting: photos.filter((photo) => 'data-src' in photo.attributes).map((photo) => photo.name),
+            unobserved,
+            rootIsTheView: options ? options.root === view : null,
+        };
+    },
+
     /* The coupon and tickets as the server orders them: none removed nor reordered. */
     async promos({ tickets, at }) {
         const RealDate = Date;

@@ -182,3 +182,24 @@ it('lets each section enter once: it keeps its place after leaving the screen an
     expect(runSiteScript('reveal', ['observer' => true, 'entering' => ['a', 'c']]))->toBe(['shown' => ['a', 'c'], 'unobserved' => ['a', 'c']])
         ->and(runSiteScript('reveal', ['observer' => false, 'entering' => []]))->toBe(['shown' => ['a', 'b', 'c'], 'unobserved' => []]);
 });
+
+it('loads a photo of the gallery tour only when it comes near the view of the tour, and every photo without an observer (T019)', function () {
+    expect(runSiteScript('galleryPhotos', ['observer' => true, 'entering' => ['b']]))
+        ->toBe(['loaded' => ['b'], 'waiting' => ['a', 'c'], 'unobserved' => ['b'], 'rootIsTheView' => true])
+        ->and(runSiteScript('galleryPhotos', ['observer' => false, 'entering' => []]))
+        ->toBe(['loaded' => ['a', 'b', 'c'], 'waiting' => [], 'unobserved' => [], 'rootIsTheView' => null]);
+});
+
+it('pins the gallery tour as tall as its sideways distance and moves it with the scroll (T019)', function () {
+    $tour = runSiteScript('galleryTour', ['reduced' => false, 'positions' => [92, -908, -1908, 500], 'tilts' => [720, 0, 2000]]);
+
+    expect($tour)->toMatchArray(['pinned' => true, 'scrub' => true, 'height' => '2720px', 'focusable' => false])
+        ->and($tour['progress'])->toBe([0, 0.5, 1, 0])
+        ->and($tour['tilts'][0])->toBe(['turn' => 0, 'scale' => 1])
+        ->and($tour['tilts'][1])->toBe(['turn' => 26, 'scale' => 0.9])
+        ->and($tour['tilts'][2])->toBe(['turn' => -36.4, 'scale' => 0.9]);
+});
+
+it('never pins the gallery tour when the visitor asked for less motion: the row keeps scrolling sideways', function () {
+    expect(runSiteScript('galleryTour', ['reduced' => true]))->toMatchArray(['pinned' => false, 'scrub' => false, 'height' => null, 'focusable' => true]);
+});

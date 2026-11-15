@@ -29,6 +29,11 @@ export const ADMITTED = [
         difference: '"Acerca de nosotros" es la de la propuesta de la spec 026 (nueva landing): bienvenida con cifras, misión, especialidades, historia, equipo, valores y llamada a visitar.',
     },
     {
+        criterion: '026 CA1, CA5',
+        entries: ['galeria'],
+        difference: 'La galería es la de la propuesta de la spec 026 (nueva landing): bienvenida con marcos, recorrido del consultorio con las fotos publicadas, servidas en el HTML, y llamada a WhatsApp.',
+    },
+    {
         criterion: '026 CA1',
         entries: ['aviso-privacidad', 'terminos'],
         difference: 'Las páginas legales pasan a la barra y el pie del sitio nuevo (spec 026, que sustituye 016 CA22 en las pantallas públicas); su texto, su título y su índice no cambian.',

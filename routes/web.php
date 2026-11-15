@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\Http\ShowDashboardPageController;
+use App\Modules\ContentManagement\Infrastructure\HTTP\Controllers\ShowGalleryPageController;
 use App\Modules\ContentManagement\Infrastructure\HTTP\Controllers\ShowLandingPageController;
 use App\Modules\Reports\Infrastructure\Http\Controllers\ShowReportsPageController;
 use Illuminate\Support\Facades\Route;
@@ -11,9 +12,7 @@ Route::get('/contacto', function () {
     return view('pages.landing.contacto');
 })->name('contacto');
 
-Route::get('/galeria', function () {
-    return view('pages.landing.galeria');
-})->name('galeria');
+Route::get('/galeria', ShowGalleryPageController::class)->name('galeria');
 
 Route::get('/acerca-de-nosotros', function () {
     return view(config('site.new_landing') ? 'site.nosotros' : 'pages.landing.acerca');
