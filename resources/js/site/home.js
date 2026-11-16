@@ -35,11 +35,26 @@ export function promotionLeft(endIso, now = new Date()) {
     return days <= 0 ? 'Termina hoy' : days === 1 ? 'Termina mañana' : `Quedan ${days} días`;
 }
 
-/** How much of a promotion is left, as the width of its bar (4 to 100 %). */
-export function promotionBar(startIso, endIso, now = new Date()) {
-    const total = Math.max(daysUntil(endIso, now) - daysUntil(startIso, now), 1);
+/** How much of the clinic's current day has gone by (0 to 1). */
+function clinicDayElapsed(now) {
+    const parts = Object.fromEntries(
+        new Intl.DateTimeFormat('en-US', { timeZone: CLINIC_TIME_ZONE, hourCycle: 'h23', hour: '2-digit', minute: '2-digit' })
+            .formatToParts(now)
+            .map((part) => [part.type, Number(part.value)]),
+    );
 
-    return Math.max(4, Math.min(100, Math.round((Math.max(daysUntil(endIso, now), 0) / total) * 100)));
+    return clamp((parts.hour * 60 + parts.minute) / 1440);
+}
+
+/**
+ * How much of a promotion is left, as the width of its bar (4 to 100 %). It runs from the start of its
+ * first day to the end of its last one on the clinic's clock, so it goes down from the first day.
+ */
+export function promotionBar(startIso, endIso, now = new Date()) {
+    const total = Math.max(daysUntil(endIso, now) - daysUntil(startIso, now) + 1, 1);
+    const left = Math.max(daysUntil(endIso, now) + 1 - clinicDayElapsed(now), 0);
+
+    return Math.max(4, Math.min(100, Math.floor((left / total) * 100)));
 }
 
 /**

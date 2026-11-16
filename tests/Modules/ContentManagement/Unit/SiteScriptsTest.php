@@ -419,6 +419,15 @@ it('counts down a single promotion too, from the dates of its coupon (T043)', fu
     $result = runSiteScript('promos', ['at' => '2026-11-16T12:00:00-06:00', 'tickets' => [], 'card' => ['start' => '2026-11-16', 'end' => '2026-11-23']]);
 
     expect($result['left'])->toBe('Quedan 7 días')
-        ->and($result['bar'])->toBe('100%');
+        ->and($result['bar'])->toBe('93%');
 });
 
+it('starts the bar of a promotion going down on its first day, by the clinic clock', function () {
+    $bar = fn (string $at): int => runSiteScript('promotion', ['start' => '2026-11-16', 'end' => '2026-11-17', 'at' => $at])['bar'];
+
+    expect($bar('2026-11-16T00:00:00-06:00'))->toBe(100)
+        ->and($bar('2026-11-16T12:00:00-06:00'))->toBe(75)
+        ->and($bar('2026-11-17T12:00:00-06:00'))->toBe(25)
+        ->and($bar('2026-11-17T23:59:00-06:00'))->toBe(4)
+        ->and($bar('2026-11-16T18:00:00Z'))->toBe(75);
+});
