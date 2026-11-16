@@ -106,8 +106,9 @@ it('takes every WhatsApp link and contact detail from the configuration', functi
     $whatsapp = array_values(array_filter(siteHrefs($page), fn (string $href): bool => str_contains($href, 'wa.me')));
     $footer = implode(' | ', siteTexts($page, '//footer//*[contains(@class, "ft-col")]'));
 
-    expect($whatsapp)->toHaveCount(4)
-        ->and(array_unique($whatsapp))->toBe(['https://wa.me/5215598765432'])
+    expect(array_filter($whatsapp, fn (string $href): bool => ! str_contains($href, '?')))->toHaveCount(4)
+        ->and(array_filter($whatsapp, fn (string $href): bool => str_contains($href, '?text=')))->toHaveCount(count(config('site.treatments')) + 1)
+        ->and(array_values(array_unique(array_map(fn (string $href): string => strtok($href, '?'), $whatsapp))))->toBe(['https://wa.me/5215598765432'])
         ->and($footer)->toContain('Calle Real 10, Coyoacán, CDMX')
         ->and($footer)->toContain('+52 55 9876 5432')
         ->and($footer)->toContain('citas@clinica.mx')
@@ -269,3 +270,33 @@ it('draws the arrows of its links as pictures, never as characters a phone may t
 
     expect($html)->not->toMatch('/[\x{2190}-\x{21FF}\x{2B00}-\x{2BFF}]/u');
 })->with(['/', '/acerca-de-nosotros', '/galeria']);
+
+/*
+ * T040 (refined 2026-11-15): the phone menu redesigned by the user. It is still a <details>, so it
+ * opens without JavaScript; every address and text of it comes from config/site.php.
+ */
+it('brings the redesigned phone menu with the pages, the treatments and the clinic data from config', function () {
+    config([
+        'site.contact.whatsapp' => '5215598765432',
+        'site.contact.phone' => '+52 753 111 2233',
+        'site.contact.instagram' => 'https://www.instagram.com/clinica.prueba',
+        'site.contact.facebook' => 'https://www.facebook.com/clinica.prueba',
+    ]);
+
+    $page = sitePage($this, '/galeria');
+    $panel = '//details[contains(@class, "menu-m")]//*[contains(@class, "menu-panel")]';
+    $tiles = iterator_to_array($page->query("{$panel}//a[contains(@class, \"mn-tile\")]"));
+
+    expect($page->query('//details[contains(@class, "menu-m")]/summary[@aria-label="Abrir menú"]/span')->length)->toBe(3)
+        ->and(siteTexts($page, "{$panel}//nav//a"))->toBe(['Inicio', 'Acerca de Nosotros', 'Galería', 'Contacto'])
+        ->and(siteTexts($page, "{$panel}//nav//a[@aria-current=\"page\"]"))->toBe(['Galería'])
+        ->and(array_map(fn (DOMElement $tile): string => trim($tile->textContent), $tiles))->toBe([...array_column(config('site.treatments'), 'name'), 'Valoración general'])
+        ->and(array_unique(array_map(fn (DOMElement $tile): string => strtok($tile->getAttribute('href'), '?'), $tiles)))->toBe(['https://wa.me/5215598765432'])
+        ->and(array_filter($tiles, fn (DOMElement $tile): bool => ! str_contains($tile->getAttribute('href'), '?text=')))->toBe([])
+        ->and($page->query("{$panel}//a[@href=\"https://www.instagram.com/clinica.prueba\"][@aria-label=\"Instagram\"]")->length)->toBe(1)
+        ->and($page->query("{$panel}//a[@href=\"https://www.facebook.com/clinica.prueba\"][@aria-label=\"Facebook\"]")->length)->toBe(1)
+        ->and($page->query("{$panel}//a[@href=\"tel:+527531112233\"]")->length)->toBe(1)
+        ->and($page->query("{$panel}//a[starts-with(@href, \"https://wa.me/5215598765432\")][contains(., \"Agendar cita\")]")->length)->toBe(1)
+        ->and($page->query("{$panel}//a[contains(@href, \"/login\")]")->length)->toBe(1)
+        ->and(siteTexts($page, "{$panel}//*[@data-menu-status]")[0] ?? '')->toContain('9:00');
+});

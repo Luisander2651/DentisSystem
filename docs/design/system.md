@@ -309,8 +309,15 @@ legales); no sustituyen a `x-ui.*` en el panel. Su composición es la de la prop
 (`docs/specs/026-nueva-landing/design.md`), con estos tokens:
 - **Botón del sitio** (`btn`): primario (`primary`, texto `ink`), fantasma y grande
   (`--spacing-control-lg`); alto mínimo `--spacing-control`; radio `--radius-control`.
-- **Barra con menú plegable**: marca `x-ui.brand`, enlaces, botón "Agendar cita" y menú `<details>`
-  por debajo de 920 px; vive en `components.css` para servir en cualquier página del layout.
+- **Barra con menú plegable**: marca `x-ui.brand`, enlaces, botón "Agendar cita" y, por debajo de
+  920 px, el menú de celular (spec 026, rediseño del usuario del 2026-11-15): un `<details>` al lado
+  de la barra cuyo botón de tres líneas se vuelve X y abre una hoja a pantalla completa bajo la barra
+  con las páginas (la actual marcada), mosaicos de tratamientos que abren WhatsApp con un mensaje
+  escrito, el cupón de la promoción vigente solo en el inicio, "Iniciar sesión", redes y una franja
+  fija con "Abierto/Cerrado", "Agendar cita" y "Llamar". Sin JavaScript abre sin animación; con
+  JavaScript la hoja crece en círculo desde el botón, bloquea el desplazamiento, atrapa el foco y
+  cierra con Escape; con movimiento reducido no anima. Vive en `components.css` para servir en
+  cualquier página del layout.
 - **Pie con botón flotante de WhatsApp** (`--color-whatsapp`, icono en tinta).
 - **Selector segmentado** (`seg`): botones con `aria-pressed`.
 - **Carrusel con pausa**: botón de pausa y pausa con el foco o fuera de pantalla; sin movimiento
