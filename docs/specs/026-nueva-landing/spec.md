@@ -44,7 +44,7 @@ sitio sigue con el diseño viejo y es difícil de encontrar. Esta spec atiende e
 - [ ] CA12 · Dado un buscador, cuando pide `/sitemap.xml`, entonces recibe las seis rutas indexables con su URL canónica y ninguna ruta de acceso ni del panel; y `robots.txt` declara ese sitemap.
 - [ ] CA13 · Dados el inicio y contacto, cuando se lee su HTML, entonces incluyen los datos estructurados de clínica dental solo con información visible y confirmada en la página (nombre, dirección, teléfono, horario).
 - [ ] CA17 · Dado el contenido del sitio, cuando se revisan el recorrido de tratamientos del inicio, los servicios y el antes y después de la galería, entonces solo nombran tratamientos que Dentissa ofrece (los servicios que publica hoy su sitio en producción: Limpieza y Prevención, Ortodoncia, Implantes Dentales, Blanqueamiento Dental y Odontopediatría) y ninguno que no ofrezca.
-- [ ] CA18 · Dado un visitante en `/galeria`, cuando elige un tratamiento en el antes y después, entonces ve un par de fotos de antes y después de ese tratamiento que puede comparar deslizando, también con teclado; hasta tener las fotos reales se usan imágenes de muestra.
+- [ ] CA18 · Dado un visitante en `/galeria`, cuando elige un tratamiento en el antes y después (Blanqueamiento Dental, Ortodoncia o Implantes Dentales), entonces ve una dentadura ilustrada en 3D con el "antes" de ese tratamiento a un lado de una línea y el "después" al otro, y puede mover la línea con el puntero y con el teclado (flechas, Inicio y Fin); el nombre y la descripción del tratamiento elegido se muestran como texto. Si el navegador no puede mostrar gráficos 3D, ve un dibujo plano equivalente con el mismo control; si pidió reducir el movimiento, la dentadura no gira sola y la línea no se mueve sola.
 - [ ] CA19 · Dado un enlace de cualquier ruta indexable compartido en WhatsApp o una red social, cuando se genera la vista previa, entonces muestra la imagen general para compartir de 1200×630 con la marca, hecha con el sistema de diseño ampliado, y su texto alternativo.
 - [ ] CA14 · (abuso) Como visitante, intento ver contenido marcado como oculto o una promoción vencida en cualquier página del sitio → no aparece en el HTML, en los datos estructurados ni en el sitemap.
 - [ ] CA15 · (abuso) Como administrador malintencionado o con una cuenta comprometida, publico una promoción, certificación, testimonio o descripción de imagen con código o marcado → el sitio lo muestra como texto y no se ejecuta.
@@ -53,7 +53,7 @@ sitio sigue con el diseño viejo y es difícil de encontrar. Esta spec atiende e
 ## Fuera de alcance
 - Rediseño de iniciar sesión, registrarse, recuperar y restablecer contraseña → spec siguiente (incluye SE4.a, `noindex` en esas pantallas).
 - Campos de contenido nuevos: institución o tipo en certificaciones (el diseño se adapta a lo que hoy se captura) y calificación con estrellas en testimonios (pendiente → roadmap, Pendientes y deuda).
-- Fotos reales de antes y después de pacientes y su gestión desde el panel: esta spec usa imágenes de muestra.
+- Fotos reales de antes y después de pacientes y su gestión desde el panel: el antes y después es una dentadura ilustrada, no un caso real.
 - Cambios en la pantalla "Contenido" del panel o en cómo el staff publica.
 - Redirecciones de `www` y de la barra final (SE2.b, SE2.c): configuración del servidor → objetivo 7 del roadmap.
 - Formulario de contacto que guarde mensajes o envíe correos; envío de testimonios por pacientes.
@@ -112,14 +112,14 @@ Qué debe lograr cada pantalla:
   desplazarse; después, confianza (promociones, certificaciones, testimonios, preguntas frecuentes,
   ubicación).
 - **Acerca de nosotros:** quiénes son, trayectoria, equipo y valores; termina en la llamada a visitar.
-- **Galería:** las fotos reales del consultorio que publica el staff y el antes y después con fotos por tratamiento.
+- **Galería:** las fotos reales del consultorio que publica el staff y el antes y después con la dentadura 3D por tratamiento.
 - **Contacto:** escribir por WhatsApp en un paso, ver si la clínica está abierta, dirección, mapa y horario.
 
 Recursos de marca: logo y favicon reales de la clínica (los del sistema, spec 016 CA15; no el logo dibujado de la propuesta), colores del sistema, fotos de la
 clínica y diplomas de ejemplo en `nueva-landing/…/public/img/dentissa/`.
 
 Qué debe diseñarse: estados vacíos de cada sección con contenido (CA3, CA5), la versión estática del
-recorrido 3D (CA9), el antes y después con fotos (CA18) y, al final, la tarjeta para compartir de
+recorrido 3D (CA9), el antes y después con la dentadura 3D y su dibujo plano (CA18) y, al final, la tarjeta para compartir de
 1200×630 (CA19). Los textos se adaptan a lo que Dentissa hace (sus tratamientos reales), no la
 clínica al diseño (CA17).
 
@@ -134,7 +134,7 @@ Modo: persuadir · umbral 80 · mínimo por punto 3 · presupuesto 5 candidatos.
 | K4 | Movimiento reducido | sin animaciones automáticas y con el texto del recorrido | CA9 |
 | K5 | Teclado y foco | todos los controles alcanzables con foco visible a 390, 768 y 1440 px | CA10 |
 | K6 | Colores fuera de tokens | 0 | constitución P15 |
-| K7 | Antes y después | par de fotos por tratamiento de la lista de servicios (CA17), comparable con puntero y teclado a 390 y 1440 px | CA17, CA18 |
+| K7 | Antes y después | dentadura 3D por tratamiento de la lista de servicios (CA17), comparable con puntero y teclado a 390 y 1440 px, con dibujo plano sin gráficos 3D y fluida en un teléfono de gama baja | CA17, CA18 |
 | K8 | Tarjeta para compartir | 1200×630, marca legible a tamaño de miniatura | CA19 |
 
 Detalle medible (CLS ≤ 0.1, LCP local ≤ 2.5 s, JavaScript ≤ 60 kB y primera visita ≤ 900 kB por página, titulares ≤ 3 líneas, fuentes cargadas, ≥ 1 escena y ≥ 3 fondos propios en el inicio) en [design/criterios.json](design/criterios.json); se mide sobre las páginas reales en `/implement` y `/review`.
@@ -187,6 +187,8 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 | 2026-11-12 | brecha | Dirección, horario y mapa de la propuesta son de ejemplo | Siguen la regla de los datos de contacto: solo si se confirman | usuario (`/analyze 026` A6, A37) |
 | 2026-11-12 | supuesto | "Abierto / Cerrado" de inicio y contacto | Se calcula con el horario publicado y la hora de la clínica (`America/Mexico_City`), no la del visitante | agente |
 
+| 2026-11-15 | brecha | Antes y después: fotos de muestra (decisión del 2026-11-12) o la dentadura 3D de la propuesta revisada | Dentadura ilustrada en 3D con dibujo plano de respaldo; sin fotos de muestra ni sus créditos. Reemplaza la decisión del 2026-11-12 sobre el antes y después con fotos; los tratamientos siguen la lista de CA17 | usuario |
+
 ## Notas para /plan
 - La propuesta está en `nueva-landing/dentissa-laravel/` (Blade + CSS propio + JS vanilla, sin
   dependencias npm; `tooth3d.js` es WebGL sin librerías). Su README describe las variables que
@@ -206,7 +208,7 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 - Medir Lighthouse en CI o en `npm run test:ui` si es viable sin dependencias nuevas; si no, medición
   manual registrada en `review.md` y en `docs/seo.md`.
 - La imagen para compartir (CA19) es la **última tarea**, después de incorporar los tokens y las fuentes al sistema de diseño; la tarjeta se añade a `docs/design/system.md`.
-- El antes y después pasa de dibujo CSS a pares de imágenes estáticas de muestra por tratamiento; los tratamientos son los de la lista de servicios de CA17 (no el catálogo de la agenda).
+- El antes y después usa la dentadura 3D de `gallery.js` de la propuesta (revisión del 2026-11-15, WebGL sin librerías) con el dibujo 2D como respaldo; los tratamientos son los de la lista de servicios de CA17 (no el catálogo de la agenda). Ajustes pedidos al traerla: la encía queda casi plana sobre la pieza faltante (hoy deja una ventana redonda), sin la franja beige del cuello en el lado blanqueado y sin la forma de bloque del último diente inferior izquierdo. Los colores del shader entran como tokens decorativos, como los del diente 3D. Probarla en un teléfono de gama baja: cada cuadro cuesta ~30 % más que la versión anterior.
 - Al liberar, actualizar `docs/seo.md` (inventario y estado de SE1–SE8) y el roadmap (objetivo 7 y deuda SEO).
 
 ## Historial
@@ -221,3 +223,5 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 | 2026-11-12 | Aprobada de nuevo | Confirmación explícita del usuario |
 | 2026-11-12 | Enmienda de CA7: WhatsApp provisional `521234567890` permitido hasta tener el real, marcado como provisional y fuera del JSON-LD | Pedida por el usuario: no tiene contacto directo con la doctora; lo pedirá si el proyecto gana el concurso |
 | 2026-11-12 | Enmienda de CA7: todos los datos de contacto con valores provisionales marcados (no solo el WhatsApp), fuera del JSON-LD | Pedida por el usuario: conservar la mayor parte de la propuesta hasta tener los datos de la clínica |
+| 2026-11-15 | CA18, K7, Diseño y Fuera de alcance: el antes y después pasa de fotos de muestra a la dentadura 3D de la propuesta revisada, con dibujo plano de respaldo; vuelve a `draft` | Pedido del usuario tras revisar el modelo 3D nuevo |
+| 2026-11-15 | Aprobada de nuevo | Confirmación explícita del usuario |

@@ -40,8 +40,11 @@ La implementación solo puede cambiar lo que obliga la spec, la constitución o 
 3. **Contenido real:** datos de contacto reales cuando la clínica los dé y, mientras tanto, valores provisionales marcados (CA7), así que se conservan el mapa, "Abierto/Cerrado" y las redes de la propuesta; tratamientos de la lista de servicios (CA17),
    promociones, certificaciones, testimonios y galería desde "Contenido" (CA2, CA5), y se quita lo
    que no tiene dato (tipo y estrellas; la descripción de la certificación ocupa el lugar de la institución).
-4. **Antes y después:** el dibujo CSS se sustituye por pares de fotos por tratamiento, con el mismo
-   control deslizante y el mismo selector (CA18).
+4. **Antes y después:** la dentadura 3D de la propuesta revisada (2026-11-15) con su dibujo plano
+   de respaldo, el mismo control deslizante y el mismo selector (CA18; antes, pares de fotos). Al
+   traerla se corrigen tres detalles: la encía queda casi plana sobre la pieza faltante (no deja
+   una ventana redonda hacia el interior), el lado blanqueado no lleva la franja cálida del cuello
+   del diente y el último diente inferior izquierdo no tiene forma de bloque.
 5. **Correcciones de puertas:** si al medir las páginas reales falla una puerta o un KPI
    (contraste, toque, foco, movimiento reducido, sin JavaScript, peso), se corrige ese detalle con
    el cambio mínimo y se registra como `refinado` en "Decisiones".
@@ -56,7 +59,7 @@ puntúa: la composición ya está aceptada por el usuario.
 | K1 · Acción principal en la primera pantalla (CA1) | "Agenda una Cita" a la vista a 390, 768 y 1440 en inicio y "Acerca de nosotros" | en `/implement` | — |
 | K2a–K2f · Calidad de carga (CA8, CA10) | CLS ≤ 0.1 · LCP ≤ 2.5 s · JS ≤ 60 kB · primera visita ≤ 900 kB sin contar las imágenes que sube el staff (refinado 2026-11-13) · titulares ≤ 3 líneas · las dos fuentes cargadas | en `/implement` | — |
 | K4a, K4b · Riqueza del inicio (CA1, CA9) | ≥ 1 escena · ≥ 2 fondos propios (refinado 2026-11-13) | en `/implement` | — |
-| K7 · Antes y después (CA18) | "Antes" y "Después" visibles | en `/implement` | — |
+| K7 · Antes y después (CA18) | "Antes" y "Después" visibles; dibujo plano sin WebGL; fluida en un teléfono de gama baja (verificación manual) | en `/implement` | — |
 | K2, K3, K5, K8 (verificación en la tarea) | Lighthouse, estados vacíos, teclado, tarjeta | tests y `ui-audit` | — |
 
 ## Imágenes de muestra
@@ -65,7 +68,6 @@ puntúa: la composición ya está aceptada por el usuario.
 |---|---|---|---|
 | `recepcion.webp`, `consulta.webp`, `consultorio.webp`, `odontopediatria.webp`, `radiografia.webp`, `sonrisa.webp` | inicio, nosotros y galería (fotos fijas de la propuesta) | venían con la propuesta; por su aspecto parecen **generadas**, no fotos de la clínica — origen por confirmar con el usuario | fotos reales de la clínica; mientras tanto `data-origen="generada"` |
 | `diploma-horizontal.svg`, `diploma-vertical.svg` | respaldo de certificaciones sin imagen | dibujos de la propuesta | la imagen que el staff sube a cada certificación |
-| Pares de antes y después (por descargar) | galería, por tratamiento | bancos libres (Unsplash/Pexels), con autor y licencia en el repo; `data-origen="muestra"` | fotos reales de casos con consentimiento del paciente |
 
 `/review` y `/release` exigen `max_samples: 0` salvo decisión del usuario.
 
@@ -115,6 +117,7 @@ sin cambiar los tokens existentes) y `system.html`, y a `@theme` de `resources/c
 | Escalas `--space-1…8`, `--duration-fast/base`, `--ease-out`, `--ease-spring`, `--weight-regular`, `--weight-strong`, `--text-body` | fijo | las de `tokens.css` | — | ritmo, movimiento y pesos que usa la propuesta (toda `var(--…)` del CSS del sitio tiene token) |
 | Radios del sitio: `--radius-hair` 3px (2–6) · `--radius-sm` 10px (8–11) · `--radius-md` 14px · `--radius-lg` 20px (18–22) · `--radius-xl` 28px (26–30) · `--radius-2xl` 32px (32–40); se conservan `control` 12, `box` 16, `card` 24 y `full` | fijo | — | — | la propuesta usa ~20 radios distintos; se agrupan en una escala con diferencias de 4 px como máximo. Formas en `%` (círculos, el diente) se admiten |
 | `--color-enamel`, `--color-enamel-white` y los demás tonos que pinta el diente 3D | fijo | los del shader de la propuesta | — | colores decorativos del modelo 3D (esmalte natural y blanqueado); el JS los lee del CSS al arrancar junto con `--color-primary` y `--color-secondary`, y no escribe ningún color (decisión del usuario, A30) |
+| Dentadura del antes y después (decorativos): `--color-gum` `#fcabb5` · `--color-gum-deep` `#d15e75` · `--color-gum-glow` `#ff7380` · `--color-gum-rim` `#ff8cad` · `--color-mouth` `#5c1726` · `--color-floor-shadow` `#6b2940` · `--color-enamel-neck` `#f7e6cc` · `--color-enamel-body` `#faf5eb` · `--color-enamel-tip` `#bdcce6` · `--color-enamel-stain` `#d9bd85` · `--color-enamel-glow` `#ffdbcc` | fijo | los del shader de la propuesta revisada | — | encía (junto al diente, base, translucidez, contorno), interior de la boca, sombra de contacto y esmalte (cuello, cuerpo, borde translúcido, manchado, translucidez). Se reutilizan `--color-enamel-white` (esmalte blanqueado y brillos), `--color-blush` (brillo de la encía y reflejo del entorno), `--color-primary-tint-2` (brillo de la línea) y `--color-primary` (luz lateral). El dibujo plano usa `--color-enamel`, `--color-enamel-white`, `--color-enamel-stain` y los de la encía. El JS los lee al arrancar como el diente del inicio (A30) (refinado 2026-11-15) |
 | `--spacing-control-lg` 52px | fijo | — | — | botón grande de la propuesta (52–54 px); el normal usa `--spacing-control` (44) |
 | Componentes del sitio público en `system.md` → Componentes: botón del sitio (`btn` primario, fantasma y grande), barra con menú plegable, pie con botón flotante de WhatsApp, selector segmentado, carrusel con pausa, comparador de antes y después, compositor de WhatsApp, visor de certificaciones (diálogo con foco atrapado, Escape y retorno del foco, como 016 CA12, CA13 y CA26) | — | — | — | se documentan como componentes exclusivos del sitio público (no sustituyen a `x-ui.*` en el panel) |
 | Títulos del sitio público (`h-xl`, `h-lg`) | fluido 390–1440 | los de la propuesta | | sustituyen la fila "Título del sitio público" de Tipografía |
@@ -203,3 +206,4 @@ Se conservan, agrupadas en estas fichas; todas respetan ya `prefers-reduced-moti
 | 2026-11-15 | refinado | Revisión manual de la galería: marcos de la bienvenida con iconos | Los tres marcos (Instalaciones, Casos, Antes y después) muestran fotos de la propuesta (`consultorio`, `consulta`, `sonrisa`; `data-origen="generada"`) | usuario |
 | 2026-11-15 | refinado | Revisión manual de la galería: que solo se descarguen las fotos que se ven | Las tres primeras fotos del recorrido llegan con `loading="lazy"`; las demás traen su dirección en `data-src` y se cargan al acercarse a la vista del carrusel, con una copia en `<noscript>` para quien no tiene JavaScript | usuario |
 | 2026-11-15 | refinado | Revisión manual de la galería: el recorrido pasaba de largo en vez de fijarse como en la propuesta | El recorrido fijado (sección sticky con las fotos pasando de lado y girando) se adelanta de T020 a T019; su altura es la de la parte fija más la distancia lateral, así cada foto cuesta el mismo desplazamiento; con movimiento reducido no se fija y la fila se desliza de lado. K2d de la galería se mide sin las fotos del staff (288 kB; 1915 kB con 13 fotos locales de prueba) | usuario |
+| 2026-11-15 | refinado | Antes y después: pares de fotos de muestra (decisión del 2026-11-12) o la dentadura 3D de la propuesta revisada | Dentadura 3D con dibujo plano de respaldo (spec 026 CA18 editada); vuelven las reglas del dibujo del comparador a `galeria.css`, en tokens; sin fotos de muestra ni `CREDITOS.md` (la fila del 2026-11-12 sobre fotos de bancos libres deja de aplicar al antes y después). Tokens decorativos nuevos de la dentadura (ver Cambios a incorporar al sistema) y tres correcciones al modelo (ver Resultado, punto 4) | usuario |

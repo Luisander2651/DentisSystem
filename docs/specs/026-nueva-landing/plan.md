@@ -50,7 +50,7 @@ Conteo: 10 cumplen · 5 no aplican · ninguno viola.
 | Sistema de diseño (`resources/css/app.css`, `docs/design/system.md`, `system.html`, `DesignTokensTest`) | Bloque `@theme static` con los tokens del sitio público (colores nuevos, `--font-display`, `--font-serif`, `--space-*`, `--duration-*`, `--ease-out`, `--ease-spring`, `--weight-*`, `--text-body`, radios `--radius-hair…2xl`, `--spacing-control-lg`); `system.md` 2.1.0 con la variante "sitio público", la regla de fuentes y los componentes del sitio; `DesignTokensTest` lee también ese bloque | Medio: `DesignTokensTest` exige que cada token documentado tenga su valor y su par de contraste |
 | `resources/fonts/` (nuevo) | `inter-tight-{400,500,600,700}.woff2` e `instrument-serif-{regular,italic}.woff2` (subconjunto latino) con `OFL.txt` | Bajo |
 | `resources/css/site/` (nuevo) | Hojas de la propuesta (`base`, `components`, `animations`, `compat`, `pages/{inicio,nosotros,galeria,contacto}.css`) y entrada `site.css` con `@font-face`; `tokens.css` de la propuesta se elimina (sus valores ya están en `@theme`) | Medio: 381 apariciones de color escrito a mano (91 `#fff`, 26 `#d75078`…) y `style` en línea |
-| `resources/js/site/` (nuevo) | `core.js` (entrada propia del layout), `home.js`, `tooth3d.js` (cargado diferido), `gallery.js`, `contact.js` y una entrada por página en `pages/`; `forms.js` no entra (es de las pantallas de acceso). Ningún color escrito en el JS: los colores del diente y de las partículas se leen de los tokens al arrancar (A30) | Medio: rendimiento del WebGL en móvil |
+| `resources/js/site/` (nuevo) | `core.js` (entrada propia del layout), `home.js`, `tooth3d.js` (cargado diferido), `gallery.js`, `contact.js` y una entrada por página en `pages/`; `forms.js` no entra (es de las pantallas de acceso). Ningún color escrito en el JS: los colores del diente, de las partículas y de la dentadura del antes y después se leen de los tokens al arrancar (A30), con la lectura de `tooth3d.js` compartida | Medio: rendimiento del WebGL en móvil (dos lienzos 3D en el sitio: el diente del inicio y la dentadura de la galería) |
 | `resources/views/layouts/site.blade.php` (nuevo) y `resources/views/components/site/{header,footer,whatsapp-float,seo}.blade.php` (nuevos) | Layout con `<head>` SEO (título, descripción, canónica, Open Graph, `theme-color`, JSON-LD, precarga de fuentes y de la imagen LCP) | Bajo |
 | `resources/views/site/{inicio,nosotros,galeria,contacto}.blade.php` (nuevos) | Vistas de la propuesta con datos de `config/site.php` y del contenido real; `style` en línea → clases | Medio |
 | `resources/views/pages/landing/{aviso-privacidad,terminos}.blade.php` | Pasan a extender `layouts.site` (cuando el interruptor está activo); su texto no cambia | Bajo: `LegalPagesTest` |
@@ -61,7 +61,7 @@ Conteo: 10 cumplen · 5 no aplican · ninguno viola.
 | Core · `app/Core/Http/ShowSitemapController.php` (nuevo, junto a `ShowDashboardPageController`) | `GET /sitemap.xml` desde las rutas indexables de `config/site.php` | Bajo |
 | `routes/web.php` | `/galeria` y `/sitemap.xml` a controladores; `/acerca-de-nosotros` y `/contacto` eligen vista según el interruptor | Bajo |
 | `public/robots.txt` | Línea `Sitemap: https://dentissapp.com/sitemap.xml` | Bajo |
-| `public/images/site/` (nuevo) | Fotos de la propuesta (`data-origen="generada"`) y pares de antes y después de muestra con `CREDITOS.md` | Bajo |
+| `public/images/site/` (nuevo) | Fotos de la propuesta (`data-origen="generada"`); el antes y después no usa imágenes (CA18, 2026-11-15) | Bajo |
 | `tests/Browser/make-brand-assets.mjs`, `public/images/brand/compartir.png` | La última tarea añade la tarjeta 1200×630 al generador existente (Chrome sin interfaz, sin dependencias) | Bajo |
 | `tests/Browser/screens.json`, `baseline-1440.json`, `checks-composition.mjs` y `database/seeders/UiAuditSeeder.php` | Cada tarea de página actualiza sus pantallas, añade su entrada `ADMITTED` (026 CA1 sustituye 016 CA22) y regenera solo su línea base; los datos de ui-audit tienen contenido rico (tres promociones vigentes, cuatro testimonios, tres imágenes de galería). Los estados vacíos y por cantidad se prueban con Pest y a mano (decisión del usuario, A32) | Medio: la línea base de composición cambia |
 | `vite.config.js` | Entradas `resources/css/site/site.css` y `resources/js/site/*.js` | Bajo |
@@ -208,7 +208,7 @@ Cobertura de abuso: CA14 → TM1 · CA15 → TM2 · CA16 → TM3.
 | CA15 (abuso): contenido con código se muestra como texto | TM2 | integración · `PublicSiteContentTest` |
 | CA16 (abuso): marcado en el formulario → texto literal | TM3 | unidad JS · `SiteScriptsTest` |
 | CA17: solo tratamientos de Dentissa | `config/site.php → treatments`, `site.inicio`, `site.galeria`, `gallery.js` | integración · `PublicSitePagesTest` · cada tratamiento nombrado en recorrido, servicios y selector está en la lista; ninguno de la lista de términos descartados · `SiteStylesTokensTest` · ningún término descartado en `resources/js/site/**` |
-| CA18: antes y después con fotos por tratamiento, comparable con teclado | `site.galeria`, `gallery.js`, `public/images/site/antes-despues/` | integración · `PublicGalleryPageTest` · un par de `<img>` por tratamiento del selector con `data-origen` · `npm run test:ui` · el control deslizante responde a flechas · `evaluate.mjs` K7 |
+| CA18: antes y después con la dentadura 3D por tratamiento, comparable con puntero y teclado, dibujo plano sin WebGL, sin movimiento automático con movimiento reducido | `site.galeria`, `gallery.js`, `galeria.css`, tokens decorativos en `app.css` | integración · `PublicGalleryPageTest` · un botón por tratamiento de CA18 (Blanqueamiento, Ortodoncia, Implantes, textos de config) con `aria-pressed`, control deslizante con nombre accesible, nombre y descripción del tratamiento en el HTML, lienzo y dibujo plano con `aria-hidden` · unidad JS · `SiteScriptsTest` · flecha derecha, Inicio y Fin mueven el control y su `aria-valuenow`; el selector cambia el tratamiento, su `aria-pressed` y el texto; sin `WebGLRenderingContext` queda el dibujo plano; con movimiento reducido ni la dentadura gira ni la línea se mueve sola; los colores del shader salen de los tokens · `DesignTokensTest` · `npm run test:ui` · `evaluate.mjs` K7 · verificación manual: la dentadura a 390 y 1440 px con los tres ajustes (encía casi plana sobre la pieza faltante, sin franja beige en el lado blanqueado, último diente inferior izquierdo sin forma de bloque) y fluida en un teléfono de gama baja |
 | CA19: imagen para compartir 1200×630 | `make-brand-assets.mjs`, `public/images/brand/compartir.png`, `components/site/seo` | integración · `PublicSiteSeoTest` · `og:image` absoluto en las seis rutas, archivo existe, 1200×630, ≤ 300 kB, `og:image:alt` · verificación manual: tarjeta contra `system.html#compartir` (última tarea) y vista previa real en WhatsApp en T095 |
 | TM1 | filtro en el servidor | integración · `PublicSiteContentTest`, `PublicGalleryPageTest` · oculto y vencido ausentes |
 | TM2 | escape de Blade y JSON-LD | integración · `PublicSiteContentTest` · marcado escapado |
@@ -315,6 +315,7 @@ No toca datos sensibles, autenticación ni permisos: sin eventos de auditoría.
   el usuario lo confirme (decisión del usuario, 2026-11-12); de ahí el interruptor.
 - **Playwright global** en el equipo para `evaluate.mjs` (decisión del usuario, 2026-11-12); no
   entra en `package.json` ni en CI.
+- **Antes y después con la dentadura 3D** de `gallery.js` de la propuesta revisada (2026-11-15) en lugar de pares de fotos de muestra (spec 026 CA18, decisión del usuario, 2026-11-15): WebGL sin librerías como el diente del inicio (P10 sin cambios), dibujo 2D de respaldo con sus colores en tokens, colores del shader como uniformes leídos de tokens decorativos (A30). Ajustes al traerla: encía casi plana sobre la pieza faltante, sin la franja cálida del cuello en el lado blanqueado y el último diente inferior izquierdo sin forma de bloque. Sin `public/images/site/antes-despues/` ni `CREDITOS.md`.
 - **Imagen para compartir estática** generada por `make-brand-assets.mjs`, última tarea (decisión
   del usuario en la spec).
 - Sin ADR: ninguna dependencia nueva ni cambio de arquitectura.
@@ -338,8 +339,12 @@ No toca datos sensibles, autenticación ni permisos: sin eventos de auditoría.
   119 escrituras distintas que en su mayoría son tokens existentes o sus transparencias; solo ~9
   tonos nuevos. Reemplazo mecánico sin cambio visual: T001 crea los tokens y
   `SiteStylesTokensTest` impide que quede alguno.
-- **Imágenes de muestra y generadas en producción**: `max_samples` y `data-origen` las listan;
-  `/review` y `/release` las bloquean salvo decisión del usuario.
+- **Imágenes generadas en producción**: `data-origen` las lista (el antes y después ya no usa
+  imágenes de muestra); `/review` y `/release` las bloquean salvo decisión del usuario.
+- **Dentadura 3D en teléfonos de gama baja**: cada cuadro cuesta ~30 % más que la versión anterior
+  de la propuesta. Ya se dibuja solo a la vista, a ≤ 30 cuadros por segundo y con densidad ≤ 1.5;
+  la verificación manual de T020 la prueba en un teléfono de gama baja y, si no va fluida, se baja
+  la densidad del lienzo con el usuario antes de cerrar la tarea.
 - **Datos de contacto provisionales en producción** (enmienda de CA7 pedida por el usuario): los
   mensajes de WhatsApp y las llamadas no llegan a la clínica y la dirección no es la suya hasta que se
   pongan los reales en las variables `SITE_*`; `review.md` y el release los anotan como datos
