@@ -78,6 +78,10 @@ return [
 
     'timezone' => 'America/Mexico_City',
 
+    /* The colour of the browser bar: the value of --color-primary in resources/css/app.css (A8). A
+       meta tag cannot read a CSS variable; PublicSiteSeoTest fails if the two drift apart. */
+    'theme_color' => '#d75078',
+
     'contact' => $contact,
 
     'provisional' => $provisional,

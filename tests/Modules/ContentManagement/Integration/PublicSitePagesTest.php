@@ -141,7 +141,7 @@ it('opens no other tab without noopener and noreferrer, and loads nothing from a
         expect(explode(' ', $link->getAttribute('rel')))->toContain('noopener', 'noreferrer');
     }
 
-    foreach ([...siteHrefs($page, '//link[@href]'), ...array_map(fn (DOMElement $script): string => $script->getAttribute('src'), iterator_to_array($page->query('//script[@src]')))] as $url) {
+    foreach ([...siteHrefs($page, '//link[@href][not(@rel="canonical")]'), ...array_map(fn (DOMElement $script): string => $script->getAttribute('src'), iterator_to_array($page->query('//script[@src]')))] as $url) {
         expect($url)->not->toMatch('#^(https?:)?//(?!localhost)#');
     }
 });
