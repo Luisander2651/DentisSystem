@@ -143,8 +143,8 @@
     .cta-sub { margin: 0 auto; }
 }
 
-/* Phones (refined 2026-11-15): the heading of every section is centred, as on the other pages. */
-@media (max-width: 600px) {
-    .ab-team-head { justify-content: center; text-align: center; }
+/* One column (up to 920 px, refined 2026-11-15): the heading of every section is centred. */
+@media (max-width: 920px) {
+    .ab-team-head { flex-direction: column; align-items: center; text-align: center; }
     .ab-head, .ab-mission-in { align-items: center; text-align: center; margin-inline: auto; }
 }

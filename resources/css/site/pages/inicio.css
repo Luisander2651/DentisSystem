@@ -517,20 +517,25 @@ html:not(.js) .dk-end, .still .dk-end { position: static; transform: none; opaci
     .cf-row { padding-top: var(--space-6); }
 }
 
-/* Phones (refined 2026-11-15, the user's review on a phone): the welcome is centred, and the 3D tour
-   drops its own button (the bar, the floating button and the closing call still lead to WhatsApp)
-   and leaves room before the next section. */
-@media (max-width: 600px) {
+/* One column (up to 920 px, refined 2026-11-15 after the user's review): the welcome is centred. */
+@media (max-width: 920px) {
     .vw-copy { align-items: center; text-align: center; }
     .vw-ctas { justify-content: center; }
+}
+
+/* Phones (refined 2026-11-15, the user's review on a phone): the 3D tour drops its own button (the
+   bar, the floating button and the closing call still lead to WhatsApp) and leaves room before the
+   next section. */
+@media (max-width: 600px) {
     .tour-copy > .btn { display: none; }
     .tour { padding-bottom: 72px; }
 }
 
-/* Phones (refined 2026-11-15): the heading of every section (label, title and opening text) is
-   centred, as on the other pages of the site. */
-@media (max-width: 600px) {
+/* One column (up to 920 px, refined 2026-11-15): the heading of every section (label, title and
+   opening text) is centred, as on the other pages of the site. */
+@media (max-width: 920px) {
     .sv-head, .cf-head { justify-content: center; justify-items: center; text-align: center; }
+    .sv-head { flex-direction: column; align-items: center; }
     .sv-title, .cf-head > div, .ts-side, .fq-left, .pm-none-copy { align-items: center; text-align: center; }
 }
 

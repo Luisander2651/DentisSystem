@@ -157,9 +157,9 @@ html:not(.js) .ba { display: none; }
     .spark { animation: none; opacity: 0.8; }
 }
 
-/* Phones (refined 2026-11-15): the heading of every section is centred, as on the other pages. */
-@media (max-width: 600px) {
-    .hz-head, .ba-head { justify-content: center; text-align: center; }
+/* One column (up to 920 px, refined 2026-11-15): the heading of every section is centred. */
+@media (max-width: 920px) {
+    .hz-head, .ba-head { flex-direction: column; align-items: center; text-align: center; }
     .gl-head, .ba-head-copy { align-items: center; text-align: center; }
     .seg { justify-content: center; }
 }

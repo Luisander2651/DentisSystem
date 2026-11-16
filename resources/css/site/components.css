@@ -162,13 +162,16 @@
    the 44 px touch target. */
 .ft-col a, .ft-legal a { display: inline-flex; align-items: center; min-height: var(--spacing-control); }
 
-/* Phones (refined 2026-11-15): the closing call ("Agenda hoy", "Visítanos", "Tu turno") centres its
-   text, its buttons take the whole width and the WhatsApp chat under them stays as it is. The
-   selectors carry .cta3d so they win over the layout of each page's stylesheet. */
-@media (max-width: 600px) {
+/* One column (up to 920 px, refined 2026-11-15): the closing call ("Agenda hoy", "Visítanos", "Tu
+   turno") centres its text; on phones its buttons also take the whole width. The WhatsApp chat
+   stays as it is. The selectors carry .cta3d so they win over each page's stylesheet. */
+@media (max-width: 920px) {
     .cta3d .cta-copy { align-items: center; text-align: center; }
     .cta3d .cta-sub { margin-inline: auto; }
+    .cta3d .cta-actions { justify-content: center; }
+    .cta3d .cta-meta { justify-content: center; }
+}
+@media (max-width: 600px) {
     .cta3d .cta-actions { align-self: stretch; flex-direction: column; }
     .cta3d .cta-actions .btn { width: 100%; justify-content: center; }
-    .cta3d .cta-meta { justify-content: center; }
 }
