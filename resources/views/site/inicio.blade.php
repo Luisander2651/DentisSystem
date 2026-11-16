@@ -121,7 +121,7 @@
         <div class="reveal sv-head">
             <div class="sv-title">
                 <span class="kicker">Servicios</span>
-                <h2 class="h-lg">Todo lo que tu sonrisa necesita, en un solo lugar</h2>
+                <h2 class="h-lg">Todo lo que tu <span class="hl">sonrisa{!! $underline !!}</span> necesita, en un solo lugar</h2>
             </div>
             <p class="lead sv-lead">Tratamientos para niños y adultos, en un ambiente cálido y seguro.</p>
         </div>

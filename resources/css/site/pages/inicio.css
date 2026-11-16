@@ -526,3 +526,10 @@ html:not(.js) .dk-end, .still .dk-end { position: static; transform: none; opaci
     .tour-copy > .btn { display: none; }
     .tour { padding-bottom: 72px; }
 }
+
+/* Phones (refined 2026-11-15): the heading of every section (label, title and opening text) is
+   centred, as on the other pages of the site. */
+@media (max-width: 600px) {
+    .sv-head, .cf-head { justify-content: center; justify-items: center; text-align: center; }
+    .sv-title, .cf-head > div, .ts-side, .fq-left, .pm-none-copy { align-items: center; text-align: center; }
+}

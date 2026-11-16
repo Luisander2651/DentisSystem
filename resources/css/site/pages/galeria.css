@@ -156,3 +156,10 @@ html:not(.js) .ba { display: none; }
 @media (prefers-reduced-motion: reduce) {
     .spark { animation: none; opacity: 0.8; }
 }
+
+/* Phones (refined 2026-11-15): the heading of every section is centred, as on the other pages. */
+@media (max-width: 600px) {
+    .hz-head, .ba-head { justify-content: center; text-align: center; }
+    .gl-head, .ba-head-copy { align-items: center; text-align: center; }
+    .seg { justify-content: center; }
+}

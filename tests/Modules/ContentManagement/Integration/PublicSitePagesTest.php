@@ -244,3 +244,10 @@ it('says the city of the clinic in the label of the welcome', function () {
 
     expect(siteTexts(sitePage($this, '/'), '//main//*[contains(@class, "eyebrow")]')[0] ?? '')->toBe('Odontología integral · Ciudad de Prueba');
 });
+
+it('highlights "sonrisa" in the heading of the services like the other headings of the home', function () {
+    $page = sitePage($this, '/');
+
+    expect(siteTexts($page, '//main//h2[contains(., "Todo lo que tu")]//*[contains(concat(" ", normalize-space(@class), " "), " hl ")]'))->toBe(['sonrisa'])
+        ->and($page->query('//main//h2[contains(., "Todo lo que tu")]//*[contains(@class, "hl")]/*[local-name()="svg"][@aria-hidden="true"]')->length)->toBe(1);
+});

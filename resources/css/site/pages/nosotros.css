@@ -142,3 +142,9 @@
     .cta-actions, .cta-meta { justify-content: center; }
     .cta-sub { margin: 0 auto; }
 }
+
+/* Phones (refined 2026-11-15): the heading of every section is centred, as on the other pages. */
+@media (max-width: 600px) {
+    .ab-team-head { justify-content: center; text-align: center; }
+    .ab-head, .ab-mission-in { align-items: center; text-align: center; margin-inline: auto; }
+}
