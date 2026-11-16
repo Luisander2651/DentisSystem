@@ -394,3 +394,38 @@ it('serves the previous contact page when the new landing is off', function () {
 
     $this->get('/contacto')->assertOk()->assertViewIs('pages.landing.contacto');
 });
+
+/*
+ * T025 (CA17): the site only names the treatments Dentissa offers, the list of config/site.php,
+ * in the tour of the home, the services and the selector of the before and after; no page names
+ * one of the treatments the clinic does not offer. Every link of the six public routes that opens
+ * another tab carries noopener and noreferrer (TM4).
+ */
+const SITE_PAGES_DISCARDED_TREATMENTS = ['endodoncia', 'periodoncia', 'carilla', 'corona', 'prótesis', 'protesis', 'diseño de sonrisa', 'cirugía maxilofacial', 'bruxismo'];
+
+it('names only the treatments of the list in the tour, the services, the before and after and the motives', function () {
+    $names = array_column(config('site.treatments'), 'name');
+    $home = sitePage($this, '/');
+    $gallery = sitePage($this, '/galeria');
+    $contact = sitePage($this, '/contacto');
+    $selector = siteTexts($gallery, '//main//button[@data-ba]');
+    $motives = array_values(array_diff(siteTexts($contact, '//main//button[@data-motivo]'), ['Valoración general', 'Otro']));
+
+    expect(siteTexts($home, '//main//*[contains(@class, "tour-step")]/h2'))->toBe(array_slice($names, 0, 4))
+        ->and(siteTexts($home, '//main//*[contains(@class, "sv-name")]'))->toBe($names)
+        ->and($selector)->not->toBeEmpty()
+        ->and(array_diff($selector, $names))->toBe([])
+        ->and($motives)->toBe($names);
+});
+
+it('names no treatment the clinic does not offer on any page', function (string $path) {
+    $text = mb_strtolower(implode(' ', siteTexts(sitePage($this, $path), '//body')));
+
+    expect(array_values(array_filter(SITE_PAGES_DISCARDED_TREATMENTS, fn (string $term): bool => str_contains($text, $term))))->toBe([]);
+})->with(['/', '/acerca-de-nosotros', '/galeria', '/contacto', '/aviso-de-privacidad', '/terminos-y-condiciones']);
+
+it('opens no other tab from a public page without noopener and noreferrer', function (string $path) {
+    foreach (sitePage($this, $path)->query('//a[@target="_blank"]') as $link) {
+        expect(explode(' ', $link->getAttribute('rel')))->toContain('noopener', 'noreferrer');
+    }
+})->with(['/', '/acerca-de-nosotros', '/galeria', '/contacto', '/aviso-de-privacidad', '/terminos-y-condiciones']);
