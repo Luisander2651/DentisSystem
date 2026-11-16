@@ -239,6 +239,22 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: comprobado rompiendo: sin `og:image` o con otra frase en el generador fallan los siete casos de la tarjeta.
   - nota: verificación manual hecha por el agente contra `system.html#compartir` (zona segura de 64–72 px, título en dos líneas sin cortes, texto `ink`/`muted` sobre `canvas`); queda para que el usuario la mire en la revisión y la vista previa real en WhatsApp va a T095.
 
+### Correcciones de /review (ronda 1)
+- [ ] T044 Dar a la cinta de servicios del inicio un botón de pausa con `aria-pressed` y pausarla con el foco y al tocarla, como los testimonios; con `prefers-reduced-motion`, la lista completa visible sin recortes y sin la copia `aria-hidden`; el `aria-label` va en un elemento con rol — `resources/views/site/inicio.blade.php`, `resources/css/site/pages/inicio.css`, `resources/js/site/home.js`, `tests/Modules/ContentManagement/Unit/SiteScriptsTest.php`, `tests/Modules/ContentManagement/Unit/render-site-scripts.mjs`, `tests/Modules/ContentManagement/Integration/PublicSiteContentTest.php` — hecho cuando: el test nuevo (el botón pausa y reanuda la cinta, el foco y el toque la detienen, el HTML trae el botón con nombre accesible) pasa, `ui-audit inicio` y `evaluate.mjs inicio` sin fallos nuevos y la suite en verde · revisión de accesibilidad: foco visible del botón y toque de 44 px medidos con `ui-audit` — cubre: CA10
+  - nota: añadida por /review: R1, R30
+- [ ] T045 Si `SITE_SCHEDULE` está definida pero no deja ninguna regla válida, usar el horario provisional y marcarlo como provisional — `config/site.php`, `tests/Modules/Core/Unit/SiteConfigTest.php` — hecho cuando: el caso nuevo de `SiteConfigTest` (`1-5 9:00-19:00` → horario provisional y `provisional.schedule` verdadero; uno válido sigue real) pasa y la suite en verde — cubre: CA7, CA13
+  - nota: añadida por /review: R2
+- [ ] T046 En la bienvenida del inicio, el bloque de texto que se desvanece y el bloque final antes de aparecer no reciben foco mientras están ocultos (`inert`), y lo recuperan al verse — `resources/js/site/home.js`, `tests/Modules/ContentManagement/Unit/SiteScriptsTest.php`, `tests/Modules/ContentManagement/Unit/render-site-scripts.mjs` — hecho cuando: el escenario nuevo de `SiteScriptsTest` (al inicio el bloque final es inerte y el texto no; al final, al revés) pasa y la suite en verde · revisión de accesibilidad: recorrido con teclado a 390 y 1440 px sin foco invisible — cubre: CA10
+  - nota: añadida por /review: R3
+- [ ] T047 Quitar la región viva del testimonio que rota solo; anunciar el testimonio nuevo solo cuando el visitante lo cambia con anterior, siguiente o los puntos — `resources/views/site/inicio.blade.php`, `resources/js/site/home.js`, `tests/Modules/ContentManagement/Unit/SiteScriptsTest.php`, `tests/Modules/ContentManagement/Unit/render-site-scripts.mjs` — hecho cuando: el test nuevo (sin `aria-live` en el HTML; un avance automático no anuncia, uno pedido sí) pasa y la suite en verde — cubre: CA10
+  - nota: añadida por /review: R4
+- [ ] T048 En el mapa de contacto, `role="img"` y su nombre solo en la ilustración; los enlaces de Google Maps y Waze y el botón de copiar la dirección quedan fuera de ese elemento — `resources/views/site/contacto.blade.php`, `resources/css/site/pages/contacto.css`, `tests/Modules/ContentManagement/Integration/PublicSitePagesTest.php` — hecho cuando: el caso nuevo (ningún enlace ni botón dentro de un elemento con `role="img"`) pasa, `ui-audit contacto` sin fallos y la suite en verde — cubre: CA10
+  - nota: añadida por /review: R5
+- [ ] T049 Anunciar "Teléfono copiado" y "Dirección copiada" en la región de estado del layout al copiar — `resources/js/site/pages/contacto.js`, `tests/Modules/ContentManagement/Unit/SiteScriptsTest.php`, `tests/Modules/ContentManagement/Unit/render-site-scripts.mjs` — hecho cuando: el escenario nuevo (al copiar, la región de estado recibe el texto) pasa y la suite en verde — cubre: CA10
+  - nota: añadida por /review: R6
+- [ ] T050 Que las especialidades de "Acerca de nosotros" sean los cinco tratamientos de `config/site.php` — `resources/views/site/nosotros.blade.php`, `tests/Modules/ContentManagement/Integration/PublicSitePagesTest.php` — hecho cuando: el caso nuevo (las especialidades de acerca son exactamente los nombres de `config('site.treatments')`, también con una lista cambiada en el test) pasa, `ui-audit acerca` y `evaluate.mjs nosotros` sin fallos y la suite en verde — cubre: CA17
+  - nota: añadida por /review: R7 (decisión del usuario, 2026-11-16)
+
 ## Integración y documentación
 - [x] T028 Actualizar `docs/seo.md` (reglas del sitio, inventario de las seis rutas, `sitemap.xml` con seis rutas en SE3.a, Open Graph, datos estructurados, `theme-color`; SE1.a, SE2.a, SE3.a, SE3.b, SE5.a, SE6.a, SE6.b y SE7.a → "en curso (spec 026)"; SE8.a → "parcial: sitio público en la 026 con el rosa de la marca, panel y portal pendientes", con el texto de la corrección actualizado al valor decidido (A45); SE2.b, SE2.c y SE4.a siguen pendientes) y el roadmap (deuda SEO del sitio cubierta por la 026; `theme-color` del panel y del portal y RS4.a pendientes) — `docs/seo.md`, `docs/roadmap.md` — hecho cuando: `python .ai/bin/aidd.py validate` sin errores y cada corrección cambia de estado por separado — cubre: CA11, CA12, CA13, CA19 — depende: T027
   - nota: A45 — el texto de SE8.a pasa al valor decidido (rosa de la marca, `--color-primary`). Cada corrección cambia de estado en su línea; SE2.b, SE2.c y SE4.a siguen pendientes. Exclusiones nuevas: sin `twitter:*` y una sola imagen general.
@@ -246,7 +262,7 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: Frontend (layout, componentes y vistas del sitio, CSS y JS en `resources/*/site/`, entradas por página, galería en el HTML, `config/site.php`, menú desde 921 px) y Backend (controladores del inicio y de la galería con su caché, `ShowSitemapController`, componente SEO).
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: `SITE_NEW_LANDING` (variables y rollback inmediato con `config:cache`) y las variables `SITE_*` de contacto (datos reales de la clínica; vacías = provisionales), log `public_gallery.load_failed`
   - nota: `deployment.md`: variables `SITE_NEW_LANDING` y `SITE_*`, rollback inmediato con `config:cache`, purga de `compartir.png` en Cloudflare y `GET` a las seis rutas y al sitemap tras el deploy. `observability.md`: `public_gallery.load_failed`; sin auditoría ni métricas nuevas.
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - Antes de marcar: Lighthouse en Chrome, perfil móvil, sobre la build de producción servida en local en las cuatro rutas (Rendimiento ≥ 90, Accesibilidad, Buenas prácticas y SEO 100), con resultados en `review.md`; `evaluate.mjs` de las cuatro páginas sin fallos; imágenes de muestra y generadas listadas en `design.md`; los datos de contacto que sigan siendo provisionales se anotan en `review.md` como pendientes de la clínica.
   - nota: hallazgo al pasar `evaluate.mjs inicio` (2026-11-16): `inicio.css` volvía a animar la entrada de la barra sin la condición `.js` del refinado del 2026-11-15, así que sin JavaScript la barra quedaba invisible (G-sin-js). Corregido con un test en `SiteStylesTokensTest` que falla antes y pasa después.
   - nota: tarjeta para compartir revisada por el usuario (2026-11-16): "salud dental" en rosa (`primary`) como en el inicio; regenerada.
@@ -275,17 +291,17 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 | CA4 | T014 | T014 |
 | CA5 | T005, T019 | T005, T019 |
 | CA6 | T022, T023 | T022, T023 |
-| CA7 | T003, T008, T009, T017, T022, T033, T040, T041 | T003, T008, T009, T017, T022, T033, T040, T041 |
+| CA7 | T003, T008, T009, T017, T022, T033, T040, T041, T045 | T003, T008, T009, T017, T022, T033, T040, T041, T045 |
 | CA8 | T004, T016 | T006, T016 |
 | CA9 | T009, T016 | T007, T009, T016 |
-| CA10 | T009, T015, T020, T024, T031, T040, T041 | T009, T015, T020, T031, T040, T041 |
+| CA10 | T009, T015, T020, T024, T031, T040, T041, T044, T046, T047, T048, T049 | T009, T015, T020, T031, T040, T041, T044, T046, T047, T048, T049 |
 | CA11 | T003, T011, T026, T033 | T003, T011, T033 |
 | CA12 | T012 | T012 |
-| CA13 | T011, T026 | T011 |
+| CA13 | T011, T026, T045 | T011, T045 |
 | CA14 | T013, T014, T019 | T013, T014, T019 |
 | CA15 | T011, T014, T042 | T011, T014, T042 |
 | CA16 | T023 | T023 |
-| CA17 | T003, T004, T014, T020, T025, T040 | T003, T014, T020, T025, T040 |
+| CA17 | T003, T004, T014, T020, T025, T040, T050 | T003, T014, T020, T025, T040, T050 |
 | CA18 | T020, T030, T031, T032 | T020, T030, T031, T032 |
 | CA19 | T027 | T027 |
 
