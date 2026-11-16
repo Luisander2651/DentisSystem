@@ -200,3 +200,14 @@ it('turns the new landing on by default and lets SITE_NEW_LANDING turn it off', 
 it('declares the variables of the site in .env.example', function (string $variable) {
     expect((string) file_get_contents(base_path('.env.example')))->toMatch('/^'.$variable.'=/m');
 })->with(['SITE_NEW_LANDING', ...array_values(SITE_CONTACT_VARIABLES)]);
+
+it('places the provisional clinic in Lázaro Cárdenas, Michoacán, with its map (amendment of CA7, 2026-11-15)', function () {
+    $site = siteConfigWithoutContactVariables();
+    $pages = collect($site['pages'])->flatMap(fn (array $page): array => [$page['title'], $page['description']]);
+
+    expect($site['contact']['address'])->toBe('Lázaro Cárdenas, Michoacán')
+        ->and(urldecode($site['contact']['maps_url']))->toContain('Lázaro Cárdenas Michoacán')
+        ->and($site['city'])->toBe('Lázaro Cárdenas')
+        ->and($pages->filter(fn (string $text): bool => str_contains($text, 'Ciudad de México'))->all())->toBe([])
+        ->and($pages->filter(fn (string $text): bool => str_contains($text, 'Lázaro Cárdenas'))->count())->toBeGreaterThanOrEqual(2);
+});

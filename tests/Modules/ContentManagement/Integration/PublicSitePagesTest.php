@@ -230,3 +230,17 @@ it('serves "Acerca de nosotros" with the previous page when the new landing is o
 
     $this->get('/acerca-de-nosotros')->assertOk()->assertViewIs('pages.landing.acerca');
 });
+
+it('names the city of the clinic from config and never Mexico City (amendment of CA7)', function (string $path) {
+    config(['site.city' => 'Ciudad de Prueba']);
+
+    $html = $this->get($path)->assertOk()->getContent();
+
+    expect($html)->not->toContain('Ciudad de México');
+})->with(['/', '/acerca-de-nosotros', '/galeria']);
+
+it('says the city of the clinic in the label of the welcome', function () {
+    config(['site.city' => 'Ciudad de Prueba']);
+
+    expect(siteTexts(sitePage($this, '/'), '//main//*[contains(@class, "eyebrow")]')[0] ?? '')->toBe('Odontología integral · Ciudad de Prueba');
+});

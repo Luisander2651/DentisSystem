@@ -21,8 +21,8 @@ $provisionalContact = [
     'whatsapp' => '521234567890',
     'phone' => '+52 55 1234 5678',
     'email' => 'contacto@dentissa.com',
-    'address' => 'Av. Universidad 1200, Colonia Centro, Ciudad de México, CP 03100',
-    'maps_url' => 'https://www.google.com/maps/search/?api=1&query=Av.+Universidad+1200+Ciudad+de+Mexico',
+    'address' => 'Lázaro Cárdenas, Michoacán',
+    'maps_url' => 'https://www.google.com/maps/search/?api=1&query='.rawurlencode('Lázaro Cárdenas Michoacán'),
     'instagram' => 'https://www.instagram.com/dentissa_clinic',
     'facebook' => 'https://www.facebook.com/dentissa.clinic',
     'schedule' => '1-5 09:00-19:00; 6 09:00-14:00',
@@ -82,6 +82,9 @@ return [
 
     'provisional' => $provisional,
 
+    /* The city of the clinic (amendment of CA7, 2026-11-15): the label of the welcome names it. */
+    'city' => 'Lázaro Cárdenas',
+
     'treatments' => [
         ['name' => 'Limpieza y Prevención', 'summary' => 'Limpieza profunda con ultrasonido para eliminar el sarro y prevenir caries.'],
         ['name' => 'Ortodoncia', 'summary' => 'Brackets tradicionales o alineadores invisibles, para niños y adultos.'],
@@ -101,8 +104,8 @@ return [
 
     'pages' => [
         '/' => [
-            'title' => 'Dentissa - Clínica dental en Ciudad de México',
-            'description' => 'Odontología integral en Ciudad de México: limpieza, ortodoncia, implantes, blanqueamiento y odontopediatría. Agenda tu cita por WhatsApp.',
+            'title' => 'Dentissa - Clínica dental en Lázaro Cárdenas',
+            'description' => 'Odontología integral en Lázaro Cárdenas, Michoacán: limpieza, ortodoncia, implantes, blanqueamiento y odontopediatría. Agenda tu cita por WhatsApp.',
             'structured_data' => true,
         ],
         '/acerca-de-nosotros' => [
@@ -117,7 +120,7 @@ return [
         ],
         '/contacto' => [
             'title' => 'Contacto y ubicación - Dentissa',
-            'description' => 'Escríbenos por WhatsApp, consulta nuestro horario y encuentra cómo llegar a la clínica Dentissa en Ciudad de México.',
+            'description' => 'Escríbenos por WhatsApp, consulta nuestro horario y encuentra cómo llegar a la clínica Dentissa en Lázaro Cárdenas.',
             'structured_data' => true,
         ],
     ],

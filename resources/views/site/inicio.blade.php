@@ -47,7 +47,7 @@
     <div class="vw-sticky" data-scene>
         <div class="wrap vw-grid">
             <div class="vw-copy" data-ref="VwCopy">
-                <span class="eyebrow rise"><span class="dot"></span>Odontología integral · Ciudad de México</span>
+                <span class="eyebrow rise"><span class="dot"></span>Odontología integral · {{ config('site.city') }}</span>
                 <h1 class="h-xl rise d1">La mejor tecnología para tu <span class="hl">salud dental{!! $underline !!}</span></h1>
                 <p class="lead rise d2 vw-lead">Ofrecemos tratamientos dentales integrales de alta calidad en un ambiente cálido y seguro, para que cada visita se sienta tranquila.</p>
                 <div class="rise d3 vw-ctas">
