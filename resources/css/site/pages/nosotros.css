@@ -123,6 +123,9 @@
 @media (min-width: 1100px) { .ab-hero-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
 /* Tablet, 601–920 px (manual review of T017, design.md → Decisiones, refinado): the single column
    is centred and the figures, specialties, team and visit panel keep a compact, even layout. */
+/* Phones (user review after Lighthouse, 2026-11-16): the main text is centred too, as on the
+   other pages of the site. */
+@media (max-width: 600px) { .ab-hero-copy { align-items: center; text-align: center; } }
 @media (min-width: 601px) and (max-width: 920px) {
     .ab-hero { padding: 48px 0 72px; }
     .ab-hero-grid { gap: 24px; }
