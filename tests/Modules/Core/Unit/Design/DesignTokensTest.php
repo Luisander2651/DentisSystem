@@ -188,7 +188,7 @@ it('documents the tokens of the public site (spec 026)', function (string $token
     ));
 
     expect($documented)->toHaveKey($token);
-})->with(['--color-primary-deep', '--color-primary-strong', '--color-enamel', '--radius-hair', '--radius-2xl', '--spacing-control-lg', '--font-display', '--font-serif', '--ease-spring', '--weight-strong', '--text-body', '--space-8', '--duration-base']);
+})->with(['--color-primary-deep', '--color-primary-strong', '--color-enamel', '--radius-hair', '--radius-2xl', '--spacing-control-lg', '--font-display', '--font-serif', '--ease-spring', '--weight-strong', '--text-body', '--space-8', '--duration-base', '--color-gum', '--color-gum-deep', '--color-gum-glow', '--color-gum-rim', '--color-mouth', '--color-floor-shadow', '--color-enamel-neck', '--color-enamel-body', '--color-enamel-tip', '--color-enamel-stain', '--color-enamel-glow']);
 
 it('declares no colour the design system does not document', function () {
     $declared = array_filter(

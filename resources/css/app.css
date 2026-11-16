@@ -52,7 +52,8 @@
 /*
  * Public site variant (docs/design/system.md 2.1.0, spec 026). `static` keeps every variable in the
  * built CSS even when no utility uses it: the stylesheets of resources/css/site/ read them with
- * var(), and resources/js/site/tooth3d.js reads the decorative tones of the 3D tooth at start.
+ * var(), and resources/js/site/tooth3d.js and gallery.js read the decorative tones of the 3D tooth
+ * and of the denture of the before and after at start.
  */
 @theme static {
     --font-display: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
@@ -74,6 +75,17 @@
     --color-env-light: #faf2f5;
     --color-metal: #d1d9e6;
     --color-blush: #fae6ed;
+    --color-gum: #fcabb5;
+    --color-gum-deep: #d15e75;
+    --color-gum-glow: #ff7380;
+    --color-gum-rim: #ff8cad;
+    --color-mouth: #5c1726;
+    --color-floor-shadow: #6b2940;
+    --color-enamel-neck: #f7e6cc;
+    --color-enamel-body: #faf5eb;
+    --color-enamel-tip: #bdcce6;
+    --color-enamel-stain: #d9bd85;
+    --color-enamel-glow: #ffdbcc;
 
     --radius-hair: 3px;
     --radius-sm: 10px;

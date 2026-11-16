@@ -71,16 +71,27 @@ iconos).
 | `--color-muted-soft` | `#94a3b8` | `var(--color-muted-soft)` (sitio público) | Iconos y texto decorativo sobre tinta; nunca texto sobre claro | 7.34:1 sobre `--color-ink` |
 | `--color-canvas-alt` | `#eef2f6` | `var(--color-canvas-alt)` (sitio público) | Fondo alterno de secciones | `--color-ink` encima 16.74:1 · `--color-muted` encima 5.51:1 |
 | `--color-primary-tint` | `#f3c9d5` | `var(--color-primary-tint)` (sitio público) | Fondos y degradados rosados decorativos | decorativo |
-| `--color-primary-tint-2` | `#f6d3dd` | `var(--color-primary-tint-2)` (sitio público) | Fondos y degradados rosados decorativos | decorativo |
+| `--color-primary-tint-2` | `#f6d3dd` | `var(--color-primary-tint-2)` (sitio público); leído por la dentadura | Fondos y degradados rosados decorativos; brillo de la línea del antes y después | decorativo |
 | `--color-secondary-soft` | `#fdf1ee` | `var(--color-secondary-soft)` (sitio público) | Fondo cálido de secciones | `--color-muted` encima 5.61:1 |
 | `--color-success-tint` | `#bfe9d6` | `var(--color-success-tint)` (sitio público) | Estado "Abierto" | `--color-ink` encima 14.20:1 |
 | `--color-enamel` | `#f2ebde` | leído por el diente 3D | Esmalte natural del diente 3D | decorativo |
-| `--color-enamel-white` | `#fefeff` | leído por el diente 3D | Esmalte tras el blanqueamiento | decorativo |
+| `--color-enamel-white` | `#fefeff` | leído por el diente 3D y la dentadura | Esmalte tras el blanqueamiento | decorativo |
 | `--color-enamel-rim` | `#e6f2ff` | leído por el diente 3D | Brillo frío del borde del esmalte blanqueado | decorativo |
 | `--color-env-dark` | `#333847` | leído por el diente 3D | Reflejo oscuro del entorno sobre el metal | decorativo |
 | `--color-env-light` | `#faf2f5` | leído por el diente 3D | Reflejo claro del entorno sobre el metal | decorativo |
 | `--color-metal` | `#d1d9e6` | leído por el diente 3D | Tono del implante y los brackets | decorativo |
-| `--color-blush` | `#fae6ed` | leído por el diente 3D | Interior del diente en el corte del recorrido | decorativo |
+| `--color-blush` | `#fae6ed` | leído por el diente 3D y la dentadura | Interior del diente en el corte del recorrido; brillo de la encía y reflejo del entorno en la dentadura | decorativo |
+| `--color-gum` | `#fcabb5` | leído por la dentadura | Encía junto al diente en la dentadura del antes y después | decorativo |
+| `--color-gum-deep` | `#d15e75` | leído por la dentadura | Encía hacia la base de la dentadura | decorativo |
+| `--color-gum-glow` | `#ff7380` | leído por la dentadura | Luz que atraviesa la encía | decorativo |
+| `--color-gum-rim` | `#ff8cad` | leído por la dentadura | Contorno rosa de la encía y luz de fondo de la dentadura | decorativo |
+| `--color-mouth` | `#5c1726` | leído por la dentadura | Interior de la boca, visible por la pieza faltante | decorativo |
+| `--color-floor-shadow` | `#6b2940` | leído por la dentadura | Sombra de contacto bajo la dentadura | decorativo |
+| `--color-enamel-neck` | `#f7e6cc` | leído por la dentadura | Esmalte cálido junto a la encía | decorativo |
+| `--color-enamel-body` | `#faf5eb` | leído por la dentadura | Esmalte del cuerpo del diente | decorativo |
+| `--color-enamel-tip` | `#bdcce6` | leído por la dentadura | Borde translúcido de incisivos y colmillos | decorativo |
+| `--color-enamel-stain` | `#d9bd85` | leído por la dentadura | Esmalte manchado del "antes" del blanqueamiento | decorativo |
+| `--color-enamel-glow` | `#ffdbcc` | leído por la dentadura | Luz que atraviesa el esmalte | decorativo |
 
 Reglas de color:
 - El rosa nunca es color de **texto** (3.96:1 sobre blanco). Sí pinta iconos, subrayados y bordes,
@@ -571,4 +582,5 @@ lo nuevo a partir del último.
 | 2026-10-20 | diseño | Piezas nuevas del reporte mensual | Indicador de cambio (`x-ui.trend`), selector (`x-ui.select`), contador comparado (variante de `x-ui.stat`), bloque de error de carga de la pantalla y texto propio de un caso en la región de estado; cuatro vistas de Reportes en el inventario | usuario (docs/specs/019-reportes-mensuales/design.md, T001) |
 | 2026-10-25 | diseño | Piezas nuevas del inicio del panel | Siguiente cita, barra del día y línea de ahora, sin tokens nuevos; los colores de estado rellenan la barra del día siempre con cifra y etiqueta; el inicio del administrador, el asistente y el doctor con datos sustituye a las capturas del inicio, y sale la vista "nuevo usuario" | usuario (docs/specs/020-tablero-de-inicio/design.md, T001) |
 | 2026-11-12 | diseño | Variante "sitio público" (spec 026, versión 2.1.0) | Se adopta la propuesta de `nueva-landing/`: colores, radios, alto grande, fuentes autoalojadas, curvas, pesos y escala de espaciado del sitio público, más los tonos decorativos del diente 3D, todo en `@theme static` de `app.css`; componentes exclusivos del sitio documentados en Componentes. El panel y el portal no cambian | usuario (spec 026, `design.md`; `/analyze 026` A1, A30) |
+| 2026-11-15 | diseño | Tonos de la dentadura del antes y después (spec 026, dentro de 2.1.0, aún sin liberar) | Once tokens decorativos más (encía, interior de la boca, sombra de contacto y esmalte) que la dentadura 3D de la galería lee al arrancar, como el diente del inicio; reutiliza `--color-enamel-white`, `--color-blush`, `--color-primary-tint-2` y `--color-primary` | usuario (spec 026 CA18 editada, `design.md` refinado 2026-11-15) |
 | 2026-11-13 | diseño | Pregunta abierta del acordeón del sitio público | `--color-primary-strong` (`#ba4168`): `primary-deep` se veía oscuro y `primary` no llega a 4.5:1 con texto blanco (3.96:1); se probó texto en tinta sobre `primary` y se descartó | usuario (spec 026, `design.md` → Decisiones) |
