@@ -569,3 +569,11 @@ html:not(.js) .dk-end, .still .dk-end { position: static; transform: none; opaci
     .pm-dates svg { display: inline-block; vertical-align: -4px; margin-right: 8px; }
     .pm-cd-t { flex-direction: column; align-items: center; gap: 6px; }
 }
+
+/* T092 (Lighthouse móvil): las secciones de abajo no se maquetan hasta acercarse a la pantalla, así
+   el primer layout del inicio ya no es una tarea larga. La bienvenida y el recorrido 3D quedan
+   fuera: sus escenas fijas miden su propia posición. */
+#servicios, #promociones, #certificaciones, #testimonios, #faq, #ubicacion, .cta-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 900px;
+}

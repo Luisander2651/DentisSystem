@@ -395,3 +395,14 @@ it('animates the entrance of the top bar only with JavaScript, so without it the
 
     expect($offending)->toBe([]);
 });
+
+it('leaves the lower sections of the home out of its first layout, but not the scenes that measure themselves', function () {
+    $css = (string) preg_replace('~/\*.*?\*/~s', '', siteFiles(SITE_CSS_DIR.'/pages/inicio.css', '.css')[SITE_CSS_DIR.'/pages/inicio.css']);
+    preg_match('/([^{}]+)\{[^{}]*content-visibility\s*:\s*auto[^{}]*\}/', $css, $rule);
+    $selectors = array_map('trim', explode(',', $rule[1] ?? ''));
+
+    expect($selectors)->toContain('#servicios', '#promociones', '#certificaciones', '#testimonios', '#faq', '#ubicacion', '.cta-section')
+        ->and($selectors)->not->toContain('.vw')
+        ->and($selectors)->not->toContain('.tour')
+        ->and($rule[0] ?? '')->toContain('contain-intrinsic-size');
+});
