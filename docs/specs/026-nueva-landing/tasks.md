@@ -255,9 +255,11 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: `ui-audit inicio-testimonios` a 1440 px falla de forma intermitente desde T024 (también con el CSS de entonces): la composición lee las secciones que se revelan al desplazar según el momento. No es de esta tarea; propuesto como `/fix` aparte.
   - nota: imágenes de muestra y generadas listadas en `design.md` (se añadieron `diente.webp`, `tooth-mask.svg` y `compartir.png`). Datos de contacto: todos siguen provisionales (`SITE_*` vacías) → a `review.md` como pendientes de la clínica.
   - nota: el usuario acepta (2026-11-16) las otras tres categorías de Lighthouse en 100 en las cuatro rutas, el falso positivo de G-solapamiento del "12" de la promoción y llevar el fallo intermitente de `ui-audit inicio-testimonios` a un `/fix` aparte antes de liberar.
+  - nota: A55 — Lighthouse móvil medido por el usuario en las cuatro rutas: rendimiento 94 (inicio), 99 (acerca), 95 (galería) y 99 (contacto); accesibilidad, buenas prácticas y SEO 100 en las cuatro (confirmado por el usuario el 2026-11-16). Se copian a `review.md`.
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
+  - nota: A56 — no se va a staging hasta cerrar la ficha `/fix` de `ui-audit inicio-testimonios` (intermitente desde T024) y que `npm run test:ui -- --only inicio` pase dos veces seguidas en 390, 768 y 1440 px.
   - Sin staging (`deploy.environments: [local, prod]`): verificación en producción tras T097. Las seis rutas 200 con el diseño nuevo; `/sitemap.xml` y `robots.txt`; Lighthouse móvil en las cuatro rutas con los umbrales de CA8, anotado en `docs/seo.md` → Verificación en producción; vista previa al compartir `https://dentissapp.com` en WhatsApp con la imagen y el título (CA19); validador de resultados enriquecidos sobre inicio y contacto (CA13); en Loki, sin `public_gallery.load_failed` ni `Unable to load landing` en la hora siguiente.
 - [ ] T096 Aprobación humana para producción
 - [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)

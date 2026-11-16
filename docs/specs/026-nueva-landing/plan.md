@@ -51,7 +51,7 @@ Conteo: 10 cumplen · 5 no aplican · ninguno viola.
 | `resources/fonts/` (nuevo) | `inter-tight-{400,500,600,700}.woff2` e `instrument-serif-{regular,italic}.woff2` (subconjunto latino) con `OFL.txt` | Bajo |
 | `resources/css/site/` (nuevo) | Hojas de la propuesta (`base`, `components`, `animations`, `compat`, `pages/{inicio,nosotros,galeria,contacto}.css`) y entrada `site.css` con `@font-face`; `tokens.css` de la propuesta se elimina (sus valores ya están en `@theme`) | Medio: 381 apariciones de color escrito a mano (91 `#fff`, 26 `#d75078`…) y `style` en línea |
 | `resources/js/site/` (nuevo) | `core.js` (entrada propia del layout), `home.js`, `tooth3d.js` (cargado diferido), `gallery.js`, `contact.js` y una entrada por página en `pages/`; `forms.js` no entra (es de las pantallas de acceso). Ningún color escrito en el JS: los colores del diente, de las partículas y de la dentadura del antes y después se leen de los tokens al arrancar (A30), con la lectura de `tooth3d.js` compartida | Medio: rendimiento del WebGL en móvil (dos lienzos 3D en el sitio: el diente del inicio y la dentadura de la galería) |
-| `resources/views/layouts/site.blade.php` (nuevo) y `resources/views/components/site/{header,footer,whatsapp-float,seo}.blade.php` (nuevos) | Layout con `<head>` SEO (título, descripción, canónica, Open Graph, `theme-color`, JSON-LD, precarga de fuentes y de la imagen LCP) | Bajo |
+| `resources/views/layouts/site.blade.php` (nuevo) y `resources/views/components/site/{header,footer,whatsapp-float,seo}.blade.php` (nuevos) | Layout con `<head>` SEO (título, descripción, canónica, Open Graph, `theme-color`, JSON-LD, precarga de fuentes y de la imagen LCP); la barra lleva el menú de celular rediseñado por el usuario (un `<details>` con hoja a pantalla completa, foco atrapado y cierre con Escape en `core.js`) y, solo en el inicio, el cupón de la promoción vigente dentro del menú (T040–T043, A57) | Bajo |
 | `resources/views/site/{inicio,nosotros,galeria,contacto}.blade.php` (nuevos) | Vistas de la propuesta con datos de `config/site.php` y del contenido real; `style` en línea → clases | Medio |
 | `resources/views/pages/landing/{aviso-privacidad,terminos}.blade.php` | Pasan a extender `layouts.site` (cuando el interruptor está activo); su texto no cambia | Bajo: `LegalPagesTest` |
 | `config/site.php` (nuevo) | Interruptor `new_landing`, datos de contacto (copiados de las vistas de producción), horario, redes, tratamientos, títulos y descripciones por ruta | Bajo |
@@ -101,12 +101,12 @@ Archivos que **no** se tocan hasta después de liberar (decisión del usuario): 
 ```
 Producción solo tiene datos de ejemplo. Por la enmienda de CA7 pedida por el usuario, todos los
 datos de contacto usan valores provisionales coherentes (WhatsApp `521234567890`, teléfono
-`+52 55 1234 5678`, correo `contacto@dentissa.com`, la dirección y el horario de la propuesta,
+`+52 55 1234 5678`, correo `contacto@dentissa.com`, dirección "Lázaro Cárdenas, Michoacán" (enmienda de CA7 del 2026-11-15), el horario de la propuesta,
 `https://instagram.com/dentissa_clinic` y una página de Facebook de la clínica) hasta que la clínica
 dé los reales, cada uno con su variable `SITE_*` (vacía o ausente → provisional) y su marca en
 `provisional`. Se muestran en las páginas (mapa, "Abierto/Cerrado" y redes incluidos) y quedan fuera
 del JSON-LD mientras sean provisionales; el JSON-LD sale con nombre y URL y suma cada dato al
-volverse real. Los tratamientos salen de la sección "Nuestros Servicios" del inicio
+volverse real. La ciudad (`config/site.php → city`) es un dato real, no provisional: la nombran la bienvenida y las descripciones; en el JSON-LD solo entra como `addressLocality` junto con la dirección, cuando esta es real (A54; `PublicSiteSeoTest`, caso con todo provisional). Los tratamientos salen de la sección "Nuestros Servicios" del inicio
 actual (decisión del usuario) y sus textos (también los del antes y después) los pinta el servidor
 desde config, no el JS. `site.url` es igual a `seo.site_url`.
 
