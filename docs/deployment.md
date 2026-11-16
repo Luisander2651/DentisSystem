@@ -217,7 +217,7 @@ migraciones tienen que ser compatibles con el código que está en servicio (P9)
 
 ### Después de cambiar el icono o las imágenes de la marca
 Cloudflare guarda también `favicon.ico` y `public/images/brand/`. Tras un despliegue que los cambie
-(el primero es el de la spec 016), purga esas direcciones para que los visitantes no sigan viendo
+(el primero es el de la spec 016; la spec 026 añade `images/brand/compartir.png`, la imagen para compartir), purga esas direcciones para que los visitantes no sigan viendo
 los anteriores: Cloudflare → Caching → Configuration → Purge Cache → Custom Purge, con
 `https://dentissapp.com/favicon.ico` y las de `https://dentissapp.com/images/brand/`; o Purge
 Everything, que no afecta al sitio.
@@ -283,6 +283,11 @@ Estado: ensayado en local (T058) y en el droplet (T051, T054). Cada rollback que
 2. Si la release incluía migraciones compatibles hacia atrás (P9), no se toca la base.
 3. Si no lo eran: `docker/prod/rollback.sh <tag> --restore /home/deploy/backups/pre-<tag-actual>-*.dump`. Pide confirmación escribiendo `rollback`, detiene `nginx`, `app` y `queue`, guarda un dump `pre-restore`, restaura el dump de forma exacta y atómica (también desaparecen las tablas que la versión nueva hubiera creado) y arranca la versión anterior. La ruta del dump puede ser relativa al directorio desde el que se ejecuta. Se pierden las escrituras posteriores al dump. Tiempo medido: 18,8 s en total, corte incluido (objetivo < 15 min).
 - `compose.sh up -d` después de un rollback mantiene la versión de `.deploy/current`; el `.env` no puede cambiarla.
+**Volver al sitio público anterior** (spec 026, sin cambiar de versión):
+1. Poner `SITE_NEW_LANDING=false` en el `.env` de producción.
+2. `docker/prod/compose.sh exec app php artisan config:cache`. El inicio, acerca, galería, contacto y las páginas legales vuelven a las vistas de `layouts/landing`; el sitemap, `robots.txt` y la cabecera SEO siguen activos. Sin datos que revertir.
+3. Para volver al nuevo: `SITE_NEW_LANDING=true` y otra vez `config:cache`.
+
 - En código: cada merge a `main` es `--no-ff` y se puede revertir con `git revert -m 1 <merge>`; después se etiqueta y se despliega una versión nueva.
 
 ## Hotfix
@@ -311,13 +316,15 @@ Lo usa `/fix --hotfix` (decisión del usuario, 2026-10-15).
 | COMPOSE_FILE, DATA_VOLUME_PREFIX | — | ✓ | `.env` del clon de producción (`docker-compose.prod.yml` y el proyecto Compose de la pila manual, `dentissystem`) |
 | APP_VERSION | — | — | no va en `.env`: la fija `docker/prod/compose.sh` desde `.deploy/current` |
 | GRAFANA_PASSWORD | ✓ | ✓ | `.env` |
+| SITE_NEW_LANDING | opcional | opcional | `.env` (por defecto `true`, spec 026: el sitio público nuevo; `false` vuelve a las vistas anteriores, ver "Rollback") |
+| SITE_WHATSAPP, SITE_PHONE, SITE_EMAIL, SITE_ADDRESS, SITE_MAPS_URL, SITE_INSTAGRAM, SITE_FACEBOOK, SITE_SCHEDULE | opcional | ✓ cuando la clínica dé sus datos | `.env` (spec 026; vacías en `.env.example`). Los datos de contacto reales de la clínica que muestra el sitio; vacía o ausente = valor provisional, que se muestra pero no va a los datos estructurados. `SITE_SCHEDULE` con el formato `1-5 09:00-19:00; 6 09:00-14:00` (1 = lunes). Tras cambiarlas: `compose.sh exec app php artisan config:cache` |
 
 (Solo nombres. Nunca valores. En el VPS, `.env` con permisos 600 y fuera de cualquier volumen servido por nginx.)
 
 ## Verificación post-deploy
 - Automática: `deploy.sh` y `rollback.sh` terminan con `verify.sh --local --in-operation` (14 comprobaciones, entre ellas `/up`, `APP_DEBUG`, el worker, la imagen sin artefactos, los backups y que su carpeta no está montada en nginx) y comprueban que la operación quedó en `deploys.log`. Desde fuera, `verify.sh --remote`: cabeceras a través de Cloudflare y preguntando al origen directamente (versión de nginx, redirección y HSTS), también para `www`; `nosniff` en un archivo subido; CORS; rutas prohibidas; puertos cerrados en la IP del droplet; y el límite de peticiones con la IP falsificada, tanto saltándose el proxy como a través de él. `verify.sh --remote` (30) incluye la misma comprobación de `nosniff` contra el origen. Necesita `curl` y `timeout`, y `--origin` debe ser una IP.
 - Health check: `GET /up` responde 200 solo si PostgreSQL y Redis responden; si no, 500 en 1–2 s (medido en T052).
-- Smoke tests: login de un administrador, carga de `/agenda`, `/pacientes` y el expediente, y un restablecimiento de contraseña que el worker procesa (el correo llega con el enlace a `https://dentissapp.com`).
+- Smoke tests: login de un administrador, carga de `/agenda`, `/pacientes` y el expediente, y un restablecimiento de contraseña que el worker procesa (el correo llega con el enlace a `https://dentissapp.com`). Sitio público (spec 026): `GET` a `/`, `/acerca-de-nosotros`, `/galeria`, `/contacto`, las dos legales y `/sitemap.xml` responden 200.
 - Logs: Alloy → Loki → Grafana (puerto 3000, solo por túnel SSH) recoge el stdout y stderr de los contenedores; Laravel escribe en `stderr` (`LOG_CHANNEL=stderr`, nivel `info`) y sin datos personales (CA18). Métricas y alertas: aún no existen; las cubre la spec de monitoreo pendiente (roadmap, objetivo 4). Ver [observability.md](observability.md).
 
 ## Riesgos conocidos
