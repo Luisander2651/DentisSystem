@@ -58,9 +58,43 @@
             ]
         },
         {
+            "id": "inicio-testimonios",
+            "screen": "inicio",
+            "path": "/",
+            "serverNow": "2026-07-22T10:00:00-06:00",
+            "steps": [
+                {
+                    "click": "[data-ts-pause]"
+                },
+                {
+                    "click": "[data-ts-next]"
+                },
+                {
+                    "waitFor": "[data-ts-pause][aria-pressed=\"true\"]"
+                }
+            ]
+        },
+        {
             "id": "acerca",
             "screen": "acerca",
             "path": "/acerca-de-nosotros"
+        },
+        {
+            "id": "acerca-menu",
+            "screen": "acerca",
+            "path": "/acerca-de-nosotros",
+            "widths": [
+                390,
+                768
+            ],
+            "steps": [
+                {
+                    "click": "details.menu-m > summary"
+                },
+                {
+                    "waitFor": "details.menu-m[open] .menu-panel"
+                }
+            ]
         },
         {
             "id": "aviso-privacidad",
@@ -68,9 +102,43 @@
             "path": "/aviso-de-privacidad"
         },
         {
+            "id": "aviso-privacidad-menu",
+            "screen": "aviso-privacidad",
+            "path": "/aviso-de-privacidad",
+            "widths": [
+                390,
+                768
+            ],
+            "steps": [
+                {
+                    "click": "details.menu-m > summary"
+                },
+                {
+                    "waitFor": "details.menu-m[open] .menu-panel"
+                }
+            ]
+        },
+        {
             "id": "terminos",
             "screen": "terminos",
             "path": "/terminos-y-condiciones"
+        },
+        {
+            "id": "terminos-menu",
+            "screen": "terminos",
+            "path": "/terminos-y-condiciones",
+            "widths": [
+                390,
+                768
+            ],
+            "steps": [
+                {
+                    "click": "details.menu-m > summary"
+                },
+                {
+                    "waitFor": "details.menu-m[open] .menu-panel"
+                }
+            ]
         },
         {
             "id": "galeria",
@@ -78,14 +146,19 @@
             "path": "/galeria"
         },
         {
-            "id": "galeria-visor",
+            "id": "galeria-menu",
             "screen": "galeria",
-            "dialog": "visor-galeria",
-            "dialogSelector": "#gallery-lightbox",
             "path": "/galeria",
+            "widths": [
+                390,
+                768
+            ],
             "steps": [
                 {
-                    "click": "[data-gallery-list] > :first-child"
+                    "click": "details.menu-m > summary"
+                },
+                {
+                    "waitFor": "details.menu-m[open] .menu-panel"
                 }
             ]
         },
@@ -93,6 +166,23 @@
             "id": "contacto",
             "screen": "contacto",
             "path": "/contacto"
+        },
+        {
+            "id": "contacto-menu",
+            "screen": "contacto",
+            "path": "/contacto",
+            "widths": [
+                390,
+                768
+            ],
+            "steps": [
+                {
+                    "click": "details.menu-m > summary"
+                },
+                {
+                    "waitFor": "details.menu-m[open] .menu-panel"
+                }
+            ]
         },
         {
             "id": "login",
