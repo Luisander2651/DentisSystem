@@ -431,3 +431,44 @@ it('starts the bar of a promotion going down on its first day, by the clinic clo
         ->and($bar('2026-11-17T23:59:00-06:00'))->toBe(4)
         ->and($bar('2026-11-16T18:00:00Z'))->toBe(75);
 });
+
+/*
+ * T023 (CA6, CA16; TM3, A35): the WhatsApp composer of the contact page. A motive writes its message,
+ * which the visitor can edit; sending opens wa.me with the message encoded and never posts the form;
+ * an empty message opens nothing and marks the field.
+ */
+const COMPOSER_MOTIVES = ['Hola, me gustaría agendar una cita de ortodoncia. ¿Qué horarios tienen disponibles?', 'Hola, tengo una pregunta: '];
+
+it('writes the message of the chosen motive and marks it as pressed', function () {
+    [$chosen, $other] = runSiteScript('composer', ['motives' => COMPOSER_MOTIVES, 'value' => COMPOSER_MOTIVES[0], 'actions' => [['chip', 0], ['chip', 1]]]);
+
+    expect($chosen)->toMatchArray(['value' => COMPOSER_MOTIVES[0], 'pressed' => ['true', 'false'], 'on' => [true, false]])
+        ->and($other)->toMatchArray(['value' => COMPOSER_MOTIVES[1], 'pressed' => ['false', 'true'], 'on' => [false, true], 'focused' => 'textarea', 'selection' => [26, 26]]);
+});
+
+it('opens WhatsApp in a new tab with the message encoded, and never posts the form', function () {
+    $message = 'Hola <img src=x onerror=alert(1)> & "comillas" #1';
+    [$typed, $sent] = runSiteScript('composer', ['number' => '5215598765432', 'motives' => COMPOSER_MOTIVES, 'actions' => [['type', "  {$message}  "], ['submit', null]]]);
+
+    $url = $sent['opened'][0]['url'] ?? '';
+    parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+
+    expect($sent['prevented'])->toBeTrue()
+        ->and($sent['opened'])->toHaveCount(1)
+        ->and($sent['opened'][0])->toMatchArray(['target' => '_blank', 'features' => 'noopener,noreferrer'])
+        ->and(strtok($url, '?'))->toBe('https://wa.me/5215598765432')
+        ->and($query)->toBe(['text' => $message])
+        ->and(substr($url, strpos($url, '?') + 1))->not->toMatch('/[<>"&# ]/')
+        ->and($sent['requests'])->toBe(0)
+        ->and($sent['created'])->toBe(0)
+        ->and($sent['invalid'])->toBeNull()
+        ->and($sent['errorShown'])->toBeFalse();
+});
+
+it('opens nothing with an empty message: it marks the field and says why, until something is written', function () {
+    [, $empty, $typed, $sent] = runSiteScript('composer', ['motives' => COMPOSER_MOTIVES, 'actions' => [['type', "   \n "], ['submit', null], ['type', 'Hola'], ['submit', null]]]);
+
+    expect($empty)->toMatchArray(['prevented' => true, 'opened' => [], 'invalid' => 'true', 'errorShown' => true, 'focused' => 'textarea', 'requests' => 0])
+        ->and($typed)->toMatchArray(['invalid' => null, 'errorShown' => false])
+        ->and($sent['opened'])->toHaveCount(1);
+});

@@ -503,6 +503,84 @@ const scenarios = {
         return screens.map((screen) => fanLayout(screen));
     },
 
+    /* The WhatsApp composer of the contact page driven by a list of actions (T023). */
+    async composer({ number = '5215598765432', motives = [], value = '', actions = [] }) {
+        const { initComposer } = await import(new URL('contact.js', site));
+        const opened = [];
+        const requests = [];
+        let created = 0;
+        let focused = 'none';
+        const node = (name, extra = {}) => ({
+            name,
+            listeners: {},
+            attributes: {},
+            classList: classList(),
+            hidden: false,
+            getAttribute(key) { return this.attributes[key] ?? null; },
+            setAttribute(key, val) { this.attributes[key] = String(val); },
+            removeAttribute(key) { delete this.attributes[key]; },
+            addEventListener(type, fn) { (this.listeners[type] ??= []).push(fn); },
+            focus() { focused = name; },
+            fire(type) { const event = { prevented: false, preventDefault() { this.prevented = true; } }; (this.listeners[type] ?? []).forEach((fn) => fn(event)); return event; },
+            ...extra,
+        });
+        const chips = motives.map((message, index) => {
+            const chip = node(`chip${index}`);
+            chip.attributes['data-motivo'] = message;
+            chip.attributes['aria-pressed'] = index === 0 ? 'true' : 'false';
+
+            return chip;
+        });
+        const textarea = node('textarea', { value, selection: null, setSelectionRange(from, to) { this.selection = [from, to]; } });
+        let html = '';
+        Object.defineProperty(textarea, 'innerHTML', { get: () => html, set: (text) => { html = text; created += 1; } });
+        const error = node('error');
+        error.hidden = true;
+        const form = node('form', {
+            querySelector: (selector) => ({ textarea, '[data-wa-error]': error })[selector] ?? null,
+            querySelectorAll: (selector) => (selector === '[data-motivo]' ? chips : []),
+        });
+        form.attributes['data-wa-number'] = number;
+        const win = {
+            open: (url, target, features) => { opened.push({ url, target, features }); return null; },
+            fetch: (url) => { requests.push(url); },
+            document: { createElement: () => { created += 1; return node('created'); } },
+        };
+
+        initComposer(form, win);
+
+        const seen = [];
+        for (const [action, argument] of actions) {
+            let prevented = null;
+
+            if (action === 'chip') {
+                chips[argument].fire('click');
+            } else if (action === 'type') {
+                textarea.value = argument;
+                textarea.fire('input');
+            } else if (action === 'submit') {
+                prevented = form.fire('submit').prevented;
+            }
+
+            seen.push({
+                after: action,
+                value: textarea.value,
+                pressed: chips.map((chip) => chip.attributes['aria-pressed']),
+                on: chips.map((chip) => chip.classList.contains('on')),
+                invalid: textarea.attributes['aria-invalid'] ?? null,
+                errorShown: !error.hidden,
+                focused,
+                selection: textarea.selection,
+                prevented,
+                opened: [...opened],
+                requests: requests.length,
+                created,
+            });
+        }
+
+        return seen;
+    },
+
     /* The phone menu driven by a list of actions (T041). */
     async phoneMenu({ reduced = false, actions = [], at = '2026-11-16T12:00:00-06:00', schedule = { 1: ['09:00', '19:00'] } }) {
         const { initPhoneMenu, clinicStatus, parseSchedule } = await import(new URL('core.js', site));

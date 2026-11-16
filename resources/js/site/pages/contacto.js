@@ -1,10 +1,10 @@
 /*
  * Public site (spec 026): entry of the contact page. Brings its stylesheet, says whether the clinic
  * is open now on the clinic's clock, marks today and the current hour in the weekly hours, and
- * copies the phone and the address. The form never reaches the server (A35): its submit is
- * cancelled here and the WhatsApp message is composed by contact.js (T023).
+ * copies the phone and the address. The WhatsApp composer comes from contact.js (T023).
  */
 import '../../../css/site/pages/contacto.css';
+import { initComposer } from '../contact';
 
 const RULER_FROM = 8 * 60;
 const RULER_TO = 20 * 60;
@@ -73,6 +73,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         updateStatus(document, window.Dentissa);
         window.setInterval(() => updateStatus(document, window.Dentissa), 60000);
         initCopy(document, window);
-        document.querySelectorAll('[data-wa-form]').forEach((form) => form.addEventListener('submit', (event) => event.preventDefault()));
+        document.querySelectorAll('[data-wa-form]').forEach((form) => initComposer(form, window));
     });
 }
