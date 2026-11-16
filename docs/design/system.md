@@ -7,7 +7,7 @@ html: docs/design/system.html
 canvas: null
 widths: [390, 768, 1440]
 created: 2026-10-04
-updated: 2026-11-12
+updated: 2026-11-16
 ---
 
 # Sistema de diseño de Dentissa
@@ -327,6 +327,23 @@ legales); no sustituyen a `x-ui.*` en el panel. Su composición es la de la prop
 - **Compositor de WhatsApp**: motivo y mensaje; solo con JavaScript; sin JavaScript, enlace directo.
 - **Visor de certificaciones**: diálogo con foco atrapado, Escape y retorno del foco (como 016
   CA12, CA13 y CA26).
+
+### Imagen para compartir · `public/images/brand/compartir.png`
+La vista previa de las seis rutas del sitio público al compartirlas (spec 026, CA19; vista en
+`system.html#compartir`). PNG estático de 1200×630 (≤ 300 kB) que dibuja `npm run brand:assets`
+con Chrome sin interfaz, las fuentes del sitio y los tokens de `app.css`; repite la bienvenida del
+inicio:
+- Fondo `canvas` con un halo `primary-soft` → `secondary-soft` arriba a la derecha.
+- Columna de texto de 640 px dentro de una zona segura de 64–72 px: logo horizontal de la clínica
+  (80 px de alto), la frase principal en Inter Tight 600 de 72 px (interlineado 1.02, `-0.045em`)
+  con "salud dental" en Instrument Serif cursiva y el subrayado `secondary` del inicio, la línea
+  "Odontología integral en <ciudad>" en `muted` de 28 px y, abajo, `dentissapp.com` en
+  `primary-deep` con un punto `primary`.
+- A la derecha, el abanico de tarjetas de la bienvenida (radio `card`): `secondary-soft` con borde
+  `secondary`, `primary-tint-2` y, encima, `primary` con el ícono de la clínica.
+- Texto alternativo (`og:image:alt`): "<nombre>: <frase>. Odontología integral en <ciudad>."
+- Datos que obligan a regenerarla: el nombre, la frase (`config/site.php → tagline`, igual al
+  `h1` del inicio) y la ciudad; `PublicSiteSeoTest` compara la frase del generador con la de config.
 
 ### Lista o tarjeta
 Tarjeta `surface`, radio `card`, borde `line`, `shadow-sm`. Aviso informativo: fondo `primary-soft`,

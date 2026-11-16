@@ -1,7 +1,7 @@
 {{--
     The <head> of the public site for search engines and social networks (spec 026, CA11, CA13,
     CA15): the page's title and description (from its own @section, the only source), the
-    canonical address without a trailing slash or query string, Open Graph, the browser bar colour
+    canonical address without a trailing slash or query string, Open Graph with the share card (CA19), the browser bar colour
     (--color-primary) and, on the pages config/site.php marks, the clinic's structured data
     (Dentist) without any value that is still provisional. The JSON is encoded with JSON_HEX_TAG so
     no value can close its script (TM2). It also preloads the two fonts of the first screen.
@@ -50,6 +50,11 @@
 @if ($description !== '')
     <meta property="og:description" content="{{ $description }}">
 @endif
+<meta property="og:image" content="{{ config('site.url') }}/images/brand/compartir.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{ config('site.name') }}: {{ config('site.tagline') }}. Odontología integral en {{ config('site.city') }}.">
 <meta name="theme-color" content="{{ config('site.theme_color') }}">
 <link rel="preload" href="{{ Vite::asset('resources/fonts/inter-tight-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{{ Vite::asset('resources/fonts/instrument-serif-italic-latin.woff2') }}" as="font" type="font/woff2" crossorigin>

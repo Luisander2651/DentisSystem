@@ -270,3 +270,28 @@ it('leaves out of the structured data each contact value that is still provision
         ->and($data)->not->toHaveKey('telephone')
         ->and($data)->not->toHaveKey('openingHoursSpecification');
 });
+
+it('shows the share card when any page is shared, with its size and a text alternative', function (string $path) {
+    $page = seoPage($this, $path);
+    $content = fn (string $property): string => seoMeta($page, 'property', $property)->item(0)?->getAttribute('content') ?? '';
+    $file = public_path(Str::after($content('og:image'), 'https://dentissapp.com/'));
+
+    expect($content('og:image'))->toBe('https://dentissapp.com/images/brand/compartir.png')
+        ->and(is_file($file))->toBeTrue()
+        ->and(getimagesize($file))->toMatchArray([0 => 1200, 1 => 630, 'mime' => 'image/png'])
+        ->and(filesize($file))->toBeLessThanOrEqual(300 * 1024)
+        ->and($content('og:image:width'))->toBe('1200')
+        ->and($content('og:image:height'))->toBe('630')
+        ->and($content('og:image:alt'))->toContain(config('site.tagline'));
+})->with(SEO_SITE_PAGES);
+
+it('draws on the share card the phrase the home shows and config/site.php keeps', function () {
+    $generator = file_get_contents(base_path('tests/Browser/make-brand-assets.mjs'));
+    preg_match("/const TAGLINE = '([^']+)';/", $generator, $tagline);
+    preg_match("/const SUBTITLE = '([^']+)';/", $generator, $subtitle);
+    $heading = preg_replace('/\s+/', ' ', trim(seoPage($this, '/')->query('//h1')->item(0)->textContent));
+
+    expect($tagline[1])->toBe(config('site.tagline'))
+        ->and($heading)->toBe(config('site.tagline'))
+        ->and($subtitle[1])->toContain(config('site.city'));
+});

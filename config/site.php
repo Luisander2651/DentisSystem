@@ -74,6 +74,11 @@ return [
 
     'name' => 'Dentissa',
 
+    /* The main phrase of the home, also drawn on the share card (public/images/brand/compartir.png,
+       spec 026 CA19). Changing it obliges to run `npm run brand:assets` again with the same text
+       in TAGLINE of tests/Browser/make-brand-assets.mjs; PublicSiteSeoTest checks both. */
+    'tagline' => 'La mejor tecnología para tu salud dental',
+
     'url' => 'https://dentissapp.com',
 
     'timezone' => 'America/Mexico_City',
