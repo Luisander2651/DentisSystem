@@ -246,7 +246,7 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: Frontend (layout, componentes y vistas del sitio, CSS y JS en `resources/*/site/`, entradas por página, galería en el HTML, `config/site.php`, menú desde 921 px) y Backend (controladores del inicio y de la galería con su caché, `ShowSitemapController`, componente SEO).
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: `SITE_NEW_LANDING` (variables y rollback inmediato con `config:cache`) y las variables `SITE_*` de contacto (datos reales de la clínica; vacías = provisionales), log `public_gallery.load_failed`
   - nota: `deployment.md`: variables `SITE_NEW_LANDING` y `SITE_*`, rollback inmediato con `config:cache`, purga de `compartir.png` en Cloudflare y `GET` a las seis rutas y al sitemap tras el deploy. `observability.md`: `public_gallery.load_failed`; sin auditoría ni métricas nuevas.
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
   - Antes de marcar: Lighthouse en Chrome, perfil móvil, sobre la build de producción servida en local en las cuatro rutas (Rendimiento ≥ 90, Accesibilidad, Buenas prácticas y SEO 100), con resultados en `review.md`; `evaluate.mjs` de las cuatro páginas sin fallos; imágenes de muestra y generadas listadas en `design.md`; los datos de contacto que sigan siendo provisionales se anotan en `review.md` como pendientes de la clínica.
   - nota: hallazgo al pasar `evaluate.mjs inicio` (2026-11-16): `inicio.css` volvía a animar la entrada de la barra sin la condición `.js` del refinado del 2026-11-15, así que sin JavaScript la barra quedaba invisible (G-sin-js). Corregido con un test en `SiteStylesTokensTest` que falla antes y pasa después.
   - nota: tarjeta para compartir revisada por el usuario (2026-11-16): "salud dental" en rosa (`primary`) como en el inicio; regenerada.
@@ -254,6 +254,7 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: `evaluate.mjs` sobre la build (2026-11-16): acerca y contacto pasan completas; galería solo K2d por las fotos locales del staff (regla del 2026-11-13); inicio K2d (misma regla), G-aparece (aceptado, ficha M-6) y G-solapamiento en el "12" de la promoción, falso positivo: la herramienta mide la caja tipográfica del número a 190 px, que baja hasta "DE DESCUENTO"; en pantalla no se tocan (captura comprobada).
   - nota: `ui-audit inicio-testimonios` a 1440 px falla de forma intermitente desde T024 (también con el CSS de entonces): la composición lee las secciones que se revelan al desplazar según el momento. No es de esta tarea; propuesto como `/fix` aparte.
   - nota: imágenes de muestra y generadas listadas en `design.md` (se añadieron `diente.webp`, `tooth-mask.svg` y `compartir.png`). Datos de contacto: todos siguen provisionales (`SITE_*` vacías) → a `review.md` como pendientes de la clínica.
+  - nota: el usuario acepta (2026-11-16) las otras tres categorías de Lighthouse en 100 en las cuatro rutas, el falso positivo de G-solapamiento del "12" de la promoción y llevar el fallo intermitente de `ui-audit inicio-testimonios` a un `/fix` aparte antes de liberar.
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

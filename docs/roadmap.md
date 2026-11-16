@@ -25,6 +25,7 @@ Para pasar de **prototipo** a **MVP** con una clínica real:
 - Specs 001–012 revisadas y pasadas de `inferred` a `approved` (cumplido el 2026-09-23).
 
 ## Pendientes y deuda
+- `ui-audit inicio-testimonios` a 1440 px falla de forma intermitente desde la spec 026 (T024): la composición depende de qué secciones se revelaron al desplazar. Arreglar con un `/fix` antes de liberar la 026 (decisión del usuario, 2026-11-16).
 - Imágenes que sube el staff (certificaciones, galería): se guardan y se sirven tal como llegan, sin reducir ni comprimir; una certificación PNG de 848 kB pesaba más que todo el inicio. Redimensionar y comprimir al subir; fuera de la spec 026 (decisión del usuario, 2026-11-13).
 - Testimonios: calificación con estrellas (1 a 5) capturada en "Contenido" y mostrada en la landing; fuera de la spec 026 (decisión del usuario, 2026-11-12).
 - SEO técnico de severidad baja de [seo.md](seo.md): SE6.a, SE6.b y SE7.a las cubre la spec 026 (en curso); de SE8.a queda el `theme-color` del panel y del portal del paciente, porque la 026 solo lo pone en el sitio público (decisión del usuario, A8 de `/analyze 026`). RS4.a de [security.md](security.md) (contenido oculto en la API pública de galería) sigue pendiente: la galería nueva no usa esa API, pero la API sigue igual.
