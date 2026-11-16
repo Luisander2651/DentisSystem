@@ -517,10 +517,23 @@ html:not(.js) .dk-end, .still .dk-end { position: static; transform: none; opaci
     .cf-row { padding-top: var(--space-6); }
 }
 
-/* One column (up to 920 px, refined 2026-11-15 after the user's review): the welcome is centred. */
+/* The welcome by width (refined 2026-11-15, after the layout of the digie.mx home): one column up
+   to 920 px keeps the opening text, aligned to the left with the buttons side by side; phones centre
+   it, stack the buttons at full width and size the stack of photos by the height of the screen so
+   it stays in the first screen. The list of features stays hidden up to 920 px. */
 @media (max-width: 920px) {
+    .vw-copy .vw-lead { display: block; max-width: 560px; }
+}
+@media (max-width: 600px) {
     .vw-copy { align-items: center; text-align: center; }
-    .vw-ctas { justify-content: center; }
+    .vw-ctas { align-self: stretch; flex-direction: column; }
+    .vw-ctas .btn { width: 100%; justify-content: center; }
+    /* The stack of photos fits between the buttons and the scroll hint of each phone's screen. */
+    .vw-slot { width: clamp(170px, calc((100svh - 620px) * 0.88), 300px); }
+}
+@media (max-width: 600px) and (max-height: 760px) {
+    .vw-grid { padding-top: 96px; }
+    .vw-copy { gap: 14px; }
 }
 
 /* Phones (refined 2026-11-15, the user's review on a phone): the 3D tour drops its own button (the
