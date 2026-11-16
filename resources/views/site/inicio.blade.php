@@ -42,6 +42,14 @@
     $underline = '<svg viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M3 15 C 60 4, 140 2, 297 11" fill="none" stroke-width="7" stroke-linecap="round"></path></svg>';
 @endphp
 
+{{-- The phone menu of the home carries the coupon of the current promotion that ends first (T042);
+     home.js writes how many days are left, as on the big coupon. --}}
+@if ($first)
+    @push('menu-coupon')
+        <a class="mn-promo mn-in" href="{{ $whatsapp }}?text={{ rawurlencode('Hola, me interesa la promoción "'.$first['name'].'".') }}" style="--i: 10" data-menu-promo data-end="{{ $first['end_date'] }}"><span class="mn-promo-pct">{{ $first['discount_percentage'] }}<small>%</small></span><span class="mn-promo-t"><b>{{ $first['name'] }}</b><small data-menu-promo-left>Promoción vigente</small></span><span class="mn-promo-go">Lo quiero</span></a>
+    @endpush
+@endif
+
 @section('content')
 <section id="explora" class="vw" data-ref="VwSec" aria-label="Bienvenida a Dentissa">
     <div class="vw-sticky" data-scene>

@@ -408,3 +408,10 @@ it('says in the dock whether the clinic is open, on the clinic clock', function 
         ->and($closed['status'])->toStartWith('Cerrado · ');
 });
 
+it('writes the days left on the coupon of the phone menu as on the big coupon (T042)', function () {
+    expect(runSiteScript('menuCoupon', ['end' => '2026-11-20', 'at' => '2026-11-15T12:00:00-06:00']))->toBe(['left' => 'Quedan 5 días'])
+        ->and(runSiteScript('menuCoupon', ['end' => '2026-11-16', 'at' => '2026-11-15T23:30:00-06:00']))->toBe(['left' => 'Termina mañana'])
+        ->and(runSiteScript('menuCoupon', ['end' => '2026-11-15', 'at' => '2026-11-15T09:00:00-06:00']))->toBe(['left' => 'Termina hoy'])
+        ->and(runSiteScript('menuCoupon', ['end' => '2026-11-20', 'at' => '2026-11-15T12:00:00-06:00', 'present' => false]))->toBe(['left' => 'Promoción vigente']);
+});
+

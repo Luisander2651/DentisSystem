@@ -541,11 +541,22 @@ function initVisit(el, win, D) {
     win.setInterval(update, 60000);
 }
 
+/** The coupon of the phone menu of the home (T042) says how many days are left, as the big one. */
+export function fillMenuCoupon(doc, now = new Date()) {
+    const coupon = doc.querySelector('[data-menu-promo]');
+    const left = coupon?.querySelector('[data-menu-promo-left]');
+
+    if (left) {
+        left.textContent = promotionLeft(coupon.getAttribute('data-end'), now);
+    }
+}
+
 export function initHome(win = window, doc = document) {
     const D = win.Dentissa;
 
     D.ready(() => {
         initDeck(doc, win, D);
+        fillMenuCoupon(doc);
         initFaq(doc);
 
         const promos = doc.querySelector('[data-promos]');

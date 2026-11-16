@@ -597,6 +597,18 @@ const scenarios = {
         return seen;
     },
 
+    /* The days left of the coupon of the phone menu (T042). */
+    async menuCoupon({ end, at, present = true }) {
+        const { fillMenuCoupon } = await import(new URL('home.js', site));
+        const left = { textContent: 'Promoción vigente' };
+        const coupon = { getAttribute: (key) => (key === 'data-end' ? end : null), querySelector: () => left };
+        const doc = { querySelector: (selector) => (present && selector === '[data-menu-promo]' ? coupon : null) };
+
+        fillMenuCoupon(doc, new Date(at));
+
+        return { left: left.textContent };
+    },
+
     /* The coupon and tickets as the server orders them: none removed nor reordered. */
     async promos({ tickets, at }) {
         const RealDate = Date;

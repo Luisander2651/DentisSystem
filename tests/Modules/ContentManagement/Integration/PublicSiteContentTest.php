@@ -225,3 +225,43 @@ it('serves the tour with its four treatments and a still tooth, and no canvas un
         ->and([$still->getAttribute('width'), $still->getAttribute('height')])->toBe(['720', '720'])
         ->and(file_exists(public_path('images/site/diente.webp')))->toBeTrue();
 });
+
+/*
+ * T042 (refined 2026-11-15): the phone menu of the home carries the coupon of the current promotion
+ * that ends first, the same one the big coupon opens with; no other page carries it.
+ */
+const MENU_COUPON = '//details[contains(@class, "menu-m")]//a[contains(@class, "mn-promo")]';
+
+it('puts the current promotion that ends first in the menu of the home, with WhatsApp asking for it', function () {
+    homePromotion('Termina el 20', '2026-11-20');
+    homePromotion('Termina el 15', '2026-11-15');
+    homePromotion('Ya terminó', '2026-11-10');
+
+    $page = homePage($this);
+    $coupon = $page->query(MENU_COUPON)->item(0);
+
+    expect($page->query(MENU_COUPON)->length)->toBe(1)
+        ->and(homeText($page, MENU_COUPON.'//b'))->toBe('Termina el 15')
+        ->and(homeText($page, MENU_COUPON.'//*[contains(@class, "mn-promo-pct")]'))->toBe('15%')
+        ->and($coupon->getAttribute('data-end'))->toBe('2026-11-15')
+        ->and($coupon->getAttribute('href'))->toBe('https://wa.me/'.config('site.contact.whatsapp').'?text='.rawurlencode('Hola, me interesa la promoción "Termina el 15".'));
+});
+
+it('leaves the coupon out of the menu when no promotion is current, and out of the other pages', function () {
+    expect(homePage($this)->query(MENU_COUPON)->length)->toBe(0);
+
+    homePromotion('Vigente', '2026-11-20');
+
+    foreach (['/acerca-de-nosotros', '/galeria'] as $path) {
+        expect($this->get($path)->assertOk()->getContent())->not->toContain('mn-promo');
+    }
+});
+
+it('shows a promotion title with markup as text in the menu coupon (abuse)', function () {
+    homePromotion('<img src=x onerror=alert(1)>', '2026-11-20');
+
+    $html = $this->get('/')->assertOk()->getContent();
+
+    expect($html)->not->toContain('<img src=x onerror=alert(1)>')
+        ->and(homeText(homePage($this), MENU_COUPON.'//b'))->toBe('<img src=x onerror=alert(1)>');
+});
