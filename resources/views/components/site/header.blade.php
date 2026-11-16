@@ -63,7 +63,7 @@
                 <span class="mn-label mn-in" style="--i: 0">Páginas</span>
                 <nav class="mn-links" aria-label="Menú">
                     @foreach ($pages as $page)
-                        <a @class(['mn-a', 'mn-in', 'on' => request()->routeIs($page['route'])]) href="{{ route($page['route']) }}" @if (request()->routeIs($page['route'])) aria-current="page" @endif style="--i: {{ $loop->index }}" data-menu-close>{{ $page['label'] }}</a>
+                        <a @class(['mn-a', 'mn-in', 'on' => request()->routeIs($page['route'])]) href="{{ route($page['route']) }}" @if (request()->routeIs($page['route'])) aria-current="page" @endif style="--i: {{ $loop->index }}" data-menu-close>@if (request()->routeIs($page['route']))<span class="hl">{{ $page['label'] }}</span>@else{{ $page['label'] }}@endif</a>
                     @endforeach
                 </nav>
                 <span class="mn-label mn-in" style="--i: 4">Tratamientos</span>

@@ -70,6 +70,8 @@ html:not(.js) .menu-m[open] summary span:nth-child(3), .menu-m.is-open summary s
 .mn-a::after { content: ""; margin-left: auto; width: 9px; height: 9px; border-right: 2px solid var(--color-field); border-top: 2px solid var(--color-field); transform: rotate(45deg); transition: transform 300ms var(--ease-spring), border-color 200ms; }
 .mn-a:hover::after { transform: translateX(3px) rotate(45deg); border-color: var(--color-primary); }
 .mn-a.on::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary); box-shadow: 0 0 0 4px var(--color-primary-soft); }
+.mn-a .hl { font-size: 1.12em; }
+.mn-a .hl svg { display: none; }
 .mn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .opt .mn-tile { display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 12px; min-height: 104px; padding: 14px; border-radius: var(--radius-box); background: var(--color-canvas); border: 1px solid var(--color-field); color: var(--color-ink); text-decoration: none; font-weight: 600; font-size: 14.5px; line-height: 1.25; transition: background 250ms, border-color 250ms, transform 300ms var(--ease-spring); }
 .opt .mn-tile:hover, .opt .mn-tile:focus-visible { background: var(--color-primary-soft); border-color: var(--color-primary-tint); color: var(--color-ink); transform: translateY(-2px); }
@@ -218,6 +220,7 @@ body:has(.menu-m[open]) .wa-float { opacity: 0; pointer-events: none; }
 /* Footer layout (inline styles of the proposal footer moved to classes, spec 026 T008) */
 .ft-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 40px; }
 .ft-col { display: flex; flex-direction: column; gap: 10px; }
+.ft-nw { white-space: nowrap; }
 .ft-brand { gap: 18px; }
 .opt .ft .ft-logo { color: var(--color-on-dark); }
 .ft-text { font-size: 15px; }

@@ -290,6 +290,8 @@ it('brings the redesigned phone menu with the pages, the treatments and the clin
     expect($page->query('//details[contains(@class, "menu-m")]/summary[@aria-label="Abrir menú"]/span')->length)->toBe(3)
         ->and(siteTexts($page, "{$panel}//nav//a"))->toBe(['Inicio', 'Acerca de Nosotros', 'Galería', 'Contacto'])
         ->and(siteTexts($page, "{$panel}//nav//a[@aria-current=\"page\"]"))->toBe(['Galería'])
+        ->and(siteTexts($page, "{$panel}//nav//a/span[contains(concat(\" \", @class, \" \"), \" hl \")]"))->toBe(['Galería'])
+        ->and($page->query("{$panel}//nav//a[@aria-current=\"page\"]/span[@class=\"hl\"]")->length)->toBe(1)
         ->and(array_map(fn (DOMElement $tile): string => trim($tile->textContent), $tiles))->toBe([...array_column(config('site.treatments'), 'name'), 'Valoración general'])
         ->and(array_unique(array_map(fn (DOMElement $tile): string => strtok($tile->getAttribute('href'), '?'), $tiles)))->toBe(['https://wa.me/5215598765432'])
         ->and(array_filter($tiles, fn (DOMElement $tile): bool => ! str_contains($tile->getAttribute('href'), '?text=')))->toBe([])
@@ -333,6 +335,7 @@ it('composes the message in a form that cannot post to the server, with a direct
         ->and($page->query('//main//form//textarea[@id="ct-msg"]')->length)->toBe(1)
         ->and(siteTexts($page, '//main//form//button[@data-motivo]'))->toContain('Valoración general', 'Otro')
         ->and($css)->toContain('html:not(.js) .ct-form{display:none}')
+        ->and($css)->toContain('.hl svg path{stroke:var(--color-secondary)}')
         ->and($page->query('//main//*[contains(@class, "ct-direct")]//a[@href="https://wa.me/5215598765432"]')->length)->toBe(1);
 });
 

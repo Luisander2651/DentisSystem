@@ -3,6 +3,7 @@
    grises y rosas del mapa ilustrado mezclan dos tokens (refinado 2026-11-16). Sin JavaScript el
    compositor no se muestra y queda el enlace directo a WhatsApp (A35). */
 @media (prefers-reduced-motion:reduce){.hl path{stroke-dashoffset:0}}
+.hl svg path{stroke:var(--color-secondary)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes ring2{from{transform:scale(.3);opacity:.9}to{transform:scale(1.4);opacity:0}}
 @keyframes wkgrow{from{transform:scaleX(0)}}
@@ -20,7 +21,7 @@
 .ct-top{position:relative;overflow:hidden;padding:72px 0 96px}
 .ct-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.95fr);gap:64px;align-items:center}
 .ct-copy{display:flex;flex-direction:column;gap:24px;align-items:flex-start}
-.ct-lead{max-width:520px}
+.ct-lead{max-width:520px;text-wrap:pretty}
 .ct-call{display:flex;flex-direction:column;gap:6px;padding-top:22px;margin-top:6px;border-top:1px solid var(--color-line);align-self:stretch}
 .ct-call small,.ct-soc small{font-size:13px;color:var(--color-muted)}
 .ct-call-row{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
@@ -59,7 +60,7 @@ html:not(.js) .ct-form{display:none}
 .ct-err{font-size:13px;color:var(--color-danger)}
 .ct-send{width:100%}
 .opt .ct-form .ct-send{border-radius:var(--radius-box)}
-.ct-note{font-size:13px;color:var(--color-muted);text-align:center}
+.ct-note{font-size:13px;color:var(--color-muted);text-align:center;text-wrap:balance}
 
 .ct-loc{padding:0 0 100px}
 .ct-sec-h{display:flex;flex-direction:column;gap:14px;margin-bottom:36px}
@@ -119,7 +120,7 @@ html:not(.js) .ct-form{display:none}
 .fv-steps li{position:relative;display:flex;flex-direction:column;gap:8px}
 .fv-n{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--color-surface);color:var(--color-primary);font-family:var(--font-serif);font-style:italic;font-size:24px;box-shadow:0 10px 20px -12px color-mix(in srgb, var(--color-primary) 60%, transparent)}
 .fv-steps h3{font-family:var(--font-display);font-size:18px;font-weight:600;letter-spacing:-.02em;margin-top:6px}
-.fv-steps p{font-size:15px;color:var(--color-muted);line-height:1.55}
+.fv-steps p{font-size:15px;color:var(--color-muted);line-height:1.55;text-wrap:pretty}
 .fv-photo{margin:0;border-radius:var(--radius-card);overflow:hidden;aspect-ratio:4/5;box-shadow:0 40px 60px -40px color-mix(in srgb, var(--color-ink) 50%, transparent);transform:rotate(2deg);transition:transform 600ms var(--ease-spring)}
 .fv-photo:hover{transform:rotate(0)}
 .fv-photo img{width:100%;height:100%;object-fit:cover;display:block}
@@ -128,9 +129,6 @@ html:not(.js) .ct-form{display:none}
 .ct-hero{grid-template-columns:1fr;gap:40px}
 .ct-comp{padding:24px}
 .wk{padding:22px 14px}
-.wk-ruler,.wk-row{grid-template-columns:84px minmax(0,1fr) 112px;gap:10px}
-.wk-d .today-tag{display:none}
-.wk-t{font-size:15px}
 .fv{grid-template-columns:1fr;padding:32px 22px;gap:32px}
 .fv-steps{grid-template-columns:1fr}
 .fv-steps::before{top:24px;bottom:24px;left:24px;right:auto;border-top:0;border-left:1.5px dashed color-mix(in srgb, var(--color-primary) 50%, var(--color-surface))}
@@ -139,8 +137,44 @@ html:not(.js) .ct-form{display:none}
 .fv-photo{transform:none;aspect-ratio:16/10}
 .plane{scale:.75}
 }
-@media (max-width:600px){
+/* The weekly hours fit the width of their card, not of the screen: the Spanish hours are longer
+   than those of the proposal (refinado 2026-11-16). */
+.wk{container-type:inline-size}
+@container (max-width:540px){
+.wk-ruler,.wk-row{grid-template-columns:84px minmax(0,1fr) 136px;gap:10px}
+.wk-t{font-size:15px}
+.wk-d .today-tag{display:none}
+}
+@container (max-width:430px){
 .wk-ruler{display:none}
 .wk-row{grid-template-columns:78px minmax(0,1fr) 128px;gap:8px}
 .wk-t{font-size:14px}
+}
+/* From 921 to 1180 px the photo keeps its column and the three steps go one under the other. */
+@media (min-width:921px) and (max-width:1180px){
+.fv{gap:40px;padding:48px}
+.fv-steps{grid-template-columns:1fr}
+.fv-steps::before{top:24px;bottom:24px;left:24px;right:auto;border-top:0;border-left:1.5px dashed color-mix(in srgb, var(--color-primary) 50%, var(--color-surface))}
+.fv-steps li{padding-left:64px}
+.fv-n{position:absolute;left:0;top:0}
+}
+/* Up to 920 px the welcome and the headings go centred, as on the other pages (T035); up to 600 px
+   the buttons take the whole width, as on the home (refinado 2026-11-16). */
+@media (max-width:920px){
+.ct-copy{align-items:center;text-align:center}
+.ct-lead{margin-left:auto;margin-right:auto}
+.ct-call{align-items:center}
+.ct-call-row{justify-content:center}
+.opt .ct-mail{align-self:center}
+.ct-soc{justify-content:center}
+.ct-soc small{flex-basis:100%}
+.ct-sec-h{align-items:center;text-align:center}
+.fv-copy > .kicker,.fv-copy > .h-lg{align-self:center;text-align:center}
+.fv-copy .btn{align-self:center}
+.opt .fv-steps{width:100%;max-width:520px;margin-left:auto;margin-right:auto}
+}
+@media (max-width:600px){
+.fv-copy .btn{align-self:stretch}
+.map-acts .btn{flex:1 1 auto}
+.map-label{left:12px;right:12px;bottom:12px}
 }

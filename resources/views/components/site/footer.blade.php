@@ -42,7 +42,7 @@
         <div class="ft-col ft-text">
             <h2 class="ft-title">Horarios</h2>
             @foreach ($schedule as $line)
-                <span>{{ $line['days'] }}: {{ $line['hours'] }}</span>
+                <span>{{ $line['days'] }}: <span class="ft-nw">{{ $line['hours'] }}</span></span>
             @endforeach
         </div>
     </div>
