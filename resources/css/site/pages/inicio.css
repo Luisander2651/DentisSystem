@@ -437,9 +437,7 @@
 @keyframes pmfloat { 0%, 100% { transform: translateY(0) rotate(var(--r)); } 50% { transform: translateY(-10px) rotate(var(--r)); } }
 .pm-none-copy { position: relative; padding: 56px 56px 56px 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
 .pm-none-lead { max-width: 460px; }
-.pm-none-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 6px; }
-.opt .pm-none-link { display: inline-flex; align-items: center; min-height: var(--spacing-control); font-weight: 600; text-decoration: none; color: var(--color-ink); padding-bottom: 3px; background: linear-gradient(var(--color-primary), var(--color-primary)) left bottom / 100% 2px no-repeat; transition: background-size 400ms var(--ease-spring), color 200ms; }
-.opt .pm-none-link:hover { color: var(--color-primary-deep); background-size: 0% 2px; background-position: right bottom; }
+.pm-none-acts { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; align-self: stretch; gap: 14px 22px; margin-top: 6px; }
 @media (max-width: 920px) {
     .pm-none { grid-template-columns: 1fr; }
     .pm-none-art { min-height: 230px; }
@@ -549,7 +547,22 @@ html:not(.js) .dk-end, .still .dk-end { position: static; transform: none; opaci
     .sv-head, .cf-head { justify-content: center; justify-items: center; text-align: center; }
     .sv-head { flex-direction: column; align-items: center; }
     .sv-title, .cf-head > div, .ts-side, .fq-left, .pm-none-copy { align-items: center; text-align: center; }
+    /* The coupon of the current promotion is centred too (T043). */
+    .pm-right { align-items: center; text-align: center; }
+    .pm-top, .pm-actions { justify-content: center; }
+    .pm-cd { align-self: stretch; width: 100%; max-width: 380px; margin-inline: auto; text-align: left; }
 }
 
 /* The arrow of an outgoing link is a drawing, so no phone turns it into an emoji (refined 2026-11-15). */
 .link-arrow { display: inline-block; vertical-align: -0.1em; margin-left: 2px; }
+
+/* Promotions up to 525 px (T043, refined 2026-11-16): the one action of the empty state keeps the width
+   of its text instead of stretching. */
+@media (max-width: 525px) {
+    .pm-none-acts .btn { flex: none; width: auto; max-width: 100%; }
+    /* The coupon on phones (T043): the dates flow with their icon and the countdown puts its label
+       above its value instead of breaking both in two lines. */
+    .pm-dates { display: block; }
+    .pm-dates svg { display: inline-block; vertical-align: -4px; margin-right: 8px; }
+    .pm-cd-t { flex-direction: column; align-items: center; gap: 6px; }
+}

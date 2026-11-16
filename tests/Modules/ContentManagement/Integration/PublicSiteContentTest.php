@@ -72,7 +72,8 @@ it('shows only the coupon when there is one current promotion', function () {
 
     expect(homeText($page, '//*[@data-pm="title"]'))->toBe('Limpieza a mitad de precio')
         ->and($page->query('//*[@data-pm-more]')->length)->toBe(0)
-        ->and($page->query('//*[@data-pm-empty]')->length)->toBe(0);
+        ->and($page->query('//*[@data-pm-empty]')->length)->toBe(0)
+        ->and($page->query('//*[@data-pm-card][@data-start="2026-11-01"][@data-end="2026-11-30"]')->length)->toBe(1);
 });
 
 it('leads with the promotion that ends first and lists the others as tickets', function () {
@@ -98,7 +99,8 @@ it('says there are no promotions when none is current, and never shows a hidden 
     expect($page->query('//*[@data-pm-empty]')->length)->toBe(1)
         ->and(homeText($page, '//*[@data-pm-empty]//h2'))->toBe('Por ahora no hay promociones activas')
         ->and($page->query('//*[@data-pm-empty]//a[starts-with(@href, "https://wa.me/")][contains(@href, "?text=")][contains(., "Pregúntanos por WhatsApp")]')->length)->toBe(1)
-        ->and($page->query('//*[@data-pm-empty]//a[@href="#servicios"]')->length)->toBe(1)
+        ->and($page->query('//*[@data-pm-empty]//a')->length)->toBe(1)
+        ->and(homeText($page, '//*[@data-pm-empty]'))->not->toContain('Ver tratamientos')
         ->and($page->query('//*[@data-pm-empty]//*[contains(@class, "pm-none-art")][@aria-hidden="true"]')->length)->toBe(1)
         ->and(homeText($page, '//*[@data-pm-empty]'))->not->toContain('te avisamos')
         ->and($html)->not->toContain('Promoción oculta')

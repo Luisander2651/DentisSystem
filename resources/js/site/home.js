@@ -330,7 +330,15 @@ export function initPromos(root) {
     const card = root.querySelector('[data-pm-card]');
     const field = (name) => root.querySelector(`[data-pm="${name}"]`);
 
+    /* A single promotion has no tickets: its countdown comes from the dates of the coupon (T043). */
     if (!tickets.length) {
+        const end = card?.getAttribute('data-end');
+
+        if (end) {
+            field('left').textContent = promotionLeft(end);
+            field('bar').style.width = `${promotionBar(card.getAttribute('data-start'), end)}%`;
+        }
+
         return;
     }
 

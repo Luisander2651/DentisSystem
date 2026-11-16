@@ -169,14 +169,13 @@
                     <p class="lead pm-none-lead">Lanzamos descuentos por temporada y a veces tenemos alguno que aún no publicamos. Pregúntanos por WhatsApp.</p>
                     <div class="pm-none-acts">
                         <a class="btn btn-wa btn-lg" href="{{ $whatsapp }}?text={{ rawurlencode('Hola, ¿tienen alguna promoción disponible?') }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.4L3 21z"></path></svg>Pregúntanos por WhatsApp</a>
-                        <a class="pm-none-link" href="#servicios">Ver tratamientos</a>
                     </div>
                 </div>
             </div>
         @else
             <div data-pm-any>
                 <div class="coupon reveal3d" data-surface="dark">
-                    <div class="pm-in swA" data-pm-card>
+                    <div class="pm-in swA" data-pm-card data-start="{{ $first['start_date'] }}" data-end="{{ $first['end_date'] }}">
                         <div class="pm-left">
                             <span class="rings spin pm-ring-1" aria-hidden="true"></span>
                             <span class="rings pm-ring-2" aria-hidden="true"></span>

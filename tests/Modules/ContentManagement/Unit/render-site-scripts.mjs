@@ -610,7 +610,7 @@ const scenarios = {
     },
 
     /* The coupon and tickets as the server orders them: none removed nor reordered. */
-    async promos({ tickets, at }) {
+    async promos({ tickets, at, card = null }) {
         const RealDate = Date;
         globalThis.Date = class extends RealDate {
             constructor(...parts) {
@@ -640,6 +640,10 @@ const scenarios = {
         const root = {
             querySelectorAll: () => buttons,
             querySelector: (selector) => {
+                if (selector === '[data-pm-card]') {
+                    return card ? { getAttribute: (name) => card[name.replace('data-', '')] ?? null, classList: classList() } : null;
+                }
+
                 const match = selector.match(/data-pm="(\w+)"/);
 
                 return match ? field(match[1]) : null;
@@ -650,9 +654,10 @@ const scenarios = {
         globalThis.Date = RealDate;
 
         return {
-            title: fields.title.textContent,
-            left: fields.left.textContent,
-            of: fields.of.textContent,
+            title: fields.title?.textContent ?? null,
+            left: fields.left?.textContent ?? null,
+            bar: fields.bar?.style.width ?? null,
+            of: fields.of?.textContent ?? null,
             tickets: buttons.map((button) => ({ title: button.attributes.title, hidden: button.hidden, left: button.left.textContent })),
         };
     },

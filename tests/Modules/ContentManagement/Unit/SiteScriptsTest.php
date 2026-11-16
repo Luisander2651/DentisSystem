@@ -415,3 +415,10 @@ it('writes the days left on the coupon of the phone menu as on the big coupon (T
         ->and(runSiteScript('menuCoupon', ['end' => '2026-11-20', 'at' => '2026-11-15T12:00:00-06:00', 'present' => false]))->toBe(['left' => 'Promoción vigente']);
 });
 
+it('counts down a single promotion too, from the dates of its coupon (T043)', function () {
+    $result = runSiteScript('promos', ['at' => '2026-11-16T12:00:00-06:00', 'tickets' => [], 'card' => ['start' => '2026-11-16', 'end' => '2026-11-23']]);
+
+    expect($result['left'])->toBe('Quedan 7 días')
+        ->and($result['bar'])->toBe('100%');
+});
+
