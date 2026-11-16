@@ -162,3 +162,46 @@ it('serves the previous gallery when the new landing is off', function () {
 
     $this->get('/galeria')->assertOk()->assertViewIs('pages.landing.galeria');
 });
+
+/*
+ * Spec 026, CA10, CA17 and CA18 (edited 2026-11-15): the before and after is an illustrated 3D
+ * denture with a flat drawing behind it; the page brings one button per treatment the clinic offers,
+ * the text of the chosen one and a slider with a name, and no photo.
+ */
+const BEFORE_AFTER = '//*[@data-before-after]';
+
+function beforeAfterSummary(string $name): string
+{
+    return collect(config('site.treatments'))->firstWhere('name', $name)['summary'];
+}
+
+it('puts the before and after in the page with one button per treatment, its text and a slider with a name', function () {
+    $page = galleryPage($this);
+    $buttons = iterator_to_array($page->query(BEFORE_AFTER.'//button[@data-ba]'));
+    $slider = $page->query(BEFORE_AFTER.'//input[@type="range"]')->item(0);
+    $text = fn (string $query): string => trim(preg_replace('/\s+/', ' ', $page->query(BEFORE_AFTER.$query)->item(0)?->textContent ?? ''));
+
+    expect(array_map(fn (DOMElement $button): string => trim($button->textContent), $buttons))->toBe(['Blanqueamiento Dental', 'Ortodoncia', 'Implantes Dentales'])
+        ->and(array_map(fn (DOMElement $button): string => $button->getAttribute('data-ba'), $buttons))->toBe(['white', 'braces', 'implant'])
+        ->and(array_map(fn (DOMElement $button): string => $button->getAttribute('aria-pressed'), $buttons))->toBe(['true', 'false', 'false'])
+        ->and(array_map(fn (DOMElement $button): string => $button->getAttribute('data-ba-summary'), $buttons))->toBe(array_map(beforeAfterSummary(...), ['Blanqueamiento Dental', 'Ortodoncia', 'Implantes Dentales']))
+        ->and($slider?->getAttribute('aria-label'))->not->toBeEmpty()
+        ->and([$slider?->getAttribute('min'), $slider?->getAttribute('max'), $slider?->getAttribute('value')])->toBe(['0', '100', '50'])
+        ->and($text('//*[@data-ba-title]'))->toBe('Blanqueamiento Dental')
+        ->and($text('//*[@data-ba-text]'))->toBe(beforeAfterSummary('Blanqueamiento Dental'))
+        ->and($page->query(BEFORE_AFTER.'//canvas[@aria-hidden="true"]')->length)->toBe(1)
+        ->and($page->query(BEFORE_AFTER.'//*[contains(@class, "ba-2d")][@aria-hidden="true"]')->length)->toBe(1)
+        ->and($page->query(BEFORE_AFTER.'//img')->length)->toBe(0);
+});
+
+it('takes the names and texts of the before and after from the treatments of the clinic', function () {
+    config(['site.treatments' => collect(config('site.treatments'))
+        ->reject(fn (array $treatment): bool => $treatment['name'] === 'Ortodoncia')
+        ->map(fn (array $treatment): array => $treatment['name'] === 'Blanqueamiento Dental' ? [...$treatment, 'summary' => 'Otro texto del blanqueamiento.'] : $treatment)
+        ->values()->all()]);
+
+    $page = galleryPage($this);
+
+    expect(array_map(fn (DOMElement $button): string => trim($button->textContent), iterator_to_array($page->query(BEFORE_AFTER.'//button[@data-ba]'))))->toBe(['Blanqueamiento Dental', 'Implantes Dentales'])
+        ->and(trim($page->query(BEFORE_AFTER.'//*[@data-ba-text]')->item(0)->textContent))->toBe('Otro texto del blanqueamiento.');
+});

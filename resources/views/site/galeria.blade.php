@@ -16,6 +16,11 @@
     $phoneHref = 'tel:'.preg_replace('/[^\d+]/', '', $contact['phone']);
     $schedule = \App\Core\Http\PublicSiteSchedule::fromConfig()->lines();
     $images = collect($images ?? [])->values();
+    $treatments = collect(config('site.treatments'))->keyBy('name');
+    $beforeAfter = collect(['white' => 'Blanqueamiento Dental', 'braces' => 'Ortodoncia', 'implant' => 'Implantes Dentales'])
+        ->filter(fn (string $name): bool => $treatments->has($name))
+        ->map(fn (string $name): array => $treatments->get($name));
+    $firstTreatment = $beforeAfter->first();
     $composition = match (true) {
         $images->isEmpty() => 'vacia',
         $images->count() < 3 => 'fila',
@@ -101,6 +106,53 @@
                     </div>
                 </div>
             @endif
+        </div>
+    </section>
+@endif
+
+@if ($beforeAfter->isNotEmpty())
+    {{-- Before and after (CA18): an illustrated 3D denture (gallery.js) over a flat drawing that
+         stays when the browser cannot draw in 3D; the text of the chosen treatment is the page's. --}}
+    <section class="ba-section" data-before-after aria-labelledby="gl-antes-despues">
+        <div class="wrap ba-in">
+            <div class="ba-head reveal">
+                <div class="ba-head-copy">
+                    <span class="kicker">Antes y después</span>
+                    <h2 class="h-lg" id="gl-antes-despues">Desliza y mira la diferencia</h2>
+                </div>
+                <div class="seg" role="group" aria-label="Elegir tratamiento">
+                    @foreach ($beforeAfter as $mode => $treatment)
+                        <button type="button" @class(['seg-b', 'on' => $loop->first]) data-ba="{{ $mode }}" data-ba-summary="{{ $treatment['summary'] }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $treatment['name'] }}</button>
+                    @endforeach
+                </div>
+            </div>
+            <div class="ba reveal3d">
+                <div class="ba-2d" aria-hidden="true">
+                    <div class="ba-layer">
+                        <div class="ba-mouth"></div>
+                        <div class="ba-gum up"></div>
+                        <div class="ba-gum down"></div>
+                        <div class="teeth" data-teeth="before"></div>
+                    </div>
+                    <div class="ba-layer ba-after" data-ba-after>
+                        <div class="ba-mouth"></div>
+                        <div class="ba-gum up"></div>
+                        <div class="ba-gum down"></div>
+                        <div class="teeth" data-teeth="after"></div>
+                        <span class="if" data-if="isWhite">
+                            <svg class="spark s1" width="34" height="34" viewBox="0 0 24 24"><path d="M12 0C13 8 16 11 24 12 16 13 13 16 12 24 11 16 8 13 0 12 8 11 11 8 12 0Z" fill="currentColor"></path></svg>
+                            <svg class="spark s2" width="22" height="22" viewBox="0 0 24 24"><path d="M12 0C13 8 16 11 24 12 16 13 13 16 12 24 11 16 8 13 0 12 8 11 11 8 12 0Z" fill="currentColor"></path></svg>
+                            <svg class="spark s3" width="26" height="26" viewBox="0 0 24 24"><path d="M12 0C13 8 16 11 24 12 16 13 13 16 12 24 11 16 8 13 0 12 8 11 11 8 12 0Z" fill="currentColor"></path></svg>
+                        </span>
+                    </div>
+                </div>
+                <canvas class="ba-cv" aria-hidden="true"></canvas>
+                <span class="ba-label l" aria-hidden="true">Antes</span>
+                <span class="ba-label r" aria-hidden="true">Después</span>
+                <input class="ba-range" type="range" min="0" max="100" step="1" value="50" aria-label="Comparar antes y después">
+                <div class="ba-handle"><span class="ba-knob"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6"></path></svg></span></div>
+            </div>
+            <p class="ba-caption"><span><b data-ba-title>{{ $firstTreatment['name'] }}</b> · <span data-ba-text>{{ $firstTreatment['summary'] }}</span></span><span>Ilustración de referencia. Pronto compartiremos casos reales.</span></p>
         </div>
     </section>
 @endif
