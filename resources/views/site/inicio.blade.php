@@ -320,7 +320,7 @@
             <figure class="fq-photo"><img src="{{ asset('images/site/consulta.webp') }}" alt="Dentista platicando con una paciente sentada en el sillón dental" width="1300" height="1300" loading="lazy" data-origen="generada"></figure>
             <div class="fq-more">
                 <small>¿Tu pregunta no está aquí?</small>
-                <a href="{{ $whatsapp }}">Escríbenos por WhatsApp <span aria-hidden="true">↗</span></a>
+                <a href="{{ $whatsapp }}">Escríbenos por WhatsApp <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg></a>
             </div>
         </div>
         <div class="fq-list reveal">
@@ -385,7 +385,7 @@
             <div class="vis-c">
                 <small class="vis-k">Visítanos</small>
                 <b class="vis-mid">{{ $contact['address'] }}</b>
-                <a class="vis-link" href="{{ $contact['maps_url'] }}" target="_blank" rel="noopener noreferrer">Cómo llegar <span aria-hidden="true">↗</span><span class="sr-only"> (se abre en otra pestaña)</span></a>
+                <a class="vis-link" href="{{ $contact['maps_url'] }}" target="_blank" rel="noopener noreferrer">Cómo llegar <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg><span class="sr-only"> (se abre en otra pestaña)</span></a>
             </div>
             <div class="vis-c">
                 <small class="vis-k">Llámanos</small>
@@ -393,7 +393,7 @@
                 <a class="btn btn-wa vis-wa" href="{{ $whatsapp }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.4L3 21z"></path></svg>WhatsApp</a>
             </div>
         </div>
-        <a class="vis-more" href="{{ route('contacto') }}">Ver horarios y mapa completo <span aria-hidden="true">→</span></a>
+        <a class="vis-more" href="{{ route('contacto') }}">Ver horarios y mapa completo <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
     </div>
 </section>
 

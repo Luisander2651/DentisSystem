@@ -533,3 +533,6 @@ html:not(.js) .dk-end, .still .dk-end { position: static; transform: none; opaci
     .sv-head, .cf-head { justify-content: center; justify-items: center; text-align: center; }
     .sv-title, .cf-head > div, .ts-side, .fq-left, .pm-none-copy { align-items: center; text-align: center; }
 }
+
+/* The arrow of an outgoing link is a drawing, so no phone turns it into an emoji (refined 2026-11-15). */
+.link-arrow { display: inline-block; vertical-align: -0.1em; margin-left: 2px; }

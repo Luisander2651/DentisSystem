@@ -263,3 +263,9 @@ it('shows the real logo of the clinic in the WhatsApp chat of the closing call',
         ->and($logo?->getAttribute('alt'))->toBe('Logo de Dentissa')
         ->and($logo?->getAttribute('data-origen'))->toBe('propia');
 })->with(['/', '/acerca-de-nosotros', '/galeria']);
+
+it('draws the arrows of its links as pictures, never as characters a phone may turn into an emoji', function (string $path) {
+    $html = $this->get($path)->assertOk()->getContent();
+
+    expect($html)->not->toMatch('/[\x{2190}-\x{21FF}\x{2B00}-\x{2BFF}]/u');
+})->with(['/', '/acerca-de-nosotros', '/galeria']);
