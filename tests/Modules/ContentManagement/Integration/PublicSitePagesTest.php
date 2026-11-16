@@ -251,3 +251,15 @@ it('highlights "sonrisa" in the heading of the services like the other headings 
     expect(siteTexts($page, '//main//h2[contains(., "Todo lo que tu")]//*[contains(concat(" ", normalize-space(@class), " "), " hl ")]'))->toBe(['sonrisa'])
         ->and($page->query('//main//h2[contains(., "Todo lo que tu")]//*[contains(@class, "hl")]/*[local-name()="svg"][@aria-hidden="true"]')->length)->toBe(1);
 });
+
+it('shows the real logo of the clinic in the WhatsApp chat of the closing call', function (string $path) {
+    $page = sitePage($this, $path);
+    $avatar = '//main//*[contains(concat(" ", normalize-space(@class), " "), " ph-av ")]';
+    $logo = $page->query("{$avatar}/img")->item(0);
+
+    expect($page->query($avatar)->length)->toBe(1)
+        ->and($page->query("{$avatar}//*[local-name()='svg']")->length)->toBe(0)
+        ->and(parse_url($logo?->getAttribute('src') ?? '', PHP_URL_PATH))->toBe('/images/brand/icon-64.png')
+        ->and($logo?->getAttribute('alt'))->toBe('Logo de Dentissa')
+        ->and($logo?->getAttribute('data-origen'))->toBe('propia');
+})->with(['/', '/acerca-de-nosotros', '/galeria']);

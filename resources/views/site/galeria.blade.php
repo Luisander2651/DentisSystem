@@ -183,7 +183,7 @@
                 <svg class="tw tw-2" width="16" height="16" viewBox="0 0 24 24">{!! $star !!}</svg>
                 <svg class="tw tw-3" width="20" height="20" viewBox="0 0 24 24">{!! $star !!}</svg>
                 <div class="phone">
-                    <div class="ph-head"><span class="ph-av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3c-2.5 0-4 2-4 4.5 0 2 .7 3.3 1.3 5 .6 1.8.8 4 1.4 6.2.3 1.2.8 2.3 1.8 2.3 1.4 0 1.6-2 2-3.6.3-1.3.9-2.4 2.5-2.4s2.2 1.1 2.5 2.4c.4 1.6.6 3.6 2 3.6 1 0 1.5-1.1 1.8-2.3.6-2.2.8-4.4 1.4-6.2.6-1.7 1.3-3 1.3-5C21 5 19.5 3 17 3c-2 0-3 1-5 1S9 3 7 3z"></path></svg></span><span class="ph-name"><b>Dentissa</b><br><span class="ph-on"><i></i>en línea</span></span></div>
+                    <div class="ph-head"><span class="ph-av"><img src="{{ asset('images/brand/icon-64.png') }}" alt="Logo de Dentissa" width="36" height="36" data-origen="propia"></span><span class="ph-name"><b>Dentissa</b><br><span class="ph-on"><i></i>en línea</span></span></div>
                     <div class="ph-body">
                         <div class="msg out m1">Hola, me interesa un blanqueamiento.</div>
                         <div class="msg in m2">¡Claro! Los resultados se ven en una sola sesión.</div>
