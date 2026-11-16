@@ -48,6 +48,14 @@ La implementación solo puede cambiar lo que obliga la spec, la constitución o 
 5. **Correcciones de puertas:** si al medir las páginas reales falla una puerta o un KPI
    (contraste, toque, foco, movimiento reducido, sin JavaScript, peso), se corrige ese detalle con
    el cambio mínimo y se registra como `refinado` en "Decisiones".
+6. **G-aparece en el inicio (aceptada):** la puerta falla en la escena de bienvenida aunque todo
+   su contenido aparece. `evaluate.mjs` suma como oculto lo que está invisible en cualquier pantalla
+   del recorrido, y su comprobación final se hace de vuelta arriba, donde el cierre y las fotos de
+   la escena vuelven a estar ocultos. Medido el 2026-11-16 a 390 y 1440 px, con pasos del 10 % de
+   la pantalla: el título, el texto, los botones, las seis fotos y el cierre llegan a opacidad 1. El
+   texto del cierre no se muestra hasta 920 px porque la propuesta lo oculta (`display:none`), y la
+   puerta no lo cuenta. Se acepta como falso positivo de la herramienta, no del sitio (ver
+   "Decisiones").
 
 Los criterios de `design/criterios.json` (comunes) y de `design/criterios-<página>.json` (cada página con sus KPI propios, porque `evaluate.mjs` no filtra por página) se miden con `evaluate.mjs` sobre las páginas reales
 servidas en local en la tarea que construye cada página, y otra vez en `/review`. La rúbrica no se
@@ -218,3 +226,4 @@ Se conservan, agrupadas en estas fichas; todas respetan ya `prefers-reduced-moti
 | 2026-11-15 | refinado | Bienvenida del inicio por anchos, tomando como referencia el acomodo (no los colores, imágenes ni textos) de la portada de digie.mx | Hasta 600 px: centrada, con el texto de entrada visible y los botones apilados a todo el ancho; en pantallas bajas (≤ 760 px de alto) la pila de fotos se achica para seguir en la primera pantalla. De 601 a 920 px: alineada a la izquierda, con el texto de entrada y los botones lado a lado (reemplaza el centrado de la bienvenida en ese rango; los encabezados de las demás secciones siguen centrados). Escritorio sin cambios. La lista de características sigue oculta hasta 920 px | usuario |
 | 2026-11-15 | refinado | Menú de celular rediseñado por el usuario (propuesta de `nueva-landing/` del 2026-11-15, 21:42) | Hasta 920 px la hamburguesa de tres líneas se vuelve X y abre una hoja a pantalla completa (círculo que crece desde el botón y entrada escalonada): páginas con la actual marcada, seis mosaicos de tratamientos que abren WhatsApp con un mensaje escrito (los cinco de la lista de servicios y una valoración general), el cupón de la promoción vigente que vence antes solo en el inicio, "Iniciar sesión" y redes, y una franja fija con "Abierto/Cerrado", "Agendar cita" y "Llamar". Sigue siendo un `<details>`: sin JavaScript abre la hoja sin animación. La barra no cambia (sin el botón de WhatsApp junto a la hamburguesa: ya está la burbuja flotante). Colores en tokens; con movimiento reducido, sin círculo, entradas ni parpadeo | usuario |
 | 2026-11-16 | refinado | Revisión del usuario de promociones en todos los anchos | Estado vacío: sin "Ver tratamientos"; el botón de WhatsApp centrado en todos los anchos y, hasta 525 px, del ancho de su texto. Cupón: centrado hasta 920 px (como los encabezados); hasta 525 px la fecha corre con su ícono y el contador pone la etiqueta sobre el valor | usuario |
+| 2026-11-16 | supuesto | La puerta G-aparece de `evaluate.mjs` falla en el inicio antes y después de los cambios de la 026 | Se acepta como falso positivo: en la escena de bienvenida cada pieza se desvanece o entra según el desplazamiento, y la puerta marca lo que está oculto en alguna pantalla del recorrido, aunque aparezca en otra. Medido: todo llega a opacidad 1 (Resultado, punto 6). No se cambia el sitio ni el script del plugin | usuario |
