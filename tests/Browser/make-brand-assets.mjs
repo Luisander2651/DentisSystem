@@ -115,7 +115,7 @@ body{position:relative;background:${color.canvas};font-family:'Inter Tight',sans
 .copy{position:absolute;left:72px;top:64px;width:640px;height:502px;display:flex;flex-direction:column}
 .logo{height:80px;width:auto;align-self:flex-start}
 h1{margin:auto 0 0;font-size:72px;line-height:1.02;font-weight:600;letter-spacing:-0.045em}
-.hl{position:relative;display:inline-block;font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;font-size:1.14em;letter-spacing:-0.005em;line-height:.9;padding-right:.04em}
+.hl{position:relative;display:inline-block;color:${color.primary};font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;font-size:1.14em;letter-spacing:-0.005em;line-height:.9;padding-right:.04em}
 .hl svg{position:absolute;left:-2%;bottom:-0.16em;width:104%;height:.32em}
 .hl path{stroke:${color.secondary}}
 p{margin:26px 0 0;font-size:28px;line-height:1.3;color:${color.muted};font-weight:500;letter-spacing:-0.01em}

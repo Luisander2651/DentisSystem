@@ -336,7 +336,7 @@ inicio:
 - Fondo `canvas` con un halo `primary-soft` → `secondary-soft` arriba a la derecha.
 - Columna de texto de 640 px dentro de una zona segura de 64–72 px: logo horizontal de la clínica
   (80 px de alto), la frase principal en Inter Tight 600 de 72 px (interlineado 1.02, `-0.045em`)
-  con "salud dental" en Instrument Serif cursiva y el subrayado `secondary` del inicio, la línea
+  con "salud dental" en Instrument Serif cursiva `primary` y el subrayado `secondary`, como en el inicio, la línea
   "Odontología integral en <ciudad>" en `muted` de 28 px y, abajo, `dentissapp.com` en
   `primary-deep` con un punto `primary`.
 - A la derecha, el abanico de tarjetas de la bienvenida (radio `card`): `secondary-soft` con borde
