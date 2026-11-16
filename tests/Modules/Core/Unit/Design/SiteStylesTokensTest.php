@@ -377,3 +377,21 @@ it('keeps the motion exemption of ui-audit to the moving pieces of the public si
     expect(substr_count($audit, 'animated(element)'))->toBe(3)
         ->and($audit)->toContain("element.closest('[data-audit=\"animado\"]')");
 });
+
+it('animates the entrance of the top bar only with JavaScript, so without it the bar is there from the first frame', function () {
+    $offending = [];
+
+    foreach (siteFiles(SITE_CSS_DIR, '.css') as $file => $css) {
+        preg_match_all('/([^{}]+)\{([^{}]*)\}/', (string) preg_replace('~/\*.*?\*/~s', '', $css), $rules, PREG_SET_ORDER);
+
+        foreach ($rules as [, $selector, $body]) {
+            $animatesTheBar = preg_match('/\.hdr(?![\w-])/', $selector) && preg_match('/(^|;)\s*animation\s*:\s*(?!none)/', $body);
+
+            if ($animatesTheBar && ! str_contains($selector, '.js ')) {
+                $offending[] = $file.': '.trim($selector);
+            }
+        }
+    }
+
+    expect($offending)->toBe([]);
+});

@@ -248,6 +248,8 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: `deployment.md`: variables `SITE_NEW_LANDING` y `SITE_*`, rollback inmediato con `config:cache`, purga de `compartir.png` en Cloudflare y `GET` a las seis rutas y al sitemap tras el deploy. `observability.md`: `public_gallery.load_failed`; sin auditoría ni métricas nuevas.
 - [ ] T092 Marcar spec como `implemented`
   - Antes de marcar: Lighthouse en Chrome, perfil móvil, sobre la build de producción servida en local en las cuatro rutas (Rendimiento ≥ 90, Accesibilidad, Buenas prácticas y SEO 100), con resultados en `review.md`; `evaluate.mjs` de las cuatro páginas sin fallos; imágenes de muestra y generadas listadas en `design.md`; los datos de contacto que sigan siendo provisionales se anotan en `review.md` como pendientes de la clínica.
+  - nota: hallazgo al pasar `evaluate.mjs inicio` (2026-11-16): `inicio.css` volvía a animar la entrada de la barra sin la condición `.js` del refinado del 2026-11-15, así que sin JavaScript la barra quedaba invisible (G-sin-js). Corregido con un test en `SiteStylesTokensTest` que falla antes y pasa después.
+  - nota: tarjeta para compartir revisada por el usuario (2026-11-16): "salud dental" en rosa (`primary`) como en el inicio; regenerada.
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

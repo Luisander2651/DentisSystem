@@ -1,5 +1,5 @@
 /* Estilos propios de la página: inicio. */
-.opt .hdr{position:sticky;top:14px;z-index:50;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border:0;padding:0 24px;animation:hdrIn 900ms var(--ease-spring) both}
+.opt .hdr{position:sticky;top:14px;z-index:50;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border:0;padding:0 24px}
 .opt .hdr .nav-links a::after{content:"";position:absolute;left:0;right:0;top:0;bottom:0;height:auto;border-radius:var(--radius-sm);background:var(--color-surface);box-shadow:0 4px 12px -6px color-mix(in srgb, var(--color-ink) 30%, transparent);transform:scale(.7);opacity:0;transition:transform 350ms var(--ease-spring),opacity 200ms;z-index:-1}
 @media (max-width:920px){.opt .hdr .nav-links,.opt .hdr .hdr-cta{display:none}.opt .hdr{top:10px;padding:0 12px}.logo-txt small{display:none}}
 .btn:active{transform:translateY(0) scale(.98)}
