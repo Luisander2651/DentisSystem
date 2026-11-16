@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Core\Http\PublicSiteSchedule;
 use Illuminate\Foundation\Vite;
 use Tests\Modules\Core\Integration\CoreIntegrationTestCase;
 
@@ -172,4 +173,100 @@ it('declares the sitemap in robots.txt and blocks nothing', function () {
 
     expect($robots)->toContain('Sitemap: https://dentissapp.com/sitemap.xml')
         ->and($robots)->not->toMatch('/^Disallow:\s*\/\s*$/m');
+});
+
+const SEO_SITE_PAGES = ['/', '/acerca-de-nosotros', '/galeria', '/contacto', '/aviso-de-privacidad', '/terminos-y-condiciones'];
+
+/** The contact data of a clinic that already gave its real values. */
+function seoRealContact(): void
+{
+    config([
+        'site.provisional' => array_fill_keys(array_keys(config('site.provisional')), false),
+        'site.contact.phone' => '+52 753 111 2233',
+        'site.contact.address' => 'Av. Lázaro Cárdenas 123, Centro',
+        'site.contact.schedule' => [1 => ['09:00', '19:00'], 2 => ['09:00', '19:00'], 3 => ['09:00', '19:00'], 4 => ['09:00', '19:00'], 5 => ['09:00', '19:00'], 6 => ['09:00', '14:00']],
+    ]);
+}
+
+it('gives each of the six pages its own title and description', function () {
+    $heads = array_map(function (string $path): array {
+        $page = seoPage($this, $path);
+
+        return [$page->query('//title')->item(0)->textContent, seoMeta($page, 'name', 'description')->item(0)->getAttribute('content')];
+    }, SEO_SITE_PAGES);
+
+    $titles = array_column($heads, 0);
+    $descriptions = array_column($heads, 1);
+
+    expect(array_unique($titles))->toHaveCount(6)
+        ->and(array_unique($descriptions))->toHaveCount(6);
+
+    foreach ($descriptions as $description) {
+        expect(mb_strlen($description))->toBeGreaterThanOrEqual(70)->toBeLessThanOrEqual(160);
+    }
+});
+
+it('declares each page of the site in Spanish with a single main heading and its canonical address', function (string $path) {
+    $page = seoPage($this, $path);
+
+    expect($page->query('//html[@lang="es"]')->length)->toBe(1)
+        ->and($page->query('//h1')->length)->toBe(1)
+        ->and($page->query('//head/link[@rel="canonical"]')->item(0)->getAttribute('href'))->toBe(rtrim('https://dentissapp.com'.$path, '/'))
+        ->and(seoMeta($page, 'property', 'og:title')->item(0)->getAttribute('content'))->toBe(config("site.pages.{$path}.title"))
+        ->and(seoMeta($page, 'name', 'description')->item(0)->getAttribute('content'))->toBe(config("site.pages.{$path}.description"));
+})->with(['/', '/acerca-de-nosotros', '/galeria', '/contacto']);
+
+it('publishes the structured data of the clinic only on the home and contact pages', function (string $path, int $count) {
+    seoRealContact();
+
+    $data = seoStructuredData(seoPage($this, $path));
+
+    expect($data)->toHaveCount($count);
+
+    if ($count === 1) {
+        expect($data[0]['@type'])->toBe('Dentist');
+    }
+})->with([
+    'inicio' => ['/', 1],
+    'acerca' => ['/acerca-de-nosotros', 0],
+    'galeria' => ['/galeria', 0],
+    'contacto' => ['/contacto', 1],
+]);
+
+it('publishes the name, address, phone and hours the contact page shows', function (string $path) {
+    seoRealContact();
+
+    $page = seoPage($this, $path);
+    $text = preg_replace('/\s+/', ' ', seoPage($this, '/contacto')->query('//body')->item(0)->textContent);
+    $data = seoStructuredData($page)[0];
+    $published = [];
+
+    foreach ($data['openingHoursSpecification'] as $specification) {
+        foreach ($specification['dayOfWeek'] as $day) {
+            $published[$day] = [$specification['opens'], $specification['closes']];
+        }
+    }
+
+    expect($data['name'])->toBe('Dentissa')
+        ->and($data['url'])->toBe('https://dentissapp.com')
+        ->and($data['address']['streetAddress'])->toBe('Av. Lázaro Cárdenas 123, Centro')
+        ->and($text)->toContain('Av. Lázaro Cárdenas 123, Centro')
+        ->and($data['telephone'])->toBe('+52 753 111 2233')
+        ->and($text)->toContain('+52 753 111 2233')
+        ->and($published)->toBe(['Monday' => ['09:00', '19:00'], 'Tuesday' => ['09:00', '19:00'], 'Wednesday' => ['09:00', '19:00'], 'Thursday' => ['09:00', '19:00'], 'Friday' => ['09:00', '19:00'], 'Saturday' => ['09:00', '14:00']]);
+
+    foreach (PublicSiteSchedule::fromConfig()->lines() as $line) {
+        expect($text)->toContain($line['hours']);
+    }
+})->with(['/', '/contacto']);
+
+it('leaves out of the structured data each contact value that is still provisional', function () {
+    seoRealContact();
+    config(['site.provisional.phone' => true, 'site.provisional.schedule' => true]);
+
+    $data = seoStructuredData(seoPage($this, '/contacto'))[0];
+
+    expect($data)->toHaveKey('address')
+        ->and($data)->not->toHaveKey('telephone')
+        ->and($data)->not->toHaveKey('openingHoursSpecification');
 });
