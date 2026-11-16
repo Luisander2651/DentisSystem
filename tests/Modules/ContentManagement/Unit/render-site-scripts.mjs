@@ -280,6 +280,127 @@ const scenarios = {
         };
     },
 
+    /* The before-and-after comparator with its flat drawing, driven by a list of actions (T031). */
+    async galleryCompare({ reduced = false, actions = [], summaries = {}, frames = [] }) {
+        const { initCompare } = await import(new URL('gallery.js', site));
+        const tokens = { '--color-enamel': ' #f2ebde', '--color-enamel-white': ' #fefeff', '--color-enamel-stain': ' #d9bd85' };
+        const element = (attributes = {}) => {
+            const node = {
+                attributes: { ...attributes },
+                classList: classList(attributes.class ? attributes.class.split(' ') : []),
+                style: {},
+                hidden: false,
+                textContent: attributes.text ?? '',
+                children: [],
+                markupWrites: 0,
+                listeners: {},
+                value: attributes.value,
+                getAttribute: (key) => node.attributes[key] ?? null,
+                setAttribute: (key, value) => { node.attributes[key] = String(value); },
+                addEventListener: (type, fn) => { (node.listeners[type] ??= []).push(fn); },
+                appendChild: (child) => node.children.push(child),
+                replaceChildren: () => { node.children = []; },
+                fire: (type) => (node.listeners[type] ?? []).forEach((fn) => fn({ target: node })),
+            };
+            Object.defineProperty(node, 'innerHTML', { set: () => { node.markupWrites += 1; } });
+
+            return node;
+        };
+        const names = { white: 'Blanqueamiento Dental', braces: 'Ortodoncia', implant: 'Implantes Dentales' };
+        const buttons = ['white', 'braces', 'implant'].map((mode, index) => element({
+            'data-ba': mode,
+            'aria-pressed': index === 0 ? 'true' : 'false',
+            'data-ba-summary': summaries[mode] ?? `Resumen ${mode}`,
+            text: ` ${names[mode]} `,
+        }));
+        const parts = {
+            '[data-teeth="before"]': element(),
+            '[data-teeth="after"]': element(),
+            '[data-ba-after]': element(),
+            '.ba-handle': element(),
+            '.ba-range': element({ value: '50' }),
+            '[data-ba-title]': element({ text: 'Blanqueamiento Dental' }),
+            '[data-ba-text]': element({ text: 'Resumen white' }),
+            '[data-if="isWhite"]': element(),
+        };
+        const root = {
+            querySelector: (selector) => parts[selector] ?? null,
+            querySelectorAll: (selector) => (selector === '[data-ba]' ? buttons : []),
+        };
+        const doc = { documentElement: {}, createElement: () => element() };
+        let observed = null;
+        const queued = [];
+        const win = {
+            matchMedia: (query) => ({ matches: Boolean(reduced) && query.includes('reduce') }),
+            getComputedStyle: () => ({ getPropertyValue: (token) => tokens[token] ?? '' }),
+            requestAnimationFrame: (fn) => queued.push(fn),
+            performance: { now: () => 0 },
+            IntersectionObserver: class {
+                constructor(fn) { observed = fn; }
+
+                observe() {}
+
+                disconnect() {}
+            },
+        };
+        const teeth = (side) => parts[`[data-teeth="${side}"]`].children.map((tooth) => tooth.style);
+        const drawing = (side) => ({
+            count: teeth(side).length,
+            colours: [...new Set(teeth(side).map((tooth) => tooth.background))],
+            turned: teeth(side).filter((tooth) => !/rotate\(0deg\)/.test(tooth.transform)).length,
+            missing: teeth(side).filter((tooth) => tooth.opacity === '0').length,
+        });
+        const snapshot = (after) => ({
+            after,
+            pressed: buttons.map((button) => button.attributes['aria-pressed']),
+            on: buttons.map((button) => button.classList.contains('on')),
+            title: parts['[data-ba-title]'].textContent,
+            text: parts['[data-ba-text]'].textContent,
+            textMarkupWrites: parts['[data-ba-text]'].markupWrites + parts['[data-ba-title]'].markupWrites,
+            value: parts['.ba-range'].value,
+            valueNow: parts['.ba-range'].attributes['aria-valuenow'] ?? null,
+            clip: parts['[data-ba-after]'].style.clipPath ?? null,
+            handle: parts['.ba-handle'].style.left ?? null,
+            sparkles: !parts['[data-if="isWhite"]'].hidden,
+            before: drawing('before'),
+            later: drawing('after'),
+        });
+
+        initCompare(root, win, doc);
+        const seen = [snapshot('start')];
+
+        for (const [action, argument] of actions) {
+            if (action === 'input') {
+                parts['.ba-range'].value = String(argument);
+                parts['.ba-range'].fire('input');
+            } else if (action === 'click') {
+                buttons.find((button) => button.attributes['data-ba'] === argument).fire('click');
+            }
+
+            seen.push(snapshot(`${action} ${argument}`));
+        }
+
+        const sweep = [];
+
+        if (observed) {
+            observed([{ isIntersecting: true }]);
+
+            for (const time of frames) {
+                if (time === 'touch') {
+                    parts['.ba-range'].value = '50';
+                    parts['.ba-range'].fire('input');
+                    continue;
+                }
+
+                const step = queued.shift();
+                step?.(time);
+                sweep.push(parts['.ba-range'].value);
+            }
+        }
+
+        return { seen, observing: observed !== null, sweep, pendingFrames: queued.length };
+    },
+
     /* The coupon and tickets as the server orders them: none removed nor reordered. */
     async promos({ tickets, at }) {
         const RealDate = Date;

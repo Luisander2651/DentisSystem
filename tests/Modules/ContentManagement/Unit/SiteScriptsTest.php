@@ -203,3 +203,65 @@ it('pins the gallery tour as tall as its sideways distance and moves it with the
 it('never pins the gallery tour when the visitor asked for less motion: the row keeps scrolling sideways', function () {
     expect(runSiteScript('galleryTour', ['reduced' => true]))->toMatchArray(['pinned' => false, 'scrub' => false, 'height' => null, 'focusable' => true]);
 });
+
+/*
+ * T031 (CA10, CA18, TM3): the before-and-after comparator with its flat drawing. The browser moves
+ * the slider with the arrows, Home and End and fires "input"; the comparator follows it.
+ */
+it('moves the line of the before and after with the slider and says where it is', function () {
+    $seen = runSiteScript('galleryCompare', ['reduced' => true, 'actions' => [['input', 51], ['input', 0], ['input', 100]]])['seen'];
+
+    expect(array_map(fn (array $state): array => [$state['value'], $state['valueNow'], $state['clip'], $state['handle']], $seen))->toBe([
+        ['50', '50', 'inset(0 0 0 50%)', '50%'],
+        ['51', '51', 'inset(0 0 0 51%)', '51%'],
+        ['0', '0', 'inset(0 0 0 0%)', '0%'],
+        ['100', '100', 'inset(0 0 0 100%)', '100%'],
+    ]);
+});
+
+it('changes the treatment, its pressed button and its text from the page', function () {
+    $seen = runSiteScript('galleryCompare', ['reduced' => true, 'actions' => [['click', 'braces'], ['click', 'implant'], ['click', 'white']]])['seen'];
+
+    expect(array_column($seen, 'pressed'))->toBe([['true', 'false', 'false'], ['false', 'true', 'false'], ['false', 'false', 'true'], ['true', 'false', 'false']])
+        ->and(array_column($seen, 'on'))->toBe([[true, false, false], [false, true, false], [false, false, true], [true, false, false]])
+        ->and(array_column($seen, 'title'))->toBe(['Blanqueamiento Dental', 'Ortodoncia', 'Implantes Dentales', 'Blanqueamiento Dental'])
+        ->and(array_column($seen, 'text'))->toBe(['Resumen white', 'Resumen braces', 'Resumen implant', 'Resumen white'])
+        ->and(array_column($seen, 'sparkles'))->toBe([true, false, false, true]);
+});
+
+it('paints the flat drawing of each treatment with the colours of the tokens', function () {
+    [$white, $braces, $implant] = runSiteScript('galleryCompare', ['reduced' => true, 'actions' => [['click', 'braces'], ['click', 'implant']]])['seen'];
+
+    expect($white['before'])->toBe(['count' => 16, 'colours' => ['#d9bd85'], 'turned' => 0, 'missing' => 0])
+        ->and($white['later'])->toBe(['count' => 16, 'colours' => ['#fefeff'], 'turned' => 0, 'missing' => 0])
+        ->and($braces['before']['turned'])->toBeGreaterThan(0)
+        ->and($braces['before']['colours'])->toBe(['#f2ebde'])
+        ->and($braces['later'])->toBe(['count' => 16, 'colours' => ['#f2ebde'], 'turned' => 0, 'missing' => 0])
+        ->and($implant['before']['missing'])->toBe(2)
+        ->and($implant['later']['missing'])->toBe(0);
+});
+
+it('writes no colour of its own in gallery.js', function () {
+    expect(file_get_contents(__DIR__.'/../../../../resources/js/site/gallery.js'))->not->toMatch('/#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?\b/');
+});
+
+it('copies the text of a treatment as text, never as markup (abuse)', function () {
+    $payload = '<img src=x onerror=alert(1)>';
+    $braces = runSiteScript('galleryCompare', ['reduced' => true, 'summaries' => ['braces' => $payload], 'actions' => [['click', 'braces']]])['seen'][1];
+
+    expect($braces['text'])->toBe($payload)
+        ->and($braces['textMarkupWrites'])->toBe(0);
+});
+
+it('sweeps the line once to show it moves, stops when touched and never with less motion', function () {
+    $moving = runSiteScript('galleryCompare', ['reduced' => false, 'frames' => [0, 600, 'touch', 900]]);
+    $still = runSiteScript('galleryCompare', ['reduced' => true, 'frames' => [0, 600]]);
+
+    expect($moving['observing'])->toBeTrue()
+        ->and($moving['sweep'][0])->toBe('50')
+        ->and($moving['sweep'][1])->not->toBe('50')
+        ->and($moving['sweep'][2])->toBe('50')
+        ->and($moving['pendingFrames'])->toBe(0)
+        ->and($still['observing'])->toBeFalse()
+        ->and($still['sweep'])->toBe([]);
+});
