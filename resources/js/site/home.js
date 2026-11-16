@@ -98,6 +98,32 @@ export function trappedFocus(focusables, current, backwards) {
     return index === -1 || index === focusables.length - 1 ? focusables[0] : focusables[index + 1];
 }
 
+const NARROW = 600;
+const FAN_GAP = 24;
+const FAN_STEP = (11 * Math.PI) / 180;
+
+/**
+ * Where and how big the fan of photos of the welcome opens. On a wide screen as the proposal does
+ * (two thirds down the scene). On a phone the closing text with the fan under it is centred in the
+ * scene, with as much room above as below and photos of the same size (refined 2026-11-15):
+ * `textShift` moves the text down, `drop` is how far the outer photos fall below the middle one.
+ */
+export function fanLayout({ width, height, cardWidth, cardHeight, textTop = 0, textBottom = 0, count = 6 }) {
+    const radius = width * 0.78;
+
+    if (width > NARROW) {
+        return { scale: Math.min(0.56, Math.max(0.32, width / (4.4 * cardWidth))), radius, baseline: height * 0.66, textShift: 0, drop: 0 };
+    }
+
+    const scale = Math.min(0.56, Math.max(0.32, width / (4.4 * cardWidth)));
+    const drop = (1 - Math.cos(((count - 1) / 2) * FAN_STEP)) * radius * 0.9;
+    const textHeight = textBottom - textTop;
+    const group = textHeight + FAN_GAP + cardHeight * scale + drop;
+    const top = Math.max(textTop, (height - group) / 2);
+
+    return { scale, radius, baseline: top + textHeight + FAN_GAP + (cardHeight * scale) / 2, textShift: top - textTop, drop };
+}
+
 function initDeck(doc, win, D) {
     const section = D.ref('VwSec');
     const slot = D.ref('VwSlot');
@@ -208,9 +234,9 @@ function initDeck(doc, win, D) {
             }
         }
 
-        const fanScale = Math.min(0.56, Math.max(0.32, W / (4.4 * w0)));
-        const radius = W * 0.78;
-        const step = (11 * Math.PI) / 180;
+        const textTop = end ? end.offsetTop : 0;
+        const { scale: fanScale, radius, baseline, textShift } = fanLayout({ width: W, height: H, cardWidth: w0, cardHeight: h0, textTop, textBottom: end ? textTop + end.offsetHeight : 0, count });
+        const step = FAN_STEP;
 
         cards.forEach((el, c) => {
             const k = order.indexOf(c);
@@ -227,7 +253,7 @@ function initDeck(doc, win, D) {
             const dop = clamp(4.2 - kk);
             const angle = (c - (count - 1) / 2) * step;
             const fx = W / 2 + Math.sin(angle) * radius;
-            const fy = H * 0.66 + (1 - Math.cos(angle)) * radius * 0.9;
+            const fy = baseline + (1 - Math.cos(angle)) * radius * 0.9;
             const hk = hover === c && e > 0.85 ? 1.14 : 1;
             hovered[c] += (hk - hovered[c]) * (1 - Math.exp(-dt * 10));
             const ec = ease(clamp((e - c * 0.035) / 0.82));
@@ -244,7 +270,7 @@ function initDeck(doc, win, D) {
         if (end) {
             const shown = clamp((e - 0.7) / 0.26);
             end.style.opacity = shown.toFixed(3);
-            end.style.transform = `translateX(-50%) translateY(${((1 - shown) * 24).toFixed(1)}px)`;
+            end.style.transform = `translateX(-50%) translateY(${((1 - shown) * 24 + textShift).toFixed(1)}px)`;
             end.style.pointerEvents = shown > 0.6 ? 'auto' : 'none';
         }
 

@@ -340,3 +340,23 @@ it('keeps the denture when it draws smoothly', function () {
         ->and(end($denture['drawn'])['drew'])->toBeTrue();
 });
 
+/*
+ * T034 (refined 2026-11-15): on a phone the closing text of the welcome and its fan of photos are
+ * centred in the scene, the photos as small as before; on a wide screen nothing changes.
+ */
+it('centres the welcome text and its fan on a phone, with photos of the same size, and leaves the fan as it was on a wide screen', function () {
+    [$phone, $wide] = runSiteScript('fan', ['screens' => [
+        ['width' => 390, 'height' => 800, 'cardWidth' => 273, 'cardHeight' => 340, 'textTop' => 100, 'textBottom' => 236, 'count' => 6],
+        ['width' => 1440, 'height' => 900, 'cardWidth' => 440, 'cardHeight' => 520, 'textTop' => 118, 'textBottom' => 300, 'count' => 6],
+    ]]);
+    $fanTop = $phone['baseline'] - $phone['scale'] * 340 / 2;
+    $textTop = 100 + $phone['textShift'];
+    $fanBottom = $phone['baseline'] + $phone['scale'] * 340 / 2 + $phone['drop'];
+
+    expect($phone['scale'])->toBe(max(0.32, 390 / (4.4 * 273)))
+        ->and($phone['textShift'])->toBeGreaterThan(0.0)
+        ->and($fanTop - ($textTop + 136))->toEqualWithDelta(24.0, 0.5)
+        ->and($textTop)->toEqualWithDelta(800 - $fanBottom, 0.5)
+        ->and($wide)->toEqual(['scale' => min(0.56, max(0.32, 1440 / (4.4 * 440))), 'radius' => 1440 * 0.78, 'baseline' => 900 * 0.66, 'textShift' => 0, 'drop' => 0]);
+});
+

@@ -496,6 +496,13 @@ const scenarios = {
         };
     },
 
+    /* Where and how big the fan of photos of the welcome opens (T034). */
+    async fan({ screens }) {
+        const { fanLayout } = await import(new URL('home.js', site));
+
+        return screens.map((screen) => fanLayout(screen));
+    },
+
     /* The coupon and tickets as the server orders them: none removed nor reordered. */
     async promos({ tickets, at }) {
         const RealDate = Date;

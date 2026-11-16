@@ -516,3 +516,13 @@ html:not(.js) .dk-end, .still .dk-end { position: static; transform: none; opaci
     .cf-count::after { content: ""; flex: 1; align-self: center; height: 1px; margin-left: var(--space-2); background: var(--color-line-strong); }
     .cf-row { padding-top: var(--space-6); }
 }
+
+/* Phones (refined 2026-11-15, the user's review on a phone): the welcome is centred, and the 3D tour
+   drops its own button (the bar, the floating button and the closing call still lead to WhatsApp)
+   and leaves room before the next section. */
+@media (max-width: 600px) {
+    .vw-copy { align-items: center; text-align: center; }
+    .vw-ctas { justify-content: center; }
+    .tour-copy > .btn { display: none; }
+    .tour { padding-bottom: 72px; }
+}
