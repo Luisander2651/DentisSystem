@@ -168,7 +168,8 @@ export function closeMenuOnEscape(doc, event) {
 
     const menu = doc.querySelector('details.menu-m[open]');
 
-    if (!menu) {
+    /* A menu driven by initPhoneMenu closes itself, with its animation. */
+    if (!menu || menu.dentissaMenu) {
         return false;
     }
 
@@ -190,6 +191,132 @@ function initMenus(doc) {
         sync();
         menu.addEventListener('toggle', sync);
     });
+}
+
+const MENU_CLOSE_MS = 520;
+const MENU_WIDE = 920;
+
+/** What the dock of the phone menu says about the clinic: open or closed, and until when (CA7). */
+export function menuStatus(status) {
+    const near = status.near.charAt(0).toLowerCase() + status.near.slice(1);
+
+    return { open: status.open, text: `${status.open ? 'Abierto ahora' : 'Cerrado'} · ${near}` };
+}
+
+/**
+ * The phone menu (T041, redesigned by the user): a <details> whose sheet grows in a circle from its
+ * button (CSS, class is-open). Opening locks the page, names the button "Cerrar menú", puts the
+ * focus on the first link and keeps it inside; Escape, a page link or a screen wider than 920 px
+ * close it, and the close waits for the animation before dropping `open` (at once with less
+ * motion). The dock says whether the clinic is open on the clinic's clock.
+ */
+export function initPhoneMenu(menu, win = window, doc = document, D = win.Dentissa) {
+    const summary = menu.querySelector('summary');
+
+    if (!summary) {
+        return null;
+    }
+
+    const reduced = () => win.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const focusables = () => [...menu.querySelectorAll('.mn-sheet a[href], .mn-sheet button:not([disabled])'), summary];
+    let closing = null;
+
+    const label = (open) => {
+        summary.setAttribute('aria-expanded', open ? 'true' : 'false');
+        summary.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+    };
+    const paintStatus = () => {
+        const holder = menu.querySelector('[data-menu-status]');
+        const text = menu.querySelector('[data-menu-status-text]');
+
+        if (!holder || !text || !D?.clinic) {
+            return;
+        }
+
+        const { open, text: words } = menuStatus(D.clinic());
+        holder.classList.toggle('open', open);
+        holder.classList.toggle('closed', !open);
+        text.textContent = words;
+    };
+    const onKey = (event) => {
+        if (event.key === 'Escape') {
+            close();
+            summary.focus();
+
+            return;
+        }
+
+        if (event.key !== 'Tab') {
+            return;
+        }
+
+        const items = focusables();
+        const index = items.indexOf(doc.activeElement);
+
+        if (event.shiftKey && index <= 0) {
+            event.preventDefault();
+            items[items.length - 1].focus();
+        } else if (!event.shiftKey && index === items.length - 1) {
+            event.preventDefault();
+            items[0].focus();
+        }
+    };
+    const open = () => {
+        if (closing !== null) {
+            win.clearTimeout(closing);
+            closing = null;
+        }
+
+        menu.setAttribute('open', '');
+        win.requestAnimationFrame(() => menu.classList.add('is-open'));
+        label(true);
+        doc.documentElement.style.overflow = 'hidden';
+        paintStatus();
+        doc.addEventListener('keydown', onKey);
+        win.setTimeout(() => focusables()[0]?.focus({ preventScroll: true }), 60);
+    };
+    const close = () => {
+        if (!menu.hasAttribute('open')) {
+            return;
+        }
+
+        menu.classList.remove('is-open');
+        label(false);
+        doc.documentElement.style.overflow = '';
+        doc.removeEventListener('keydown', onKey);
+
+        if (reduced()) {
+            menu.removeAttribute('open');
+
+            return;
+        }
+
+        closing = win.setTimeout(() => {
+            closing = null;
+            menu.removeAttribute('open');
+        }, MENU_CLOSE_MS);
+    };
+
+    summary.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        if (menu.classList.contains('is-open')) {
+            close();
+        } else {
+            open();
+        }
+    });
+    menu.querySelectorAll('[data-menu-close]').forEach((link) => link.addEventListener('click', close));
+    win.addEventListener('resize', () => {
+        if (win.innerWidth > MENU_WIDE) {
+            close();
+        }
+    });
+    label(false);
+    paintStatus();
+    menu.dentissaMenu = { open, close };
+
+    return menu.dentissaMenu;
 }
 
 /** Wires the page: called on import in the browser, and by the tests with a fake document. */
@@ -225,6 +352,7 @@ export function initCore(win = window, doc = document) {
 
     D.ready(() => {
         initMenus(doc);
+        doc.querySelectorAll('details.menu-m').forEach((menu) => initPhoneMenu(menu, win, doc, D));
         initTilt(doc, D);
         initParallax(doc);
         revealOnce(doc, win);

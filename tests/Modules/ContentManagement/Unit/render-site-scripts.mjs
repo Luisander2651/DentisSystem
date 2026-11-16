@@ -503,6 +503,100 @@ const scenarios = {
         return screens.map((screen) => fanLayout(screen));
     },
 
+    /* The phone menu driven by a list of actions (T041). */
+    async phoneMenu({ reduced = false, actions = [], at = '2026-11-16T12:00:00-06:00', schedule = { 1: ['09:00', '19:00'] } }) {
+        const { initPhoneMenu, clinicStatus, parseSchedule } = await import(new URL('core.js', site));
+        const timers = [];
+        let focused = 'none';
+        const node = (name, extra = {}) => ({
+            name,
+            listeners: {},
+            attributes: {},
+            classList: classList(),
+            hasAttribute(key) { return key in this.attributes; },
+            getAttribute(key) { return this.attributes[key] ?? null; },
+            setAttribute(key, value) { this.attributes[key] = String(value); },
+            removeAttribute(key) { delete this.attributes[key]; },
+            addEventListener(type, fn) { (this.listeners[type] ??= []).push(fn); },
+            focus() { focused = name; doc.activeElement = this; },
+            fire(type, event = {}) { (this.listeners[type] ?? []).forEach((fn) => fn({ preventDefault() { event.prevented = true; }, ...event })); return event; },
+            ...extra,
+        });
+        const summary = node('button');
+        const links = ['Inicio', 'Galería'].map((name) => node(name));
+        const tiles = ['Limpieza', 'Llamar'].map((name) => node(name));
+        const statusText = { textContent: 'horario' };
+        const status = node('status');
+        const doc = {
+            activeElement: null,
+            documentElement: { style: {} },
+            listeners: {},
+            addEventListener(type, fn) { (this.listeners[type] ??= []).push(fn); },
+            removeEventListener(type, fn) { this.listeners[type] = (this.listeners[type] ?? []).filter((other) => other !== fn); },
+            key(key, shiftKey = false) { const event = { key, shiftKey, prevented: false, preventDefault() { this.prevented = true; } }; (this.listeners.keydown ?? []).forEach((fn) => fn(event)); return event; },
+        };
+        const menu = node('menu', {
+            querySelector: (selector) => ({ summary, '[data-menu-status]': status, '[data-menu-status-text]': statusText })[selector] ?? null,
+            querySelectorAll: (selector) => (selector === '[data-menu-close]' ? links : selector.includes('a[href]') ? [...links, ...tiles] : []),
+        });
+        const win = {
+            innerWidth: 390,
+            listeners: {},
+            matchMedia: (query) => ({ matches: Boolean(reduced) && query.includes('reduce') }),
+            setTimeout: (fn, ms) => { timers.push([fn, ms]); return timers.length; },
+            clearTimeout: (id) => { if (timers[id - 1]) timers[id - 1][0] = () => {}; },
+            requestAnimationFrame: (fn) => fn(),
+            addEventListener(type, fn) { (this.listeners[type] ??= []).push(fn); },
+        };
+        const sched = parseSchedule(schedule);
+        const D = { clinic: () => clinicStatus(sched, new Date(at)) };
+        const snapshot = (after) => ({
+            after,
+            open: menu.hasAttribute('open'),
+            shown: menu.classList.contains('is-open'),
+            expanded: summary.attributes['aria-expanded'] ?? null,
+            label: summary.attributes['aria-label'] ?? null,
+            locked: doc.documentElement.style.overflow === 'hidden',
+            focused,
+            status: statusText.textContent,
+            statusOpen: status.classList.contains('open'),
+            statusClosed: status.classList.contains('closed'),
+        });
+        const flush = () => { while (timers.length) { const [fn] = timers.shift(); fn(); } };
+
+        initPhoneMenu(menu, win, doc, D);
+        const seen = [snapshot('start')];
+
+        for (const [action, argument] of actions) {
+            if (action === 'click') {
+                const event = summary.fire('click', {});
+                seen.push({ ...snapshot('click'), prevented: Boolean(event.prevented) });
+                continue;
+            }
+
+            if (action === 'flush') {
+                flush();
+            } else if (action === 'focus') {
+                [...links, ...tiles, summary].find((item) => item.name === argument).focus();
+            } else if (action === 'tab' || action === 'shiftTab') {
+                const event = doc.key('Tab', action === 'shiftTab');
+                seen.push({ ...snapshot(action), prevented: event.prevented });
+                continue;
+            } else if (action === 'escape') {
+                doc.key('Escape');
+            } else if (action === 'link') {
+                links[0].fire('click');
+            } else if (action === 'resize') {
+                win.innerWidth = argument;
+                (win.listeners.resize ?? []).forEach((fn) => fn());
+            }
+
+            seen.push(snapshot(`${action}${argument ? ' ' + argument : ''}`));
+        }
+
+        return seen;
+    },
+
     /* The coupon and tickets as the server orders them: none removed nor reordered. */
     async promos({ tickets, at }) {
         const RealDate = Date;

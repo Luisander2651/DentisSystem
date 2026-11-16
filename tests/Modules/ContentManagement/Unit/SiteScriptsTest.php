@@ -360,3 +360,51 @@ it('centres the welcome text and its fan on a phone, with photos of the same siz
         ->and($wide)->toEqual(['scale' => min(0.56, max(0.32, 1440 / (4.4 * 440))), 'radius' => 1440 * 0.78, 'baseline' => 900 * 0.66, 'textShift' => 0, 'drop' => 0]);
 });
 
+/*
+ * T041 (CA7, CA10): the phone menu. Opening locks the page, names the button "Cerrar menú", puts
+ * the focus inside and keeps it there; Escape, a page link or a wide screen close it; the dock
+ * says whether the clinic is open on the clinic's clock.
+ */
+it('opens the phone menu, locks the page and puts the focus on its first link', function () {
+    [$start, $open, $settled] = runSiteScript('phoneMenu', ['actions' => [['click', null], ['flush', null]]]);
+
+    expect($start)->toMatchArray(['open' => false, 'shown' => false, 'expanded' => 'false', 'label' => 'Abrir menú', 'locked' => false])
+        ->and($open)->toMatchArray(['prevented' => true, 'open' => true, 'shown' => true, 'expanded' => 'true', 'label' => 'Cerrar menú', 'locked' => true])
+        ->and($settled['focused'])->toBe('Inicio');
+});
+
+it('keeps the focus inside the open menu with Tab and Shift+Tab', function () {
+    $seen = runSiteScript('phoneMenu', ['actions' => [['click', null], ['flush', null], ['focus', 'button'], ['tab', null], ['shiftTab', null], ['focus', 'Galería'], ['tab', null]]]);
+    $tabs = array_values(array_filter($seen, fn (array $state): bool => in_array($state['after'], ['tab', 'shiftTab'], true)));
+
+    expect(array_map(fn (array $state): array => [$state['focused'], $state['prevented']], $tabs))->toBe([['Inicio', true], ['button', true], ['Galería', false]]);
+});
+
+it('closes the menu with Escape, giving the focus back to its button, after its animation', function () {
+    $seen = runSiteScript('phoneMenu', ['actions' => [['click', null], ['flush', null], ['escape', null], ['flush', null]]]);
+    [, , , $closing, $closed] = $seen;
+
+    expect($closing)->toMatchArray(['shown' => false, 'open' => true, 'expanded' => 'false', 'label' => 'Abrir menú', 'locked' => false, 'focused' => 'button'])
+        ->and($closed['open'])->toBeFalse();
+});
+
+it('closes at once with less motion, and when a page link is followed or the screen grows', function () {
+    $reduced = runSiteScript('phoneMenu', ['reduced' => true, 'actions' => [['click', null], ['escape', null]]]);
+    $link = runSiteScript('phoneMenu', ['actions' => [['click', null], ['flush', null], ['link', null], ['flush', null]]]);
+    $wide = runSiteScript('phoneMenu', ['actions' => [['click', null], ['flush', null], ['resize', 1024], ['flush', null]]]);
+
+    expect(end($reduced)['open'])->toBeFalse()
+        ->and(end($link))->toMatchArray(['open' => false, 'locked' => false])
+        ->and(end($wide))->toMatchArray(['open' => false, 'locked' => false]);
+});
+
+it('says in the dock whether the clinic is open, on the clinic clock', function () {
+    $open = runSiteScript('phoneMenu', ['at' => '2026-11-16T12:00:00-06:00', 'actions' => [['click', null]]])[1];
+    $closed = runSiteScript('phoneMenu', ['at' => '2026-11-16T20:30:00-06:00', 'actions' => [['click', null]]])[1];
+
+    expect($open)->toMatchArray(['statusOpen' => true, 'statusClosed' => false])
+        ->and($open['status'])->toStartWith('Abierto ahora · ')
+        ->and($closed)->toMatchArray(['statusOpen' => false, 'statusClosed' => true])
+        ->and($closed['status'])->toStartWith('Cerrado · ');
+});
+
