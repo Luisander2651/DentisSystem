@@ -76,6 +76,9 @@ puntúa: la composición ya está aceptada por el usuario.
 |---|---|---|---|
 | `recepcion.webp`, `consulta.webp`, `consultorio.webp`, `odontopediatria.webp`, `radiografia.webp`, `sonrisa.webp` | inicio, nosotros y galería (fotos fijas de la propuesta) | venían con la propuesta; por su aspecto parecen **generadas**, no fotos de la clínica — origen por confirmar con el usuario | fotos reales de la clínica; mientras tanto `data-origen="generada"` |
 | `diploma-horizontal.svg`, `diploma-vertical.svg` | respaldo de certificaciones sin imagen | dibujos de la propuesta | la imagen que el staff sube a cada certificación |
+| `diente.webp` | inicio, versión estática del recorrido 3D (sin WebGL o con movimiento reducido) | **dibujada**, de la propuesta | no se sustituye: es ilustración |
+| `tooth-mask.svg` | inicio, máscara con forma de diente de la ventana de la bienvenida | dibujo de la propuesta | no se sustituye: es forma decorativa |
+| `images/brand/compartir.png` | vista previa al compartir las seis rutas (CA19) | **generada** con `npm run brand:assets` desde el logo real, la frase de `config/site.php` y los tokens | se regenera si cambian el nombre, la frase o la ciudad |
 
 `/review` y `/release` exigen `max_samples: 0` salvo decisión del usuario.
 
