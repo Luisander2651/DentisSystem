@@ -401,6 +401,101 @@ const scenarios = {
         return { seen, observing: observed !== null, sweep, pendingFrames: queued.length };
     },
 
+    /* The 3D denture of the before and after over a fake WebGL, frame by frame (T032). */
+    async galleryDenture({ webgl = 'ok', reduced = false, frames = [], state = { mode: 'white', pos: 50 }, tokens = {}, visible = true }) {
+        const { readFileSync } = await import('node:fs');
+        const { initDenture, DENTURE_TOKENS } = await import(new URL('gallery.js', site));
+        const sheet = readFileSync(new URL('../../css/app.css', site), 'utf8');
+        const declared = Object.fromEntries([...sheet.matchAll(/(--color-[\w-]+):\s*(#[0-9a-fA-F]{3,6})\s*;/g)].map((match) => [match[1], ` ${match[2]}`]));
+        const values = { ...declared, ...tokens };
+        const calls = [];
+        let draws = 0;
+        let contextOptions = null;
+        const gl = {
+            VERTEX_SHADER: 1, FRAGMENT_SHADER: 2, COMPILE_STATUS: 3, LINK_STATUS: 4, ARRAY_BUFFER: 5, STATIC_DRAW: 6, FLOAT: 7, COLOR_BUFFER_BIT: 8, TRIANGLES: 9,
+            createShader: (type) => ({ type }),
+            shaderSource: (shader, source) => { shader.source = source; },
+            compileShader: () => {},
+            getShaderParameter: () => webgl !== 'broken',
+            getShaderInfoLog: () => 'broken shader',
+            createProgram: () => ({}),
+            attachShader: () => {},
+            linkProgram: () => {},
+            getProgramParameter: () => true,
+            useProgram: () => {},
+            createBuffer: () => ({}),
+            bindBuffer: () => {},
+            bufferData: () => {},
+            getAttribLocation: () => 0,
+            enableVertexAttribArray: () => {},
+            vertexAttribPointer: () => {},
+            getUniformLocation: (_program, name) => name,
+            viewport: () => {},
+            clearColor: () => {},
+            clear: () => {},
+            uniform1f: (name, x) => calls.push([name, [x]]),
+            uniform2f: (name, x, y) => calls.push([name, [x, y]]),
+            uniform3f: (name, x, y, z) => calls.push([name, [x, y, z]]),
+            drawArrays: () => { draws += 1; },
+            RENDERER: 10,
+            getExtension: (name) => (name === 'WEBGL_debug_renderer_info' ? { UNMASKED_RENDERER_WEBGL: 11 } : null),
+            getParameter: (key) => (key === 11 ? (webgl === 'swiftshader' ? 'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero)), SwiftShader driver)' : 'ANGLE (NVIDIA, GeForce)') : null),
+        };
+        const canvas = {
+            classList: classList(),
+            clientWidth: 900,
+            clientHeight: 560,
+            width: 300,
+            height: 150,
+            getContext: (kind, options) => {
+                contextOptions = options ?? null;
+
+                return kind === 'webgl' && webgl !== 'none' && !(webgl === 'software' && options?.failIfMajorPerformanceCaveat) ? gl : null;
+            },
+            getBoundingClientRect: () => (visible ? { top: 100, bottom: 660 } : { top: 2000, bottom: 2560 }),
+        };
+        const flat = { classList: classList() };
+        const root = { querySelector: (selector) => ({ '.ba-cv': canvas, '.ba-2d': flat })[selector] ?? null };
+        const queued = [];
+        const win = {
+            innerHeight: 900,
+            devicePixelRatio: 2,
+            matchMedia: (query) => ({ matches: Boolean(reduced) && query.includes('reduce') }),
+            getComputedStyle: () => ({ getPropertyValue: (token) => values[token] ?? '' }),
+            requestAnimationFrame: (fn) => queued.push(fn),
+        };
+
+        if (webgl !== 'none') {
+            win.WebGLRenderingContext = function WebGLRenderingContext() {};
+        }
+
+        const started = initDenture(root, state, win, { documentElement: {} });
+        const drawn = [];
+
+        for (const time of frames) {
+            const step = queued.shift();
+            const before = draws;
+            const from = calls.length;
+            step?.(time);
+            const last = (name) => calls.slice(from).filter(([uniform]) => uniform === name).at(-1)?.[1] ?? null;
+            drawn.push({ time, drew: draws > before, rot: last('uRot'), split: last('uSplit'), before: last('uBefore'), after: last('uAfter') });
+        }
+
+        const colours = Object.fromEntries(Object.keys(DENTURE_TOKENS).map((name) => [name, calls.find(([uniform]) => uniform === name)?.[1] ?? null]));
+
+        return {
+            started,
+            on: canvas.classList.contains('on'),
+            flatOff: flat.classList.contains('off'),
+            size: [canvas.width, canvas.height],
+            softwareRefused: contextOptions?.failIfMajorPerformanceCaveat === true,
+            tokens: DENTURE_TOKENS,
+            declared: Object.keys(declared),
+            colours,
+            drawn,
+        };
+    },
+
     /* The coupon and tickets as the server orders them: none removed nor reordered. */
     async promos({ tickets, at }) {
         const RealDate = Date;

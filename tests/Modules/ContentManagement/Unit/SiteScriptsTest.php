@@ -265,3 +265,78 @@ it('sweeps the line once to show it moves, stops when touched and never with les
         ->and($still['observing'])->toBeFalse()
         ->and($still['sweep'])->toBe([]);
 });
+
+/*
+ * T032 (CA18): the 3D denture of the before and after, over a fake WebGL. Its colours come from the
+ * tokens (A30); without WebGL or with a shader that does not compile the flat drawing stays.
+ */
+function siteHexChannels(string $hex): array
+{
+    return array_map(fn (string $pair): float => round(hexdec($pair) / 255, 3), str_split(ltrim($hex, '#'), 2));
+}
+
+it('reads every colour of the denture from its token and follows a change of token', function () {
+    $denture = runSiteScript('galleryDenture', ['frames' => [0]]);
+    $changed = runSiteScript('galleryDenture', ['frames' => [0], 'tokens' => ['--color-gum' => ' #000000']]);
+    $rounded = fn (?array $channels): array => array_map(fn (float $value): float => round($value, 3), $channels ?? []);
+
+    expect($denture['tokens'])->toHaveCount(15)
+        ->and(array_diff(array_values($denture['tokens']), $denture['declared']))->toBe([])
+        ->and(array_filter($denture['colours'], fn (?array $channels): bool => $channels === null))->toBe([])
+        ->and($rounded($denture['colours']['uGum']))->toBe(siteHexChannels('#fcabb5'))
+        ->and($rounded($denture['colours']['uMouth']))->toBe(siteHexChannels('#5c1726'))
+        ->and($rounded($changed['colours']['uGum']))->toBe([0.0, 0.0, 0.0]);
+});
+
+it('draws the denture and hides the flat drawing on its first frame', function () {
+    $denture = runSiteScript('galleryDenture', ['frames' => [0]]);
+
+    expect($denture)->toMatchArray(['started' => true, 'on' => true, 'flatOff' => true, 'size' => [1350, 840], 'softwareRefused' => true])
+        ->and($denture['drawn'][0]['drew'])->toBeTrue();
+});
+
+it('keeps the flat drawing when the browser cannot draw in 3D or the drawing fails', function (string $webgl) {
+    expect(runSiteScript('galleryDenture', ['webgl' => $webgl, 'frames' => [0]]))->toMatchArray(['started' => false, 'on' => false, 'flatOff' => false]);
+})->with(['without WebGL' => 'none', 'only a drawing by software, which would freeze the page' => 'software', 'a software renderer that does not say so' => 'swiftshader', 'shader that does not compile' => 'broken']);
+
+it('turns the denture slowly only without less motion', function () {
+    $turning = array_column(runSiteScript('galleryDenture', ['frames' => [0, 2000, 4000]])['drawn'], 'rot');
+    $still = array_column(runSiteScript('galleryDenture', ['reduced' => true, 'frames' => [0, 2000, 4000]])['drawn'], 'rot');
+
+    expect(array_unique(array_map(fn (array $rot): string => json_encode($rot), $turning)))->toHaveCount(3)
+        ->and(array_unique(array_map(fn (array $rot): string => json_encode($rot), $still)))->toHaveCount(1);
+});
+
+it('follows the line and the treatment of the comparator', function () {
+    $frames = range(0, 3000, 50);
+    $drawn = runSiteScript('galleryDenture', ['state' => ['mode' => 'braces', 'pos' => 30], 'frames' => $frames])['drawn'];
+    $last = collect($drawn)->filter(fn (array $frame): bool => $frame['drew'])->last();
+
+    expect($last['split'])->toBe([0.3])
+        ->and($last['before'][1])->toBeGreaterThan(0.9)
+        ->and($last['before'][0])->toBeLessThan(0.1)
+        ->and($last['after'][0])->toBeLessThan(0.1);
+});
+
+it('draws only while the denture is in view and at most about thirty frames a second', function () {
+    $hidden = runSiteScript('galleryDenture', ['visible' => false, 'frames' => [0, 100]])['drawn'];
+    $fast = array_column(runSiteScript('galleryDenture', ['frames' => [0, 10, 20, 40]])['drawn'], 'drew');
+
+    expect(array_column($hidden, 'drew'))->toBe([false, false])
+        ->and($fast)->toBe([true, false, false, true]);
+});
+
+it('gives the flat drawing back when the denture cannot keep up', function () {
+    $denture = runSiteScript('galleryDenture', ['frames' => [0, 400, 800, 1200, 1600]]);
+
+    expect($denture)->toMatchArray(['started' => true, 'on' => false, 'flatOff' => false])
+        ->and(array_column($denture['drawn'], 'drew'))->toBe([true, true, true, true, false]);
+});
+
+it('keeps the denture when it draws smoothly', function () {
+    $denture = runSiteScript('galleryDenture', ['frames' => range(0, 2000, 40)]);
+
+    expect($denture)->toMatchArray(['on' => true, 'flatOff' => true])
+        ->and(end($denture['drawn'])['drew'])->toBeTrue();
+});
+
