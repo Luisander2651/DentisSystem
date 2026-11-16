@@ -522,7 +522,7 @@ html:not(.js) .dk-end, .still .dk-end { position: static; transform: none; opaci
    it, stack the buttons at full width and size the stack of photos by the height of the screen so
    it stays in the first screen. The list of features stays hidden up to 920 px. */
 @media (max-width: 920px) {
-    .vw-copy .vw-lead { display: block; max-width: 560px; }
+    .vw-copy .vw-lead { display: block; max-width: 680px; }
 }
 @media (max-width: 600px) {
     .vw-copy { align-items: center; text-align: center; }
