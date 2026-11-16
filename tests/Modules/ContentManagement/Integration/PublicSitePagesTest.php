@@ -238,7 +238,7 @@ it('names the city of the clinic from config and never Mexico City (amendment of
     $html = $this->get($path)->assertOk()->getContent();
 
     expect($html)->not->toContain('Ciudad de México');
-})->with(['/', '/acerca-de-nosotros', '/galeria']);
+})->with(['/', '/acerca-de-nosotros', '/galeria', '/contacto']);
 
 it('says the city of the clinic in the label of the welcome', function () {
     config(['site.city' => 'Ciudad de Prueba']);
@@ -269,7 +269,7 @@ it('draws the arrows of its links as pictures, never as characters a phone may t
     $html = $this->get($path)->assertOk()->getContent();
 
     expect($html)->not->toMatch('/[\x{2190}-\x{21FF}\x{2B00}-\x{2BFF}]/u');
-})->with(['/', '/acerca-de-nosotros', '/galeria']);
+})->with(['/', '/acerca-de-nosotros', '/galeria', '/contacto']);
 
 /*
  * T040 (refined 2026-11-15): the phone menu redesigned by the user. It is still a <details>, so it
@@ -299,4 +299,95 @@ it('brings the redesigned phone menu with the pages, the treatments and the clin
         ->and($page->query("{$panel}//a[starts-with(@href, \"https://wa.me/5215598765432\")][contains(., \"Agendar cita\")]")->length)->toBe(1)
         ->and($page->query("{$panel}//a[contains(@href, \"/login\")]")->length)->toBe(1)
         ->and(siteTexts($page, "{$panel}//*[@data-menu-status]")[0] ?? '')->toContain('9:00');
+});
+
+/*
+ * T022 (CA1, CA6, CA7; A35): the contact page of the proposal. The form only composes a WhatsApp
+ * message in the browser: it has no address to post to nor a CSRF token, and it is hidden until
+ * JavaScript runs, while the direct WhatsApp link is in the HTML for everyone. Every contact
+ * detail, the map links and the weekly hours come from config/site.php.
+ */
+it('serves the contact page with the new site, one main heading and its own title', function () {
+    $page = sitePage($this, '/contacto');
+
+    expect($page->query('//header[contains(@class, "hdr")]')->length)->toBe(1)
+        ->and($page->query('//footer[contains(@class, "ft")]')->length)->toBe(1)
+        ->and($page->query('//h1')->length)->toBe(1)
+        ->and(siteTexts($page, '//title'))->toBe([config('site.pages./contacto.title')])
+        ->and(array_map(fn (DOMElement $meta): string => $meta->getAttribute('content'), iterator_to_array($page->query('//meta[@name="description"]'))))
+        ->toBe([config('site.pages./contacto.description')]);
+});
+
+it('composes the message in a form that cannot post to the server, with a direct WhatsApp link for everyone', function () {
+    config(['site.contact.whatsapp' => '5215598765432']);
+
+    $page = sitePage($this, '/contacto');
+    $forms = iterator_to_array($page->query('//main//form'));
+    $css = file_get_contents(resource_path('css/site/pages/contacto.css'));
+
+    expect($forms)->toHaveCount(1)
+        ->and($forms[0]->hasAttribute('action'))->toBeFalse()
+        ->and($forms[0]->hasAttribute('method'))->toBeFalse()
+        ->and($forms[0]->getAttribute('class'))->toContain('ct-form')
+        ->and($page->query('//main//form//input[@name="_token"]')->length)->toBe(0)
+        ->and($page->query('//main//form//textarea[@id="ct-msg"]')->length)->toBe(1)
+        ->and(siteTexts($page, '//main//form//button[@data-motivo]'))->toContain('Valoración general', 'Otro')
+        ->and($css)->toContain('html:not(.js) .ct-form{display:none}')
+        ->and($page->query('//main//*[contains(@class, "ct-direct")]//a[@href="https://wa.me/5215598765432"]')->length)->toBe(1);
+});
+
+it('takes the phone, the email, the networks, the address and the map links of the contact page from config', function () {
+    config([
+        'site.contact.whatsapp' => '5215598765432',
+        'site.contact.phone' => '+52 753 111 2233',
+        'site.contact.email' => 'citas@clinica.mx',
+        'site.contact.address' => 'Calle de Prueba 45, Colonia Norte',
+        'site.contact.maps_url' => 'https://maps.example.test/clinica',
+        'site.contact.instagram' => 'https://www.instagram.com/clinica.prueba',
+        'site.contact.facebook' => 'https://www.facebook.com/clinica.prueba',
+    ]);
+
+    $page = sitePage($this, '/contacto');
+    $main = implode(' ', siteTexts($page, '//main'));
+    $hrefs = siteHrefs($page, '//main//a');
+
+    expect($hrefs)->toContain('tel:+527531112233', 'mailto:citas@clinica.mx', 'https://www.instagram.com/clinica.prueba', 'https://www.facebook.com/clinica.prueba', 'https://maps.example.test/clinica')
+        ->and($hrefs)->toContain('https://waze.com/ul?q='.rawurlencode('Calle de Prueba 45, Colonia Norte').'&navigate=yes')
+        ->and(array_values(array_unique(array_map(fn (string $href): string => strtok($href, '?'), array_filter($hrefs, fn (string $href): bool => str_contains($href, 'wa.me'))))))->toBe(['https://wa.me/5215598765432'])
+        ->and($main)->toContain('+52 753 111 2233', 'citas@clinica.mx', 'Calle de Prueba 45, Colonia Norte', '@clinica.prueba')
+        ->and($page->query('//main//*[@data-copy="+52 753 111 2233"]')->length)->toBe(1)
+        ->and($page->query('//main//*[@data-copy="Calle de Prueba 45, Colonia Norte"]')->length)->toBe(1)
+        ->and($page->query('//main//*[@role="img"][contains(@aria-label, "Calle de Prueba 45, Colonia Norte")]')->length)->toBe(1)
+        ->and($main.' '.implode(' ', $hrefs))->not->toContain('Av. Universidad', '521234567890', '[CORREO', 'Ciudad de Mexico', '55 1234 5678');
+});
+
+it('lists the weekly hours of the contact page from config, with the closed days', function () {
+    config(['site.contact.schedule' => [1 => ['08:00', '18:00'], 2 => ['08:00', '18:00'], 3 => ['08:00', '18:00'], 4 => ['08:00', '18:00'], 5 => ['08:00', '14:00'], 6 => ['09:00', '13:30']]]);
+
+    $page = sitePage($this, '/contacto');
+    $rows = '//main//*[contains(@class, "wk-row")]';
+
+    expect(siteTexts($page, "{$rows}/*[contains(concat(\" \", @class, \" \"), \" wk-t \")]"))->toBe([
+        '8:00 a. m. – 6:00 p. m.', '8:00 a. m. – 6:00 p. m.', '8:00 a. m. – 6:00 p. m.', '8:00 a. m. – 6:00 p. m.',
+        '8:00 a. m. – 2:00 p. m.', '9:00 a. m. – 1:30 p. m.', 'Cerrado',
+    ])
+        ->and(array_map(fn (DOMElement $row): string => $row->getAttribute('data-day'), iterator_to_array($page->query($rows))))->toBe(['1', '2', '3', '4', '5', '6', '0'])
+        ->and($page->query("{$rows}[@data-day=\"0\"][contains(@class, \"closed\")]")->length)->toBe(1)
+        ->and($page->query("{$rows}[@data-day=\"6\"]//i[contains(@class, \"wk-bar\")]/@style")->item(0)?->nodeValue)->toBe('--from: 8.33%; --span: 37.5%; --i: 5');
+});
+
+it('opens no other tab from the contact page without noopener and noreferrer', function () {
+    $links = iterator_to_array(sitePage($this, '/contacto')->query('//a[@target="_blank"]'));
+
+    expect($links)->not->toBeEmpty();
+
+    foreach ($links as $link) {
+        expect(explode(' ', $link->getAttribute('rel')))->toContain('noopener', 'noreferrer');
+    }
+});
+
+it('serves the previous contact page when the new landing is off', function () {
+    config(['site.new_landing' => false]);
+
+    $this->get('/contacto')->assertOk()->assertViewIs('pages.landing.contacto');
 });

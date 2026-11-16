@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', ShowLandingPageController::class)->name('inicio');
 
 Route::get('/contacto', function () {
-    return view('pages.landing.contacto');
+    return view(config('site.new_landing') ? 'site.contacto' : 'pages.landing.contacto');
 })->name('contacto');
 
 Route::get('/galeria', ShowGalleryPageController::class)->name('galeria');
