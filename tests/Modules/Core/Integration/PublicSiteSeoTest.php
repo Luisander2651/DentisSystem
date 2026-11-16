@@ -135,3 +135,41 @@ it('preloads the two fonts of the first screen', function () {
         ->and($fonts->item(0)->getAttribute('type'))->toBe('font/woff2')
         ->and($fonts->item(0)->hasAttribute('crossorigin'))->toBeTrue();
 });
+
+it('serves a sitemap with the six indexable pages as absolute addresses without a trailing slash', function () {
+    $response = $this->get('/sitemap.xml')->assertOk();
+    $sitemap = new DOMDocument;
+
+    expect($response->headers->get('Content-Type'))->toStartWith('application/xml')
+        ->and($sitemap->loadXML($response->getContent()))->toBeTrue()
+        ->and($sitemap->documentElement->namespaceURI)->toBe('http://www.sitemaps.org/schemas/sitemap/0.9');
+
+    $locations = array_map(fn (DOMElement $loc): string => $loc->textContent, iterator_to_array($sitemap->getElementsByTagName('loc')));
+
+    expect($locations)->toBe([
+        'https://dentissapp.com',
+        'https://dentissapp.com/acerca-de-nosotros',
+        'https://dentissapp.com/galeria',
+        'https://dentissapp.com/contacto',
+        'https://dentissapp.com/aviso-de-privacidad',
+        'https://dentissapp.com/terminos-y-condiciones',
+    ]);
+});
+
+it('lists in the sitemap only what config/site.php marks as indexable', function () {
+    config(['site.indexable' => ['/', '/galeria']]);
+
+    $body = $this->get('/sitemap.xml')->assertOk()->getContent();
+
+    expect(substr_count($body, '<loc>'))->toBe(2)
+        ->and($body)->not->toContain('/login')
+        ->and($body)->not->toContain('/agenda')
+        ->and($body)->not->toContain('/dashboard');
+});
+
+it('declares the sitemap in robots.txt and blocks nothing', function () {
+    $robots = file_get_contents(public_path('robots.txt'));
+
+    expect($robots)->toContain('Sitemap: https://dentissapp.com/sitemap.xml')
+        ->and($robots)->not->toMatch('/^Disallow:\s*\/\s*$/m');
+});

@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\Http\ShowDashboardPageController;
+use App\Core\Http\ShowSitemapController;
 use App\Modules\ContentManagement\Infrastructure\HTTP\Controllers\ShowGalleryPageController;
 use App\Modules\ContentManagement\Infrastructure\HTTP\Controllers\ShowLandingPageController;
 use App\Modules\Reports\Infrastructure\Http\Controllers\ShowReportsPageController;
@@ -25,6 +26,8 @@ Route::get('/aviso-de-privacidad', function () {
 Route::get('/terminos-y-condiciones', function () {
     return view('pages.landing.terminos');
 })->name('terminos');
+
+Route::get('/sitemap.xml', ShowSitemapController::class)->name('sitemap');
 
 Route::get('/login', function () {
     return view('pages.auth.login');
