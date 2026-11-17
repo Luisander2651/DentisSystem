@@ -25,7 +25,7 @@ final readonly class GetPublicTestimonialsController
     public function __invoke(Request $request): JsonResponse
     {
         try {
-            $result = $this->useCase->execute(new GetTestimonialsDTO(id: $request->query('id'), status: 'visible'));
+            $result = $this->useCase->execute(new GetTestimonialsDTO(id: is_string($request->query('id')) ? $request->query('id') : null, status: 'visible'));
 
             if (count($result) === 1) {
                 return response()->json(new TestimonialResource($result[0]));

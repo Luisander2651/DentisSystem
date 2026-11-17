@@ -6,6 +6,7 @@ use App\Modules\ContentManagement\Modules\Testimonios\Aplication\DTOs\SubmitPubl
 use App\Modules\ContentManagement\Modules\Testimonios\Aplication\UseCases\SubmitPublicTestimonialUseCase;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Repositories\TestimonialRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\Persistence\Eloquent\Models\TestimonialModel;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\Modules\ContentManagement\Integration\ContentManagementIntegrationTestCase;
@@ -145,7 +146,7 @@ it('refuses a fourth accepted submission in ten minutes from the same connection
     $this->post('/opinion', opinionForm(['website' => 'https://spam.example']))->assertRedirect('/opinion');
 
     $this->post('/opinion', opinionForm())
-        ->assertStatus(429)
+        ->assertTooManyRequests()
         ->assertSee('Enviaste varias opiniones seguidas. Inténtalo de nuevo en unos minutos.');
 
     expect(TestimonialModel::query()->count())->toBe(2);
@@ -198,7 +199,7 @@ function publicTestimonialAuthors(ContentManagementIntegrationTestCase $test, st
 }
 
 it('lists only the visible testimonials in the public API, never one just sent nor any hidden one (CA11, TM7)', function () {
-    $this->withoutMiddleware(IlluminateRoutingMiddlewareThrottleRequests::class);
+    $this->withoutMiddleware(ThrottleRequests::class);
     TestimonialModel::query()->create(['author' => 'Publicado', 'description' => 'Una opinión ya revisada y publicada por la clínica.', 'status' => 'visible']);
     TestimonialModel::query()->create(['author' => 'Oculto', 'description' => 'Una opinión que la clínica ocultó en Contenido.', 'status' => 'oculto']);
     $this->post('/opinion', opinionForm(['name' => 'Recién enviada']))->assertRedirect('/opinion');
@@ -208,7 +209,7 @@ it('lists only the visible testimonials in the public API, never one just sent n
 });
 
 it('keeps listing the hidden ones to the staff, who publishes them (CA11, CA4)', function () {
-    $this->withoutMiddleware(IlluminateRoutingMiddlewareThrottleRequests::class);
+    $this->withoutMiddleware(ThrottleRequests::class);
     $this->post('/opinion', opinionForm(['name' => 'Recién enviada']))->assertRedirect('/opinion');
     $this->actingAsAdmin();
 
@@ -262,15 +263,16 @@ it('shows each error beside its field, tied to it, with what was written (CA3, C
         ->and($page->query('//input[@name="consent"][@aria-invalid="true"]'))->toHaveCount(1);
 });
 
-it('thanks the visitor in a status region in place of the form once the opinion is sent (CA2, CA10)', function () {
+it('thanks the visitor in place of the form, in a heading that takes the focus, once the opinion is sent (CA2, CA10, R11)', function () {
     $this->withoutVite();
     $this->post('/opinion', opinionForm());
     $page = opinionPage($this->get('/opinion')->getContent());
 
     expect($page->query('//form[@action="'.route('opinion.store').'"]'))->toHaveCount(0)
-        ->and($page->query('//*[@role="status"]//*[@tabindex="-1"][contains(., "Gracias")]'))->toHaveCount(1)
-        ->and($page->query('//*[@role="status"]')->item(0)->textContent)->toContain('la publicaremos cuando la revisemos')
-        ->and($page->query('//*[@role="status"]//a[@href="'.route('inicio').'"]'))->toHaveCount(1);
+        ->and($page->query('//*[@data-op-thanks][@tabindex="-1"][contains(., "Gracias")]'))->toHaveCount(1)
+        ->and($page->query('//*[contains(@class, "op-done")][@role]'))->toHaveCount(0)
+        ->and($page->query('//*[contains(@class, "op-done")]')->item(0)->textContent)->toContain('la publicaremos cuando la revisemos')
+        ->and($page->query('//*[contains(@class, "op-done")]//a[@href="'.route('inicio').'"]'))->toHaveCount(1);
 });
 
 it('says on the page when the opinion could not be saved (P7)', function () {
@@ -323,4 +325,65 @@ it('passes the name and the opinion through escapeHtml wherever the screen of Co
     foreach ($joined[1] as $expression) {
         expect(trim($expression))->toStartWith('escapeHtml(');
     }
+});
+
+it('keeps the visitors of one IPv6 network under the same limit, and visitors of other networks apart (CA5, R1)', function () {
+    $from = fn (string $ip) => $this->withServerVariables(['REMOTE_ADDR' => $ip])->post('/opinion', opinionForm());
+
+    $from('2001:db8:1:2::1')->assertRedirect('/opinion');
+    $from('2001:db8:1:2::2')->assertRedirect('/opinion');
+    $from('2001:db8:1:2:aaaa::3')->assertRedirect('/opinion');
+
+    $from('2001:db8:1:2:ffff:ffff:ffff:ffff')->assertTooManyRequests();
+    $from('2001:db8:1:3::1')->assertRedirect('/opinion');
+
+    expect(TestimonialModel::query()->count())->toBe(4);
+});
+
+it('refuses new opinions for everybody after thirty in one hour, whatever the connection (CA5, R1)', function () {
+    foreach (range(1, 30) as $n) {
+        $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.'.$n])->post('/opinion', opinionForm())->assertRedirect('/opinion');
+    }
+
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.7'])->post('/opinion', opinionForm())
+        ->assertTooManyRequests()
+        ->assertSee('Recibimos muchas opiniones en este momento. Inténtalo de nuevo más tarde.');
+
+    expect(TestimonialModel::query()->count())->toBe(30);
+
+    $this->travel(61)->minutes();
+
+    $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.7'])->post('/opinion', opinionForm())->assertRedirect('/opinion');
+});
+
+it('answers a malformed id in the public API without an error and without hidden testimonials (CA11, R6)', function () {
+    $this->withoutMiddleware(ThrottleRequests::class);
+    $hidden = TestimonialModel::query()->create(['author' => 'Oculto', 'description' => 'Una opinión que la clínica ocultó en Contenido.', 'status' => 'oculto']);
+
+    $this->getJson('/api/v1/public/testimonials?id[]=1')->assertOk();
+
+    expect(publicTestimonialAuthors($this, '?id='.$hidden->id))->toBe([]);
+});
+
+it('keeps a sent opinion off the home until the clinic publishes it, then shows it once the cache expires (CA2, CA4)', function () {
+    $this->withoutVite();
+    $this->withoutMiddleware(ThrottleRequests::class);
+    $this->post('/opinion', opinionForm(['name' => 'Rosa Elena Díaz']))->assertRedirect('/opinion');
+
+    expect($this->get('/')->assertOk()->getContent())->not->toContain('Rosa Elena Díaz');
+
+    $this->actingAsAdmin();
+    $id = TestimonialModel::query()->sole()->id;
+    $this->putJson('/api/v1/testimonials/'.$id, ['author' => 'Rosa Elena Díaz', 'description' => 'Me atendieron con mucha paciencia y el resultado de mi limpieza fue excelente.', 'status' => 'visible'])->assertOk();
+
+    $this->travel(11)->minutes();
+
+    expect($this->get('/')->assertOk()->getContent())->toContain('Rosa Elena Díaz');
+});
+
+it('leaves no empty description on the consent when it has no error (R10)', function () {
+    $this->withoutVite();
+    $page = opinionPage($this->get('/opinion')->getContent());
+
+    expect($page->query('//*[@aria-describedby=""]'))->toHaveCount(0);
 });

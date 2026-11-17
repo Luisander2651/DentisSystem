@@ -4,7 +4,7 @@
     "Contenido" (CA1, CA2). A plain form posted to the server, so it works without JavaScript; each
     error sits beside its field and is tied to it (CA3, CA10). The trap field `website` is out of
     sight and out of the keyboard (CA6). After sending, the thanks take the place of the form in a
-    status region (CA2). Styles in resources/css/site/pages/opinion.css.
+    heading that takes the focus (CA2). Styles in resources/css/site/pages/opinion.css.
 --}}
 @extends('layouts.site', ['siteAssets' => ['resources/js/site/pages/opinion.js']])
 
@@ -28,10 +28,10 @@
 
         <div class="card op-card rise d2">
             @if ($throttled ?? false)
-                <p class="op-alert" role="alert">Enviaste varias opiniones seguidas. Inténtalo de nuevo en unos minutos.</p>
+                <p class="op-alert" role="alert">{{ $throttled }}</p>
                 <a class="btn btn-ghost" href="{{ route('inicio') }}">Volver al inicio</a>
             @elseif (session('opinion_sent'))
-                <div class="op-done" role="status">
+                <div class="op-done">
                     <h2 class="op-done-h" tabindex="-1" data-op-thanks>¡Gracias por tu opinión!</h2>
                     <p>La recibimos bien: la publicaremos cuando la revisemos.</p>
                     <a class="btn btn-ghost" href="{{ route('inicio') }}">Volver al inicio</a>
@@ -60,7 +60,7 @@
 
                     <div class="op-field">
                         <label class="op-check">
-                            <input type="checkbox" name="consent" value="1" required @checked(old('consent')) aria-describedby="{{ $describedBy('consent') }}" @error('consent') aria-invalid="true" @enderror>
+                            <input type="checkbox" name="consent" value="1" required @checked(old('consent')) @error('consent') aria-describedby="op-consent-err" aria-invalid="true" @enderror>
                             <span>Acepto que Dentissa publique mi nombre y mi opinión en su sitio. Consulta el <a href="{{ route('aviso-privacidad') }}">aviso de privacidad</a>.</span>
                         </label>
                         @error('consent')<p class="op-err" id="op-consent-err">{{ $message }}</p>@enderror

@@ -1,6 +1,7 @@
 {{--
     The <head> of the public site for search engines and social networks (spec 026, CA11, CA13,
-    CA15): the page's title and description, `noindex` on a page that asks for it (spec 027, /opinion), (from its own @section, the only source), the
+    CA15): the page's title and description (from its own @section, the only source), `noindex` on a page
+    that asks for it (spec 027, /opinion), the
     canonical address without a trailing slash or query string, Open Graph with the share card (CA19), the browser bar colour
     (--color-primary) and, on the pages config/site.php marks, the clinic's structured data
     (Dentist) without any value that is still provisional. The JSON is encoded with JSON_HEX_TAG so

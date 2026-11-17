@@ -897,6 +897,13 @@ const scenarios = {
 
         return { copied, seen, regionAfter: region.textContent, shownAfter: 'data-shown' in region.attributes };
     },
+
+    /* The counter of the opinion page keeps the minimum in sight (spec 027, R8). */
+    async opinionCount({ lengths = [] }) {
+        const { countLabel } = await import(new URL('pages/opinion.js', site));
+
+        return lengths.map((length) => countLabel(length));
+    },
 };
 
 if (!scenarios[scenario]) {

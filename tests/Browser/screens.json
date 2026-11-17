@@ -215,7 +215,7 @@
                     "click": ".op-send"
                 },
                 {
-                    "waitFor": "#op-name-err"
+                    "waitFor": "[data-op-form][data-op-ready] #op-name-err"
                 }
             ]
         },
