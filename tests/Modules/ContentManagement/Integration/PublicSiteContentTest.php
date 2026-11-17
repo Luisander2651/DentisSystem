@@ -123,11 +123,12 @@ it('leaves the certifications section out when there are none', function () {
     expect(homePage($this)->query('//section[@id="certificaciones"]')->length)->toBe(0);
 });
 
-it('invites to leave an opinion by WhatsApp when there are no testimonials', function () {
+it('invites to leave an opinion on the page of opinions when there are no testimonials (027 CA1, replaces the WhatsApp link)', function () {
     $page = homePage($this);
 
     expect(homeText($page, '//*[contains(@class, "ts-empty")]'))->toContain('¿Ya nos visitaste?')
-        ->and($page->query('//*[contains(@class, "ts-empty")]//a[starts-with(@href, "https://wa.me/")]')->length)->toBe(1);
+        ->and($page->query('//*[contains(@class, "ts-empty")]//a[@href="'.route('opinion').'"]')->length)->toBe(1)
+        ->and($page->query('//*[contains(@class, "ts-empty")]//a[starts-with(@href, "https://wa.me/")]')->length)->toBe(0);
 });
 
 it('adapts the testimonials to how many there are', function (int $count, bool $carousel, bool $ribbon) {

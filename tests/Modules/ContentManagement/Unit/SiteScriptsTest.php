@@ -518,3 +518,11 @@ it('pauses the ribbon once when a finger lands on the icon of its button, and re
     expect(array_column($seen, 'pressed'))->toBe(['true', 'false', 'false', 'true', 'false', 'false', 'false'])
         ->and(array_column($seen, 'held'))->toBe([true, false, false, true, false, false, true]);
 });
+
+it('counts the characters of an opinion and keeps the minimum of twenty in sight (027, R8)', function () {
+    expect(runSiteScript('opinionCount', ['lengths' => [0, 5, 255]]))->toBe([
+        '0 de 255 caracteres (mínimo 20)',
+        '5 de 255 caracteres (mínimo 20)',
+        '255 de 255 caracteres (mínimo 20)',
+    ]);
+});

@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <x-site.seo :title="html_entity_decode($__env->yieldContent('title', config('site.name')), ENT_QUOTES)" :description="html_entity_decode(trim($__env->yieldContent('description')), ENT_QUOTES)" />
+    <x-site.seo :title="html_entity_decode($__env->yieldContent('title', config('site.name')), ENT_QUOTES)" :description="html_entity_decode(trim($__env->yieldContent('description')), ENT_QUOTES)" :noindex="$__env->hasSection('noindex')" />
 
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/brand/icon-192.png') }}">

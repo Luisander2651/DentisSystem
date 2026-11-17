@@ -4,23 +4,23 @@ namespace App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\Persi
 
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Entities\TestimonialEntity;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Repositories\TestimonialRepositoryInterface;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialDate;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialId;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialStatus;
-use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialDate;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\Persistence\Eloquent\Models\TestimonialModel;
 
 final readonly class EloquentTestimonialRepository implements TestimonialRepositoryInterface
 {
-    public function save(TestimonialEntity $data): void
+    public function save(TestimonialEntity $data): int
     {
-        TestimonialModel::updateOrCreate(
+        return (int) TestimonialModel::updateOrCreate(
             ['id' => $data->Id()->value],
             [
                 'author' => $data->Author()->value,
                 'description' => $data->Description()->value,
                 'status' => $data->Status()->value,
             ]
-        );
+        )->id;
     }
 
     public function destroy(TestimonialId $id): void

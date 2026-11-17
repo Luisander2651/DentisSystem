@@ -12,8 +12,8 @@ final readonly class TestimonialAuthor
         public string $value,
     ) {
         $trimmed = trim($value);
-        if (empty($trimmed) || strlen($trimmed) > 255) {
-            throw TestimonialException::empty(static::class);
+        if (empty($trimmed) || mb_strlen($trimmed) > 255) {
+            throw TestimonialException::empty(self::class);
         }
     }
 

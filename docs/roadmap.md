@@ -25,6 +25,7 @@ Para pasar de **prototipo** a **MVP** con una clínica real:
 - Specs 001–012 revisadas y pasadas de `inferred` a `approved` (cumplido el 2026-09-23).
 
 ## Pendientes y deuda
+- Testimonios del inicio sin orden ni tope (detectado el 2026-11-17, tras la spec 027): `GetLandingContentUseCase` trae todos los visibles y la consulta del repositorio no tiene `ORDER BY`, así que salen en el orden que devuelva PostgreSQL. El carrusel pinta todos (un punto por testimonio) y la cinta, con 4 o más, los repite todos dos veces. Con la página de opiniones pueden crecer mucho. Definir el orden (los más recientes primero) y un tope para el carrusel y la cinta (por ejemplo, 8), con una spec corta.
 - Limpieza tras liberar la 026 (v0.11.0), con confirmación del usuario: un `/chore` borra las vistas, componentes y JS del sitio anterior (`layouts/landing`, `pages/landing/{inicio,acerca,galeria,contacto}`, `resources/js/pages/landing/`), `PublicGalleryScriptTest` y el interruptor `SITE_NEW_LANDING`. Sin migraciones que contraer.
 - Datos reales de contacto de la clínica pendientes: las variables `SITE_*` siguen vacías en producción y el sitio muestra los provisionales (enmienda de CA7 de la 026).
 - Aceptados sin tarea en la review de la spec 026 (v0.11.0; decisión del usuario, 2026-11-17):

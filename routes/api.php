@@ -52,6 +52,7 @@ use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Contro
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\SavePromotionController;
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\UpdatePromotionController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\DeleteTestimonialController;
+use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\GetPublicTestimonialsController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\GetTestimonialsController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\SaveTestimonialController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\UpdateTestimonialController;
@@ -93,7 +94,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::get('/', GetPromotionsController::class);
             });
             Route::prefix('testimonials')->group(function (): void {
-                Route::get('/', GetTestimonialsController::class);
+                Route::get('/', GetPublicTestimonialsController::class);
             });
         });
 
