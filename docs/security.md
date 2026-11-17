@@ -161,7 +161,7 @@ RS3 mitigado (spec 014).
 (spec 011).
 
 Correcciones:
-- RS4.a No exponer contenido oculto en la API pública (derivada, spec 011) — estado: pendiente (testimonios corregidos en la spec 027: `GET /api/v1/public/testimonials` lista solo los visibles; certificaciones, galería y promociones siguen pendientes)
+- RS4.a No exponer contenido oculto en la API pública (derivada, spec 011) — estado: pendiente (testimonios corregidos en la spec 027, v0.12.0: `GET /api/v1/public/testimonials` lista solo los visibles; certificaciones, galería y promociones siguen pendientes)
 - Entrada pública de la spec 027 (`POST /opinion`, sin sesión): CSRF del grupo `web`, límite de 3 envíos aceptados cada 10 min por IP, campo trampa, largos máximos (nombre 80, opinión 255), estado y fecha fijados por el servidor (siempre oculto) y moderación del staff antes de publicar. El consentimiento para publicar el nombre y la opinión queda en el log de recepción. Tests: `PublicTestimonialSubmissionTest`.
 
 ### RS5 · Media — CSRF
