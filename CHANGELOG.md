@@ -23,6 +23,7 @@ Sitio público nuevo: inicio, acerca de nosotros, galería y contacto rediseñad
 ### Fixed
 - La suite de pruebas en paralelo ya no se queda sin memoria (fix 2026-11-16-fix-memoria-suite-paralela).
 - La revisión automática de la pantalla de testimonios del inicio ya no falla al azar (fix 2026-11-17-fix-ui-audit-testimonios-intermitente).
+- La revisión de seguridad de la configuración de contenedores vuelve a ejecutarse en cada cambio que la toca (fix 2026-11-17-fix-trivy-varios-objetivos).
 
 ### Security
 - El contenido oculto y las promociones vencidas no aparecen en las páginas, en los datos para buscadores ni en el sitemap, y el texto que captura el personal se muestra siempre como texto (spec 026).
