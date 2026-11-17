@@ -472,3 +472,11 @@ it('opens nothing with an empty message: it marks the field and says why, until 
         ->and($typed)->toMatchArray(['invalid' => null, 'errorShown' => false])
         ->and($sent['opened'])->toHaveCount(1);
 });
+
+it('pauses the services ribbon with its button, holds it while it has the focus and toggles it with a touch (R1)', function () {
+    $seen = runSiteScript('marquee', ['actions' => ['click', 'click', 'focusin', 'focusout', 'touch', 'touch', 'mouse']]);
+
+    expect(array_column($seen, 'held'))->toBe([true, false, true, false, true, false, false])
+        ->and(array_column($seen, 'pressed'))->toBe(['true', 'false', 'false', 'false', 'true', 'false', 'false'])
+        ->and(array_unique(array_column($seen, 'label')))->toBe(['Pausar la cinta de servicios']);
+});

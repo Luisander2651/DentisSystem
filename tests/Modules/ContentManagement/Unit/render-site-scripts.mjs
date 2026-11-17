@@ -739,6 +739,42 @@ const scenarios = {
             tickets: buttons.map((button) => ({ title: button.attributes.title, hidden: button.hidden, left: button.left.textContent })),
         };
     },
+
+    /* The services ribbon of the home: its pause button, the focus and a touch (T044, R1). */
+    async marquee({ actions = [] }) {
+        const { initMarquee } = await import(new URL('home.js', site));
+        const node = (name) => ({
+            name,
+            listeners: {},
+            attributes: {},
+            classList: classList(),
+            getAttribute(key) { return this.attributes[key] ?? null; },
+            setAttribute(key, val) { this.attributes[key] = String(val); },
+            addEventListener(type, fn) { (this.listeners[type] ??= []).push(fn); },
+            fire(type, event = {}) { (this.listeners[type] ?? []).forEach((fn) => fn({ target: this, ...event })); },
+        });
+        const button = node('button');
+        button.attributes['aria-pressed'] = 'false';
+        button.attributes['aria-label'] = 'Pausar la cinta de servicios';
+        const root = node('root');
+        root.querySelector = (selector) => (selector === '[data-mq-pause]' ? button : null);
+
+        initMarquee(root);
+
+        return actions.map((action) => {
+            if (action === 'click') {
+                button.fire('click');
+            } else if (action === 'touch') {
+                root.fire('pointerdown', { pointerType: 'touch', target: root });
+            } else if (action === 'mouse') {
+                root.fire('pointerdown', { pointerType: 'mouse', target: root });
+            } else {
+                root.fire(action);
+            }
+
+            return { after: action, held: root.classList.contains('hold'), pressed: button.attributes['aria-pressed'], label: button.attributes['aria-label'] };
+        });
+    },
 };
 
 if (!scenarios[scenario]) {

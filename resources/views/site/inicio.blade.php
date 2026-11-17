@@ -92,14 +92,17 @@
     </div>
 </section>
 
-<div class="marquee" data-audit="animado" aria-label="Nuestros servicios">
-    <div class="marquee-track">
-        @foreach ([false, true] as $copy)
-            <div class="marquee-item" @if ($copy) aria-hidden="true" @endif>
-                @foreach ($treatments as $treatment){{ $treatment['name'] }}<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">{!! $star !!}</svg>@endforeach
-            </div>
-        @endforeach
+<div class="marquee" role="group" aria-label="Nuestros servicios" data-audit="animado" data-mq>
+    <div class="marquee-view">
+        <div class="marquee-track">
+            @foreach ([false, true] as $copy)
+                <div class="marquee-item" @if ($copy) aria-hidden="true" @endif>
+                    @foreach ($treatments as $treatment){{ $treatment['name'] }}<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">{!! $star !!}</svg>@endforeach
+                </div>
+            @endforeach
+        </div>
     </div>
+    <button class="mq-pause" type="button" data-pressable data-mq-pause aria-pressed="false" aria-label="Pausar la cinta de servicios"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"></path></svg></button>
 </div>
 
 <section class="tour" data-ref="Tour" aria-label="Recorrido 3D por nuestros tratamientos">

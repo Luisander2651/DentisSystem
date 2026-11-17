@@ -542,6 +542,39 @@ function initTestimonials(root, win, D) {
 }
 
 /** The strip "Visítanos": open or closed now, on the clinic's clock. */
+/**
+ * The services ribbon (M-3, CA10): its button pauses and resumes it, the focus holds it while it is
+ * inside and a touch on the ribbon toggles it, as the pointer does with :hover. Without JavaScript or
+ * with less motion the stylesheet shows the whole list still.
+ */
+export function initMarquee(root) {
+    const button = root.querySelector('[data-mq-pause]');
+    let paused = false;
+    let focused = false;
+
+    const reflect = () => root.classList.toggle('hold', paused || focused);
+    const toggle = () => {
+        paused = !paused;
+        button?.setAttribute('aria-pressed', paused ? 'true' : 'false');
+        reflect();
+    };
+
+    button?.addEventListener('click', toggle);
+    root.addEventListener('focusin', () => {
+        focused = true;
+        reflect();
+    });
+    root.addEventListener('focusout', () => {
+        focused = false;
+        reflect();
+    });
+    root.addEventListener('pointerdown', (event) => {
+        if (event.pointerType === 'touch' && event.target !== button) {
+            toggle();
+        }
+    });
+}
+
 function initVisit(el, win, D) {
     const update = () => {
         const status = D.clinic();
@@ -586,6 +619,11 @@ export function initHome(win = window, doc = document) {
         const certificates = doc.querySelector('[data-certs]');
         const testimonials = doc.querySelector('[data-ts]');
         const visit = doc.querySelector('[data-vis]');
+        const marquee = doc.querySelector('[data-mq]');
+
+        if (marquee) {
+            initMarquee(marquee);
+        }
 
         if (promos) {
             initPromos(promos);

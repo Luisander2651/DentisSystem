@@ -77,9 +77,19 @@
 .seg{display:inline-flex;flex-wrap:wrap;gap:4px;padding:5px;background:var(--color-surface);border:1px solid var(--color-line);border-radius:var(--radius-md);box-shadow:0 18px 40px -30px color-mix(in srgb, var(--color-ink) 40%, transparent)}
 .seg-b{min-height:var(--spacing-control);padding:0 16px;border-radius:var(--radius-sm);border:0;background:transparent;font:inherit;font-size:14px;font-weight:500;color:var(--color-muted);cursor:pointer;transition:background 300ms var(--ease-out),color 300ms}
 .mode-cap{min-height:52px;animation:rise 500ms var(--ease-out) both}
-.marquee{overflow:hidden;background:var(--color-ink);color:var(--color-on-dark);padding:26px 0;transform:rotate(-2deg);margin:24px -40px;box-shadow:0 30px 60px -30px color-mix(in srgb, var(--color-ink) 50%, transparent)}
+.marquee{display:flex;align-items:center;overflow:hidden;background:var(--color-ink);color:var(--color-on-dark);padding:26px 0;transform:rotate(-2deg);margin:24px -40px;box-shadow:0 30px 60px -30px color-mix(in srgb, var(--color-ink) 50%, transparent)}
 .marquee-track{display:flex;width:max-content;animation:marquee 40s linear infinite}
-.marquee:hover .marquee-track{animation-play-state:paused}
+.marquee-view{flex:1;min-width:0;overflow:hidden}
+.marquee:hover .marquee-track,.marquee.hold .marquee-track,.marquee.hold .marquee-item svg{animation-play-state:paused}
+.mq-pause{flex:none;width:44px;height:44px;margin:0 56px 0 16px;border-radius:50%;border:1px solid color-mix(in srgb, var(--color-on-dark) 55%, transparent);background:transparent;color:var(--color-on-dark);display:grid;place-items:center;cursor:pointer}
+.mq-pause[aria-pressed='true']{background:var(--color-on-dark);border-color:var(--color-on-dark);color:var(--color-ink)}
+.mq-pause:focus-visible{outline:3px solid var(--color-secondary);outline-offset:2px}
+/* Without JavaScript or with less motion the ribbon does not move: the whole list, still and wrapped,
+   with no copy for the loop and no button (R1). */
+html:not(.js) .mq-pause,.still .mq-pause{display:none}
+html:not(.js) .marquee-track,.still .marquee-track{animation:none;width:auto;justify-content:center;padding:0 56px}
+html:not(.js) .marquee-item[aria-hidden],.still .marquee-item[aria-hidden]{display:none}
+html:not(.js) .marquee-item,.still .marquee-item{flex-wrap:wrap;justify-content:center;row-gap:12px;column-gap:28px;white-space:normal;padding-right:0}
 .marquee-item{display:inline-flex;align-items:center;gap:40px;padding-right:40px;font-size:clamp(24px,3vw,36px);font-weight:600;letter-spacing:-.02em;white-space:nowrap}
 .marquee-item svg{color:var(--color-secondary);animation:spin 6s linear infinite}
 .tour{position:relative;height:3400px;background:var(--color-surface);border-top:1px solid var(--color-line);border-bottom:1px solid var(--color-line);margin-top:72px}

@@ -267,3 +267,14 @@ it('shows a promotion title with markup as text in the menu coupon (abuse)', fun
     expect($html)->not->toContain('<img src=x onerror=alert(1)>')
         ->and(homeText(homePage($this), MENU_COUPON.'//b'))->toBe('<img src=x onerror=alert(1)>');
 });
+
+it('gives the services ribbon a named group and a pause button beside its text, never over it (R1)', function () {
+    $page = homePage($this);
+    $ribbon = $page->query('//div[contains(concat(" ", normalize-space(@class), " "), " marquee ")]');
+
+    expect($ribbon)->toHaveCount(1)
+        ->and($ribbon->item(0)->getAttribute('role'))->toBe('group')
+        ->and($ribbon->item(0)->getAttribute('aria-label'))->toBe('Nuestros servicios')
+        ->and($page->query('.//button[@data-mq-pause][@type="button"][@aria-pressed="false"][@aria-label="Pausar la cinta de servicios"]', $ribbon->item(0)))->toHaveCount(1)
+        ->and($page->query('.//*[contains(concat(" ", normalize-space(@class), " "), " marquee-track ")]//button', $ribbon->item(0)))->toHaveCount(0);
+});
