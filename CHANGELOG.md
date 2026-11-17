@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-17
+Los pacientes dejan su opinión desde el sitio; la clínica la revisa antes de publicarla (spec 027).
+
+### Added
+- Página "Deja tu opinión" (`/opinion`): el visitante escribe su nombre y su opinión y acepta que se publiquen; llega oculta a Contenido → Testimonios y la clínica la publica cuando la revisa (spec 027).
+- "Dejar mi opinión" del inicio lleva a esa página, haya o no testimonios publicados (spec 027).
+
+### Security
+- La lista pública de testimonios ya no incluye los ocultos (spec 027).
+- El formulario de opiniones limita los envíos por conexión y en total por hora y descarta los envíos automáticos (spec 027).
+
 ## [0.11.0] - 2026-11-17
 Sitio público nuevo: inicio, acerca de nosotros, galería y contacto rediseñados, más rápidos, accesibles y preparados para buscadores y para compartir (spec 026).
 

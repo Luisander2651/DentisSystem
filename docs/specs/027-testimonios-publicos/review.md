@@ -5,7 +5,7 @@ round: 2
 date: 2026-11-17
 base: 75cdd60
 head: 7786b62
-human_signoff: pending
+human_signoff: Luisander2651 2026-11-17
 ---
 
 # Review · 027 Testimonios enviados desde el sitio público
