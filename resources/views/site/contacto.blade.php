@@ -118,7 +118,8 @@
         <h2 class="h-lg">Encuéntranos</h2>
     </div>
     <div class="wrap ct-grid">
-        <div class="map reveal3d" data-parallax role="img" aria-label="Mapa ilustrado de la ubicación de Dentissa en {{ $contact['address'] }}">
+        <div class="map reveal3d" data-parallax>
+            <span class="sr-only" role="img" aria-label="Mapa ilustrado de la ubicación de Dentissa en {{ $contact['address'] }}"></span>
             <div class="plane" aria-hidden="true">
                 @foreach ($parks as [$x, $y, $width, $depth])
                     <div class="park" style="--x: {{ $x }}; --y: {{ $y }}; --w: {{ $width }}; --d: {{ $depth }}"></div>

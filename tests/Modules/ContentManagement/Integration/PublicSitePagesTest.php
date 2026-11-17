@@ -429,3 +429,15 @@ it('opens no other tab from a public page without noopener and noreferrer', func
         expect(explode(' ', $link->getAttribute('rel')))->toContain('noopener', 'noreferrer');
     }
 })->with(['/', '/acerca-de-nosotros', '/galeria', '/contacto', '/aviso-de-privacidad', '/terminos-y-condiciones']);
+
+it('names the drawn map of the contact page as a picture without hiding its links and its copy button inside it (R5)', function () {
+    $page = sitePage($this, '/contacto');
+    $picture = $page->query('//*[contains(concat(" ", normalize-space(@class), " "), " map ")]//*[@role="img"]');
+
+    expect($page->query('//*[@role="img"]//a | //*[@role="img"]//button'))->toHaveCount(0)
+        ->and($picture)->toHaveCount(1)
+        ->and($picture->item(0)->getAttribute('aria-label'))->toContain('Mapa ilustrado de la ubicación de Dentissa')
+        ->and($picture->item(0)->hasAttribute('aria-hidden'))->toBeFalse()
+        ->and($page->query('//*[contains(concat(" ", normalize-space(@class), " "), " plane ")][@aria-hidden="true"]'))->toHaveCount(1)
+        ->and(siteHrefs($page, '//*[contains(concat(" ", normalize-space(@class), " "), " map ")]//a'))->toHaveCount(2);
+});
