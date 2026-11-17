@@ -71,7 +71,7 @@
                 <small>¿Prefieres llamar?</small>
                 <div class="ct-call-row">
                     <a class="ct-tel" href="{{ $phoneHref }}">{{ $contact['phone'] }}</a>
-                    <button class="ct-copy-btn" type="button" data-copy="{{ $contact['phone'] }}" aria-label="Copiar el teléfono"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg><span data-copy-label>Copiar</span></button>
+                    <button class="ct-copy-btn" type="button" data-copy="{{ $contact['phone'] }}" data-announce="Teléfono copiado" aria-label="Copiar el teléfono"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg><span data-copy-label>Copiar</span></button>
                 </div>
                 <a class="ct-mail" href="mailto:{{ $contact['email'] }}">{{ $contact['email'] }}</a>
             </div>

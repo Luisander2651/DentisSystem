@@ -1,7 +1,8 @@
 /*
  * Public site (spec 026): entry of the contact page. Brings its stylesheet, says whether the clinic
  * is open now on the clinic's clock, marks today and the current hour in the weekly hours, and
- * copies the phone and the address. The WhatsApp composer comes from contact.js (T023).
+ * copies the phone and the address, saying it in the status region (R6). The WhatsApp composer
+ * comes from contact.js (T023).
  */
 import '../../../css/site/pages/contacto.css';
 import { initComposer } from '../contact';
@@ -42,7 +43,30 @@ function updateStatus(doc, D) {
     });
 }
 
-function initCopy(doc, win) {
+/**
+ * Says a short confirmation in the status region of the layout (x-ui.status), where a screen reader
+ * announces it without moving the focus, and clears it a moment later (R6). The region is emptied
+ * first so the same message twice in a row is announced again.
+ */
+function announce(doc, win, message) {
+    const region = doc.querySelector('[data-ui-status]');
+
+    if (!region) {
+        return;
+    }
+
+    region.textContent = '';
+    win.setTimeout(() => {
+        region.textContent = message;
+        region.toggleAttribute('data-shown', true);
+    }, 50);
+    win.setTimeout(() => {
+        region.textContent = '';
+        region.toggleAttribute('data-shown', false);
+    }, 4000);
+}
+
+export function initCopy(doc, win) {
     doc.querySelectorAll('[data-copy]').forEach((button) => {
         const label = button.querySelector('[data-copy-label]') || button;
         const original = label.textContent;
@@ -52,6 +76,7 @@ function initCopy(doc, win) {
             const done = () => {
                 label.textContent = button.getAttribute('data-copied') || 'Copiado';
                 button.classList.add('ok');
+                announce(doc, win, button.getAttribute('data-announce') || button.getAttribute('data-copied') || 'Copiado');
                 win.clearTimeout(timer);
                 timer = win.setTimeout(() => {
                     label.textContent = original;

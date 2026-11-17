@@ -500,3 +500,14 @@ it('announces a testimonial only when the visitor asks for it, never when it cha
     expect(array_column($seen, 'current'))->toBe([1, 2, 0, 2, 2, 0])
         ->and(array_column($seen, 'live'))->toBe(['off', 'polite', 'off', 'polite', 'polite', 'off']);
 });
+
+it('says in the status region what was copied, then clears it (R6)', function () {
+    $result = runSiteScript('copy', ['press' => ['phone', 'address']]);
+
+    expect($result['copied'])->toBe(['+52 55 1234 5678', 'Lázaro Cárdenas, Michoacán'])
+        ->and(array_column($result['seen'], 'region'))->toBe(['Teléfono copiado', 'Dirección copiada'])
+        ->and(array_column($result['seen'], 'shown'))->toBe([true, true])
+        ->and($result['seen'][1]['label'])->toBe('Dirección copiada')
+        ->and($result['regionAfter'])->toBe('')
+        ->and($result['shownAfter'])->toBeFalse();
+});

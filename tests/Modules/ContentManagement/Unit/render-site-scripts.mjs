@@ -10,6 +10,11 @@ import { registerHooks } from 'node:module';
 /* Vite resolves the extensionless imports of resources/js; Node needs the ".js". */
 registerHooks({
     resolve: (specifier, context, nextResolve) => {
+        /* A page entry imports its stylesheet for Vite; here it is an empty module. */
+        if (specifier.endsWith('.css')) {
+            return { url: 'data:text/javascript,', shortCircuit: true };
+        }
+
         if (specifier.startsWith('.') && !/\.\w+$/.test(specifier)) {
             return nextResolve(specifier + '.js', context);
         }
@@ -835,6 +840,54 @@ const scenarios = {
 
             return { after: action, current: current(), live: live.attributes['aria-live'] ?? null };
         });
+    },
+
+    /* Copying the phone and the address of the contact page: the button and the status region (T049, R6). */
+    async copy({ press = [] }) {
+        const { initCopy } = await import(new URL('pages/contacto.js', site));
+        const timers = [];
+        const node = (name, attributes = {}) => ({
+            name,
+            listeners: {},
+            attributes: { ...attributes },
+            textContent: '',
+            classList: classList(),
+            getAttribute(key) { return this.attributes[key] ?? null; },
+            toggleAttribute(key, force) { if (force) { this.attributes[key] = ''; } else { delete this.attributes[key]; } },
+            addEventListener(type, fn) { (this.listeners[type] ??= []).push(fn); },
+            querySelector: () => null,
+        });
+        const phone = node('phone', { 'data-copy': '+52 55 1234 5678', 'data-announce': 'Teléfono copiado' });
+        const address = node('address', { 'data-copy': 'Lázaro Cárdenas, Michoacán', 'data-copied': 'Dirección copiada' });
+        const label = node('label');
+        label.textContent = 'Copiar dirección';
+        address.querySelector = (selector) => (selector === '[data-copy-label]' ? label : null);
+        const region = node('region');
+        const doc = {
+            querySelectorAll: (selector) => (selector === '[data-copy]' ? [phone, address] : []),
+            querySelector: (selector) => (selector === '[data-ui-status]' ? region : null),
+        };
+        const copied = [];
+        const win = {
+            navigator: { clipboard: { writeText: (text) => { copied.push(text); return Promise.resolve(); } } },
+            setTimeout: (fn, ms) => { timers.push({ fn, ms }); return timers.length; },
+            clearTimeout: () => {},
+        };
+
+        initCopy(doc, win);
+
+        const seen = [];
+        for (const name of press) {
+            const button = name === 'phone' ? phone : address;
+            button.listeners.click.forEach((fn) => fn());
+            await Promise.resolve();
+            await Promise.resolve();
+            timers.filter((timer) => timer.ms < 1000).splice(0).forEach((timer) => timer.fn());
+            seen.push({ pressed: name, region: region.textContent, shown: 'data-shown' in region.attributes, label: label.textContent });
+            timers.splice(0, timers.length).filter((timer) => timer.ms >= 1000).forEach((timer) => timer.fn());
+        }
+
+        return { copied, seen, regionAfter: region.textContent, shownAfter: 'data-shown' in region.attributes };
     },
 };
 

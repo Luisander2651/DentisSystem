@@ -178,3 +178,7 @@ html:not(.js) .ct-form{display:none}
 .map-acts .btn{flex:1 1 auto}
 .map-label{left:12px;right:12px;bottom:12px}
 }
+
+/* The status region of the layout (R6) rises above the floating WhatsApp button (60 px at 24 px from
+   the bottom), so the "copiado" notice is never under it. */
+.opt [data-ui-status-region]{bottom:96px}
