@@ -1,6 +1,6 @@
 ---
 spec: 027-testimonios-publicos
-status: draft
+status: approved
 constitution_version: 1.2.1
 created: 2026-11-17
 ---
@@ -112,7 +112,7 @@ Integración en `tests/Modules/ContentManagement/Integration/PublicTestimonialSu
 | P11 Datos sensibles y amenazas | ✅ | TM1–TM6 con su test |
 | P12 Producción | ✅ | `manual: /release` |
 | P13 Lógica en el backend | ✅ | Estado y fecha los fija el caso de uso (`test`) |
-| P14 Trazabilidad | ❌ aceptado: sin `request_id` ni auditoría hasta el objetivo 5, como en specs anteriores — aprobado por el usuario al aprobar este plan | — |
+| P14 Trazabilidad | ❌ aceptado: sin `request_id` ni auditoría hasta el objetivo 5, como en specs anteriores — aprobado por el usuario el 2026-11-17 al aprobar este plan | — |
 | P15 Sistema de diseño | ✅ | `test: SiteStylesTokensTest`, `OnlyDesignTokensTest` y `npm run test:ui` |
 
 ## Trazabilidad

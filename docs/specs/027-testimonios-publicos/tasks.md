@@ -1,7 +1,7 @@
 ---
 spec: 027-testimonios-publicos
 plan: plan.md
-status: draft
+status: approved
 ---
 
 # Tareas · 027 Testimonios enviados desde el sitio público

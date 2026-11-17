@@ -1,7 +1,7 @@
 ---
 id: 027
 slug: testimonios-publicos
-status: draft
+status: approved
 created: 2026-11-17
 extends: [026]
 ---
