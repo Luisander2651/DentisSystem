@@ -40,7 +40,7 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 | 023 | [Consultas del microservicio de asistencias](023-consultas-del-microservicio-de-asistencias/spec.md) | Auth, Appointments, Core | draft (registro; en v0.8.0 sin plan ni review) | — | — | — |
 | 024 | [QR de cita para el acceso](024-qr-de-cita-para-el-acceso/spec.md) | Appointments, interfaz de la agenda | released (v0.9.0) | — | — | — |
 | 025 | [Portal del paciente](025-portal-del-paciente/spec.md) | Appointments, AppointmentTracking, Auth, interfaz del portal | released (v0.10.0) | — | — | — |
-| 026 | [Nueva landing del sitio público](026-nueva-landing/spec.md) | ContentManagement, sitio público, sistema de diseño | implemented | — | — | — |
+| 026 | [Nueva landing del sitio público](026-nueva-landing/spec.md) | ContentManagement, sitio público, sistema de diseño | released (v0.11.0) | — | — | — |
 
 ## Pendientes sin spec
 Ninguno.

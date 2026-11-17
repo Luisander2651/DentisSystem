@@ -92,7 +92,7 @@ Hallazgos `M01`–`M16` de la revisión de las 65 pantallas a 390 px (ver "Dise�
 - [x] CA43 · Dado un enlace que abre otra pestaña, cuando lo lee un lector de pantalla o se ve su texto, entonces avisa de que se abre en otra pestaña.
 
 ### Lo que no cambia y lo que queda escrito
-- [x] CA22 · Dado cualquier pantalla a 1440 px, cuando se compara con su captura anterior, entonces conserva su composición: las mismas secciones en la misma disposición, las mismas acciones, la misma tipografía y los mismos flujos; solo cambian colores, tamaños, radios, foco, diálogos, logo y textos corregidos. A 390 px se conserva igual, salvo los cambios de disposición que piden CA11 y CA25–CA34. Única excepción a 1440 px: gestión de contenido pasa a un solo encabezado (CA34).
+- [x] CA22 · Dado cualquier pantalla a 1440 px, cuando se compara con su captura anterior, entonces conserva su composición: las mismas secciones en la misma disposición, las mismas acciones, la misma tipografía y los mismos flujos; solo cambian colores, tamaños, radios, foco, diálogos, logo y textos corregidos. A 390 px se conserva igual, salvo los cambios de disposición que piden CA11 y CA25–CA34. Única excepción a 1440 px: gestión de contenido pasa a un solo encabezado (CA34). → reemplazado por 026 CA1 en las pantallas públicas
 - [x] CA23 · Dado el sistema de diseño, cuando termina esta spec, entonces su documento y su vista describen la interfaz nueva, con capturas de todas las pantallas a 390 y 1440 px, y la deuda `DS1`–`DS11`, `DS13` y `DS14` figura como resuelta por esta spec.
 - [x] CA39 · Dado el análisis de dependencias del proyecto, cuando termina esta spec, entonces no reporta ninguna vulnerabilidad alta ni crítica, o la que quede tiene una excepción aprobada por el usuario con fecha de vencimiento.
 - [x] CA24 · Dada la constitución, cuando termina esta spec, entonces incluye el principio "La interfaz usa solo el sistema de diseño", con su forma de verificación, y su principio de pruebas admite la prueba en navegador para lo que solo existe en un navegador; ambos cambios aprobados por el usuario como una misma enmienda.
@@ -272,3 +272,4 @@ Cada brecha, contradicción o supuesto resuelto, con su origen (`shared/contract
 | 2026-10-13 | Reaprobada tras la edición | Aprobación del usuario |
 | 2026-10-14 | Liberada en v0.2.0 | `/release 016`; aprobación del usuario |
 | 2026-11-11 | Comportamiento modificado por 025 en v0.10.0: el inicio del paciente deja la insignia y el rol del encabezado, como el del personal; el rol sigue en el menú lateral y CA30 se sigue cumpliendo | /release |
+| 2026-11-17 | Comportamiento modificado por 026 en v0.11.0 | /release |

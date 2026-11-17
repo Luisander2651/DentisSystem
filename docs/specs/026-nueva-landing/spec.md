@@ -1,7 +1,8 @@
 ---
 id: 026
 slug: nueva-landing
-status: implemented
+status: released
+released: v0.11.0 (2026-11-17)
 created: 2026-11-12
 extends: [011, 016, 022]
 ---
@@ -226,3 +227,4 @@ porque la propuesta se apoya en fondos, tipografía y movimiento (§6).
 | 2026-11-15 | CA18, K7, Diseño y Fuera de alcance: el antes y después pasa de fotos de muestra a la dentadura 3D de la propuesta revisada, con dibujo plano de respaldo; vuelve a `draft` | Pedido del usuario tras revisar el modelo 3D nuevo |
 | 2026-11-15 | Aprobada de nuevo | Confirmación explícita del usuario |
 | 2026-11-15 | Enmienda de CA7: la dirección provisional pasa a "Lázaro Cárdenas, Michoacán" (la ciudad de la clínica) y los títulos y descripciones dejan de decir "Ciudad de México" | Pedida por el usuario: la clínica está en Lázaro Cárdenas |
+| 2026-11-17 | Corregido por la ficha 2026-11-17-fix-ui-audit-testimonios-intermitente en v0.11.0 (CA10) | /release |

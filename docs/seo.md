@@ -48,10 +48,10 @@ cuatro vistas Blade sobre un solo layout.
 ## Inventario de rutas
 | Ruta | Indexable | Título | Descripción | Canónica | `h1` | Open Graph | Datos estructurados | Evidencia |
 |---|---|---|---|---|---|---|---|---|
-| `/` | sí | ✅ "Dentissa - Clínica dental en Lázaro Cárdenas" | ✅ propia | ✅ `https://dentissapp.com` | ✅ 1 | ✅ | ✅ `Dentist` | `PublicSiteSeoTest` (spec 026, sin liberar) |
-| `/acerca-de-nosotros` | sí | ✅ "Acerca de nosotros - Dentissa" | ✅ propia | ✅ | ✅ 1 | ✅ | ➖ | `PublicSiteSeoTest` (spec 026, sin liberar) |
+| `/` | sí | ✅ "Dentissa - Clínica dental en Lázaro Cárdenas" | ✅ propia | ✅ `https://dentissapp.com` | ✅ 1 | ✅ | ✅ `Dentist` | `PublicSiteSeoTest` (v0.11.0) |
+| `/acerca-de-nosotros` | sí | ✅ "Acerca de nosotros - Dentissa" | ✅ propia | ✅ | ✅ 1 | ✅ | ➖ | `PublicSiteSeoTest` (v0.11.0) |
 | `/galeria` | sí | ✅ "Galería - Dentissa" | ✅ propia | ✅ | ✅ 1 | ✅ | ➖ | `PublicSiteSeoTest`, `PublicGalleryPageTest` (spec 026, sin liberar; imágenes en el HTML) |
-| `/contacto` | sí | ✅ "Contacto y ubicación - Dentissa" | ✅ propia | ✅ | ✅ 1 | ✅ | ✅ `Dentist` | `PublicSiteSeoTest` (spec 026, sin liberar) |
+| `/contacto` | sí | ✅ "Contacto y ubicación - Dentissa" | ✅ propia | ✅ | ✅ 1 | ✅ | ✅ `Dentist` | `PublicSiteSeoTest` (v0.11.0) |
 | `/aviso-de-privacidad` | sí | ✅ "Aviso de Privacidad - Dentissa" | ✅ propia | ✅ | ✅ 1 | ✅ | ➖ | `LegalPagesTest`, `PublicSiteSeoTest` (sin auditar en producción) |
 | `/terminos-y-condiciones` | sí | ✅ "Términos y Condiciones - Dentissa" | ✅ propia | ✅ | ✅ 1 | ✅ | ➖ | `LegalPagesTest`, `PublicSiteSeoTest` (sin auditar en producción) |
 | `/sitemap.xml` | no (archivo) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | `PublicSiteSeoTest`: 200 `application/xml` con las seis rutas |
@@ -66,14 +66,14 @@ Evidencia: ninguna de `/`, `/acerca-de-nosotros`, `/galeria` y `/contacto` lleva
 `<meta name="description">` (`GET` a producción, 2026-10-15); el layout
 `resources/views/layouts/landing.blade.php` no la declara.
 Correcciones:
-- SE1.a Una descripción propia y única por ruta indexable, de 70–160 caracteres, que describa esa página — estado: en curso (spec 026)
+- SE1.a Una descripción propia y única por ruta indexable, de 70–160 caracteres, que describa esa página — estado: mitigada (v0.11.0)
 
 ### SE2 · media — Sin canónica y con variantes de URL que no redirigen
 Evidencia: ninguna ruta indexable lleva `<link rel="canonical">`; `https://www.dentissapp.com/`
 responde `200` sin redirigir a `https://dentissapp.com/`, y `/galeria/` (con barra final) responde
 `200` como `/galeria` (`GET`, 2026-10-15).
 Correcciones:
-- SE2.a Canónica absoluta, construida desde `seo.site_url`, en cada ruta indexable — estado: en curso (spec 026)
+- SE2.a Canónica absoluta, construida desde `seo.site_url`, en cada ruta indexable — estado: mitigada (v0.11.0)
 - SE2.b `www.dentissapp.com` redirige con `301` a `https://dentissapp.com` (misma ruta) — estado: pendiente
 - SE2.c La barra final redirige con `301` a la URL sin barra — estado: pendiente
 
@@ -81,8 +81,8 @@ Correcciones:
 Evidencia: `GET /sitemap.xml` → `404`; `robots.txt` (`public/robots.txt`) solo dice
 `User-agent: *` y `Disallow:`, sin línea `Sitemap:`.
 Correcciones:
-- SE3.a `sitemap.xml` con las seis rutas indexables (las cuatro páginas y las dos legales) y su URL canónica absoluta, sin rutas de acceso ni del panel — estado: en curso (spec 026)
-- SE3.b `robots.txt` declara `Sitemap: https://dentissapp.com/sitemap.xml` — estado: en curso (spec 026)
+- SE3.a `sitemap.xml` con las seis rutas indexables (las cuatro páginas y las dos legales) y su URL canónica absoluta, sin rutas de acceso ni del panel — estado: mitigada (v0.11.0)
+- SE3.b `robots.txt` declara `Sitemap: https://dentissapp.com/sitemap.xml` — estado: mitigada (v0.11.0)
 
 ### SE4 · media — Las pantallas de acceso son indexables
 Evidencia: `GET /login` y `GET /register` responden `200` sin `<meta name="robots">` ni cabecera
@@ -95,24 +95,24 @@ Evidencia: el HTML de `/galeria` solo trae "Cargando galería..." y el visor vac
 pinta `resources/js/pages/landing/galeria.js` tras pedir `/api/v1/public/gallery-images`. Con
 `ssr`, el HTML de una ruta indexable debe traer su contenido principal (tema 5).
 Correcciones:
-- SE5.a Las imágenes de la galería y sus descripciones llegan en el HTML que renderiza el servidor, como ya hace el inicio con promociones, certificaciones y testimonios — estado: en curso (spec 026)
+- SE5.a Las imágenes de la galería y sus descripciones llegan en el HTML que renderiza el servidor, como ya hace el inicio con promociones, certificaciones y testimonios — estado: mitigada (v0.11.0)
 
 ### SE6 · baja — Sin Open Graph ni imagen para compartir
 Evidencia: ninguna ruta lleva `og:*` (`GET`, 2026-10-15). El sistema de diseño
 (`docs/design/system.md`, 2.0.0) no define la "Tarjeta para compartir".
 Correcciones:
-- SE6.a `og:title`, `og:description`, `og:type`, `og:url` (igual a la canónica) y `og:locale` en cada ruta indexable — estado: en curso (spec 026)
-- SE6.b Imagen general para compartir de 1200×630 desde la tarjeta del sistema de diseño, con `og:image:alt` — estado: en curso (spec 026)
+- SE6.a `og:title`, `og:description`, `og:type`, `og:url` (igual a la canónica) y `og:locale` en cada ruta indexable — estado: mitigada (v0.11.0)
+- SE6.b Imagen general para compartir de 1200×630 desde la tarjeta del sistema de diseño, con `og:image:alt` — estado: mitigada (v0.11.0)
 
 ### SE7 · baja — Sin datos estructurados
 Evidencia: ninguna ruta lleva JSON-LD (`GET`, 2026-10-15).
 Correcciones:
-- SE7.a `Dentist` (o `LocalBusiness`) en el inicio y en contacto, solo con datos visibles en la página (nombre, dirección, teléfono, horario) — estado: en curso (spec 026)
+- SE7.a `Dentist` (o `LocalBusiness`) en el inicio y en contacto, solo con datos visibles en la página (nombre, dirección, teléfono, horario) — estado: mitigada (v0.11.0)
 
 ### SE8 · baja — Sin `theme-color`
 Evidencia: ninguna ruta lleva `<meta name="theme-color">` (tema 12).
 Correcciones:
-- SE8.a `theme-color` con el rosa de la marca (`--color-primary`, `#d75078`; decisión del usuario, A8 de `/analyze 026`) en todos los layouts — estado: parcial: sitio público en la 026 con el rosa de la marca, panel y portal pendientes
+- SE8.a `theme-color` con el rosa de la marca (`--color-primary`, `#d75078`; decisión del usuario, A8 de `/analyze 026`) en todos los layouts — estado: parcial: sitio público mitigado (v0.11.0), panel y portal pendientes
 
 ## Brechas por confirmar
 - Lighthouse SEO de las rutas indexables — depende de: medirlo sobre producción — cómo confirmarla: Lighthouse en el navegador sobre las cuatro rutas.
@@ -122,7 +122,8 @@ Correcciones:
 | Fecha | Comprobación | Resultado | Evidencia |
 |---|---|---|---|
 | 2026-10-15 | `robots.txt` responde 200 sin `Disallow: /` | ✅ | `GET /robots.txt` |
-| 2026-10-15 | `sitemap.xml` responde 200 | ❌ | `GET /sitemap.xml` → 404 (SE3) |
+| 2026-11-17 | Rutas indexables, `sitemap.xml`, `robots.txt`, canónica, Open Graph, `theme-color` y JSON-LD en producción (v0.11.0) | ✅ | `GET` a las seis rutas y a `/sitemap.xml`; Lighthouse SEO 100 en las cuatro páginas (usuario); vista previa en WhatsApp con la tarjeta |
+| 2026-10-15 | `sitemap.xml` responde 200 | ❌ | `GET /sitemap.xml` → 404 (SE3; resuelto en v0.11.0) |
 | 2026-10-15 | Producción sin `noindex` en rutas indexables | ✅ | `GET` a las cuatro rutas |
 | 2026-10-15 | URL inexistente → 404 propia con `noindex` | ✅ | `GET /pagina-que-no-existe` |
 | 2026-10-15 | Ruta privada sin sesión → redirección a `/login` | ✅ | `GET /agenda` → 302 |
@@ -132,7 +133,7 @@ Correcciones:
 - Una sola imagen para compartir, general, para las seis rutas: ninguna tiene contenido propio que la pida (spec 026).
 
 ## Pendientes operativos
-- Dar de alta el sitio en Google Search Console (y Bing Webmaster Tools) y enviar el sitemap cuando exista (SE3).
+- Dar de alta el sitio en Google Search Console (y Bing Webmaster Tools) y enviar `https://dentissapp.com/sitemap.xml`, que ya existe (v0.11.0).
 - Analítica: no hay; decidir si se quiere.
 
 ## Historial
@@ -140,3 +141,4 @@ Correcciones:
 |---|---|---|
 | 2026-10-15 | Documento creado con la auditoría sobre producción (v0.2.0) | `/init --upgrade` → `/seo audit` |
 | 2026-11-16 | Reglas, inventario y estado de SE1.a, SE2.a, SE3.a, SE3.b, SE5.a, SE6.a, SE6.b y SE7.a (en curso) y SE8.a (parcial) con la spec 026; SE2.b, SE2.c y SE4.a siguen pendientes | spec 026, T028 |
+| 2026-11-17 | SE1.a, SE2.a, SE3.a, SE3.b, SE5.a, SE6.a, SE6.b y SE7.a mitigadas y SE8.a parcial con v0.11.0; verificación en producción | `/release` 026 |
