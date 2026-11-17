@@ -55,6 +55,7 @@ cuatro vistas Blade sobre un solo layout.
 | `/aviso-de-privacidad` | sí | ✅ "Aviso de Privacidad - Dentissa" | ✅ propia | ✅ | ✅ 1 | ✅ | ➖ | `LegalPagesTest`, `PublicSiteSeoTest` (sin auditar en producción) |
 | `/terminos-y-condiciones` | sí | ✅ "Términos y Condiciones - Dentissa" | ✅ propia | ✅ | ✅ 1 | ✅ | ➖ | `LegalPagesTest`, `PublicSiteSeoTest` (sin auditar en producción) |
 | `/sitemap.xml` | no (archivo) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | `PublicSiteSeoTest`: 200 `application/xml` con las seis rutas |
+| `/opinion` | no (`noindex`; página de servicio) | ✅ "Deja tu opinión - Dentissa" | ✅ propia | ✅ | ✅ 1 | ✅ | ➖ | `PublicTestimonialSubmissionTest` (spec 027): `noindex` y fuera del sitemap |
 | `/login`, `/register`, `/forgot-password`, `/reset-password` | no (pantallas de acceso) | ➖ | ➖ | ➖ | ✅ 1 | ➖ | ➖ | `GET /login` y `/register` 200 **sin** `noindex` (SE4) |
 | Panel (`/dashboard`, `/agenda`, `/pacientes`…) | no (exigen sesión) | ➖ | ➖ | ➖ | ➖ | ➖ | ➖ | `GET /agenda` sin sesión → `302` a `/login` |
 | Portal del paciente (`/dashboard` del paciente, `/mis-citas`) | no (exigen sesión de paciente) | ✅ "Inicio - Dentissa", "Mis citas - Dentissa" | ➖ | ➖ | ✅ 1 | ➖ | ➖ | sin sesión → `302` a `/login` (`GuestRedirectTest`); con sesión, `noindex` en meta (spec 025, `PortalPagesTest`) |

@@ -25,9 +25,11 @@ Formato:
   - nota: `ui-audit` contra un servidor aparte con solo `ui:audit-data`, como en CI (`DB_URL` anulada y `php -S` desde `public/`). Encontró cuatro cosas de la página, corregidas aquí: la trampa medida como un campo más (pasa a `hidden`; sigue en el HTML para los robots), el campo de nombre de 50 px en vez del token de 44, los obligatorios mezclados con la trampa, y un campo corregido que seguía marcado (`opinion.js` quita `aria-invalid` en cuanto el valor es válido). `inicio-testimonios` cambia por el enlace nuevo (admitido como 027 CA1 en `checks-composition.mjs`). Líneas base escritas con esos datos; `opinion` e `inicio` pasan dos veces seguidas en los tres anchos. Suite: 2541.
 
 ## Integración y documentación
-- [ ] T090 Actualizar `docs/architecture.md` (ruta `/opinion` y caso de uso público de Testimonios) y `docs/seo.md` (`/opinion` en el inventario, con `noindex`)
-- [ ] T091 Actualizar `docs/security.md` (entrada pública nueva: límite, trampa y moderación) y `docs/observability.md` (log `public_testimonial.received`)
-- [ ] T092 Marcar spec como `implemented`
+- [x] T090 Actualizar `docs/architecture.md` (ruta `/opinion` y caso de uso público de Testimonios) y `docs/seo.md` (`/opinion` en el inventario, con `noindex`)
+  - nota: `architecture.md` (ruta `/opinion`, caso de uso público, API pública solo visibles, `save()` con id) y `seo.md` (`/opinion` en el inventario con `noindex`).
+- [x] T091 Actualizar `docs/security.md` (entrada pública nueva: límite, trampa y moderación) y `docs/observability.md` (log `public_testimonial.received`)
+  - nota: `security.md` (entrada pública con sus controles; RS4.a corregida solo para testimonios, sigue pendiente por corrección) y `observability.md` (logs `public_testimonial.received` y `public_testimonial.save_failed`). Sin variables ni pasos de despliegue nuevos.
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación

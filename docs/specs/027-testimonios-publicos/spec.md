@@ -1,7 +1,7 @@
 ---
 id: 027
 slug: testimonios-publicos
-status: approved
+status: implemented
 created: 2026-11-17
 extends: [026]
 ---
@@ -16,17 +16,17 @@ Hoy, "Dejar mi opinión" del inicio lleva a WhatsApp. El paciente tiene que escr
 - Como staff de la clínica, quiero que cada opinión llegue oculta a "Contenido", para revisarla y publicarla solo si es adecuada.
 
 ## Criterios de aceptación
-- [ ] CA1 · Dado un visitante en el inicio, cuando pulsa "Dejar mi opinión", entonces llega a la página "Deja tu opinión" (`/opinion`). La página tiene un formulario con su nombre (como quiere aparecer), su opinión y una casilla obligatoria para aceptar que se publiquen su nombre y su opinión, con enlace al aviso de privacidad. El enlace aparece tanto cuando no hay testimonios publicados como cuando los hay. Funciona sin JavaScript. Reemplaza en la 026 el enlace a WhatsApp de "Dejar mi opinión".
-- [ ] CA2 · Dados un nombre de 2 a 80 caracteres, una opinión de 20 a 255 caracteres y la casilla marcada, cuando el visitante envía, entonces la opinión se guarda como testimonio **oculto**, con la fecha y hora del servidor. El visitante ve un mensaje de agradecimiento que explica que se publicará cuando la clínica la revise, y la opinión no aparece en el inicio.
-- [ ] CA3 · Dado un envío con un dato que falta o no cumple su largo, o sin la casilla marcada, cuando se envía, entonces no se guarda nada. El formulario vuelve con un mensaje en español junto a cada campo con error y conserva lo que se había escrito.
-- [ ] CA4 · Dada una opinión recién enviada, cuando el staff abre "Contenido" → Testimonios, entonces la ve como oculta y puede publicarla con lo que ya existe. Al publicarla, aparece en el inicio en cuanto caduca su caché (como mucho 10 minutos, como el resto del contenido).
-- [ ] CA5 · (abuso) Como visitante malintencionado, envío más de 3 opiniones aceptadas (válidas, o con el campo trampa) en 10 minutos desde la misma conexión → a partir de la cuarta se rechaza con el mensaje "Enviaste varias opiniones seguidas. Inténtalo de nuevo en unos minutos." y no se guarda. Los envíos con errores no cuentan.
-- [ ] CA6 · (abuso) Como robot de spam, relleno el campo trampa invisible que una persona no ve → la respuesta es la misma que la de un envío correcto, pero no se guarda nada.
-- [ ] CA7 · (abuso) Como atacante, escribo código o etiquetas HTML en el nombre o la opinión → se guarda como texto y se muestra como texto, nunca como código, en "Contenido" y en el inicio cuando se publica.
-- [ ] CA8 · (abuso) Como atacante, envío en la petición un estado "visible", una fecha u otros campos → se ignoran: la opinión siempre llega oculta y con la fecha del servidor.
-- [ ] CA9 · Dado un buscador, cuando lee `/opinion`, entonces la página lleva `noindex` y no aparece en `sitemap.xml`. Un envío sin el token de la sesión (CSRF) se rechaza.
-- [ ] CA10 · Dado un visitante que usa teclado o lector de pantalla, cuando recorre `/opinion` a 390, 768 y 1440 px, entonces alcanza cada campo y el botón con foco visible y nombre accesible. Los errores se asocian a su campo y el mensaje de agradecimiento se anuncia.
-- [ ] CA11 · (abuso) Como visitante, pido los testimonios por la API pública (`GET /api/v1/public/testimonials`) → recibo solo los visibles; una opinión recién enviada, u otra oculta, no aparece.
+- [x] CA1 · Dado un visitante en el inicio, cuando pulsa "Dejar mi opinión", entonces llega a la página "Deja tu opinión" (`/opinion`). La página tiene un formulario con su nombre (como quiere aparecer), su opinión y una casilla obligatoria para aceptar que se publiquen su nombre y su opinión, con enlace al aviso de privacidad. El enlace aparece tanto cuando no hay testimonios publicados como cuando los hay. Funciona sin JavaScript. Reemplaza en la 026 el enlace a WhatsApp de "Dejar mi opinión".
+- [x] CA2 · Dados un nombre de 2 a 80 caracteres, una opinión de 20 a 255 caracteres y la casilla marcada, cuando el visitante envía, entonces la opinión se guarda como testimonio **oculto**, con la fecha y hora del servidor. El visitante ve un mensaje de agradecimiento que explica que se publicará cuando la clínica la revise, y la opinión no aparece en el inicio.
+- [x] CA3 · Dado un envío con un dato que falta o no cumple su largo, o sin la casilla marcada, cuando se envía, entonces no se guarda nada. El formulario vuelve con un mensaje en español junto a cada campo con error y conserva lo que se había escrito.
+- [x] CA4 · Dada una opinión recién enviada, cuando el staff abre "Contenido" → Testimonios, entonces la ve como oculta y puede publicarla con lo que ya existe. Al publicarla, aparece en el inicio en cuanto caduca su caché (como mucho 10 minutos, como el resto del contenido).
+- [x] CA5 · (abuso) Como visitante malintencionado, envío más de 3 opiniones aceptadas (válidas, o con el campo trampa) en 10 minutos desde la misma conexión → a partir de la cuarta se rechaza con el mensaje "Enviaste varias opiniones seguidas. Inténtalo de nuevo en unos minutos." y no se guarda. Los envíos con errores no cuentan.
+- [x] CA6 · (abuso) Como robot de spam, relleno el campo trampa invisible que una persona no ve → la respuesta es la misma que la de un envío correcto, pero no se guarda nada.
+- [x] CA7 · (abuso) Como atacante, escribo código o etiquetas HTML en el nombre o la opinión → se guarda como texto y se muestra como texto, nunca como código, en "Contenido" y en el inicio cuando se publica.
+- [x] CA8 · (abuso) Como atacante, envío en la petición un estado "visible", una fecha u otros campos → se ignoran: la opinión siempre llega oculta y con la fecha del servidor.
+- [x] CA9 · Dado un buscador, cuando lee `/opinion`, entonces la página lleva `noindex` y no aparece en `sitemap.xml`. Un envío sin el token de la sesión (CSRF) se rechaza.
+- [x] CA10 · Dado un visitante que usa teclado o lector de pantalla, cuando recorre `/opinion` a 390, 768 y 1440 px, entonces alcanza cada campo y el botón con foco visible y nombre accesible. Los errores se asocian a su campo y el mensaje de agradecimiento se anuncia.
+- [x] CA11 · (abuso) Como visitante, pido los testimonios por la API pública (`GET /api/v1/public/testimonials`) → recibo solo los visibles; una opinión recién enviada, u otra oculta, no aparece.
 
 ## Fuera de alcance
 - Calificación con estrellas (sigue en el roadmap: requiere cambiar los datos y "Contenido").
