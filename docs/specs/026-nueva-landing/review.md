@@ -5,7 +5,7 @@ round: 3
 date: 2026-11-17
 base: 9bbea55
 head: be15dc8
-human_signoff: pending
+human_signoff: Luisander2651 2026-11-17
 ---
 
 # Review · 026 Nueva landing del sitio público
@@ -58,7 +58,7 @@ Ninguno nuevo en esta ronda.
 - **Antes de staging:** cerrar el `/fix` de `ui-audit inicio-testimonios` (R8). Después, `ui-audit inicio` dos veces seguidas en los tres anchos.
 - **Pendientes de la clínica:** todos los datos de contacto siguen provisionales.
 - **Fotos de la propuesta:** generadas, aprobadas por el usuario para producción hasta tener fotos reales.
-- **Revisión humana:** `human_signoff: pending`. La constitución pide que el dueño del repositorio apruebe la review y el merge.
+- **Revisión humana:** aprobada por el dueño del repositorio (Luisander2651) el 2026-11-17; el merge se aprueba en `/release`.
 
 ## Tareas añadidas
 Ninguna en esta ronda. Antes: T044–T050 (ronda 1) y T051 (ronda 2), todas hechas.
