@@ -66,7 +66,7 @@
                         @error('consent')<p class="op-err" id="op-consent-err">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="op-trap" aria-hidden="true">
+                    <div class="op-trap" hidden aria-hidden="true">
                         <label for="op-website">No llenes este campo</label>
                         <input id="op-website" name="website" type="text" tabindex="-1" autocomplete="off">
                     </div>

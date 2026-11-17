@@ -19,6 +19,11 @@
 
 export const ADMITTED = [
     {
+        criterion: '027 CA1',
+        entries: ['inicio', 'inicio-testimonios'],
+        difference: 'La sección de testimonios del inicio suma el enlace "Dejar mi opinión" hacia la página de opiniones (spec 027).',
+    },
+    {
         criterion: '026 CA1',
         entries: ['inicio'],
         difference: 'El inicio público es el de la propuesta de la spec 026 (nueva landing): bienvenida con fotos, recorrido 3D, servicios, promociones, certificaciones, testimonios, preguntas frecuentes, ubicación y llamada a WhatsApp.',

@@ -7,8 +7,8 @@
 .op-field{display:flex;flex-direction:column;gap:6px}
 .op-lbl{font-size:16px;font-weight:600;color:var(--color-ink)}
 .op-hint{margin:0;font-size:14px;color:var(--color-muted)}
-.op-input{width:100%;min-height:var(--spacing-control);padding:12px 16px;border-radius:var(--radius-control);border:1px solid var(--color-field);background:var(--color-canvas);font:inherit;font-size:16px;line-height:1.5;color:var(--color-ink)}
-.op-text{min-height:140px;resize:vertical}
+.op-input{width:100%;height:var(--spacing-control);padding:0 16px;border-radius:var(--radius-control);border:1px solid var(--color-field);background:var(--color-canvas);font:inherit;font-size:16px;line-height:1.5;color:var(--color-ink)}
+.op-text{height:auto;min-height:140px;padding:12px 16px;resize:vertical}
 .op-input:focus{border-color:var(--color-primary);background:var(--color-surface)}
 .op-input:focus-visible{outline:3px solid var(--color-primary);outline-offset:2px}
 .op-input[aria-invalid="true"]{border-color:var(--color-danger)}
@@ -19,7 +19,7 @@
 .op-check input:focus-visible{outline:3px solid var(--color-primary);outline-offset:2px}
 .op-check input[aria-invalid="true"]{outline:2px solid var(--color-danger);outline-offset:2px}
 .op-check a{font-weight:600;color:var(--color-ink);text-decoration:underline;text-decoration-color:var(--color-primary);text-decoration-thickness:2px;text-underline-offset:3px}
-.op-trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.op-trap[hidden]{display:none}
 .op-send{align-self:flex-start}
 .op-done{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
 .op-done-h{margin:0;font-family:var(--font-display);font-size:28px;letter-spacing:-.02em;color:var(--color-ink)}

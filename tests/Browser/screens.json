@@ -191,6 +191,35 @@
             ]
         },
         {
+            "id": "opinion",
+            "screen": "opinion",
+            "path": "/opinion"
+        },
+        {
+            "id": "opinion-errores",
+            "screen": "opinion",
+            "path": "/opinion",
+            "steps": [
+                {
+                    "fill": "#op-name",
+                    "value": "A"
+                },
+                {
+                    "fill": "#op-text",
+                    "value": "corta"
+                },
+                {
+                    "click": "input[name=consent]"
+                },
+                {
+                    "click": ".op-send"
+                },
+                {
+                    "waitFor": "#op-name-err"
+                }
+            ]
+        },
+        {
             "id": "login",
             "screen": "login",
             "path": "/login",

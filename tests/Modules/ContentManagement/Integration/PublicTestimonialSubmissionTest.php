@@ -245,7 +245,7 @@ it('serves the page with the name, the opinion, the consent with the privacy not
         ->and($field('.//textarea[@id="op-text"][@name="opinion"][@required][@maxlength="255"]'))->not->toBeNull()
         ->and($field('.//input[@type="checkbox"][@name="consent"][@required]'))->not->toBeNull()
         ->and($field('.//a[@href="'.route('aviso-privacidad').'"]'))->not->toBeNull()
-        ->and($field('.//*[@aria-hidden="true"]//input[@name="website"][@tabindex="-1"][@autocomplete="off"]'))->not->toBeNull()
+        ->and($field('.//*[@hidden][@aria-hidden="true"]//input[@name="website"][@tabindex="-1"][@autocomplete="off"]'))->not->toBeNull()
         ->and($field('.//button[@type="submit"]')?->textContent)->toContain('Enviar mi opinión');
 });
 
