@@ -293,7 +293,8 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: A56 — no se va a staging hasta cerrar la ficha `/fix` de `ui-audit inicio-testimonios` (intermitente desde T024) y que `npm run test:ui -- --only inicio` pase dos veces seguidas en 390, 768 y 1440 px.
   - nota: A56 cumplido el 2026-11-17: ficha `docs/changes/2026-11-17-fix-ui-audit-testimonios-intermitente.md` cerrada; `inicio-testimonios` pasa 10 de 10 y `ui-audit inicio` dos veces seguidas en los tres anchos.
   - Sin staging (`deploy.environments: [local, prod]`): verificación en producción tras T097. Las seis rutas 200 con el diseño nuevo; `/sitemap.xml` y `robots.txt`; Lighthouse móvil en las cuatro rutas con los umbrales de CA8, anotado en `docs/seo.md` → Verificación en producción; vista previa al compartir `https://dentissapp.com` en WhatsApp con la imagen y el título (CA19); validador de resultados enriquecidos sobre inicio y contacto (CA13); en Loki, sin `public_gallery.load_failed` ni `Unable to load landing` en la hora siguiente.
-- [ ] T096 Aprobación humana para producción
+- [x] T096 Aprobación humana para producción
+  - aprobado por Luisander2651 el 2026-11-16 20:46 para v0.11.0 ("desplegar v0.11.0 a producción")
 - [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
 - [ ] T098 Marcar spec como `released`
   - Después, y solo con la confirmación del usuario: `/chore` que borra las vistas, componentes y JS viejos, `PublicGalleryScriptTest` y el interruptor (decisión del usuario, 2026-11-12).
