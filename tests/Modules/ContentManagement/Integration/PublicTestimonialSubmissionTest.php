@@ -283,3 +283,44 @@ it('says on the page when the opinion could not be saved (P7)', function () {
     expect(opinionPage($html)->query('//*[@role="alert"][contains(., "No pudimos guardar tu opinión")]'))->toHaveCount(1)
         ->and($html)->not->toContain('boom');
 });
+
+it('keeps the page of opinions out of search engines and out of the sitemap (CA9)', function () {
+    $this->withoutVite();
+    $page = opinionPage($this->get('/opinion')->getContent());
+
+    expect($page->query('//head/meta[@name="robots"][@content="noindex"]'))->toHaveCount(1)
+        ->and($this->get('/sitemap.xml')->getContent())->not->toContain('/opinion');
+});
+
+it('links "Dejar mi opinión" to the page of opinions also when there are testimonials (CA1)', function () {
+    $this->withoutVite();
+    TestimonialModel::query()->create(['author' => 'Publicado', 'description' => 'Una opinión ya revisada y publicada por la clínica.', 'status' => 'visible']);
+
+    $page = opinionPage($this->get('/')->assertOk()->getContent());
+
+    expect($page->query('//section[@id="testimonios"]//a[@href="'.route('opinion').'"][contains(., "Dejar mi opinión")]'))->toHaveCount(1)
+        ->and($page->query('//section[@id="testimonios"]//a[starts-with(@href, "https://wa.me/")][contains(., "opinión")]'))->toHaveCount(0);
+});
+
+it('shows a published opinion with markup as text on the home, never as markup (CA7, TM3)', function () {
+    $this->withoutVite();
+    $this->post('/opinion', opinionForm(['name' => '<script>alert(1)</script>Ana', 'opinion' => '<img src=x onerror=alert(1)> Excelente atención en mi limpieza dental.']));
+    TestimonialModel::query()->update(['status' => 'visible']);
+
+    $html = $this->get('/')->assertOk()->getContent();
+
+    expect($html)->not->toContain('<script>alert(1)</script>')
+        ->and($html)->not->toContain('<img src=x onerror')
+        ->and($html)->toContain('&lt;script&gt;alert(1)&lt;/script&gt;Ana');
+});
+
+it('passes the name and the opinion through escapeHtml wherever the screen of Contenido writes them (CA7, TM3)', function () {
+    $script = (string) file_get_contents(resource_path('js/pages/contenido/testimonios/index.js'));
+    preg_match_all("/'\s*,\s*([^,']*\b(?:author|description)\b[^,']*)\s*,\s*'/", $script, $joined);
+
+    expect($joined[1])->not->toBeEmpty();
+
+    foreach ($joined[1] as $expression) {
+        expect(trim($expression))->toStartWith('escapeHtml(');
+    }
+});

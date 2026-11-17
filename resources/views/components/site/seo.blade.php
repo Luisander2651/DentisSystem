@@ -1,12 +1,12 @@
 {{--
     The <head> of the public site for search engines and social networks (spec 026, CA11, CA13,
-    CA15): the page's title and description (from its own @section, the only source), the
+    CA15): the page's title and description, `noindex` on a page that asks for it (spec 027, /opinion), (from its own @section, the only source), the
     canonical address without a trailing slash or query string, Open Graph with the share card (CA19), the browser bar colour
     (--color-primary) and, on the pages config/site.php marks, the clinic's structured data
     (Dentist) without any value that is still provisional. The JSON is encoded with JSON_HEX_TAG so
     no value can close its script (TM2). It also preloads the two fonts of the first screen.
 --}}
-@props(['title', 'description' => ''])
+@props(['title', 'description' => '', 'noindex' => false])
 @php
     $path = '/'.trim(request()->path(), '/');
     $canonical = rtrim(config('site.url').$path, '/');
@@ -38,6 +38,9 @@
     }
 @endphp
 <title>{{ $title }}</title>
+@if ($noindex)
+    <meta name="robots" content="noindex">
+@endif
 @if ($description !== '')
     <meta name="description" content="{{ $description }}">
 @endif

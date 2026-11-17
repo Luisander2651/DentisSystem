@@ -274,7 +274,7 @@
             <div class="ts-empty reveal">
                 <span class="ts-avg" aria-hidden="true">“</span>
                 <div><h2>¿Ya nos visitaste?</h2><p>Cuéntanos cómo fue tu experiencia: tu opinión ayuda a otros pacientes a conocernos.</p></div>
-                <a class="btn btn-primary" href="{{ $whatsapp }}">Dejar mi opinión</a>
+                <a class="btn btn-primary" href="{{ route('opinion') }}">Dejar mi opinión</a>
             </div>
         @else
             <div class="ts" data-ts>
@@ -282,6 +282,7 @@
                     <span class="kicker">Testimonios</span>
                     <h2 class="h-lg">Lo que dicen nuestros <span class="hl">pacientes{!! $underline !!}</span></h2>
                     <p class="ts-count">{{ $tests->count() }} {{ $tests->count() === 1 ? 'opinión de un paciente' : 'opiniones de pacientes' }}</p>
+                    <a class="ts-leave" href="{{ route('opinion') }}">Dejar mi opinión</a>
                     @if ($tests->count() > 1)
                         <div class="ts-nav">
                             <button class="ts-btn" type="button" data-pressable data-ts-prev aria-label="Testimonio anterior"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></button>

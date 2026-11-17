@@ -397,6 +397,8 @@ html:not(.js) .marquee-item,.still .marquee-item{flex-wrap:wrap;justify-content:
 .lb-text { color: var(--color-muted); }
 .lb-date { font-size: 14px; }
 .ts-count { color: var(--color-muted); font-size: 15px; }
+/* Spec 027: the way to leave an opinion beside the published ones (CA1). */
+.opt .ts-leave { display: inline-flex; align-items: center; align-self: flex-start; min-height: var(--spacing-control); font-weight: 600; color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-primary); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .fq-lead { max-width: 400px; }
 .vis-wa { align-self: flex-start; margin-top: 6px; }
 .cta-section { padding: 0 0 120px; }
