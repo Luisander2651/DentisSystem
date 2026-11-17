@@ -186,3 +186,38 @@ it('refuses a submission without the token of the session outside the test envir
 
     expect(TestimonialModel::query()->count())->toBe(0);
 });
+
+/**
+ * @return list<string>
+ */
+function publicTestimonialAuthors(ContentManagementIntegrationTestCase $test, string $query = ''): array
+{
+    $data = $test->getJson('/api/v1/public/testimonials'.$query)->assertOk()->json();
+
+    return array_column(isset($data['author']) ? [$data] : $data, 'author');
+}
+
+it('lists only the visible testimonials in the public API, never one just sent nor any hidden one (CA11, TM7)', function () {
+    $this->withoutMiddleware(IlluminateRoutingMiddlewareThrottleRequests::class);
+    TestimonialModel::query()->create(['author' => 'Publicado', 'description' => 'Una opinión ya revisada y publicada por la clínica.', 'status' => 'visible']);
+    TestimonialModel::query()->create(['author' => 'Oculto', 'description' => 'Una opinión que la clínica ocultó en Contenido.', 'status' => 'oculto']);
+    $this->post('/opinion', opinionForm(['name' => 'Recién enviada']))->assertRedirect('/opinion');
+
+    expect(publicTestimonialAuthors($this))->toBe(['Publicado'])
+        ->and(publicTestimonialAuthors($this, '?status=oculto'))->toBe(['Publicado']);
+});
+
+it('keeps listing the hidden ones to the staff, who publishes them (CA11, CA4)', function () {
+    $this->withoutMiddleware(IlluminateRoutingMiddlewareThrottleRequests::class);
+    $this->post('/opinion', opinionForm(['name' => 'Recién enviada']))->assertRedirect('/opinion');
+    $this->actingAsAdmin();
+
+    $one = $this->getJson('/api/v1/testimonials')->assertOk()->json();
+
+    TestimonialModel::query()->create(['author' => 'Publicado', 'description' => 'Una opinión ya revisada y publicada por la clínica.', 'status' => 'visible']);
+    $many = $this->getJson('/api/v1/testimonials')->assertOk()->json();
+
+    expect($one['author'])->toBe('Recién enviada')
+        ->and($one['status'])->toBe('oculto')
+        ->and(array_column($many, 'status', 'author'))->toBe(['Recién enviada' => 'oculto', 'Publicado' => 'visible']);
+});
