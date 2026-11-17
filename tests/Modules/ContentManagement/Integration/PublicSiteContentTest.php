@@ -278,3 +278,12 @@ it('gives the services ribbon a named group and a pause button beside its text, 
         ->and($page->query('.//button[@data-mq-pause][@type="button"][@aria-pressed="false"][@aria-label="Pausar la cinta de servicios"]', $ribbon->item(0)))->toHaveCount(1)
         ->and($page->query('.//*[contains(concat(" ", normalize-space(@class), " "), " marquee-track ")]//button', $ribbon->item(0)))->toHaveCount(0);
 });
+
+it('leaves the rotating testimonial out of any live region in the page as served (R4)', function () {
+    homeTestimonials(3);
+
+    $page = homePage($this);
+
+    expect($page->query('//*[@data-ts]//*[@aria-live and @aria-live != "off"]'))->toHaveCount(0)
+        ->and($page->query('//*[@data-ts]//*[@data-ts-live]'))->toHaveCount(1);
+});

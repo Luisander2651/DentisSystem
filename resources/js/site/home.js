@@ -484,12 +484,15 @@ function initCerts(root, doc) {
 }
 
 /** The testimonials: advance on their own, with a pause button, held by focus, pointer or off screen. */
-function initTestimonials(root, win, D) {
+export function initTestimonials(root, win, D) {
     const slides = [...root.querySelectorAll('[data-ts-slide]')];
     const dots = [...root.querySelectorAll('[data-ts-dot]')];
     const position = root.querySelector('[data-ts-pos]');
     const pause = root.querySelector('[data-ts-pause]');
+    const live = root.querySelector('[data-ts-live]');
     const section = root.closest('section') || root;
+    /* Only a change the visitor asks for is announced; one that comes on its own is not (R4). */
+    const announce = (asked) => live?.setAttribute('aria-live', asked ? 'polite' : 'off');
 
     if (slides.length < 2) {
         return;
@@ -527,15 +530,25 @@ function initTestimonials(root, win, D) {
     const reflect = () => section.classList.toggle('hold', !carousel.moving);
 
     dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => carousel.go(index));
+        dot.addEventListener('click', () => {
+            announce(true);
+            carousel.go(index);
+        });
         dot.querySelector('i')?.addEventListener('animationend', () => {
             if (index === carousel.current) {
+                announce(false);
                 carousel.tick();
             }
         });
     });
-    root.querySelector('[data-ts-prev]')?.addEventListener('click', () => carousel.previous());
-    root.querySelector('[data-ts-next]')?.addEventListener('click', () => carousel.next());
+    root.querySelector('[data-ts-prev]')?.addEventListener('click', () => {
+        announce(true);
+        carousel.previous();
+    });
+    root.querySelector('[data-ts-next]')?.addEventListener('click', () => {
+        announce(true);
+        carousel.next();
+    });
 
     const holdOn = (reason) => () => {
         carousel.hold(reason);

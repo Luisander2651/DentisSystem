@@ -291,7 +291,7 @@
                         </div>
                     @endif
                 </div>
-                <figure class="ts-card reveal3d" aria-live="polite">
+                <figure class="ts-card reveal3d" data-ts-live>
                     <svg class="ts-q" width="96" height="96" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 18V12c0-4 2.4-6.6 6-7v3c-1.8.5-2.8 1.8-3 4h3v6H4zm10 0V12c0-4 2.4-6.6 6-7v3c-1.8.5-2.8 1.8-3 4h3v6h-6z"></path></svg>
                     @foreach ($tests as $testimonial)
                         <div class="ts-body swA" data-ts-slide @unless ($loop->first) hidden @endunless>

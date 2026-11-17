@@ -783,6 +783,59 @@ const scenarios = {
 
         return progress.map((value) => welcomeFade(value));
     },
+
+    /* The testimonials: which changes are announced to a screen reader (T047, R4). */
+    async testimonialsLive({ count = 3, actions = [] }) {
+        const { initTestimonials } = await import(new URL('home.js', site));
+        const node = (name, extra = {}) => ({
+            name,
+            listeners: {},
+            attributes: {},
+            hidden: false,
+            style: {},
+            textContent: '',
+            offsetWidth: 0,
+            classList: classList(),
+            getAttribute(key) { return this.attributes[key] ?? null; },
+            setAttribute(key, val) { this.attributes[key] = String(val); },
+            addEventListener(type, fn) { (this.listeners[type] ??= []).push(fn); },
+            fire(type) { (this.listeners[type] ?? []).forEach((fn) => fn({ target: this })); },
+            querySelector: () => null,
+            ...extra,
+        });
+        const slides = Array.from({ length: count }, (_, index) => node(`slide${index}`, { hidden: index !== 0 }));
+        const bars = Array.from({ length: count }, (_, index) => node(`bar${index}`));
+        const dots = bars.map((bar, index) => node(`dot${index}`, { querySelector: (selector) => (selector === 'i' ? bar : null) }));
+        const prev = node('prev');
+        const next = node('next');
+        const pause = node('pause');
+        const live = node('live');
+        const parts = { '[data-ts-prev]': prev, '[data-ts-next]': next, '[data-ts-pause]': pause, '[data-ts-live]': live, '[data-ts-pos]': node('pos') };
+        const root = node('root', {
+            querySelector: (selector) => parts[selector] ?? null,
+            querySelectorAll: (selector) => ({ '[data-ts-slide]': slides, '[data-ts-dot]': dots })[selector] ?? [],
+            closest: () => null,
+        });
+        const D = { reducedMotion: () => false };
+
+        initTestimonials(root, {}, D);
+
+        const current = () => slides.findIndex((slide) => !slide.hidden);
+
+        return actions.map((action) => {
+            if (action === 'auto') {
+                bars[current()].fire('animationend');
+            } else if (action === 'next') {
+                next.fire('click');
+            } else if (action === 'prev') {
+                prev.fire('click');
+            } else if (action.startsWith('dot')) {
+                dots[Number(action.slice(3))].fire('click');
+            }
+
+            return { after: action, current: current(), live: live.attributes['aria-live'] ?? null };
+        });
+    },
 };
 
 if (!scenarios[scenario]) {

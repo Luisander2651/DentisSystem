@@ -493,3 +493,10 @@ it('never leaves a hidden block of the welcome in the way of the keyboard: what 
             ->and($step['endShown'] > 0 || $step['endInert'])->toBeTrue();
     }
 });
+
+it('announces a testimonial only when the visitor asks for it, never when it changes on its own (R4)', function () {
+    $seen = runSiteScript('testimonialsLive', ['actions' => ['auto', 'next', 'auto', 'prev', 'dot2', 'auto']]);
+
+    expect(array_column($seen, 'current'))->toBe([1, 2, 0, 2, 2, 0])
+        ->and(array_column($seen, 'live'))->toBe(['off', 'polite', 'off', 'polite', 'polite', 'off']);
+});
