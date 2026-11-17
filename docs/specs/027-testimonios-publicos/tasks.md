@@ -37,7 +37,8 @@ Formato:
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
-- [ ] T096 Aprobación humana para producción
+- [x] T096 Aprobación humana para producción
+  - aprobado por Luisander2651 el 2026-11-17 12:56 para v0.12.0 ("desplegar v0.12.0 a producción")
 - [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
 - [ ] T098 Marcar spec como `released`
 
