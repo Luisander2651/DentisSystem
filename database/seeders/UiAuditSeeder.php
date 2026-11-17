@@ -93,11 +93,17 @@ final class UiAuditSeeder extends Seeder
     public const PROMOTION_NAMES = [
         'Promoción de prueba: limpieza dental',
         'Promoción de prueba: blanqueamiento',
+        'Promoción de prueba: ortodoncia',
+        'Promoción de prueba: odontopediatría',
+        'Promoción de prueba: vencida',
     ];
 
     public const TESTIMONIAL_AUTHORS = [
         'Paciente de prueba A',
         'Paciente de prueba B',
+        'Paciente de prueba C',
+        'Paciente de prueba D',
+        'Paciente de prueba E',
     ];
 
     public const IMAGE_DIRECTORY = 'ui-audit';
@@ -478,6 +484,7 @@ final class UiAuditSeeder extends Seeder
             ['Sala de espera', 'visible'],
             ['Consultorio principal', 'visible'],
             ['Área de esterilización', 'hidden'],
+            ['Sala de rayos X', 'visible'],
         ];
 
         foreach ($gallery as $index => [$description, $status]) {
@@ -501,24 +508,38 @@ final class UiAuditSeeder extends Seeder
             ]);
         }
 
+        /*
+         * The public site shows the visible promotions that are current on the day ui-audit
+         * browses (2026-07-22): three of them, each ending on a different day, so that the coupon
+         * and the tickets of the new landing appear (spec 026, A32); the expired one must not.
+         */
         $promotions = [
-            ['Limpieza dental con descuento durante julio.', 'visible', '20'],
-            ['Blanqueamiento con precio especial.', 'oculto', '15'],
+            ['Limpieza dental con descuento durante julio.', 'visible', '20', '-01', '-31'],
+            ['Blanqueamiento con precio especial.', 'oculto', '15', '-01', '-31'],
+            ['Valoración de ortodoncia con descuento.', 'visible', '10', '-01', '-25'],
+            ['Primera consulta infantil con precio especial.', 'visible', '25', '-15', '-28'],
+            ['Promoción que terminó en junio.', 'visible', '30', '-01', '-10'],
         ];
 
         foreach (self::PROMOTION_NAMES as $index => $name) {
+            [$description, $status, $discount, $start, $end] = $promotions[$index];
+            $month = $name === 'Promoción de prueba: vencida' ? '2026-06' : self::APPOINTMENTS_MONTH;
+
             PromotionModel::query()->updateOrCreate(['name' => $name], [
-                'description' => $promotions[$index][0],
-                'status' => $promotions[$index][1],
-                'discount_percentage' => $promotions[$index][2],
-                'start_date' => self::APPOINTMENTS_MONTH.'-01',
-                'end_date' => self::APPOINTMENTS_MONTH.'-31',
+                'description' => $description,
+                'status' => $status,
+                'discount_percentage' => $discount,
+                'start_date' => $month.$start,
+                'end_date' => $month.$end,
             ]);
         }
 
         $testimonials = [
             ['Excelente atención, muy recomendable.', 'visible'],
             ['El trato fue amable y puntual.', 'oculto'],
+            ['Me explicaron cada paso del tratamiento con calma.', 'visible'],
+            ['Mi hijo salió contento de su primera consulta.', 'visible'],
+            ['Instalaciones limpias y citas siempre a tiempo.', 'visible'],
         ];
 
         foreach (self::TESTIMONIAL_AUTHORS as $index => $author) {

@@ -8,6 +8,7 @@ use App\Core\Authorization\Exceptions\AuthorizationException;
 use App\Modules\ContentManagement\Application\DTOs\GetLandingContentDTO;
 use App\Modules\ContentManagement\Application\UseCases\GetLandingContentUseCase;
 use App\Modules\ContentManagement\Infrastructure\HTTP\Resources\LandingPageResource;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -16,11 +17,17 @@ use Throwable;
 
 final readonly class ShowLandingPageController
 {
-    private const CACHE_KEY = 'landing.content.visible';
+    /**
+     * A new key: the previous one cached promotions without the validity filter (spec 026, A46).
+     * The clinic's day is part of it, so that one day never serves the promotions of another.
+     */
+    private const CACHE_KEY = 'landing.content.visible.v2';
 
     private const CACHE_TTL_MINUTES = 10;
 
     private const VISIBLE_STATUS = 'visible';
+
+    private const CLINIC_TIMEZONE = 'America/Mexico_City';
 
     public function __construct(
         private GetLandingContentUseCase $useCase,
@@ -28,7 +35,9 @@ final readonly class ShowLandingPageController
 
     public function __invoke(Request $request): View
     {
-        return view('pages.landing.inicio', $this->content($request));
+        $view = config('site.new_landing') ? 'site.inicio' : 'pages.landing.inicio';
+
+        return view($view, $this->content($request));
     }
 
     /**
@@ -45,8 +54,8 @@ final readonly class ShowLandingPageController
     {
         try {
             return Cache::remember(
-                self::CACHE_KEY,
-                now()->addMinutes(self::CACHE_TTL_MINUTES),
+                self::CACHE_KEY.'.'.CarbonImmutable::now(self::CLINIC_TIMEZONE)->toDateString(),
+                $this->cacheUntil(),
                 function () use ($request): array {
                     $content = $this->useCase->execute(
                         new GetLandingContentDTO(status: self::VISIBLE_STATUS),
@@ -62,6 +71,17 @@ final readonly class ShowLandingPageController
 
             return $this->emptyContent();
         }
+    }
+
+    /**
+     * Ten minutes, or the clinic's next midnight if it comes first, so that a promotion that ends
+     * today is not shown tomorrow (spec 026, CA14).
+     */
+    private function cacheUntil(): CarbonImmutable
+    {
+        $now = CarbonImmutable::now(self::CLINIC_TIMEZONE);
+
+        return $now->addMinutes(self::CACHE_TTL_MINUTES)->min($now->addDay()->startOfDay());
     }
 
     /**

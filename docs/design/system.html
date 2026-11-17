@@ -1,12 +1,12 @@
 <!doctype html>
-<!-- Sistema de diseño ELEGIDO de Dentissa, versión 2.0.0 (spec 016, variante B · Neutra de
+<!-- Sistema de diseño ELEGIDO de Dentissa, versión 2.1.0 (spec 016, variante B · Neutra de
      docs/specs/016-sistema-de-diseno-aplicado/design/propuesta.html). Los componentes están dibujados con los
      tokens de este archivo; las pantallas son capturas de la app real, hechas por el paso ui-audit de CI. -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dentissa — sistema de diseño 2.0.0</title>
+<title>Dentissa — sistema de diseño 2.1.0</title>
 <style id="viewer">
   /* Marco del visor: neutro y discreto, para que destaque la opción y no el visor. */
   :root {
@@ -123,6 +123,36 @@
     --color-info: #1d4ed8;
     --color-info-soft: #eff6ff;
     --color-whatsapp: #25d366;
+    /* 2.1.0 · sitio público (spec 026) */
+    --color-primary-deep: #a3345a;
+    --color-primary-strong: #ba4168;
+    --color-line-strong: #cbd5e1;
+    --color-muted-soft: #94a3b8;
+    --color-canvas-alt: #eef2f6;
+    --color-primary-tint: #f3c9d5;
+    --color-primary-tint-2: #f6d3dd;
+    --color-secondary-soft: #fdf1ee;
+    --color-success-tint: #bfe9d6;
+    /* 2.1.0 · tonos decorativos del diente 3D */
+    --color-enamel: #f2ebde;
+    --color-enamel-white: #fefeff;
+    --color-enamel-rim: #e6f2ff;
+    --color-env-dark: #333847;
+    --color-env-light: #faf2f5;
+    --color-metal: #d1d9e6;
+    --color-blush: #fae6ed;
+    /* 2.1.0 · tonos decorativos de la dentadura del antes y después (galería) */
+    --color-gum: #fcabb5;
+    --color-gum-deep: #d15e75;
+    --color-gum-glow: #ff7380;
+    --color-gum-rim: #ff8cad;
+    --color-mouth: #5c1726;
+    --color-floor-shadow: #6b2940;
+    --color-enamel-neck: #f7e6cc;
+    --color-enamel-body: #faf5eb;
+    --color-enamel-tip: #bdcce6;
+    --color-enamel-stain: #d9bd85;
+    --color-enamel-glow: #ffdbcc;
 
     --radius-control: 12px; --radius-box: 16px; --radius-card: 24px;
     --spacing-control: 44px;
@@ -285,7 +315,7 @@
 <body>
 <header class="v-head">
   <div class="v-wrap">
-    <p class="v-project">Dentissa — sistema de diseño aprobado, versión 2.0.0 · aprobado por el usuario el 2026-10-08 (spec 016)</p>
+    <p class="v-project">Dentissa — sistema de diseño aprobado, versión 2.1.0 · aprobado por el usuario el 2026-10-08 (spec 016)</p>
     <h1>El sistema de diseño de Dentissa</h1>
     <div class="v-brand">
       <div class="v-logo"><img data-img="icon" alt="Icono de Dentissa" width="40" height="40" style="border-radius:12px"> <strong>Dentissa</strong><small>icono, en las barras</small></div>
@@ -303,7 +333,7 @@
 <nav class="v-toc" aria-label="Secciones">
   <div class="v-wrap"><ul>
     <li><a href="#color">Color</a></li><li><a href="#tipografia">Tipografía</a></li><li><a href="#espaciado">Espaciado y forma</a></li>
-    <li><a href="#componentes">Componentes</a></li><li><a href="#pantallas">Pantallas</a></li><li><a href="#movimiento">Movimiento</a></li>
+    <li><a href="#componentes">Componentes</a></li><li><a href="#pantallas">Pantallas</a></li><li><a href="#compartir">Compartir</a></li><li><a href="#movimiento">Movimiento</a></li>
   </ul></div>
 </nav>
 
@@ -334,12 +364,19 @@
       <li class="v-pair" data-fg="--color-warning" data-bg="--color-warning-soft" data-min="4.5">Estado "Asignada" y cambio desfavorable</li>
       <li class="v-pair" data-fg="--color-info" data-bg="--color-info-soft" data-min="4.5">Estado "Reprogramada"</li>
       <li class="v-pair" data-fg="--color-ink" data-bg="--color-whatsapp" data-min="4.5">Texto del botón de WhatsApp</li>
+      <li class="v-pair" data-fg="--color-on-dark" data-bg="--color-primary-deep" data-min="4.5">Sitio público: texto sobre la llamada rosa oscura</li>
+      <li class="v-pair" data-fg="--color-on-dark" data-bg="--color-primary-strong" data-min="4.5">Sitio público: texto sobre la pregunta abierta del acordeón</li>
+      <li class="v-pair" data-fg="--color-ink" data-bg="--color-canvas-alt" data-min="4.5">Sitio público: texto sobre el fondo alterno</li>
+      <li class="v-pair" data-fg="--color-muted" data-bg="--color-canvas-alt" data-min="4.5">Sitio público: texto secundario sobre el fondo alterno</li>
+      <li class="v-pair" data-fg="--color-muted" data-bg="--color-secondary-soft" data-min="4.5">Sitio público: texto secundario sobre el fondo cálido</li>
+      <li class="v-pair" data-fg="--color-muted-soft" data-bg="--color-ink" data-min="4.5">Sitio público: texto decorativo sobre tinta</li>
+      <li class="v-pair" data-fg="--color-ink" data-bg="--color-success-tint" data-min="4.5">Sitio público: estado "Abierto"</li>
     </ul>
   </section>
 
   <section class="v-section" id="tipografia">
     <h2>Tipografía</h2>
-    <p class="v-note">Fuente del sistema (<code>ui-sans-serif, system-ui, …</code>); ninguna fuente web cargada. El título de página del panel es un <code>h1</code>, uno por pantalla. Ningún texto mide menos de 12 px (<code>--text-min</code>) y todo campo usa 16 px (<code>--text-control</code>).</p>
+    <p class="v-note">Panel y portal: fuente del sistema (<code>ui-sans-serif, system-ui, …</code>). Sitio público (2.1.0): <code>--font-display</code> Inter Tight en títulos y <code>--font-serif</code> Instrument Serif en acentos, autoalojadas con licencia OFL; títulos fluidos <code>h-xl</code> <code>clamp(40px, 5.4vw, 70px)</code> y <code>h-lg</code> <code>clamp(30px, 3.6vw, 46px)</code>. Ninguna fuente se pide a otro sitio. El título de página del panel es un <code>h1</code>, uno por pantalla. Ningún texto mide menos de 12 px (<code>--text-min</code>) y todo campo usa 16 px (<code>--text-control</code>).</p>
     <div class="v-stage"><div class="opt">
       <p class="t-h1">Pacientes</p>
       <p class="t-body">Gestiona la base de datos de pacientes de la clínica.</p>
@@ -351,7 +388,7 @@
 
   <section class="v-section" id="espaciado">
     <h2>Espaciado y forma</h2>
-    <p class="v-note">Escala de Tailwind (múltiplos de 4 px). Tres radios: 12 px (<code>--radius-control</code>, botones y campos), 16 px (<code>--radius-box</code>, avisos, contadores y barras) y 24 px (<code>--radius-card</code>, tarjetas y diálogos); insignias y filtros, píldora. El recuadro de 44 px es <code>--spacing-control</code>: el alto de todo control y el objetivo de toque mínimo.</p>
+    <p class="v-note">Escala de Tailwind (múltiplos de 4 px). Tres radios: 12 px (<code>--radius-control</code>, botones y campos), 16 px (<code>--radius-box</code>, avisos, contadores y barras) y 24 px (<code>--radius-card</code>, tarjetas y diálogos); insignias y filtros, píldora. El recuadro de 44 px es <code>--spacing-control</code>: el alto de todo control y el objetivo de toque mínimo. Sitio público (2.1.0): escala de radios <code>--radius-hair</code> 3 · <code>--radius-sm</code> 10 · <code>--radius-md</code> 14 · <code>--radius-lg</code> 20 · <code>--radius-xl</code> 28 · <code>--radius-2xl</code> 32 px, botón grande <code>--spacing-control-lg</code> 52 px y espaciado <code>--space-1…8</code> (4–64 px).</p>
     <div class="v-stage"><div class="opt" id="space-demo"></div></div>
   </section>
 
@@ -692,6 +729,13 @@
           <div class="v-pairing"><a class="v-img v-img-390" href="capturas/error-403-asistente-reportes-390.png"><img src="capturas/error-403-asistente-reportes-390.png" alt="Acceso denegado (asistente en Reportes) a 390 px" loading="lazy"><span>390 px</span></a><a class="v-img v-img-1440" href="capturas/error-403-asistente-reportes-1440.png"><img src="capturas/error-403-asistente-reportes-1440.png" alt="Acceso denegado (asistente en Reportes) a 1440 px" loading="lazy"><span>1440 px</span></a></div></figure>
   </section>
 
+  <section class="v-section" id="compartir">
+    <h2>Imagen para compartir</h2>
+    <p class="v-note">La vista previa de las seis rutas del sitio público en WhatsApp y redes (spec 026, CA19): 1200×630, la bienvenida del inicio en pequeño. Zona segura de 64–72 px; se regenera con <code>npm run brand:assets</code> si cambian el nombre, la frase o la ciudad.</p>
+    <figure class="v-shot"><figcaption><strong>Tarjeta general</strong> · las seis rutas<br><span>public/images/brand/compartir.png</span></figcaption>
+      <a class="v-img" href="../../public/images/brand/compartir.png"><img src="../../public/images/brand/compartir.png" alt="Dentissa: La mejor tecnología para tu salud dental. Odontología integral en Lázaro Cárdenas." width="1200" height="630" loading="lazy" style="max-width:100%;height:auto"></a></figure>
+  </section>
+
   <section class="v-section" id="movimiento">
     <h2>Movimiento</h2>
     <ul class="v-motion">
@@ -699,7 +743,8 @@
       <li><strong>Escala al pasar el puntero</strong>: tarjetas de cita (<code>hover:scale-[1.02]</code>) y logo del sitio público (<code>group-hover:scale-105</code>).</li>
       <li><strong>Fondo de diálogo</strong>: capa oscura con <code>backdrop-blur-sm</code>.</li>
       <li><strong>Carga</strong>: <code>animate-spin</code> en 5 lugares.</li>
-      <li class="v-fail">Sin versión para <code>prefers-reduced-motion</code>: ninguna regla en todo <code>resources/</code> (deuda DS12).</li>
+      <li class="v-fail">Sin versión para <code>prefers-reduced-motion</code> en el panel (deuda DS12).</li>
+      <li><strong>Sitio público (2.1.0)</strong>: entradas de sección, recorrido 3D del diente, carruseles con pausa y decorativos con <code>--ease-out</code> y <code>--ease-spring</code>; todos con versión reducida (fichas M-1 a M-5 de <code>docs/specs/026-nueva-landing/design.md</code>).</li>
     </ul>
   </section>
 </main>

@@ -49,6 +49,72 @@
 
 }
 
+/*
+ * Public site variant (docs/design/system.md 2.1.0, spec 026). `static` keeps every variable in the
+ * built CSS even when no utility uses it: the stylesheets of resources/css/site/ read them with
+ * var(), and resources/js/site/tooth3d.js and gallery.js read the decorative tones of the 3D tooth
+ * and of the denture of the before and after at start.
+ */
+@theme static {
+    --font-display: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+
+    --color-primary-deep: #a3345a;
+    --color-primary-strong: #ba4168;
+    --color-line-strong: #cbd5e1;
+    --color-muted-soft: #94a3b8;
+    --color-canvas-alt: #eef2f6;
+    --color-primary-tint: #f3c9d5;
+    --color-primary-tint-2: #f6d3dd;
+    --color-secondary-soft: #fdf1ee;
+    --color-success-tint: #bfe9d6;
+    --color-enamel: #f2ebde;
+    --color-enamel-white: #fefeff;
+    --color-enamel-rim: #e6f2ff;
+    --color-env-dark: #333847;
+    --color-env-light: #faf2f5;
+    --color-metal: #d1d9e6;
+    --color-blush: #fae6ed;
+    --color-gum: #fcabb5;
+    --color-gum-deep: #d15e75;
+    --color-gum-glow: #ff7380;
+    --color-gum-rim: #ff8cad;
+    --color-mouth: #5c1726;
+    --color-floor-shadow: #6b2940;
+    --color-enamel-neck: #f7e6cc;
+    --color-enamel-body: #faf5eb;
+    --color-enamel-tip: #bdcce6;
+    --color-enamel-stain: #d9bd85;
+    --color-enamel-glow: #ffdbcc;
+
+    --radius-hair: 3px;
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --radius-2xl: 32px;
+
+    --spacing-control-lg: 52px;
+
+    --text-body: 16px;
+    --weight-regular: 400;
+    --weight-strong: 600;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+
+    --duration-fast: 150ms;
+    --duration-base: 200ms;
+    --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(.2, .8, .2, 1);
+}
+
 @layer base {
     /* One focus style: ink on light surfaces, on-dark inside a dark one (CA8). */
     :focus-visible {

@@ -1,11 +1,19 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
+import { existsSync, readdirSync } from 'node:fs';
+
+// Public site (spec 026): one entry per page in resources/js/site/pages/, picked up on their own;
+// an empty or missing folder adds none.
+const sitePagesDir = 'resources/js/site/pages';
+const sitePages = existsSync(sitePagesDir)
+    ? readdirSync(sitePagesDir).filter((file) => file.endsWith('.js')).sort().map((file) => `${sitePagesDir}/${file}`)
+    : [];
 
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/pages/contenido/index.js', 'resources/js/pages/records/index.js','resources/js/pages/dashboard.js', 'resources/js/pages/usuarios/delete-user.js', 'resources/js/pages/usuarios/edit-user.js', 'resources/js/pages/usuarios/create-user.js', 'resources/js/pages/patients/index.js', 'resources/js/pages/patients/create-patient.js', 'resources/js/pages/patients/edit-patient.js', 'resources/js/pages/patients/delete-patient.js', 'resources/js/pages/contenido/promociones/index.js', 'resources/js/pages/contenido/certificaciones/index.js', 'resources/js/pages/contenido/testimonios/index.js', 'resources/js/pages/auth/forgot-password.js', 'resources/js/pages/auth/reset-password.js', 'resources/js/pages/landing/inicio.js', 'resources/js/pages/landing/galeria.js', 'resources/js/pages/agenda/index.js', 'resources/js/pages/agenda/create-appointment.js', 'resources/js/pages/agenda/view-appointment.js', 'resources/js/pages/agenda/cancel-appointment.js', 'resources/js/pages/agenda/complete-appointment.js', 'resources/js/pages/tratamientos/index.js', 'resources/js/pages/reportes/index.js', 'resources/js/pages/portal/home.js', 'resources/js/pages/portal/appointments.js', 'resources/js/pages/portal/appointment-detail.js'],
+            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/pages/contenido/index.js', 'resources/js/pages/records/index.js','resources/js/pages/dashboard.js', 'resources/js/pages/usuarios/delete-user.js', 'resources/js/pages/usuarios/edit-user.js', 'resources/js/pages/usuarios/create-user.js', 'resources/js/pages/patients/index.js', 'resources/js/pages/patients/create-patient.js', 'resources/js/pages/patients/edit-patient.js', 'resources/js/pages/patients/delete-patient.js', 'resources/js/pages/contenido/promociones/index.js', 'resources/js/pages/contenido/certificaciones/index.js', 'resources/js/pages/contenido/testimonios/index.js', 'resources/js/pages/auth/forgot-password.js', 'resources/js/pages/auth/reset-password.js', 'resources/js/pages/landing/inicio.js', 'resources/js/pages/landing/galeria.js', 'resources/js/pages/agenda/index.js', 'resources/js/pages/agenda/create-appointment.js', 'resources/js/pages/agenda/view-appointment.js', 'resources/js/pages/agenda/cancel-appointment.js', 'resources/js/pages/agenda/complete-appointment.js', 'resources/js/pages/tratamientos/index.js', 'resources/js/pages/reportes/index.js', 'resources/js/pages/portal/home.js', 'resources/js/pages/portal/appointments.js', 'resources/js/pages/portal/appointment-detail.js', 'resources/css/site/site.css', 'resources/js/site/core.js', ...sitePages],
             refresh: true,
         }),
         tailwindcss(),

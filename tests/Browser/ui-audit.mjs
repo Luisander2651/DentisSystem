@@ -21,7 +21,9 @@
  *
  * Steps of an entry (`steps`): `click`, `waitFor` (a selector in sight), `fill` + `value`,
  * `press` and, since spec 019, `selectIndex` + `index` (picks an option of a select by its
- * position, for values that change with the date). A 429 answered from here (a flow of
+ * position, for values that change with the date) and, since spec 026, `animationsDone: true`
+ * (waits until no animation has run for 300 ms: a section revealed on arrival is measured whole,
+ * never half faded in; endless and scroll-linked animations do not count). A 429 answered from here (a flow of
  * checks-dialogs) is not the API limiting the visit; an answer with `hold` waits until the flow
  * releases it, and `settle()` does not wait for it.
  *
@@ -409,6 +411,13 @@ class Page {
     }
 }
 
+/** True when no animation that runs on the clock and ends is still running. */
+function animationsDoneInPage() {
+    return document.getAnimations().every((animation) => animation.playState !== 'running'
+        || animation.timeline !== document.timeline
+        || animation.effect?.getComputedTiming().iterations === Infinity);
+}
+
 function isVisibleInPage(selector) {
     return [...document.querySelectorAll(selector)].some((element) => {
         const style = getComputedStyle(element);
@@ -669,11 +678,38 @@ async function loadChecks(names) {
     return checks;
 }
 
+/*
+ * No animation running for 300 ms in a row, as settle() does with the network: a reveal that an
+ * observer starts a frame or two after the last step still counts.
+ */
+async function waitForQuietAnimations(page) {
+    const deadline = Date.now() + SETTLE_TIMEOUT;
+    let quietSince = null;
+
+    while (Date.now() < deadline) {
+        if (await page.evaluate(animationsDoneInPage)) {
+            quietSince ??= Date.now();
+
+            if (Date.now() - quietSince >= 300) {
+                return;
+            }
+        } else {
+            quietSince = null;
+        }
+
+        await new Promise((done) => setTimeout(done, 50));
+    }
+
+    throw new Error('Se agotó la espera del final de las animaciones');
+}
+
 async function runStep(page, step) {
     if (step.click) {
         await page.click(step.click);
     } else if (step.waitFor) {
         await page.waitFor(isVisibleInPage, { args: [step.waitFor], what: `"${step.waitFor}" visible` });
+    } else if (step.animationsDone) {
+        await waitForQuietAnimations(page);
     } else if (step.fill) {
         await page.evaluate((selector, text) => {
             const field = document.querySelector(selector);

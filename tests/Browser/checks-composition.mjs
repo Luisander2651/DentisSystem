@@ -19,6 +19,31 @@
 
 export const ADMITTED = [
     {
+        criterion: '026 CA1',
+        entries: ['inicio'],
+        difference: 'El inicio público es el de la propuesta de la spec 026 (nueva landing): bienvenida con fotos, recorrido 3D, servicios, promociones, certificaciones, testimonios, preguntas frecuentes, ubicación y llamada a WhatsApp.',
+    },
+    {
+        criterion: '026 CA1',
+        entries: ['acerca'],
+        difference: '"Acerca de nosotros" es la de la propuesta de la spec 026 (nueva landing): bienvenida con cifras, misión, especialidades, historia, equipo, valores y llamada a visitar.',
+    },
+    {
+        criterion: '026 CA1, CA5',
+        entries: ['galeria'],
+        difference: 'La galería es la de la propuesta de la spec 026 (nueva landing): bienvenida con marcos, recorrido del consultorio con las fotos publicadas, servidas en el HTML, y llamada a WhatsApp.',
+    },
+    {
+        criterion: '026 CA1, CA6, CA7',
+        entries: ['contacto'],
+        difference: 'Contacto es la de la propuesta de la spec 026 (nueva landing): bienvenida con teléfono y redes, compositor de mensaje de WhatsApp, mapa ilustrado con sus enlaces, horario semanal y "Tu primera visita".',
+    },
+    {
+        criterion: '026 CA1',
+        entries: ['aviso-privacidad', 'terminos'],
+        difference: 'Las páginas legales pasan a la barra y el pie del sitio nuevo (spec 026, que sustituye 016 CA22 en las pantallas públicas); su texto, su título y su índice no cambian.',
+    },
+    {
         criterion: 'CA9, CA10',
         entries: ['pacientes'],
         difference: 'Los filtros por estado dejan de ser un control segmentado dentro de una caja y pasan a ser filtros del sistema (x-ui.chip) de 44 px, en el mismo lugar. Aspecto aprobado por el usuario en la vista previa de pacientes (2026-10-08).',

@@ -6,8 +6,8 @@ use App\Modules\ContentManagement\Modules\Galeria\Domain\Entities\GalleryImageEn
 use App\Modules\ContentManagement\Modules\Galeria\Domain\Repositories\GalleryImageRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageId;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageUrl;
-use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\Persistence\Eloquent\Models\GalleryImageModel;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryStatus;
+use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\Persistence\Eloquent\Models\GalleryImageModel;
 
 final readonly class EloquentGalleryImageRepository implements GalleryImageRepositoryInterface
 {
@@ -38,6 +38,10 @@ final readonly class EloquentGalleryImageRepository implements GalleryImageRepos
 
         if ($url) {
             $query->where('url', $url->value);
+        }
+
+        if ($status) {
+            $query->where('status', $status->value);
         }
 
         $images = $query->get();

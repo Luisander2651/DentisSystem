@@ -1,13 +1,13 @@
 ---
 status: approved         # draft | approved (solo el usuario aprueba) — 2.0.0 aprobado por el usuario, 2026-10-08 (spec 016, T001)
 source: chosen           # chosen: elegido entre opciones · extracted: documentado del código
-version: 2.0.0
+version: 2.1.0
 extracted_with: 1.11.2   # versión del plugin que extrajo el sistema 1.0.0 (archivado en history/)
 html: docs/design/system.html
 canvas: null
 widths: [390, 768, 1440]
 created: 2026-10-04
-updated: 2026-10-20
+updated: 2026-11-16
 ---
 
 # Sistema de diseño de Dentissa
@@ -65,6 +65,33 @@ iconos).
 | `--color-info` | `#1d4ed8` | `text-info` | "Reprogramada" | 6.16:1 sobre `--color-info-soft` |
 | `--color-info-soft` | `#eff6ff` | `bg-info-soft` | Fondo de ese estado | `--color-info` encima 6.16:1 |
 | `--color-whatsapp` | `#25d366` | `bg-whatsapp` | Botón de WhatsApp, con texto en tinta | `--color-ink` encima 9.49:1 |
+| `--color-primary-deep` | `#a3345a` | `var(--color-primary-deep)` (sitio público) | Fondos de llamada del sitio público, con texto en `on-dark`; texto de las etiquetas (`kicker`) sobre fondos claros | `--color-on-dark` encima 6.57:1 · 6.57:1 sobre `--color-surface` · 6.28:1 sobre `--color-canvas` · 5.84:1 sobre `--color-canvas-alt` · 5.94:1 sobre `--color-secondary-soft` |
+| `--color-primary-strong` | `#ba4168` | `var(--color-primary-strong)` (sitio público) | Fondo de la pregunta abierta del acordeón del inicio, con texto en `on-dark`: el rosa más claro entre `primary` y `primary-deep` (45 % + 55 %) cuyo texto blanco llega a 4.5:1 también dentro de sus recuadros al 8 % | `--color-on-dark` encima 5.19:1 · 4.52:1 sobre la capa al 8 % de `--color-surface` |
+| `--color-line-strong` | `#cbd5e1` | `var(--color-line-strong)` (sitio público) | Bordes y separadores marcados del sitio público | decorativo |
+| `--color-muted-soft` | `#94a3b8` | `var(--color-muted-soft)` (sitio público) | Iconos y texto decorativo sobre tinta; nunca texto sobre claro | 7.34:1 sobre `--color-ink` |
+| `--color-canvas-alt` | `#eef2f6` | `var(--color-canvas-alt)` (sitio público) | Fondo alterno de secciones | `--color-ink` encima 16.74:1 · `--color-muted` encima 5.51:1 |
+| `--color-primary-tint` | `#f3c9d5` | `var(--color-primary-tint)` (sitio público) | Fondos y degradados rosados decorativos | decorativo |
+| `--color-primary-tint-2` | `#f6d3dd` | `var(--color-primary-tint-2)` (sitio público); leído por la dentadura | Fondos y degradados rosados decorativos; brillo de la línea del antes y después | decorativo |
+| `--color-secondary-soft` | `#fdf1ee` | `var(--color-secondary-soft)` (sitio público) | Fondo cálido de secciones | `--color-muted` encima 5.61:1 |
+| `--color-success-tint` | `#bfe9d6` | `var(--color-success-tint)` (sitio público) | Estado "Abierto" | `--color-ink` encima 14.20:1 |
+| `--color-enamel` | `#f2ebde` | leído por el diente 3D | Esmalte natural del diente 3D | decorativo |
+| `--color-enamel-white` | `#fefeff` | leído por el diente 3D y la dentadura | Esmalte tras el blanqueamiento | decorativo |
+| `--color-enamel-rim` | `#e6f2ff` | leído por el diente 3D | Brillo frío del borde del esmalte blanqueado | decorativo |
+| `--color-env-dark` | `#333847` | leído por el diente 3D | Reflejo oscuro del entorno sobre el metal | decorativo |
+| `--color-env-light` | `#faf2f5` | leído por el diente 3D | Reflejo claro del entorno sobre el metal | decorativo |
+| `--color-metal` | `#d1d9e6` | leído por el diente 3D | Tono del implante y los brackets | decorativo |
+| `--color-blush` | `#fae6ed` | leído por el diente 3D y la dentadura | Interior del diente en el corte del recorrido; brillo de la encía y reflejo del entorno en la dentadura | decorativo |
+| `--color-gum` | `#fcabb5` | leído por la dentadura | Encía junto al diente en la dentadura del antes y después | decorativo |
+| `--color-gum-deep` | `#d15e75` | leído por la dentadura | Encía hacia la base de la dentadura | decorativo |
+| `--color-gum-glow` | `#ff7380` | leído por la dentadura | Luz que atraviesa la encía | decorativo |
+| `--color-gum-rim` | `#ff8cad` | leído por la dentadura | Contorno rosa de la encía y luz de fondo de la dentadura | decorativo |
+| `--color-mouth` | `#5c1726` | leído por la dentadura | Interior de la boca, visible por la pieza faltante | decorativo |
+| `--color-floor-shadow` | `#6b2940` | leído por la dentadura | Sombra de contacto bajo la dentadura | decorativo |
+| `--color-enamel-neck` | `#f7e6cc` | leído por la dentadura | Esmalte cálido junto a la encía | decorativo |
+| `--color-enamel-body` | `#faf5eb` | leído por la dentadura | Esmalte del cuerpo del diente | decorativo |
+| `--color-enamel-tip` | `#bdcce6` | leído por la dentadura | Borde translúcido de incisivos y colmillos | decorativo |
+| `--color-enamel-stain` | `#d9bd85` | leído por la dentadura | Esmalte manchado del "antes" del blanqueamiento | decorativo |
+| `--color-enamel-glow` | `#ffdbcc` | leído por la dentadura | Luz que atraviesa el esmalte | decorativo |
 
 Reglas de color:
 - El rosa nunca es color de **texto** (3.96:1 sobre blanco). Sí pinta iconos, subrayados y bordes,
@@ -83,14 +110,19 @@ Reglas de color:
   significado del indicador y no según la dirección; un cambio neutro, nulo o sin comparación va en
   `muted` sobre `surface` con borde `line`. Siempre con flecha y texto, nunca solo color. El rojo
   no se usa para tendencias.
+- Sitio público (2.1.0, spec 026): los colores marcados "(sitio público)" solo los usan las hojas
+  de `resources/css/site/` con `var(--…)`; los "leídos por el diente 3D" solo los lee
+  `resources/js/site/tooth3d.js` al arrancar, y ningún JS escribe un color.
 - Modo oscuro: no aplica.
 
 ## Tipografía
 
 | Token | Familia | Pesos | Uso |
 |---|---|---|---|
-| `--font-sans` | `ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` | 400, 500, 600, 700, 800 | Todo |
-| `--font-mono` | no aplica | — | — |
+| `--font-sans` | `ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'` | 400, 500, 600, 700, 800 | Panel, portal y textos del sitio público |
+| `--font-display` | `'Inter Tight', ui-sans-serif, system-ui, sans-serif` | 400, 500, 600, 700 | Títulos, logotipo y cifras del sitio público (spec 026) |
+| `--font-serif` | `'Instrument Serif', Georgia, 'Times New Roman', serif` | 400 normal e itálica | Acentos del sitio público (spec 026) |
+| Monoespaciada (`--font-mono`) | no aplica | — | — |
 
 | Nivel | Móvil | Escritorio | Interlineado |
 |---|---|---|---|
@@ -104,7 +136,10 @@ Reglas de color:
 | `--text-control` (letra de todo campo) | 16px | 16px | 1.5 |
 | `--text-min` (texto más pequeño permitido: etiquetas en mayúsculas, insignias) | 12px | 12px | 1.33 |
 
-Fuentes: del sistema; ninguna fuente web se carga. Ningún texto mide menos de 12 px y ningún campo
+Fuentes: del sistema en el panel y el portal. En el sitio público, Inter Tight e Instrument Serif
+(licencia OFL), autoalojadas en `resources/fonts/` con `font-display: swap`; ninguna fuente se
+pide a otro sitio. Títulos del sitio público fluidos entre 390 y 1440 px: `h-xl`
+`clamp(40px, 5.4vw, 70px)` / 600, `h-lg` `clamp(30px, 3.6vw, 46px)` / 600 (los de la propuesta). Ningún texto mide menos de 12 px y ningún campo
 menos de 16 px.
 
 ## Espaciado, radios, bordes y sombras
@@ -117,8 +152,28 @@ menos de 16 px.
 | `--spacing-control` | 44px | `h-control`, `min-h-control`, `size-control` | Alto de botón, campo, filtro y elemento de menú |
 | `--text-control` | 16px | `text-control` | Letra de campo |
 | `--text-min` | 12px | `text-min` | Texto más pequeño permitido |
+| `--text-body` | 16px | `var(--text-body)` (sitio público) | Texto corrido del sitio público |
+| `--weight-regular` | 400 | `var(--weight-regular)` (sitio público) | Peso del texto |
+| `--weight-strong` | 600 | `var(--weight-strong)` (sitio público) | Peso de botones y énfasis |
+| `--radius-hair` | 3px | `var(--radius-hair)` (sitio público) | Barras y marcas finas (2–6 px de la propuesta) |
+| `--radius-sm` | 10px | `var(--radius-sm)` (sitio público) | Chips, iconos y piezas pequeñas (8–11 px) |
+| `--radius-md` | 14px | `var(--radius-md)` (sitio público) | Botón de la barra y tarjetas pequeñas |
+| `--radius-lg` | 20px | `var(--radius-lg)` (sitio público) | Tarjetas medianas (18–22 px) |
+| `--radius-xl` | 28px | `var(--radius-xl)` (sitio público) | Paneles grandes (26–30 px) |
+| `--radius-2xl` | 32px | `var(--radius-2xl)` (sitio público) | Bloques de sección (32–40 px) |
+| `--spacing-control-lg` | 52px | `var(--spacing-control-lg)` (sitio público) | Botón grande del sitio público (52–54 px) |
+| `--space-1` | 4px | `var(--space-1)` (sitio público) | Escala de espaciado del sitio público |
+| `--space-2` | 8px | `var(--space-2)` (sitio público) | Escala de espaciado del sitio público |
+| `--space-3` | 12px | `var(--space-3)` (sitio público) | Escala de espaciado del sitio público |
+| `--space-4` | 16px | `var(--space-4)` (sitio público) | Escala de espaciado del sitio público |
+| `--space-5` | 24px | `var(--space-5)` (sitio público) | Escala de espaciado del sitio público |
+| `--space-6` | 32px | `var(--space-6)` (sitio público) | Escala de espaciado del sitio público |
+| `--space-7` | 48px | `var(--space-7)` (sitio público) | Escala de espaciado del sitio público |
+| `--space-8` | 64px | `var(--space-8)` (sitio público) | Escala de espaciado del sitio público |
 
-- Insignias y filtros usan `rounded-full`. No hay más radios: desaparecen los de 6, 8 y 32 px.
+- Insignias y filtros usan `rounded-full`. En el panel y el portal no hay más radios. El sitio
+  público (spec 026) usa además la escala `--radius-hair…2xl`, que agrupa los radios de la propuesta
+  con 4 px de diferencia como máximo; las formas en `%` (círculos, el diente) se admiten.
 - Escala de espaciado: la de Tailwind, múltiplos de 4 px.
 - Margen lateral de pantalla: 16 px a 390 px · 24 px a 1440 px; menú lateral de 320 px en escritorio.
 - Bordes: 1 px (2 px en el campo con error y en el día de hoy del calendario). Sombras: `shadow-sm`
@@ -248,6 +303,48 @@ Pieza de una lista del día (spec 020). Regla de 2 px en `primary` con "Ahora ·
 que viene. La cita siguiente lleva una marca de 4 px en `primary` en el borde izquierdo y
 "(siguiente)" solo para lectores de pantalla.
 
+### Componentes del sitio público (spec 026)
+Exclusivos del sitio público (`/`, `/acerca-de-nosotros`, `/galeria`, `/contacto` y las páginas
+legales); no sustituyen a `x-ui.*` en el panel. Su composición es la de la propuesta de la spec 026
+(`docs/specs/026-nueva-landing/design.md`), con estos tokens:
+- **Botón del sitio** (`btn`): primario (`primary`, texto `ink`), fantasma y grande
+  (`--spacing-control-lg`); alto mínimo `--spacing-control`; radio `--radius-control`.
+- **Barra con menú plegable**: marca `x-ui.brand`, enlaces, botón "Agendar cita" y, por debajo de
+  920 px, el menú de celular (spec 026, rediseño del usuario del 2026-11-15): un `<details>` al lado
+  de la barra cuyo botón de tres líneas se vuelve X y abre una hoja a pantalla completa bajo la barra
+  con las páginas (la actual marcada), mosaicos de tratamientos que abren WhatsApp con un mensaje
+  escrito, el cupón de la promoción vigente solo en el inicio, "Iniciar sesión", redes y una franja
+  fija con "Abierto/Cerrado", "Agendar cita" y "Llamar". Sin JavaScript abre sin animación; con
+  JavaScript la hoja crece en círculo desde el botón, bloquea el desplazamiento, atrapa el foco y
+  cierra con Escape; con movimiento reducido no anima. Vive en `components.css` para servir en
+  cualquier página del layout.
+- **Pie con botón flotante de WhatsApp** (`--color-whatsapp`, icono en tinta).
+- **Selector segmentado** (`seg`): botones con `aria-pressed`.
+- **Carrusel con pausa**: botón de pausa y pausa con el foco o fuera de pantalla; sin movimiento
+  automático con `prefers-reduced-motion`.
+- **Comparador de antes y después**: dos fotos y un control deslizante con flechas, Inicio y Fin
+  (`aria-valuenow`).
+- **Compositor de WhatsApp**: motivo y mensaje; solo con JavaScript; sin JavaScript, enlace directo.
+- **Visor de certificaciones**: diálogo con foco atrapado, Escape y retorno del foco (como 016
+  CA12, CA13 y CA26).
+
+### Imagen para compartir · `public/images/brand/compartir.png`
+La vista previa de las seis rutas del sitio público al compartirlas (spec 026, CA19; vista en
+`system.html#compartir`). PNG estático de 1200×630 (≤ 300 kB) que dibuja `npm run brand:assets`
+con Chrome sin interfaz, las fuentes del sitio y los tokens de `app.css`; repite la bienvenida del
+inicio:
+- Fondo `canvas` con un halo `primary-soft` → `secondary-soft` arriba a la derecha.
+- Columna de texto de 640 px dentro de una zona segura de 64–72 px: logo horizontal de la clínica
+  (80 px de alto), la frase principal en Inter Tight 600 de 72 px (interlineado 1.02, `-0.045em`)
+  con "salud dental" en Instrument Serif cursiva `primary` y el subrayado `secondary`, como en el inicio, la línea
+  "Odontología integral en <ciudad>" en `muted` de 28 px y, abajo, `dentissapp.com` en
+  `primary-deep` con un punto `primary`.
+- A la derecha, el abanico de tarjetas de la bienvenida (radio `card`): `secondary-soft` con borde
+  `secondary`, `primary-tint-2` y, encima, `primary` con el ícono de la clínica.
+- Texto alternativo (`og:image:alt`): "<nombre>: <frase>. Odontología integral en <ciudad>."
+- Datos que obligan a regenerarla: el nombre, la frase (`config/site.php → tagline`, igual al
+  `h1` del inicio) y la ciudad; `PublicSiteSeoTest` compara la frase del generador con la de config.
+
 ### Lista o tarjeta
 Tarjeta `surface`, radio `card`, borde `line`, `shadow-sm`. Aviso informativo: fondo `primary-soft`,
 borde `secondary`, radio `box`, texto en tinta.
@@ -305,8 +402,9 @@ de estado anuncia, una vez. El foco no se mueve al aparecer.
 | Token | Valor | Uso |
 |---|---|---|
 | `--duration-fast` | 150ms | `transition`, `transition-colors` (valor por defecto de Tailwind) |
-| `--duration-base` | 200ms (también 300ms) | `duration-200` en botones y menú; `duration-300` en la barra del sitio público |
-| `--ease-out` | `cubic-bezier(0.4, 0, 0.2, 1)` | Curva por defecto de Tailwind |
+| `--duration-base` | 200ms | `duration-200` en botones y menú (también 300ms en la barra del sitio público) |
+| `--ease-out` | `cubic-bezier(0.4, 0, 0.2, 1)` | Curva por defecto; declarada en `@theme` desde 2.1.0 porque el sitio público la usa con `var()` |
+| `--ease-spring` | `cubic-bezier(.2, .8, .2, 1)` | Entradas y respuesta de controles del sitio público (sin rebote) |
 
 Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
 `prefers-reduced-motion` (DS12, fuera de la spec 016).
@@ -507,3 +605,6 @@ lo nuevo a partir del último.
 | 2026-10-20 | contradicción | El verde y el ámbar eran solo de estados de cita, y el reporte necesita marcar si un cambio es bueno o malo para la clínica | Verde favorable, ámbar desfavorable, gris neutro, siempre con flecha y texto; el rojo sigue reservado | usuario (docs/specs/019-reportes-mensuales/design.md) |
 | 2026-10-20 | diseño | Piezas nuevas del reporte mensual | Indicador de cambio (`x-ui.trend`), selector (`x-ui.select`), contador comparado (variante de `x-ui.stat`), bloque de error de carga de la pantalla y texto propio de un caso en la región de estado; cuatro vistas de Reportes en el inventario | usuario (docs/specs/019-reportes-mensuales/design.md, T001) |
 | 2026-10-25 | diseño | Piezas nuevas del inicio del panel | Siguiente cita, barra del día y línea de ahora, sin tokens nuevos; los colores de estado rellenan la barra del día siempre con cifra y etiqueta; el inicio del administrador, el asistente y el doctor con datos sustituye a las capturas del inicio, y sale la vista "nuevo usuario" | usuario (docs/specs/020-tablero-de-inicio/design.md, T001) |
+| 2026-11-12 | diseño | Variante "sitio público" (spec 026, versión 2.1.0) | Se adopta la propuesta de `nueva-landing/`: colores, radios, alto grande, fuentes autoalojadas, curvas, pesos y escala de espaciado del sitio público, más los tonos decorativos del diente 3D, todo en `@theme static` de `app.css`; componentes exclusivos del sitio documentados en Componentes. El panel y el portal no cambian | usuario (spec 026, `design.md`; `/analyze 026` A1, A30) |
+| 2026-11-15 | diseño | Tonos de la dentadura del antes y después (spec 026, dentro de 2.1.0, aún sin liberar) | Once tokens decorativos más (encía, interior de la boca, sombra de contacto y esmalte) que la dentadura 3D de la galería lee al arrancar, como el diente del inicio; reutiliza `--color-enamel-white`, `--color-blush`, `--color-primary-tint-2` y `--color-primary` | usuario (spec 026 CA18 editada, `design.md` refinado 2026-11-15) |
+| 2026-11-13 | diseño | Pregunta abierta del acordeón del sitio público | `--color-primary-strong` (`#ba4168`): `primary-deep` se veía oscuro y `primary` no llega a 4.5:1 con texto blanco (3.96:1); se probó texto en tinta sobre `primary` y se descartó | usuario (spec 026, `design.md` → Decisiones) |

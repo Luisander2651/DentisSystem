@@ -66,6 +66,12 @@ function measureInPage(dialogSelector, phone, touch, fallback) {
 
         return false;
     };
+    /*
+     * Spec 026: a moving piece of the public site (a ribbon that slides, photos that come in from a
+     * side) is cut by the edge on purpose. Its container carries data-audit="animado" and only the
+     * checks of truncated and cut text skip it; contrast, focus and size still apply.
+     */
+    const animated = (element) => element.closest('[data-audit="animado"]') !== null;
     const found = { desborde: [], tactil: [], tamano: [], letraCampo: [], letraMinima: [], contraste: [], ejemplo: [], borde: [], truncado: [], recortado: [], sobreImagen: [] };
 
     if (!dialogSelector) {
@@ -168,7 +174,7 @@ function measureInPage(dialogSelector, phone, touch, fallback) {
         }
 
         // CA28 · nothing truncated, nothing cut by the edge of the screen
-        if (hasOwnText(element) && !isField) {
+        if (hasOwnText(element) && !isField && !animated(element)) {
             const cutAcross = element.scrollWidth > element.clientWidth + 1 && ['hidden', 'clip'].includes(style.overflowX);
             const cutDown = element.scrollHeight > element.clientHeight + 1 && ['hidden', 'clip'].includes(style.overflowY);
 
@@ -194,7 +200,7 @@ function measureInPage(dialogSelector, phone, touch, fallback) {
         }
 
         // Cut by a box that hides what overflows it (the badges over the main picture).
-        if (hasOwnText(element) || tag === 'IMG') {
+        if ((hasOwnText(element) || tag === 'IMG') && !animated(element)) {
             for (let node = element.parentElement; node && node !== document.body; node = node.parentElement) {
                 const clip = getComputedStyle(node);
                 const frame = node.getBoundingClientRect();
@@ -223,7 +229,7 @@ function measureInPage(dialogSelector, phone, touch, fallback) {
             && (A.rgba(style.backgroundColor)[3] > 0.5 || parseFloat(style.borderTopWidth) > 0);
 
         // Below 1024 px, where the navigation folds: also the options of an open menu at 768 px.
-        if (touch && (hasOwnText(element) || isField || isButton || tag === 'IMG' || paintedBox) && (box.right > viewport + 1 || box.left < -1) && !insideScroller(element) && style.position !== 'fixed') {
+        if (touch && (hasOwnText(element) || isField || isButton || tag === 'IMG' || paintedBox) && (box.right > viewport + 1 || box.left < -1) && !insideScroller(element) && !animated(element) && style.position !== 'fixed') {
             found.recortado.push(`${A.describe(element)} llega a x=${Math.round(box.right)} px`);
         }
     }

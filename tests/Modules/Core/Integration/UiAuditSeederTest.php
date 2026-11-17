@@ -197,6 +197,22 @@ it('gives the figures of September 2026 that the month of the administrator pain
         ->and($report['patients']['active'])->toBe(['value' => 25, 'as_of' => '2026-09-17']);
 });
 
+it('seeds rich content for the public site on the day ui-audit browses (spec 026, A32)', function () {
+    (new UiAuditSeeder)->run();
+
+    $auditDay = CarbonImmutable::parse('2026-07-22', 'America/Mexico_City')->toDateString();
+    $visiblePromotions = PromotionModel::query()->where('status', 'visible')->get();
+    $current = $visiblePromotions->filter(fn ($promotion): bool => $promotion->start_date <= $auditDay && $promotion->end_date >= $auditDay);
+    $expired = $visiblePromotions->filter(fn ($promotion): bool => $promotion->end_date < $auditDay);
+
+    expect($current)->toHaveCount(3)
+        ->and($current->pluck('end_date')->unique())->toHaveCount(3)
+        ->and($expired)->toHaveCount(1)
+        ->and(TestimonialModel::query()->where('status', 'visible')->count())->toBe(4)
+        ->and(GalleryImageModel::query()->where('status', 'visible')->count())->toBe(3)
+        ->and(CertificationModel::query()->where('status', 'visible')->count())->toBeGreaterThanOrEqual(1);
+});
+
 it('stores neutral images of its own under its reserved directory', function () {
     (new UiAuditSeeder)->run();
 

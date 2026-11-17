@@ -80,7 +80,7 @@ jobs:
       - name: Contenedores / IaC, solo si el PR los cambia (trivy)
         run: |
           if git diff --name-only "origin/${{ github.base_ref }}"...HEAD | grep -qE '^(docker/|docker-compose\.yml$)'; then
-            docker run --rm -v "$PWD:/src" -w /src aquasec/trivy:0.74.0 config --severity HIGH,CRITICAL --exit-code 1 docker/ docker-compose.yml
+            docker run --rm -v "$PWD/docker:/scan/docker:ro" -v "$PWD/docker-compose.yml:/scan/docker-compose.yml:ro" aquasec/trivy:0.74.0 config --severity HIGH,CRITICAL --exit-code 1 /scan
           else
             echo "El PR no cambia docker/ ni docker-compose.yml"
           fi
@@ -110,4 +110,4 @@ jobs:
           composer audit --locked
           npm audit --audit-level=high
       - name: Contenedores / IaC (trivy)
-        run: docker run --rm -v "$PWD:/src" -w /src aquasec/trivy:0.74.0 config --severity HIGH,CRITICAL --exit-code 1 docker/ docker-compose.yml
+        run: docker run --rm -v "$PWD/docker:/scan/docker:ro" -v "$PWD/docker-compose.yml:/scan/docker-compose.yml:ro" aquasec/trivy:0.74.0 config --severity HIGH,CRITICAL --exit-code 1 /scan

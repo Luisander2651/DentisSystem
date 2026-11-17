@@ -1,0 +1,179 @@
+/*
+ * Public site (spec 026): entry of the stylesheet every page of the site loads. It brings the
+ * self-hosted fonts, the base of the proposal in nueva-landing/ and its compatibility with the
+ * Tailwind preflight. Every colour, radius, font and curve is a token of resources/css/app.css
+ * (docs/design/system.md 2.1.0); SiteStylesTokensTest keeps it that way.
+ */
+
+@import './animations.css';
+@import './components.css';
+
+@font-face {
+    font-family: 'Inter Tight';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../../fonts/inter-tight-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Instrument Serif';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../../fonts/instrument-serif-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Instrument Serif';
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../../fonts/instrument-serif-italic-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Base common to every page: reset, typography and small utilities (proposal base.css). */
+body {
+    margin: 0;
+    background: var(--color-canvas);
+}
+
+.opt {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-canvas);
+    font-size: var(--text-body);
+    font-weight: var(--weight-regular);
+    line-height: 1.6;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+}
+
+.opt *,
+.opt *::before,
+.opt *::after {
+    box-sizing: border-box;
+}
+
+.opt h1,
+.opt h2,
+.opt h3,
+.opt h4,
+.opt p,
+.opt ol,
+.opt figure {
+    margin: 0;
+}
+
+.opt b {
+    font-weight: var(--weight-strong);
+}
+
+.opt a:hover {
+    color: var(--color-primary);
+}
+
+.opt .h-xl,
+.opt .h-lg,
+.opt .h-md,
+.opt .f-title,
+.opt .logo,
+.opt .marquee-item,
+.opt .mission {
+    font-family: var(--font-display);
+}
+
+.opt .h-xl {
+    letter-spacing: -0.045em;
+}
+
+.opt .h-lg {
+    letter-spacing: -0.04em;
+}
+
+.opt .hl,
+.opt .it {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    font-size: 1.14em;
+    line-height: 0.9;
+    padding-right: 0.04em;
+}
+
+.opt .stat-n,
+.opt .tl-year,
+.opt .pct {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+}
+
+.btn .arr {
+    transition: transform 250ms var(--ease-spring);
+}
+
+.btn:hover .arr {
+    transform: translateX(4px);
+}
+
+.hl svg {
+    position: absolute;
+    left: -2%;
+    bottom: -0.16em;
+    width: 104%;
+    height: 0.36em;
+    overflow: visible;
+}
+
+.kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: var(--weight-strong);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-primary-deep);
+}
+
+.kicker::before {
+    content: '';
+    width: 22px;
+    height: 2px;
+    border-radius: var(--radius-hair);
+    background: var(--color-secondary);
+}
+
+.tw {
+    position: absolute;
+    animation: twk 3.4s ease-in-out infinite;
+}
+
+.if {
+    display: contents;
+}
+
+.if[hidden],
+.opt [hidden] {
+    display: none !important;
+}
+
+/* Compatibility with the Tailwind v4 reset (proposal compat.css). */
+.opt svg {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.opt :where(button, input) {
+    font: inherit;
+}
+
+.opt :where(ul, ol) {
+    list-style: none;
+}

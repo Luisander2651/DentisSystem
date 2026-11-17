@@ -1,6 +1,8 @@
 <?php
 
 use App\Core\Http\ShowDashboardPageController;
+use App\Core\Http\ShowSitemapController;
+use App\Modules\ContentManagement\Infrastructure\HTTP\Controllers\ShowGalleryPageController;
 use App\Modules\ContentManagement\Infrastructure\HTTP\Controllers\ShowLandingPageController;
 use App\Modules\Reports\Infrastructure\Http\Controllers\ShowReportsPageController;
 use Illuminate\Support\Facades\Route;
@@ -8,15 +10,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', ShowLandingPageController::class)->name('inicio');
 
 Route::get('/contacto', function () {
-    return view('pages.landing.contacto');
+    return view(config('site.new_landing') ? 'site.contacto' : 'pages.landing.contacto');
 })->name('contacto');
 
-Route::get('/galeria', function () {
-    return view('pages.landing.galeria');
-})->name('galeria');
+Route::get('/galeria', ShowGalleryPageController::class)->name('galeria');
 
 Route::get('/acerca-de-nosotros', function () {
-    return view('pages.landing.acerca');
+    return view(config('site.new_landing') ? 'site.nosotros' : 'pages.landing.acerca');
 })->name('acerca');
 
 Route::get('/aviso-de-privacidad', function () {
@@ -26,6 +26,8 @@ Route::get('/aviso-de-privacidad', function () {
 Route::get('/terminos-y-condiciones', function () {
     return view('pages.landing.terminos');
 })->name('terminos');
+
+Route::get('/sitemap.xml', ShowSitemapController::class)->name('sitemap');
 
 Route::get('/login', function () {
     return view('pages.auth.login');

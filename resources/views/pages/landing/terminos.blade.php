@@ -1,4 +1,4 @@
-@extends('layouts.landing')
+@extends(config('site.new_landing') ? 'layouts.site' : 'layouts.landing')
 
 @section('title', 'Términos y Condiciones - Dentissa')
 @section('description', 'Condiciones de uso del sitio de Dentissa: cuentas de paciente, solicitud y cancelación de citas, alcance de la información publicada y responsabilidades.')

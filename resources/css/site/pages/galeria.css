@@ -1,0 +1,165 @@
+/* Estilos propios de la página: galería (spec 026, de pages/galeria.css de la propuesta).
+   Colores, radios y altos en tokens; las transparencias mezclan un token con transparente. El
+   antes y después es la dentadura 3D con su dibujo plano (CA18 editada el 2026-11-15). */
+@media (prefers-reduced-motion:reduce){.hl path{stroke-dashoffset:0}}
+.hero-frames{position:relative;height:300px;perspective:1200px;margin-top:8px}
+.hf{position:absolute;left:50%;top:40px;width:220px;height:250px;margin-left:-110px;border-radius:var(--radius-lg);background:var(--color-surface);border:1px solid var(--color-line);box-shadow:0 40px 60px -40px color-mix(in srgb, var(--color-ink) 50%, transparent);padding:12px;display:flex;flex-direction:column;gap:10px;transition:transform 900ms var(--ease-spring)}
+.hf-art{flex:1;border-radius:var(--radius-md);background:var(--color-primary-soft);display:grid;place-items:center;color:var(--color-primary)}
+.hf.a{transform:translateX(-250px) rotateY(28deg) rotateZ(-6deg) translateZ(-60px);animation:hfa 1.2s 300ms var(--ease-spring) both}
+.hf.b{transform:translateZ(40px);z-index:2;animation:hfb 1.2s 150ms var(--ease-spring) both}
+.hf.c{transform:translateX(250px) rotateY(-28deg) rotateZ(6deg) translateZ(-60px);animation:hfc 1.2s 300ms var(--ease-spring) both}
+.hero-frames:hover .hf.a{transform:translateX(-290px) rotateY(18deg) rotateZ(-8deg) translateZ(-20px)}
+.hero-frames:hover .hf.c{transform:translateX(290px) rotateY(-18deg) rotateZ(8deg) translateZ(-20px)}
+.hero-frames:hover .hf.b{transform:translateZ(80px) translateY(-8px)}
+@keyframes hfa{from{opacity:0;transform:translateX(0) translateZ(-200px)}}
+@keyframes hfb{from{opacity:0;transform:translateY(60px) translateZ(-120px)}}
+@keyframes hfc{from{opacity:0;transform:translateX(0) translateZ(-200px)}}
+.hz{position:relative;margin-top:40px;padding:72px 0}
+.hz-sticky{display:flex;flex-direction:column;justify-content:center;gap:36px}
+.hz-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:20px}
+.hz-view{perspective:1500px}
+.hz-track{display:flex;gap:28px;width:max-content;padding:0 max(24px,calc((100vw - 1152px) / 2));transform:translate3d(var(--tx,0px),0,0);transform-style:preserve-3d;will-change:transform}
+.frame{flex:none;width:min(430px,80vw);height:470px;border-radius:var(--radius-xl);background:var(--color-surface);border:1px solid var(--color-line);padding:14px;display:flex;flex-direction:column;gap:14px;transform:rotateY(var(--ry,0deg)) scale(var(--sc,1));box-shadow:0 50px 80px -50px color-mix(in srgb, var(--color-ink) 45%, transparent);transition:transform 160ms linear}
+.frame-art{position:relative;flex:1;border-radius:var(--radius-lg);overflow:hidden;display:grid;place-items:center;color:var(--color-primary);background:var(--color-primary-soft)}
+.gl-empty-art .ring-a,.gl-empty-art .ring-b{position:absolute;left:50%;top:50%;border-radius:50%;border:1px solid currentColor;opacity:.22}
+.gl-empty-art .ring-a{width:220px;height:220px;margin:-110px 0 0 -110px}
+.gl-empty-art .ring-b{width:340px;height:340px;margin:-170px 0 0 -170px;border-style:dashed;animation:spin 50s linear infinite}
+.frame figcaption{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 6px 4px}
+.frame figcaption span{font-size:13px;color:var(--color-muted);padding:4px 10px;border-radius:100vmax;border:1px solid var(--color-line);white-space:nowrap}
+.hz-bar{height:3px;border-radius:var(--radius-hair);background:var(--color-line);overflow:hidden;width:min(320px,60%)}
+.hz-bar i{display:block;height:100%;background:var(--color-primary);transform-origin:left;transform:scaleX(var(--p,0))}
+@media (prefers-reduced-motion:reduce){.msg{opacity:1}.typing{display:none}}
+@media (max-width:920px){
+.hero-frames{height:240px}
+.hf{width:160px;height:190px;margin-left:-80px}
+.hf.a{transform:translateX(-150px) rotateY(28deg) rotateZ(-6deg) translateZ(-60px)}
+.hf.c{transform:translateX(150px) rotateY(-28deg) rotateZ(6deg) translateZ(-60px)}
+.frame{height:400px}
+}
+@media (prefers-reduced-motion:reduce){.opt *,.opt *::before,.opt *::after{animation:none !important;transition:none !important}}
+
+/* Inline styles of the proposal moved to classes (spec 026 T019), same values. */
+.hl svg path { stroke: var(--color-secondary); }
+.cta3d .hl svg path { stroke: var(--color-primary); }
+.gl-hero { position: relative; padding: 72px 0 0; }
+.gl-hero-copy { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 22px; }
+.gl-title { max-width: 860px; }
+.gl-lead { max-width: 600px; }
+.hf-art-dark { background: var(--color-ink); color: var(--color-secondary); }
+.hf-art-alt { background: var(--color-secondary-soft); }
+.hf-label { font-size: 13px; color: var(--color-muted); }
+.gl-head { display: flex; flex-direction: column; gap: 14px; }
+.hz-hint { display: flex; flex: 1; flex-direction: column; align-items: flex-end; gap: 10px; min-width: 200px; font-size: 14px; color: var(--color-muted); }
+.gl-muted { color: var(--color-muted); }
+.cta-section { padding: 0 0 120px; }
+.cta-copy { display: flex; flex-direction: column; gap: 22px; align-items: flex-start; }
+.opt .cta-kicker { color: var(--color-secondary); }
+.cta-title { color: var(--color-on-dark); }
+.cta-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.tw-1 { left: 8%; top: 12%; color: var(--color-secondary); }
+.tw-2 { right: 10%; top: 22%; animation-delay: 1.2s; color: var(--color-primary); }
+.tw-3 { left: 14%; bottom: 14%; animation-delay: 2.2s; color: var(--color-primary); }
+.ph-name { line-height: 1.25; }
+.ph-name b { font-size: 15px; }
+
+/* Photos in the frames of the welcome, from the proposal (manual review of T019). */
+.hf-art { position: relative; overflow: hidden; }
+.hf-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* Without JavaScript the photo waiting in data-src gives way to its copy in <noscript>. */
+html:not(.js) .frame-art img[data-src] { display: none; }
+
+/* Photos the staff publishes, cut to the frame (spec 026 T019, CA5). */
+.frame-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.frame figcaption { align-items: flex-start; }
+.frame figcaption b { min-width: 0; overflow-wrap: anywhere; }
+
+/* Tour of three or more photos. Until gallery.js turns it into the scroll-driven tour (T020) and
+   without JavaScript, the row scrolls sideways by touch, wheel or keyboard; its bar follows it. */
+.hz-view { overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; padding: 24px 0 48px; }
+.hz-view::-webkit-scrollbar { display: none; }
+.frame { scroll-snap-align: center; }
+@supports (animation-timeline: scroll()) {
+    .hz { timeline-scope: --gallery-tour; }
+    .hz-view { scroll-timeline: --gallery-tour x; }
+    .hz-bar i { animation: hzProgress linear both; animation-timeline: --gallery-tour; }
+}
+@keyframes hzProgress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* Phones: the three decorative frames of the welcome stay inside the screen (ui-audit). */
+@media (max-width: 600px) {
+    .hf { width: 130px; height: 160px; margin-left: -65px; }
+    .hf.a { transform: translateX(-105px) rotateY(28deg) rotateZ(-6deg) translateZ(-60px); }
+    .hf.c { transform: translateX(105px) rotateY(-28deg) rotateZ(6deg) translateZ(-60px); }
+    .hero-frames:hover .hf.a { transform: translateX(-110px) rotateY(18deg) rotateZ(-8deg) translateZ(-20px); }
+    .hero-frames:hover .hf.c { transform: translateX(110px) rotateY(-18deg) rotateZ(8deg) translateZ(-20px); }
+}
+
+/* Pinned tour (gallery.js adds .is-scrub; never with less motion): the section stays in place
+   while the photos pass sideways, as tall as the sideways distance (--hz-height). */
+.hz.is-scrub { height: var(--hz-height, 2800px); padding: 0; }
+.is-scrub .hz-sticky { position: sticky; top: 92px; height: 720px; overflow: hidden; }
+.is-scrub .hz-view { overflow: hidden; scroll-snap-type: none; }
+.is-scrub .hz-bar i { animation: none; }
+@media (max-width: 920px) {
+    .hz.is-scrub { height: var(--hz-height, 2400px); }
+    .is-scrub .hz-sticky { top: 80px; height: 620px; }
+}
+
+/* One or two photos: a still row; none: the notice with WhatsApp (design.md → Pantallas). */
+.gl-rooms { padding-top: 72px; }
+.gl-rooms-in { display: flex; flex-direction: column; gap: 36px; }
+.gl-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 28px; }
+.gl-empty { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); align-items: center; gap: 32px; padding: 14px; border-radius: var(--radius-xl); background: var(--color-surface); border: 1px solid var(--color-line); box-shadow: 0 50px 80px -50px color-mix(in srgb, var(--color-ink) 45%, transparent); }
+.gl-empty-art { position: relative; height: 300px; border-radius: var(--radius-lg); overflow: hidden; display: grid; place-items: center; color: var(--color-primary); background: var(--color-primary-soft); }
+.gl-empty-art svg { position: relative; }
+.gl-empty-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 18px 24px; }
+
+/* Before and after (CA18): the 3D denture of gallery.js over the flat drawing of the proposal, with
+   the line, its knob and the labels; the slider is invisible over the whole drawing. */
+.ba-section { padding: 72px 0 120px; }
+.ba-in { display: flex; flex-direction: column; gap: 32px; }
+.ba-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 24px; }
+.ba-head-copy { display: flex; flex-direction: column; gap: 14px; max-width: 620px; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 5px; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-md); box-shadow: 0 18px 40px -30px color-mix(in srgb, var(--color-ink) 40%, transparent); }
+.seg-b { min-height: var(--spacing-control); padding: 0 18px; border-radius: var(--radius-control); border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 500; color: var(--color-muted); cursor: pointer; transition: background 300ms var(--ease-out), color 300ms; }
+.ba { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 620px; border-radius: var(--radius-xl); overflow: hidden; background: var(--color-primary-soft); border: 1px solid var(--color-primary-tint-2); box-shadow: 0 50px 80px -50px color-mix(in srgb, var(--color-ink) 45%, transparent); user-select: none; touch-action: pan-y; }
+.ba-2d, .ba-layer { position: absolute; inset: 0; }
+.ba-2d.off { display: none; }
+.ba-after { clip-path: inset(0 0 0 50%); }
+.ba-mouth { position: absolute; left: 9%; top: 18%; width: 82%; height: 64%; border-radius: 50% 50% 50% 50% / 46% 46% 54% 54%; background: var(--color-mouth); }
+.ba-gum { position: absolute; background: var(--color-gum); }
+.ba-gum.up { left: 8%; top: 13%; width: 84%; height: 17%; border-radius: 50% 50% 46% 46% / 90% 90% 30% 30%; }
+.ba-gum.down { left: 14%; top: 73%; width: 72%; height: 14%; border-radius: 46% 46% 50% 50% / 30% 30% 90% 90%; }
+.teeth { position: absolute; inset: 0; }
+.tooth { position: absolute; transition: background 600ms var(--ease-out), transform 700ms var(--ease-spring), opacity 400ms; box-shadow: inset 0 -6px 10px -6px color-mix(in srgb, var(--color-ink) 18%, transparent), inset 0 4px 6px -4px color-mix(in srgb, var(--color-surface) 90%, transparent); }
+.spark { position: absolute; color: var(--color-surface); animation: twk 2.8s ease-in-out infinite; }
+.spark.s1 { left: 58%; top: 30%; }
+.spark.s2 { left: 74%; top: 44%; animation-delay: 0.9s; }
+.spark.s3 { left: 66%; top: 62%; animation-delay: 1.7s; }
+.ba-cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 900ms var(--ease-out); }
+.ba-cv.on { opacity: 1; }
+.ba-label { position: absolute; top: 18px; padding: 6px 14px; border-radius: 100vmax; font-size: 13px; font-weight: var(--weight-strong); letter-spacing: 0.08em; text-transform: uppercase; z-index: 3; }
+.ba-label.l { left: 18px; background: color-mix(in srgb, var(--color-surface) 90%, transparent); color: var(--color-ink); }
+.ba-label.r { right: 18px; background: var(--color-ink); color: var(--color-on-dark); }
+.ba-handle { position: absolute; top: 0; bottom: 0; left: 50%; width: 0; z-index: 4; pointer-events: none; }
+.ba-handle::before { content: ""; position: absolute; top: 0; bottom: 0; left: -1px; width: 2px; background: var(--color-surface); box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-ink) 8%, transparent); }
+.ba-knob { position: absolute; top: 50%; left: -26px; width: 52px; height: 52px; margin-top: -26px; border-radius: 50%; background: var(--color-surface); color: var(--color-ink); display: grid; place-items: center; box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--color-ink) 50%, transparent); }
+.ba-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; z-index: 5; }
+.ba-range:focus-visible ~ .ba-handle .ba-knob { outline: 3px solid var(--color-primary); outline-offset: 3px; }
+.ba-caption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; color: var(--color-muted); font-size: 15px; }
+.ba-caption b { color: var(--color-ink); }
+html:not(.js) .ba { display: none; }
+@media (max-width: 920px) {
+    .ba { aspect-ratio: 4 / 3; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .spark { animation: none; opacity: 0.8; }
+}
+
+/* One column (up to 920 px, refined 2026-11-15): the heading of every section is centred. */
+@media (max-width: 920px) {
+    .hz-head, .ba-head { flex-direction: column; align-items: center; text-align: center; }
+    .gl-head, .ba-head-copy { align-items: center; text-align: center; }
+    .seg { justify-content: center; }
+}

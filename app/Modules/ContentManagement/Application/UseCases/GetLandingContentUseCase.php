@@ -14,9 +14,12 @@ use App\Modules\ContentManagement\Modules\Promociones\Domain\Entities\PromotionE
 use App\Modules\ContentManagement\Modules\Testimonios\Aplication\DTOs\GetTestimonialsDTO;
 use App\Modules\ContentManagement\Modules\Testimonios\Aplication\UseCases\GetTestimonialsUseCase;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Entities\TestimonialEntity;
+use Carbon\CarbonImmutable;
 
 final readonly class GetLandingContentUseCase
 {
+    private const CLINIC_TIMEZONE = 'America/Mexico_City';
+
     public function __construct(
         private GetPromotionsUseCase $getPromotionsUseCase,
         private GetCertificationsUseCase $getCertificationsUseCase,
@@ -33,8 +36,8 @@ final readonly class GetLandingContentUseCase
     public function execute(GetLandingContentDTO $dto): array
     {
         return [
-            'promotions' => $this->getPromotionsUseCase->execute(
-                new GetPromotionsDTO(status: $dto->status),
+            'promotions' => $this->currentPromotions(
+                $this->getPromotionsUseCase->execute(new GetPromotionsDTO(status: $dto->status)),
             ),
             'certifications' => $this->getCertificationsUseCase->execute(
                 new GetCertificationsDTO(status: $dto->status),
@@ -43,5 +46,22 @@ final readonly class GetLandingContentUseCase
                 new GetTestimonialsDTO(status: $dto->status),
             ),
         ];
+    }
+
+    /**
+     * The promotions that run today on the clinic's clock, the one that ends first leading
+     * (spec 026, CA2 and CA14).
+     *
+     * @param  array<int, PromotionEntity>  $promotions
+     * @return array<int, PromotionEntity>
+     */
+    private function currentPromotions(array $promotions): array
+    {
+        $today = CarbonImmutable::now(self::CLINIC_TIMEZONE);
+        $current = array_values(array_filter($promotions, fn (PromotionEntity $promotion): bool => $promotion->isCurrentOn($today)));
+
+        usort($current, fn (PromotionEntity $first, PromotionEntity $second): int => $first->EndDate()->value <=> $second->EndDate()->value);
+
+        return $current;
     }
 }
