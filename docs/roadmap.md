@@ -25,6 +25,10 @@ Para pasar de **prototipo** a **MVP** con una clínica real:
 - Specs 001–012 revisadas y pasadas de `inferred` a `approved` (cumplido el 2026-09-23).
 
 ## Pendientes y deuda
+- `/chore` de dependencias pendiente (decisión del usuario, 2026-11-17), con dos puntos:
+  - Subir `laravel/framework` de 12.69.3 a ≥ 12.71.0. Hay un aviso bajo, CVE-2026-128083, en `Concurrency`, que la app no usa (026/R28).
+  - Subir `grafana/alloy` de v1.1.0 en `docker-compose.prod.yml` a una versión que corrija la caída de `loki.source.docker` al recrear contenedores (`panic ... dockertarget.(*Target).Stop`).
+- Incidente de observabilidad (detectado el 2026-11-17 al liberar v0.11.0): Alloy dejó de enviar logs a Loki en producción desde el 2026-11-14, por esa caída. Loki respondía sin ninguna etiqueta. Se restableció reiniciando Alloy, y es probable que se perdieran los logs de ese intervalo. Nadie lo notó en tres días porque no hay alertas: lo cubre OB7 (objetivo 4). Mientras no se suba Alloy, comprobar tras cada deploy que Loki recibe logs (`/loki/api/v1/label/container/values`).
 - Imágenes que sube el staff (certificaciones, galería): se guardan y se sirven tal como llegan, sin reducir ni comprimir; una certificación PNG de 848 kB pesaba más que todo el inicio. Redimensionar y comprimir al subir; fuera de la spec 026 (decisión del usuario, 2026-11-13).
 - Testimonios: calificación con estrellas (1 a 5) capturada en "Contenido" y mostrada en la landing; fuera de la spec 026 (decisión del usuario, 2026-11-12).
 - SEO técnico de severidad baja de [seo.md](seo.md): SE6.a, SE6.b y SE7.a las cubre la spec 026 (en curso); de SE8.a queda el `theme-color` del panel y del portal del paciente, porque la 026 solo lo pone en el sitio público (decisión del usuario, A8 de `/analyze 026`). RS4.a de [security.md](security.md) (contenido oculto en la API pública de galería) sigue pendiente: la galería nueva no usa esa API, pero la API sigue igual.
