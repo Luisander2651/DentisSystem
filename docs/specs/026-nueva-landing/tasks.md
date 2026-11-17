@@ -266,6 +266,9 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: añadida por /review: R31, R33
   - nota: `initMarquee` deja al `click` del botón todo toque que cae dentro de él (también en su ícono) y el foco en el propio botón ya no retiene la cinta; el caso nuevo de `SiteScriptsTest` falló antes y pasa después. En Chrome con toque emulado a 390 px el segundo toque no reanudaba porque `:hover` queda pegado tras tocar: la pausa al pasar el puntero solo aplica con `(hover: hover)` (archivo extra justificado: `inicio.css`, con su caso en `SiteStylesTokensTest`, que falla sin el cambio). Ahora el primer toque pausa y el segundo reanuda. `ui-audit inicio` en verde salvo el intermitente R8.
 
+- [x] T052 Que el visor de certificaciones del inicio vuelva a quedar fijo a la ventana: la sección de certificaciones sale de `content-visibility` — `resources/css/site/pages/inicio.css`, `tests/Modules/Core/Unit/Design/SiteStylesTokensTest.php` — hecho cuando: el caso de `SiteStylesTokensTest` (las certificaciones fuera de la regla) pasa, `ui-audit inicio-visor-certificado` pasa en los tres anchos y la suite en verde — cubre: CA10
+  - nota: añadida durante /release: el CI del PR #54 falló en `inicio-visor-certificado` a 1440 px (diálogo en y=7997 px). La contención de `content-visibility` (perf de T092, `37b483c`) hace que un elemento `position: fixed` de dentro se coloque respecto a la sección. Era el único elemento fijo dentro de esas secciones (la columna `sticky` de preguntas frecuentes sigue funcionando). El caso nuevo falló antes y pasa después; `ui-audit inicio-visor-certificado` pasa en 390, 768 y 1440.
+
 ## Integración y documentación
 - [x] T028 Actualizar `docs/seo.md` (reglas del sitio, inventario de las seis rutas, `sitemap.xml` con seis rutas en SE3.a, Open Graph, datos estructurados, `theme-color`; SE1.a, SE2.a, SE3.a, SE3.b, SE5.a, SE6.a, SE6.b y SE7.a → "en curso (spec 026)"; SE8.a → "parcial: sitio público en la 026 con el rosa de la marca, panel y portal pendientes", con el texto de la corrección actualizado al valor decidido (A45); SE2.b, SE2.c y SE4.a siguen pendientes) y el roadmap (deuda SEO del sitio cubierta por la 026; `theme-color` del panel y del portal y RS4.a pendientes) — `docs/seo.md`, `docs/roadmap.md` — hecho cuando: `python .ai/bin/aidd.py validate` sin errores y cada corrección cambia de estado por separado — cubre: CA11, CA12, CA13, CA19 — depende: T027
   - nota: A45 — el texto de SE8.a pasa al valor decidido (rosa de la marca, `--color-primary`). Cada corrección cambia de estado en su línea; SE2.b, SE2.c y SE4.a siguen pendientes. Exclusiones nuevas: sin `twitter:*` y una sola imagen general.
@@ -306,7 +309,7 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 | CA7 | T003, T008, T009, T017, T022, T033, T040, T041, T045 | T003, T008, T009, T017, T022, T033, T040, T041, T045 |
 | CA8 | T004, T016 | T006, T016 |
 | CA9 | T009, T016 | T007, T009, T016 |
-| CA10 | T009, T015, T020, T024, T031, T040, T041, T044, T046, T047, T048, T049, T051 | T009, T015, T020, T031, T040, T041, T044, T046, T047, T048, T049, T051 |
+| CA10 | T009, T015, T020, T024, T031, T040, T041, T044, T046, T047, T048, T049, T051, T052 | T009, T015, T020, T031, T040, T041, T044, T046, T047, T048, T049, T051, T052 |
 | CA11 | T003, T011, T026, T033 | T003, T011, T033 |
 | CA12 | T012 | T012 |
 | CA13 | T011, T026, T045 | T011, T045 |
