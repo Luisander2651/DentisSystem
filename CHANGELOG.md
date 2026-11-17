@@ -5,6 +5,28 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-17
+Sitio público nuevo: inicio, acerca de nosotros, galería y contacto rediseñados, más rápidos, accesibles y preparados para buscadores y para compartir (spec 026).
+
+### Added
+- Inicio nuevo: bienvenida con fotos en abanico, recorrido 3D por los tratamientos (con versión fija sin gráficos 3D o con movimiento reducido), servicios, promociones vigentes con su cuenta atrás, certificaciones, testimonios con pausa, preguntas frecuentes, ubicación y llamada a WhatsApp (spec 026).
+- Galería con el recorrido del consultorio y un antes y después interactivo por tratamiento, que se compara deslizando, también con el teclado (spec 026).
+- Contacto con un mensaje de WhatsApp que se escribe eligiendo el motivo, el horario de la semana con el día de hoy marcado, si la clínica está abierta ahora, un mapa ilustrado con Google Maps y Waze, y botones para copiar el teléfono y la dirección (spec 026).
+- Menú de celular a pantalla completa con las páginas, los tratamientos, el cupón de la promoción vigente y los botones de agendar y llamar (spec 026).
+- Cada página tiene título, descripción y dirección propios para buscadores, vista previa con imagen al compartirla en WhatsApp y redes, `sitemap.xml` y los datos de la clínica para buscadores en el inicio y contacto (spec 026).
+
+### Changed
+- Las páginas de aviso de privacidad y términos y condiciones usan la barra y el pie del sitio nuevo, sin cambiar su texto (spec 026).
+- La galería muestra sus fotos al cargar la página, sin esperar a una carga posterior (spec 026).
+- El sitio solo nombra los tratamientos que ofrece la clínica: limpieza y prevención, ortodoncia, implantes dentales, blanqueamiento dental y odontopediatría (spec 026).
+
+### Fixed
+- La suite de pruebas en paralelo ya no se queda sin memoria (fix 2026-11-16-fix-memoria-suite-paralela).
+- La revisión automática de la pantalla de testimonios del inicio ya no falla al azar (fix 2026-11-17-fix-ui-audit-testimonios-intermitente).
+
+### Security
+- El contenido oculto y las promociones vencidas no aparecen en las páginas, en los datos para buscadores ni en el sitemap, y el texto que captura el personal se muestra siempre como texto (spec 026).
+
 ## [0.10.0] - 2026-11-11
 Portal del paciente: cada paciente ve su próxima cita con su código QR de acceso, su historial de citas y las recomendaciones y recetas de sus citas completadas (spec 025).
 
