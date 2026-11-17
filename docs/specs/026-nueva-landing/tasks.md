@@ -262,6 +262,9 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: añadida por /review: R7 (decisión del usuario, 2026-11-16)
   - nota: las especialidades salen de `config('site.treatments')` con su ícono y el título las cuenta ("Un equipo, cinco especialidades"). La entrada de la página también nombraba "implantología y estética dental": pasa a "implantes dentales y blanqueamiento", con la misma decisión. El test falló antes y pasa después; revisado a 390, 768 y 1440 px. `ui-audit acerca` en verde y `evaluate.mjs nosotros` pasa entero.
 
+- [ ] T051 Que el botón de pausa de la cinta funcione al tocarlo en un celular aunque el toque caiga en su ícono, y que reanude la cinta aunque el foco siga en él; el foco en el resto de la cinta la sigue reteniendo — `resources/js/site/home.js`, `tests/Modules/ContentManagement/Unit/SiteScriptsTest.php`, `tests/Modules/ContentManagement/Unit/render-site-scripts.mjs` — hecho cuando: los casos nuevos de `SiteScriptsTest` (toque sobre el ícono: un solo cambio; foco en el botón y pulsar reanudar: la cinta se mueve) pasan, la verificación en Chrome con toque emulado a 390 px pausa y reanuda, y la suite en verde — cubre: CA10
+  - nota: añadida por /review: R31, R33
+
 ## Integración y documentación
 - [x] T028 Actualizar `docs/seo.md` (reglas del sitio, inventario de las seis rutas, `sitemap.xml` con seis rutas en SE3.a, Open Graph, datos estructurados, `theme-color`; SE1.a, SE2.a, SE3.a, SE3.b, SE5.a, SE6.a, SE6.b y SE7.a → "en curso (spec 026)"; SE8.a → "parcial: sitio público en la 026 con el rosa de la marca, panel y portal pendientes", con el texto de la corrección actualizado al valor decidido (A45); SE2.b, SE2.c y SE4.a siguen pendientes) y el roadmap (deuda SEO del sitio cubierta por la 026; `theme-color` del panel y del portal y RS4.a pendientes) — `docs/seo.md`, `docs/roadmap.md` — hecho cuando: `python .ai/bin/aidd.py validate` sin errores y cada corrección cambia de estado por separado — cubre: CA11, CA12, CA13, CA19 — depende: T027
   - nota: A45 — el texto de SE8.a pasa al valor decidido (rosa de la marca, `--color-primary`). Cada corrección cambia de estado en su línea; SE2.b, SE2.c y SE4.a siguen pendientes. Exclusiones nuevas: sin `twitter:*` y una sola imagen general.
@@ -269,7 +272,7 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
   - nota: Frontend (layout, componentes y vistas del sitio, CSS y JS en `resources/*/site/`, entradas por página, galería en el HTML, `config/site.php`, menú desde 921 px) y Backend (controladores del inicio y de la galería con su caché, `ShowSitemapController`, componente SEO).
 - [x] T091 Actualizar `docs/deployment.md` y `docs/observability.md` si cambiaron variables, entornos, pasos de deploy, logs, eventos de auditoría o métricas: `SITE_NEW_LANDING` (variables y rollback inmediato con `config:cache`) y las variables `SITE_*` de contacto (datos reales de la clínica; vacías = provisionales), log `public_gallery.load_failed`
   - nota: `deployment.md`: variables `SITE_NEW_LANDING` y `SITE_*`, rollback inmediato con `config:cache`, purga de `compartir.png` en Cloudflare y `GET` a las seis rutas y al sitemap tras el deploy. `observability.md`: `public_gallery.load_failed`; sin auditoría ni métricas nuevas.
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
   - Antes de marcar: Lighthouse en Chrome, perfil móvil, sobre la build de producción servida en local en las cuatro rutas (Rendimiento ≥ 90, Accesibilidad, Buenas prácticas y SEO 100), con resultados en `review.md`; `evaluate.mjs` de las cuatro páginas sin fallos; imágenes de muestra y generadas listadas en `design.md`; los datos de contacto que sigan siendo provisionales se anotan en `review.md` como pendientes de la clínica.
   - nota: hallazgo al pasar `evaluate.mjs inicio` (2026-11-16): `inicio.css` volvía a animar la entrada de la barra sin la condición `.js` del refinado del 2026-11-15, así que sin JavaScript la barra quedaba invisible (G-sin-js). Corregido con un test en `SiteStylesTokensTest` que falla antes y pasa después.
   - nota: tarjeta para compartir revisada por el usuario (2026-11-16): "salud dental" en rosa (`primary`) como en el inicio; regenerada.
@@ -301,7 +304,7 @@ Las tareas no cambian el Constitution Check de [plan.md](plan.md):
 | CA7 | T003, T008, T009, T017, T022, T033, T040, T041, T045 | T003, T008, T009, T017, T022, T033, T040, T041, T045 |
 | CA8 | T004, T016 | T006, T016 |
 | CA9 | T009, T016 | T007, T009, T016 |
-| CA10 | T009, T015, T020, T024, T031, T040, T041, T044, T046, T047, T048, T049 | T009, T015, T020, T031, T040, T041, T044, T046, T047, T048, T049 |
+| CA10 | T009, T015, T020, T024, T031, T040, T041, T044, T046, T047, T048, T049, T051 | T009, T015, T020, T031, T040, T041, T044, T046, T047, T048, T049, T051 |
 | CA11 | T003, T011, T026, T033 | T003, T011, T033 |
 | CA12 | T012 | T012 |
 | CA13 | T011, T026, T045 | T011, T045 |
