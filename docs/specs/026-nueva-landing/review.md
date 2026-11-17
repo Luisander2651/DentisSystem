@@ -1,76 +1,95 @@
 ---
 spec: 026-nueva-landing
-verdict: changes_requested
-round: 2
+verdict: approved
+round: 3
 date: 2026-11-17
-base: 6cb178e
-head: 3a8f470
+base: 9bbea55
+head: be15dc8
 human_signoff: pending
 ---
 
 # Review · 026 Nueva landing del sitio público
 
 ## Resumen
-Ronda 2 (`--rerun`) sobre las correcciones T044–T050. La ronda anterior está en [history/review.r1.md](history/review.r1.md).
+Ronda 3 (`--rerun`) sobre T051, que corrige R31 y R33 de la ronda 2.
 
-R1–R7 quedan corregidos y cada uno tiene un test que fallaría sin la corrección. Pero la corrección de la cinta de servicios (R1) trae un defecto nuevo: R31, importante. En el celular, tocar el botón de pausa no pausa la cinta. El usuario decide corregirlo junto con R33, del mismo código.
+Los dos quedan corregidos y no aparecen hallazgos nuevos. No hay bloqueantes. Todos los importantes de las tres rondas están corregidos o tienen destino decidido por el usuario: R8 va a un `/fix` antes de staging. Los menores se aceptaron al roadmap.
 
-El diff de esta ronda pesa 46 KB. Lo revisó un único subagente de contexto limpio con los encargos de spec, constitución, calidad y seguridad juntos.
+Esta ronda la revisé sin subagente, releyendo `initMarquee` y las reglas de la cinta desde cero, porque el diff de código mide 9 líneas en 2 archivos.
 
-Conteo de esta ronda: bloqueante 0 · importante 1 · menor 5
+Rondas anteriores:
+- [history/review.r1.md](history/review.r1.md): la review completa, con la verificación de criterios, seguridad, SEO y preparación para liberar.
+- [history/review.r2.md](history/review.r2.md).
+
+Conteo de esta ronda: bloqueante 0 · importante 0 · menor 0
 
 ## Verificación automática
 | Comando | Resultado |
 |---|---|
-| `./vendor/bin/pest --parallel` | ✅ 2503 tests, 0 fallos |
-| `pint` sobre los PHP del rango | ✅ |
+| `./vendor/bin/pest --parallel` | ✅ 2505 tests, 0 fallos |
+| `pint` sobre los archivos del rango | ✅ |
 | `npm run build` | ✅ |
 | `aidd.py validate` | ✅ 0 errores |
-| `npm run test:ui` (inicio, contacto, acerca) | ✅ dos veces, salvo el intermitente conocido `inicio-testimonios` a 1440 px (R8, `/fix` aparte) |
-| `evaluate.mjs` | Contacto y acerca pasan enteros. El inicio solo falla en las excepciones aceptadas en la ronda 1 |
+| `npm run test:ui -- --only inicio` | ✅, salvo `inicio-testimonios` a 1440 px, intermitente desde T024 (R8) |
+| Chrome con toque emulado (390 px) | el primer toque en el ícono pausa y el segundo reanuda |
 
-## Seguimiento de la ronda 1
+## Seguimiento de la ronda 2
 | ID | Estado | Evidencia |
 |---|---|---|
-| R1, R30 | corregido, con un defecto nuevo (→ R31) | `inicio.blade.php:95-106`: grupo con nombre y botón fuera de la pista. `home.js` `initMarquee`. Tests de `PublicSiteContentTest` y `SiteScriptsTest`. |
-| R2 | corregido | `config/site.php:72-77`; `SiteConfigTest`, tres casos inválidos más uno válido. |
-| R3 | corregido | `home.js` `welcomeFade` e `initDeck`. El test cubre la función pura (menor R34). |
-| R4 | corregido | `data-ts-live`; `polite` solo en los cambios pedidos. Tests en `PublicSiteContentTest` y `SiteScriptsTest`. |
-| R5 | corregido | `contacto.blade.php:121-122`: `role="img"` propio, sin controles dentro. `PublicSitePagesTest`. |
-| R6 | corregido | `contacto.js` `announce` en `[data-ui-status]`. `SiteScriptsTest`. |
-| R7 | corregido | `nosotros.blade.php`: especialidades de `config('site.treatments')`. `PublicSitePagesTest`, también con otra configuración. |
-| R8 | abierto, fuera de esta ronda | `/fix` aparte antes de staging (nota A56 de T095) |
+| R31 | corregido | `home.js` `initMarquee`: `pointerdown` ignora los toques dentro del botón; `inicio.css`: la pausa por `:hover` solo con `(hover: hover)`. Casos en `SiteScriptsTest` (toque sobre el ícono) y en `SiteStylesTokensTest`; los dos fallan sin el cambio. |
+| R33 | corregido | El foco en el propio botón no retiene la cinta. Caso en `SiteScriptsTest`. |
+| R8 | abierto, con destino | `/fix` aparte antes de staging (nota A56 de T095) |
 
 ## Seguridad
 | Herramienta | Resultado |
 |---|---|
-| gitleaks v8.30.1 (`6cb178e..HEAD`) | ✅ 0 hallazgos |
-| semgrep 1.178.0 | en curso al escribir esta ronda; se registra en la siguiente |
-| SCA / trivy | sin cambios de dependencias ni de `docker/` en el rango; igual que en la ronda 1 |
-
-No hay vías nuevas de XSS: los avisos son textos fijos escritos con `textContent`, la dirección va escapada en `aria-label` y los iconos están en el código.
+| gitleaks v8.30.1 | ✅ 0 hallazgos en `7fae5a3..HEAD` (ronda 1) y en `6cb178e..HEAD` (ronda 2) |
+| semgrep 1.178.0 (`p/php`, `app config bootstrap routes`) | ✅ 0 hallazgos en la ronda 1, sobre todo el código. En las rondas 2 y 3 se colgó en local al descargar las reglas, y se detuvo a los 26 min y a los 400 s. Desde la ronda 1 solo cambió en su alcance `config/site.php` (R2, el horario provisional, sin entradas nuevas). CI lo ejecuta en cada push (`.github/workflows/ai-dd.yml`). |
+| composer audit / npm audit | sin altas ni críticas. El aviso bajo de Laravel 12.69.3 queda aceptado como R28 → `/chore` |
+| trivy 0.74.0 | ✅ sin hallazgos altos ni críticos; sin cambios en `docker/` desde la ronda 1 |
 
 ## Hallazgos
-| ID | Severidad | Archivo:línea | Hallazgo | Sugerencia |
-|---|---|---|---|---|
-| R31 | importante | `resources/js/site/home.js:606-609` | Un toque sobre el ícono del botón de pausa llega con `event.target` en el `svg` o el `path`, no en el `button`. `pointerdown` alterna una vez y `click` vuelve a alternar, así que en el celular el botón no pausa la cinta (CA10, M-3). El test solo simula el toque sobre la cinta. | Ignorar en `pointerdown` todo toque que caiga dentro del botón, con un caso de toque sobre el ícono. |
-| R32 | menor | `resources/js/site/pages/contacto.js:51-67` | `announce` no cancela los temporizadores anteriores: con dos copias seguidas, el borrado de la primera acorta el segundo aviso. | Cancelar los temporizadores al principio. |
-| R33 | menor | `resources/js/site/home.js:593-603` | Con el foco en el botón, "reanudar" no mueve la cinta hasta que el foco sale: el foco la sigue reteniendo. | Que el foco retenga la cinta salvo cuando está en el propio botón. |
-| R34 | menor | `SiteScriptsTest.php` (R3) | El test de R3 prueba `welcomeFade`, no que `initDeck` aplique `inert`. | Escenario de integración o comprobación en `ui-audit`. |
-| R35 | menor | `resources/js/site/home.js:579` | El comentario de `initVisit` quedó encima del de `initMarquee`. | Moverlo. |
-| R36 | menor | `resources/views/site/nosotros.blade.php:61` | La entrada de acerca enumera a mano cuatro especialidades y no sigue a `config('site.treatments')`. | Redactarla sin enumerar o generarla de la configuración. |
+Ninguno nuevo en esta ronda.
 
 ## Preparación para release
-Sin cambios respecto a la ronda 1: rollback con `SITE_NEW_LANDING` y `rollback.sh`, sin migraciones y la documentación al día. R8 debe estar cerrado antes de staging.
+- **Rollback:** `SITE_NEW_LANDING=false` más `config:cache`, o `docker/prod/rollback.sh`.
+- **Migraciones:** ninguna.
+- **Documentación:** `architecture.md`, `deployment.md`, `observability.md` y `seo.md` al día.
+- **Antes de staging:** cerrar el `/fix` de `ui-audit inicio-testimonios` (R8). Después, `ui-audit inicio` dos veces seguidas en los tres anchos.
+- **Pendientes de la clínica:** todos los datos de contacto siguen provisionales.
+- **Fotos de la propuesta:** generadas, aprobadas por el usuario para producción hasta tener fotos reales.
+- **Revisión humana:** `human_signoff: pending`. La constitución pide que el dueño del repositorio apruebe la review y el merge.
 
 ## Tareas añadidas
-- T051 ← R31, R33
+Ninguna en esta ronda. Antes: T044–T050 (ronda 1) y T051 (ronda 2), todas hechas.
 
 ## Aceptados sin tarea
-Aceptados por el usuario el 2026-11-17:
+Siguen vigentes los aceptados de las rondas anteriores, que `/release` llevará al roadmap:
+- R9–R29: [history/review.r1.md](history/review.r1.md).
+- R32, R34, R35 y R36: [history/review.r2.md](history/review.r2.md).
+
+- **R9** → roadmap: títulos de galería y acerca por debajo de 30 caracteres.
+- **R10** → roadmap: certificaciones sin `width`/`height`.
+- **R11** → roadmap: galería con `data-src` desde la 4.ª foto.
+- **R12** → roadmap: `PublicSiteSchedule::days()` sin uso.
+- **R13** → roadmap: tests unitarios de la agrupación del horario.
+- **R14** → roadmap: resumen del horario repetido en tres vistas.
+- **R15** → roadmap: `SiteScriptsTest` sin comprobación previa de `node`.
+- **R16** → roadmap: test de API del filtro `status` de galería.
+- **R17** → roadmap: `PublicSiteSeoTest` compara el inicio con el texto de contacto.
+- **R18** → roadmap: etiquetas OG y `theme-color` probadas solo en las legales.
+- **R19** → roadmap: horario visible del inicio sin comparar con el JSON-LD.
+- **R20** → roadmap: `og:description` sin comprobar en las cuatro páginas.
+- **R21** → roadmap: caso de abuso de CA15 sin certificación.
+- **R22** → roadmap: certificación sin descripción muestra "Dentissa".
+- **R23** → roadmap: `site.timezone` sin uso y zona repetida.
+- **R24** → roadmap: botones con estado y etiqueta que cambian a la vez.
+- **R25** → roadmap: `SITE_WHATSAPP` sin normalizar.
+- **R26** → roadmap: `aria-expanded` estático en el `<summary>` del menú.
+- **R27** → roadmap: preguntas frecuentes sin `aria-controls`.
+- **R28** → roadmap: subir `laravel/framework` a ≥ 12.71.0 con un `/chore`.
+- **R29** → roadmap: tarjetas del equipo que solo giran con el puntero.
 - **R32** → roadmap: el aviso de copiado no cancela los temporizadores anteriores.
 - **R34** → roadmap: test de integración del `inert` de la bienvenida.
 - **R35** → roadmap: comentario de `initVisit` fuera de su lugar.
 - **R36** → roadmap: la entrada de acerca enumera especialidades a mano.
-
-Los aceptados de la ronda 1 (R9–R29) siguen vigentes; ver [history/review.r1.md](history/review.r1.md).
