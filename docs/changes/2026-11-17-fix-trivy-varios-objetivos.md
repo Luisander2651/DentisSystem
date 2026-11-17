@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done
+status: released
+released: v0.11.0 (2026-11-17)
 base: d92623c
 relates: []
 covers: []

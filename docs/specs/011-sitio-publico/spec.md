@@ -20,8 +20,8 @@ galería, y la forma de contactarla.
 <!-- [x] = cubierto por un test existente; [ ] = observado en el código, sin test -->
 - [ ] CA1 · Dado un visitante, cuando abre `/`, entonces `ShowLandingPageController` renderiza en el servidor las promociones, certificaciones y testimonios con estado `visible`, cacheados 10 minutos.
 - [ ] CA2 · Dado un fallo al leer el contenido, cuando se abre `/`, entonces se muestra la portada vacía en lugar de un error.
-- [ ] CA3 · Dado un visitante, cuando abre `/galeria`, entonces el JS carga las imágenes desde `GET /api/v1/public/gallery-images`.
-- [ ] CA4 · Dado un visitante, cuando abre `/contacto` o `/acerca-de-nosotros`, entonces ve páginas estáticas (enlace a WhatsApp y mapa, sin formulario).
+- [ ] CA3 · Dado un visitante, cuando abre `/galeria`, entonces el JS carga las imágenes desde `GET /api/v1/public/gallery-images`. → reemplazado por 026 CA5
+- [ ] CA4 · Dado un visitante, cuando abre `/contacto` o `/acerca-de-nosotros`, entonces ve páginas estáticas (enlace a WhatsApp y mapa, sin formulario). → reemplazado por 026 CA6
 - [ ] CA5 · Dado un visitante, cuando llama `GET /api/v1/public/{certifications,promotions,testimonials}`, entonces obtiene el contenido (sin consumidor en el frontend).
 - [ ] CA6 · (abuso) Como visitante, pido contenido marcado como oculto por la API pública → **HOY NO SE CUMPLE**: certificaciones devuelve siempre los ocultos y galería, promociones y testimonios aceptan `?status=oculto` (U5 hallazgo 1).
 
@@ -64,3 +64,4 @@ galería, y la forma de contactarla.
 | 2026-10-16 | Comportamiento modificado por 017 (liberado en v0.3.0): la vigencia de las promociones se evalúa en la zona de la clínica (`America/Mexico_City`, zona de toda la aplicación) | /implement 017 |
 | 2026-10-16 | Comportamiento modificado por 017 en v0.3.0 | /release |
 | 2026-10-17 | Corregido por la ficha 2026-10-17-fix-galeria-una-imagen en v0.3.1 (CA3) | /release |
+| 2026-11-17 | Comportamiento modificado por 026 en v0.11.0 | /release |

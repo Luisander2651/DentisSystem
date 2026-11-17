@@ -1,6 +1,7 @@
 ---
 lane: fix
-status: done
+status: released
+released: v0.11.0 (2026-11-17)
 base: a69b731
 relates: [026]
 covers: [CA10]
