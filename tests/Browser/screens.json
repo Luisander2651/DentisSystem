@@ -71,6 +71,12 @@
                 },
                 {
                     "waitFor": "[data-ts-pause][aria-pressed=\"true\"]"
+                },
+                {
+                    "waitFor": ".ts-card.in"
+                },
+                {
+                    "animationsDone": true
                 }
             ]
         },
