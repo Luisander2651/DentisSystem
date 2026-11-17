@@ -1,7 +1,7 @@
 ---
 id: 026
 slug: nueva-landing
-status: approved
+status: implemented
 created: 2026-11-12
 extends: [011, 016, 022]
 ---
@@ -39,7 +39,7 @@ sitio sigue con el diseño viejo y es difícil de encontrar. Esta spec atiende e
 - [x] CA7 · Dado cualquier dato de contacto (WhatsApp, teléfono, correo, dirección, horario, mapa, redes), cuando se revisa el sitio, entonces se muestra el dato real si la clínica lo dio y, si no, un valor provisional coherente (los que hoy usa el sitio: WhatsApp `521234567890`, teléfono `+52 55 1234 5678`, correo `contacto@dentissa.com`, dirección "Lázaro Cárdenas, Michoacán" (la ciudad de la clínica, enmienda del 2026-11-15; antes "Av. Universidad 1200, Colonia Centro, Ciudad de México, CP 03100"), horario de lunes a viernes de 9:00 a 19:00 y sábado de 9:00 a 14:00, Instagram y Facebook de la clínica), para que el sitio se vea completo; cada valor provisional está marcado como tal en la configuración, se sustituye sin tocar las vistas y no se publica a los buscadores; no queda ningún marcador de texto (p. ej. "[CORREO]").
 - [x] CA8 · Dada la medición de Lighthouse en perfil móvil sobre la build de producción, cuando se mide cada una de las cuatro rutas, entonces obtiene Rendimiento ≥ 90, Accesibilidad 100, Buenas prácticas 100 y SEO 100.
 - [x] CA9 · Dado un visitante que pidió reducir el movimiento en su sistema, o un navegador sin gráficos 3D, cuando abre el inicio, entonces ve una versión estática del recorrido de tratamientos con el mismo texto y sin animaciones automáticas.
-- [ ] CA10 · Dado un visitante que solo usa teclado o lector de pantalla, cuando recorre las cuatro páginas a 390, 768 y 1440 px, entonces alcanza todos los enlaces y controles (menú, carruseles, selector del antes y después, formulario de contacto) en orden lógico, con foco visible y nombre accesible, y los carruseles automáticos se pueden pausar.
+- [x] CA10 · Dado un visitante que solo usa teclado o lector de pantalla, cuando recorre las cuatro páginas a 390, 768 y 1440 px, entonces alcanza todos los enlaces y controles (menú, carruseles, selector del antes y después, formulario de contacto) en orden lógico, con foco visible y nombre accesible, y los carruseles automáticos se pueden pausar.
 - [x] CA11 · Dada cada ruta indexable (las cuatro páginas y las dos legales), cuando se lee su HTML, entonces declara el idioma español, lleva título y descripción propios y únicos (descripción de 70–160 caracteres), una URL canónica absoluta sobre `https://dentissapp.com` sin barra final, las etiquetas para compartir (título, descripción, tipo, URL igual a la canónica e idioma) y el color de tema rosa de la marca.
 - [x] CA12 · Dado un buscador, cuando pide `/sitemap.xml`, entonces recibe las seis rutas indexables con su URL canónica y ninguna ruta de acceso ni del panel; y `robots.txt` declara ese sitemap.
 - [x] CA13 · Dados el inicio y contacto, cuando se lee su HTML, entonces incluyen los datos estructurados de clínica dental solo con información visible y confirmada en la página (nombre, dirección, teléfono, horario).
