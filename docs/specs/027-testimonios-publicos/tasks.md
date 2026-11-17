@@ -24,12 +24,15 @@ Formato:
 - [x] T004 Añadir a `ui-audit` las entradas `opinion` y `opinion-errores` con su línea base, generada con los datos de `ui:audit-data` — `tests/Browser/screens.json`, `tests/Browser/baseline-1440.json` — hecho cuando: `npm run test:ui -- --only opinion` pasa dos veces seguidas en los tres anchos — cubre: CA10 — depende: T005
   - nota: `ui-audit` contra un servidor aparte con solo `ui:audit-data`, como en CI (`DB_URL` anulada y `php -S` desde `public/`). Encontró cuatro cosas de la página, corregidas aquí: la trampa medida como un campo más (pasa a `hidden`; sigue en el HTML para los robots), el campo de nombre de 50 px en vez del token de 44, los obligatorios mezclados con la trampa, y un campo corregido que seguía marcado (`opinion.js` quita `aria-invalid` en cuanto el valor es válido). `inicio-testimonios` cambia por el enlace nuevo (admitido como 027 CA1 en `checks-composition.mjs`). Líneas base escritas con esos datos; `opinion` e `inicio` pasan dos veces seguidas en los tres anchos. Suite: 2541.
 
+- [ ] T007 Cerrar la evasión del límite y los detalles de la review: clave por red /64 en IPv6, conteo atómico antes de guardar y tope total de 30 opiniones nuevas por hora; `?id` de la API pública solo como texto; en la página, contador con el mínimo, sin `aria-describedby` vacío, agradecimiento sin región redundante, foco en el primer error y mensaje oculto al corregir; tests de CA2 y CA4 completos — `app/Modules/ContentManagement/Modules/Testimonios/Infrastructure/HTTP/Controllers/SubmitPublicTestimonialController.php`, `app/Modules/ContentManagement/Modules/Testimonios/Infrastructure/HTTP/Controllers/GetPublicTestimonialsController.php`, `resources/views/site/opinion.blade.php`, `resources/js/site/pages/opinion.js`, `resources/views/components/site/seo.blade.php`, `tests/Modules/ContentManagement/Integration/PublicTestimonialSubmissionTest.php` — hecho cuando: los casos nuevos (dos IPv6 de la misma /64 comparten cupo y dos de redes distintas no; el tope total rechaza la opinión 31 de la hora; `?id[]=1` responde 200 sin datos ocultos; publicar por la API de staff la muestra en el inicio al caducar la caché; tras enviar, el nombre no está en el inicio) pasan, `ui-audit --only opinion` en verde y la suite en verde — cubre: CA2, CA4, CA5, CA10, CA11
+  - nota: añadida por /review: R1, R2, R3, R4, R6, R7, R8, R9, R10, R11, R12, R13
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md` (ruta `/opinion` y caso de uso público de Testimonios) y `docs/seo.md` (`/opinion` en el inventario, con `noindex`)
   - nota: `architecture.md` (ruta `/opinion`, caso de uso público, API pública solo visibles, `save()` con id) y `seo.md` (`/opinion` en el inventario con `noindex`).
 - [x] T091 Actualizar `docs/security.md` (entrada pública nueva: límite, trampa y moderación) y `docs/observability.md` (log `public_testimonial.received`)
   - nota: `security.md` (entrada pública con sus controles; RS4.a corregida solo para testimonios, sigue pendiente por corrección) y `observability.md` (logs `public_testimonial.received` y `public_testimonial.save_failed`). Sin variables ni pasos de despliegue nuevos.
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -41,16 +44,16 @@ Formato:
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
 | CA1 | T003, T005 | T003, T005 |
-| CA2 | T001, T002 | T001, T002 |
+| CA2 | T001, T002, T007 | T001, T002, T007 |
 | CA3 | T002 | T002 |
-| CA4 | T005 | T005 |
-| CA5 | T002 | T002 |
+| CA4 | T005, T007 | T005, T007 |
+| CA5 | T002, T007 | T002, T007 |
 | CA6 | T002 | T002 |
 | CA7 | T005 | T005 |
 | CA8 | T001, T002 | T001, T002 |
 | CA9 | T002, T005 | T002, T005 |
-| CA10 | T003, T004 | T003, T004 |
-| CA11 | T006 | T006 |
+| CA10 | T003, T004, T007 | T003, T004, T007 |
+| CA11 | T006, T007 | T006, T007 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
 |---|---|---|
