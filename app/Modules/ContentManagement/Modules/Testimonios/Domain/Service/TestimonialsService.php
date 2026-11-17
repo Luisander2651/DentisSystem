@@ -6,20 +6,20 @@ namespace App\Modules\ContentManagement\Modules\Testimonios\Domain\Service;
 
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Entities\TestimonialEntity;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Repositories\TestimonialRepositoryInterface;
+use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialDate;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialId;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialStatus;
-use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialDate;
 
 final readonly class TestimonialsService
 {
     public function __construct(
         private TestimonialRepositoryInterface $repository,
-    ) {
-    }
+    ) {}
 
-    public function save(TestimonialEntity $testimonial): void
+    /** Saves the testimonial and returns the id of its row. */
+    public function save(TestimonialEntity $testimonial): int
     {
-        $this->repository->save($testimonial);
+        return $this->repository->save($testimonial);
     }
 
     public function deleteById(TestimonialId $id): void
