@@ -221,3 +221,65 @@ it('keeps listing the hidden ones to the staff, who publishes them (CA11, CA4)',
         ->and($one['status'])->toBe('oculto')
         ->and(array_column($many, 'status', 'author'))->toBe(['Recién enviada' => 'oculto', 'Publicado' => 'visible']);
 });
+
+function opinionPage(string $html): DOMXPath
+{
+    $document = new DOMDocument;
+    @$document->loadHTML('<?xml encoding="UTF-8">'.$html, LIBXML_NOERROR | LIBXML_NOWARNING);
+
+    return new DOMXPath($document);
+}
+
+it('serves the page with the name, the opinion, the consent with the privacy notice and a trap no person sees (CA1, CA10)', function () {
+    $this->withoutVite();
+    $page = opinionPage($this->get('/opinion')->assertOk()->getContent());
+    $form = $page->query('//form[@method="post"][@action="'.route('opinion.store').'"]');
+    $field = fn (string $query): ?DOMElement => $page->query($query, $form->item(0))->item(0);
+
+    expect($form)->toHaveCount(1)
+        ->and($page->query('//h1')->item(0)->textContent)->toContain('Deja tu opinión')
+        ->and($field('.//input[@name="_token"]'))->not->toBeNull()
+        ->and($field('.//label[@for="op-name"]')?->textContent)->toContain('Tu nombre')
+        ->and($field('.//input[@id="op-name"][@name="name"][@required][@maxlength="80"]'))->not->toBeNull()
+        ->and($field('.//label[@for="op-text"]')?->textContent)->toContain('Tu opinión')
+        ->and($field('.//textarea[@id="op-text"][@name="opinion"][@required][@maxlength="255"]'))->not->toBeNull()
+        ->and($field('.//input[@type="checkbox"][@name="consent"][@required]'))->not->toBeNull()
+        ->and($field('.//a[@href="'.route('aviso-privacidad').'"]'))->not->toBeNull()
+        ->and($field('.//*[@aria-hidden="true"]//input[@name="website"][@tabindex="-1"][@autocomplete="off"]'))->not->toBeNull()
+        ->and($field('.//button[@type="submit"]')?->textContent)->toContain('Enviar mi opinión');
+});
+
+it('shows each error beside its field, tied to it, with what was written (CA3, CA10)', function () {
+    $this->withoutVite();
+    $this->from('/opinion')->post('/opinion', opinionForm(['opinion' => 'corta', 'consent' => null]));
+    $page = opinionPage($this->get('/opinion')->getContent());
+    $text = $page->query('//textarea[@id="op-text"]')->item(0);
+
+    expect($text->getAttribute('aria-invalid'))->toBe('true')
+        ->and($page->query('//*[@id="'.explode(' ', $text->getAttribute('aria-describedby'))[0].'"]')->item(0)?->textContent)->toContain('al menos 20 caracteres')
+        ->and($text->textContent)->toBe('corta')
+        ->and($page->query('//input[@id="op-name"]')->item(0)->getAttribute('value'))->toBe('Mariana López')
+        ->and($page->query('//input[@name="consent"][@aria-invalid="true"]'))->toHaveCount(1);
+});
+
+it('thanks the visitor in a status region in place of the form once the opinion is sent (CA2, CA10)', function () {
+    $this->withoutVite();
+    $this->post('/opinion', opinionForm());
+    $page = opinionPage($this->get('/opinion')->getContent());
+
+    expect($page->query('//form[@action="'.route('opinion.store').'"]'))->toHaveCount(0)
+        ->and($page->query('//*[@role="status"]//*[@tabindex="-1"][contains(., "Gracias")]'))->toHaveCount(1)
+        ->and($page->query('//*[@role="status"]')->item(0)->textContent)->toContain('la publicaremos cuando la revisemos')
+        ->and($page->query('//*[@role="status"]//a[@href="'.route('inicio').'"]'))->toHaveCount(1);
+});
+
+it('says on the page when the opinion could not be saved (P7)', function () {
+    $this->withoutVite();
+    $this->mock(TestimonialRepositoryInterface::class)->shouldReceive('save')->andThrow(new RuntimeException('boom'));
+    $this->post('/opinion', opinionForm());
+
+    $html = $this->get('/opinion')->getContent();
+
+    expect(opinionPage($html)->query('//*[@role="alert"][contains(., "No pudimos guardar tu opinión")]'))->toHaveCount(1)
+        ->and($html)->not->toContain('boom');
+});
