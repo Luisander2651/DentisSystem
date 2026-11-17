@@ -759,6 +759,8 @@ const scenarios = {
             fire(type, event = {}) { (this.listeners[type] ?? []).forEach((fn) => fn({ target: this, ...event })); },
         });
         const button = node('button');
+        const icon = node('icon');
+        button.contains = (other) => other === button || other === icon;
         button.attributes['aria-pressed'] = 'false';
         button.attributes['aria-label'] = 'Pausar la cinta de servicios';
         const root = node('root');
@@ -773,6 +775,12 @@ const scenarios = {
                 root.fire('pointerdown', { pointerType: 'touch', target: root });
             } else if (action === 'mouse') {
                 root.fire('pointerdown', { pointerType: 'mouse', target: root });
+            } else if (action === 'tapIcon') {
+                /* A finger on the icon of the button: the browser sends pointerdown, then click. */
+                root.fire('pointerdown', { pointerType: 'touch', target: icon });
+                button.fire('click');
+            } else if (action === 'focusButton') {
+                root.fire('focusin', { target: button });
             } else {
                 root.fire(action);
             }

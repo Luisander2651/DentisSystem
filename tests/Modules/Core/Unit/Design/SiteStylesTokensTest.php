@@ -406,3 +406,11 @@ it('leaves the lower sections of the home out of its first layout, but not the s
         ->and($selectors)->not->toContain('.tour')
         ->and($rule[0] ?? '')->toContain('contain-intrinsic-size');
 });
+
+it('pauses the services ribbon on hover only with a real pointer, never with the hover a tap leaves behind (R31)', function () {
+    $css = (string) preg_replace('~/\*.*?\*/~s', '', siteFiles(SITE_CSS_DIR.'/pages/inicio.css', '.css')[SITE_CSS_DIR.'/pages/inicio.css']);
+    $outsideHoverQueries = (string) preg_replace('/@media\s*\(hover:\s*hover\)\s*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/', '', $css);
+
+    expect($css)->toMatch('/@media\s*\(hover:\s*hover\)\s*\{[^@]*\.marquee:hover\s+\.marquee-track/')
+        ->and($outsideHoverQueries)->not->toContain('.marquee:hover');
+});

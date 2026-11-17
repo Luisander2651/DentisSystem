@@ -511,3 +511,10 @@ it('says in the status region what was copied, then clears it (R6)', function ()
         ->and($result['regionAfter'])->toBe('')
         ->and($result['shownAfter'])->toBeFalse();
 });
+
+it('pauses the ribbon once when a finger lands on the icon of its button, and resumes it while the button keeps the focus (R31, R33)', function () {
+    $seen = runSiteScript('marquee', ['actions' => ['tapIcon', 'tapIcon', 'focusButton', 'click', 'click', 'focusout', 'focusin']]);
+
+    expect(array_column($seen, 'pressed'))->toBe(['true', 'false', 'false', 'true', 'false', 'false', 'false'])
+        ->and(array_column($seen, 'held'))->toBe([true, false, false, true, false, false, true]);
+});

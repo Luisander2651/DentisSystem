@@ -595,8 +595,9 @@ export function initMarquee(root) {
     };
 
     button?.addEventListener('click', toggle);
-    root.addEventListener('focusin', () => {
-        focused = true;
+    /* The focus on the ribbon holds it, except on its own button, so "resume" moves it at once (R33). */
+    root.addEventListener('focusin', (event) => {
+        focused = !button?.contains(event.target);
         reflect();
     });
     root.addEventListener('focusout', () => {
@@ -604,7 +605,8 @@ export function initMarquee(root) {
         reflect();
     });
     root.addEventListener('pointerdown', (event) => {
-        if (event.pointerType === 'touch' && event.target !== button) {
+        /* A finger on the button (or its icon) is left to its click, or it would toggle twice (R31). */
+        if (event.pointerType === 'touch' && !button?.contains(event.target)) {
             toggle();
         }
     });

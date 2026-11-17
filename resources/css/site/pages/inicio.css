@@ -80,7 +80,10 @@
 .marquee{display:flex;align-items:center;overflow:hidden;background:var(--color-ink);color:var(--color-on-dark);padding:26px 0;transform:rotate(-2deg);margin:24px -40px;box-shadow:0 30px 60px -30px color-mix(in srgb, var(--color-ink) 50%, transparent)}
 .marquee-track{display:flex;width:max-content;animation:marquee 40s linear infinite}
 .marquee-view{flex:1;min-width:0;overflow:hidden}
-.marquee:hover .marquee-track,.marquee.hold .marquee-track,.marquee.hold .marquee-item svg{animation-play-state:paused}
+.marquee.hold .marquee-track,.marquee.hold .marquee-item svg{animation-play-state:paused}
+/* Only a real pointer pauses it on hover: on a touch screen :hover sticks after a tap and would keep
+   the ribbon still after "resume" (R31). */
+@media (hover:hover){.marquee:hover .marquee-track,.marquee:hover .marquee-item svg{animation-play-state:paused}}
 .mq-pause{flex:none;width:44px;height:44px;margin:0 56px 0 16px;border-radius:50%;border:1px solid color-mix(in srgb, var(--color-on-dark) 55%, transparent);background:transparent;color:var(--color-on-dark);display:grid;place-items:center;cursor:pointer}
 .mq-pause[aria-pressed='true']{background:var(--color-on-dark);border-color:var(--color-on-dark);color:var(--color-ink)}
 .mq-pause:focus-visible{outline:3px solid var(--color-secondary);outline-offset:2px}
