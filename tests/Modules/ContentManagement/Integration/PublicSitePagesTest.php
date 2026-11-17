@@ -441,3 +441,25 @@ it('names the drawn map of the contact page as a picture without hiding its link
         ->and($page->query('//*[contains(concat(" ", normalize-space(@class), " "), " plane ")][@aria-hidden="true"]'))->toHaveCount(1)
         ->and(siteHrefs($page, '//*[contains(concat(" ", normalize-space(@class), " "), " map ")]//a'))->toHaveCount(2);
 });
+
+it('lists as specialties of the about page exactly the treatments of config/site.php, and counts them (R7)', function () {
+    $names = fn (DOMXPath $page): array => siteTexts($page, '//ul[contains(concat(" ", normalize-space(@class), " "), " ab-pills ")]/li');
+    $heading = fn (DOMXPath $page): string => siteTexts($page, '//section[.//ul[contains(@class, "ab-pills")]]//h2')[0];
+
+    $page = sitePage($this, '/acerca-de-nosotros');
+
+    expect($names($page))->toBe(array_column(config('site.treatments'), 'name'))
+        ->and($heading($page))->toBe('Un equipo, cinco especialidades')
+        ->and(mb_strtolower(siteTexts($page, '//main')[0]))->not->toContain('implantología')
+        ->and(mb_strtolower(siteTexts($page, '//main')[0]))->not->toContain('estética dental');
+
+    config(['site.treatments' => [
+        ['name' => 'Ortodoncia', 'summary' => 'Prueba.'],
+        ['name' => 'Endodoncia de prueba', 'summary' => 'Prueba.'],
+    ]]);
+
+    $changed = sitePage($this, '/acerca-de-nosotros');
+
+    expect($names($changed))->toBe(['Ortodoncia', 'Endodoncia de prueba'])
+        ->and($heading($changed))->toBe('Un equipo, dos especialidades');
+});

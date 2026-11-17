@@ -20,12 +20,18 @@
     $arrow = '<svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>';
     $underline = '<svg viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M3 15 C 60 4, 140 2, 297 11" fill="none" stroke-width="7" stroke-linecap="round"></path></svg>';
     $star = '<path d="M12 0C13 8 16 11 24 12 16 13 13 16 12 24 11 16 8 13 0 12 8 11 11 8 12 0Z" fill="currentColor"></path>';
-    $specialties = [
-        ['Ortodoncia', '<rect x="2.5" y="8" width="5" height="8" rx="1.5"></rect><rect x="9.5" y="8" width="5" height="8" rx="1.5"></rect><rect x="16.5" y="8" width="5" height="8" rx="1.5"></rect><path d="M1.5 12h21"></path>'],
-        ['Odontopediatría', '<circle cx="12" cy="12" r="9"></circle><path d="M8.5 14.5c1.8 2 5.2 2 7 0"></path>'],
-        ['Implantología', '<path d="M7 3h10l-1 5H8L7 3z"></path><path d="M8.5 10h7M9 13h6M9.5 16h5M12 8v14"></path>'],
-        ['Estética dental', '<path d="M12 2l1.8 5.6L19.5 9l-5.7 1.6L12 16l-1.8-5.4L4.5 9l5.7-1.4L12 2z"></path>'],
+    /* The specialties are the clinic's treatments of config/site.php (R7), each with its icon. */
+    $specialtyIcons = [
+        'Limpieza y Prevención' => '<path d="M12 3c-3 4-6 7-6 11a6 6 0 0 0 12 0c0-4-3-7-6-11z"></path><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"></path>',
+        'Ortodoncia' => '<rect x="2.5" y="8" width="5" height="8" rx="1.5"></rect><rect x="9.5" y="8" width="5" height="8" rx="1.5"></rect><rect x="16.5" y="8" width="5" height="8" rx="1.5"></rect><path d="M1.5 12h21"></path>',
+        'Odontopediatría' => '<circle cx="12" cy="12" r="9"></circle><path d="M8.5 14.5c1.8 2 5.2 2 7 0"></path>',
+        'Implantes Dentales' => '<path d="M7 3h10l-1 5H8L7 3z"></path><path d="M8.5 10h7M9 13h6M9.5 16h5M12 8v14"></path>',
+        'Blanqueamiento Dental' => '<path d="M12 2l1.8 5.6L19.5 9l-5.7 1.6L12 16l-1.8-5.4L4.5 9l5.7-1.4L12 2z"></path>',
     ];
+    $specialties = collect(config('site.treatments'))
+        ->map(fn (array $treatment): array => [$treatment['name'], $specialtyIcons[$treatment['name']] ?? $specialtyIcons['Limpieza y Prevención']])
+        ->all();
+    $specialtyCount = [1 => 'una especialidad', 2 => 'dos especialidades', 3 => 'tres especialidades', 4 => 'cuatro especialidades', 5 => 'cinco especialidades', 6 => 'seis especialidades', 7 => 'siete especialidades', 8 => 'ocho especialidades'][count($specialties)] ?? count($specialties).' especialidades';
     $milestones = [
         ['2016', 'Nace Dentissa', 'Abrimos con un solo consultorio.', '<path d="M4 21V9l8-6 8 6v12M9 21v-6h6v6"></path>'],
         ['2020', 'Crecemos', 'Ampliamos a tres unidades dentales, con rayos X digitales y especialistas de tiempo completo.', '<path d="M12 5v14M5 12h14"></path>'],
@@ -52,7 +58,7 @@
         <div class="ab-hero-copy">
             <span class="eyebrow rise"><span class="dot"></span>Acerca de Nosotros</span>
             <h1 class="h-xl rise d1">Definimos la excelencia en <span class="hl">odontología integral{!! $underline !!}</span></h1>
-            <p class="lead rise d2 ab-lead">Más de 10 años al servicio de nuestra comunidad, con especialistas en ortodoncia, odontopediatría, implantología y estética dental, enfocados en un diagnóstico preciso y un tratamiento hecho a tu medida.</p>
+            <p class="lead rise d2 ab-lead">Más de 10 años al servicio de nuestra comunidad, con especialistas en ortodoncia, odontopediatría, implantes dentales y blanqueamiento, enfocados en un diagnóstico preciso y un tratamiento hecho a tu medida.</p>
             <a class="btn btn-primary btn-lg rise d3" href="{{ $whatsapp }}">Agenda una Cita{!! $arrow !!}</a>
         </div>
         <div class="stack" data-parallax>
@@ -86,7 +92,7 @@
     <div class="wrap ab-band-in">
         <div class="reveal ab-head ab-head-narrow">
             <span class="kicker">Especialidades</span>
-            <h2 class="h-lg">Un equipo, cuatro especialidades</h2>
+            <h2 class="h-lg">Un equipo, {{ $specialtyCount }}</h2>
         </div>
         <ul class="reveal3d ab-pills">
             @foreach ($specialties as [$name, $icon])
