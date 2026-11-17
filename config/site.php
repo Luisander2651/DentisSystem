@@ -13,7 +13,8 @@
 | ones still are: they are shown on the pages but never published to search engines.
 |
 | SITE_SCHEDULE lists open days and hours separated by ";": "1-5 09:00-19:00; 6 09:00-14:00",
-| where 1 is Monday and 7 Sunday. A day that is not listed is closed.
+| where 1 is Monday and 7 Sunday, hours with two digits. A day that is not listed is closed; a rule
+| written otherwise is ignored, and a value with no valid rule falls back to the provisional schedule.
 |
 */
 
@@ -67,6 +68,13 @@ foreach ($provisionalContact as $key => $default) {
 }
 
 $contact['schedule'] = $parseSchedule($contact['schedule']);
+
+/* A SITE_SCHEDULE that leaves no valid rule (a typo such as "9:00") is not a real schedule: the site
+   keeps the provisional one, marked as such, instead of showing the clinic closed all week (R2). */
+if ($contact['schedule'] === []) {
+    $contact['schedule'] = $parseSchedule($provisionalContact['schedule']);
+    $provisional['schedule'] = true;
+}
 
 return [
 

@@ -211,3 +211,21 @@ it('places the provisional clinic in Lázaro Cárdenas, Michoacán, with its map
         ->and($pages->filter(fn (string $text): bool => str_contains($text, 'Ciudad de México'))->all())->toBe([])
         ->and($pages->filter(fn (string $text): bool => str_contains($text, 'Lázaro Cárdenas'))->count())->toBeGreaterThanOrEqual(2);
 });
+
+it('falls back to the provisional schedule, marked as such, when SITE_SCHEDULE leaves no valid rule (R2)', function (string $written) {
+    $site = siteConfigWith(['SITE_SCHEDULE' => $written]);
+
+    expect($site['provisional']['schedule'])->toBeTrue()
+        ->and($site['contact']['schedule'])->toBe(siteConfigWithoutContactVariables()['contact']['schedule']);
+})->with([
+    'one-digit hours' => '1-5 9:00-19:00',
+    'words' => 'lunes a viernes de 9 a 7',
+    'only separators' => ' ; ; ',
+]);
+
+it('keeps a well written SITE_SCHEDULE as the real schedule, even with one bad rule beside it (R2)', function () {
+    $site = siteConfigWith(['SITE_SCHEDULE' => '1-5 10:00-18:00; 6 9:00-13:00']);
+
+    expect($site['provisional']['schedule'])->toBeFalse()
+        ->and($site['contact']['schedule'])->toBe(array_fill(1, 5, ['10:00', '18:00']));
+});
