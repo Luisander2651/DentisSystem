@@ -775,6 +775,14 @@ const scenarios = {
             return { after: action, held: root.classList.contains('hold'), pressed: button.attributes['aria-pressed'], label: button.attributes['aria-label'] };
         });
     },
+
+    /* How the welcome text fades out and its end block fades in along the scene, and which of them
+       may take the focus (T046, R3). */
+    async welcomeFade({ progress = [] }) {
+        const { welcomeFade } = await import(new URL('home.js', site));
+
+        return progress.map((value) => welcomeFade(value));
+    },
 };
 
 if (!scenarios[scenario]) {

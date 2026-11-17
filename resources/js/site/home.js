@@ -139,6 +139,18 @@ export function fanLayout({ width, height, cardWidth, cardHeight, textTop = 0, t
     return { scale, radius, baseline: top + textHeight + FAN_GAP + (cardHeight * scale) / 2, textShift: top - textTop, drop };
 }
 
+/**
+ * Along the welcome scene (0 to 1) the text fades out and the end block fades in. A block that
+ * cannot be seen is inert, so the keyboard never lands on a link it cannot see (R3); the end block
+ * takes the focus from the same point it takes the pointer.
+ */
+export function welcomeFade(progress) {
+    const copyOpacity = clamp(1 - progress * 2.4);
+    const endShown = clamp((progress - 0.7) / 0.26);
+
+    return { copyOpacity, endShown, copyInert: copyOpacity < 0.5, endInert: endShown <= 0.6 };
+}
+
 function initDeck(doc, win, D) {
     const section = D.ref('VwSec');
     const slot = D.ref('VwSlot');
@@ -282,16 +294,26 @@ function initDeck(doc, win, D) {
             el.style.zIndex = ec > 0.5 ? (hover === c ? 60 : 20 + c) : deckZ;
         });
 
+        const fade = welcomeFade(e);
+
         if (end) {
-            const shown = clamp((e - 0.7) / 0.26);
+            const shown = fade.endShown;
             end.style.opacity = shown.toFixed(3);
             end.style.transform = `translateX(-50%) translateY(${((1 - shown) * 24 + textShift).toFixed(1)}px)`;
-            end.style.pointerEvents = shown > 0.6 ? 'auto' : 'none';
+            end.style.pointerEvents = fade.endInert ? 'none' : 'auto';
+
+            if (end.inert !== fade.endInert) {
+                end.inert = fade.endInert;
+            }
         }
 
         if (copy) {
-            copy.style.opacity = clamp(1 - e * 2.4).toFixed(3);
+            copy.style.opacity = fade.copyOpacity.toFixed(3);
             copy.style.transform = `translateX(${(-90 * e).toFixed(1)}px)`;
+
+            if (copy.inert !== fade.copyInert) {
+                copy.inert = fade.copyInert;
+            }
         }
 
         if (hint) {

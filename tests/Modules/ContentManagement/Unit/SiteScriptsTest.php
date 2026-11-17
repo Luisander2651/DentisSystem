@@ -480,3 +480,16 @@ it('pauses the services ribbon with its button, holds it while it has the focus 
         ->and(array_column($seen, 'pressed'))->toBe(['true', 'false', 'false', 'false', 'true', 'false', 'false'])
         ->and(array_unique(array_column($seen, 'label')))->toBe(['Pausar la cinta de servicios']);
 });
+
+it('never leaves a hidden block of the welcome in the way of the keyboard: what cannot be seen is inert (R3)', function () {
+    $steps = runSiteScript('welcomeFade', ['progress' => [0, 0.1, 0.3, 0.5, 0.8, 0.9, 1]]);
+
+    expect(array_column($steps, 'copyInert'))->toBe([false, false, true, true, true, true, true])
+        ->and(array_column($steps, 'endInert'))->toBe([true, true, true, true, true, false, false]);
+
+    foreach ($steps as $step) {
+        expect($step['copyInert'] || $step['copyOpacity'] >= 0.5)->toBeTrue()
+            ->and($step['copyOpacity'] > 0 || $step['copyInert'])->toBeTrue()
+            ->and($step['endShown'] > 0 || $step['endInert'])->toBeTrue();
+    }
+});
