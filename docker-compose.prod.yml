@@ -139,7 +139,7 @@ services:
       - dentissa
 
   alloy:
-    image: grafana/alloy:v1.1.0
+    image: grafana/alloy:v1.1.1
     container_name: dentissa-alloy
     restart: unless-stopped
     volumes:
