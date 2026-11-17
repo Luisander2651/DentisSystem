@@ -39,7 +39,8 @@ Formato:
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
 - [x] T096 Aprobación humana para producción
   - aprobado por Luisander2651 el 2026-11-17 12:56 para v0.12.0 ("desplegar v0.12.0 a producción")
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout)
+  - nota: 2026-11-17 19:01 UTC, `deploy.sh v0.12.0` correcto en 3 min 20 s (backup `pre-v0.12.0`, "Nothing to migrate", `verify.sh` local con todo en ok; se conservan las imágenes de v0.12.0 y v0.11.0). `verify.sh --remote` con todo en ok. Smoke tests: `/`, `/opinion`, `/sitemap.xml` y `robots.txt` responden 200; "Dejar mi opinión" lleva a `/opinion` (CA1); `/opinion` con `noindex` y fuera del sitemap (CA9); la API pública de testimonios no devuelve ocultos (CA11). El usuario envió una opinión de prueba: `POST /opinion` 302 → `GET /opinion` 200 y `public_testimonial.received {"testimonial_id":2,"consent":true}` en el log; la petición llegó a Loki (consultado en `dentissa-loki`). Vigilancia de 19:01 a 19:25 UTC con `docker logs`: 0 respuestas 5xx en nginx y 0 errores de la aplicación. Grafana no sirvió para vigilar porque Alloy v1.1.0 se reinicia en bucle (659 reinicios, roadmap: `/chore` de dependencias pendiente).
 - [ ] T098 Marcar spec como `released`
 
 ## Cobertura
