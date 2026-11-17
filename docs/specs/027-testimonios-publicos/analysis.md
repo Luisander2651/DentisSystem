@@ -1,60 +1,58 @@
 ---
-result: fail
-round: 1
-mode: full
+result: pass
+round: 2
+mode: delta
 constitution_version: 1.2.1
 date: 2026-11-17
-spec_sha: 982879f00406
-plan_sha: f15b4ba7ded9
-tasks_sha: 91b10d2336a6
+spec_sha: 565a174fcc69
+plan_sha: af54c3198c20
+tasks_sha: 849a2ed2f94d
 ---
 
 # Análisis · 027 Testimonios enviados desde el sitio público
 
 ## Resumen
-Lo hizo un subagente de contexto limpio, que leyó la spec, el plan, las tareas, la constitución y el código de Testimonios. Todos los hallazgos se verificaron en el código.
+Delta sobre la ronda 1 ([history/analysis.r1.md](history/analysis.r1.md)), hecho sin subagente. Releí desde cero las secciones de spec, plan y tareas que cambiaron. El diff es pequeño y no hay cambio estructural: entra una tarea nueva (T006) y un criterio de abuso nuevo (CA11), que vienen de A1.
 
-El resultado es `fail` por tres hallazgos altos:
-- la API pública ya devuelve los testimonios ocultos (RS4.a), lo que contradice la moderación de la spec;
-- el test de CSRF tal como estaba planteado no prueba nada en Pest;
-- la verificación de P7 no tenía tarea.
+Los 16 hallazgos quedan resueltos o aceptados. Sin hallazgos nuevos.
 
-Todos se corrigen con `/plan` y `/tasks --fix`. Las decisiones del usuario están abajo.
-
-Conteo: CRÍTICA 0 · ALTA 3 · MEDIA 5 · BAJA 8
+Conteo: CRÍTICA 0 · ALTA 0 · MEDIA 0 · BAJA 0
 
 ## Cobertura
 | Métrica | Valor |
 |---|---|
-| Criterios con rebanada (test e implementación) | 10 / 10 |
-| Amenazas con control y test | 4 / 6 (TM3 con un control inexistente; TM5 con un test que no prueba) |
-| Principios de la constitución evaluados | 15 / 15 |
+| Criterios con rebanada (test e implementación) | 11 / 11 |
+| Amenazas con control y test | 7 / 7 |
+| Principios de la constitución evaluados | los tocados por el delta: P6 (excepción aceptada) y P7 (con tarea) |
+
+## Seguimiento de rondas anteriores
+| ID | Severidad | Estado | Evidencia |
+|---|---|---|---|
+| A1 | ALTA | resuelto | CA11, TM7, T006; cobertura de RS4.a en la spec |
+| A2 | ALTA | resuelto | plan → Abuso y TM5: el test pone la app fuera de `testing`; T002 |
+| A3 | ALTA | resuelto | plan → controlador (`public_testimonial.save_failed`, mensaje genérico); T002 lo prueba |
+| A4 | MEDIA | aceptado | Constitution Check P6 ❌ aceptado; Contratos |
+| A5 | MEDIA | resuelto | plan → `save()` devuelve el id; T001 |
+| A6 | MEDIA | aceptado | CA4 (hasta 10 minutos) |
+| A7 | MEDIA | resuelto | CA5 y plan: solo cuentan los aceptados; T002 |
+| A8 | BAJA | resuelto | plan → Datos (`created_at`); T002 ignora `created_at` |
+| A9 | BAJA | resuelto | `TestimonialAuthor` en caracteres; T001 con emoji |
+| A10 | BAJA | resuelto | FormRequest normaliza los saltos de línea; T002 |
+| A11 | MEDIA | resuelto | TM3 con `escapeHtml` del JS de Contenido; test estático en T005 |
+| A12 | BAJA | resuelto | T005, con uno y con varios |
+| A13 | BAJA | resuelto | T002, staff con sesión |
+| A14 | BAJA | resuelto | T005 actualiza `PublicSiteContentTest` |
+| A15 | BAJA | resuelto | Log con `consent: true`; spec → Seguridad |
+| A16 | BAJA | resuelto | Contratos y controlador: 429 con la página, sin redirigir |
 
 ## Hallazgos nuevos
-| ID | Categoría | Severidad | Ubicación | Hallazgo | Corrección |
-|---|---|---|---|---|---|
-| A1 | Seguridad | ALTA | `routes/api.php:95-97`, `GetTestimonialsUseCase`; plan → Modelo de amenazas | `GET /api/v1/public/testimonials` devuelve también los ocultos (RS4.a): el spam sin moderar sería legible al instante | `/specify --edit`, `/plan` y `/tasks --fix`: la API pública devuelve solo los visibles (decisión del usuario). Test: una opinión enviada no aparece en esa respuesta |
-| A2 | Pruebas | ALTA | plan TM5, CA9 | Pest se salta `ValidateCsrfToken` mientras corre los tests; un POST sin `_token` no da 419 | Test con el entorno fuera de `testing`, que falla si la ruta sale del grupo `web` o se excluye del token |
-| A3 | Constitución P7 | ALTA | plan → Constitution Check P7; tareas | El test de P7 no estaba en ninguna tarea y el 500 genérico de `bootstrap/app.php` solo cubre `api/*` | T002: si el guardado falla, la página vuelve con un mensaje genérico propio y se registra solo la clase de la excepción; un test fuerza el fallo |
-| A4 | Constitución P6 | MEDIA | plan → Contratos | P6 pide 422 ante una entrada inválida; el formulario web responde 302 con los errores | Excepción de P6 para formularios web aceptada por el usuario |
-| A5 | Inconsistencia | MEDIA | plan (log con el id); `TestimonialsService::save(): void` | El caso de uso no conoce el id de la fila creada | `save()` del repositorio y del servicio devuelve el id; test: el `testimonial_id` del log es el de la fila |
-| A6 | Inconsistencia | MEDIA | CA4; caché de 10 min de `ShowLandingPageController` | Al publicar, el inicio la muestra cuando caduca la caché | Aceptado por el usuario: hasta 10 min, como el resto del contenido; CA4 lo dice |
-| A7 | Ambigüedad | MEDIA | CA5 | El límite contaría también los envíos inválidos | Decisión del usuario: solo cuentan los envíos aceptados (válidos o con la trampa); test: 3 inválidos y luego uno válido pasa |
-| A8 | Inconsistencia | BAJA | plan → Datos (`date`) | La columna `date` ya no existe; la fecha es `created_at` | El plan habla de `created_at`; test con `created_at` en la petición |
-| A9 | Inconsistencia | BAJA | `TestimonialAuthor` (`strlen` en bytes) | 80 caracteres de 4 bytes darían un 500 | El valor se mide en caracteres (`mb_strlen`); test con emoji |
-| A10 | Ambigüedad | BAJA | CA2, opinión de 255 | Los saltos de línea llegan como CRLF (2 caracteres) | El servidor normaliza a `\n` antes de validar; test con saltos de línea |
-| A11 | Pruebas | MEDIA | TM3 | El recurso JSON no escapa; quien escapa en "Contenido" es `escapeHtml` del JS de la pantalla | TM3 con el control real; test: el JS de Contenido escapa el nombre y la opinión |
-| A12 | Pruebas | BAJA | `GetTestimonialsController` | Con un solo resultado devuelve un objeto, no una lista | El test de CA4 cubre uno y varios testimonios |
-| A13 | Cobertura | BAJA | plan → Por rol | El caso "staff con sesión envía y queda oculto" no tenía tarea | En T002 |
-| A14 | Cobertura | BAJA | `PublicSiteContentTest.php:126` | El test existente fija el enlace a WhatsApp | T005 lo actualiza a `/opinion` |
-| A15 | Seguridad | BAJA | Spec → privacidad | El consentimiento no dejaba constancia | Decisión del usuario: el log de recepción registra el consentimiento con el id |
-| A16 | Inconsistencia | BAJA | plan → `AppServiceProvider` | "Vuelve a /opinion" contra "429 con la vista" | El cuarto envío responde 429 con la página y el mensaje, sin redirigir |
+Ninguno.
 
 ## Decisiones pendientes del usuario
-Ninguna: resueltas el 2026-11-17 (A1, A4, A6, A7 y A15).
+Ninguna.
 
 ## Enmiendas propuestas a la constitución
-- P6: admitir que un formulario web sin JavaScript responda 302 con los errores en la sesión. No bloquea; la decide el usuario.
+- P6: admitir que un formulario web sin JavaScript responda 302 con los errores en la sesión. No bloquea.
 
 ## Aceptados
 Aceptados por el usuario el 2026-11-17:
