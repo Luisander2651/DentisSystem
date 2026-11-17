@@ -5,7 +5,7 @@ round: 4
 date: 2026-11-17
 base: be15dc8
 head: c2ce7e5
-human_signoff: pending
+human_signoff: Luisander2651 2026-11-17 (ronda 4)
 ---
 
 # Review · 026 Nueva landing del sitio público
