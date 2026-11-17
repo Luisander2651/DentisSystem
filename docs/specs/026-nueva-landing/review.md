@@ -1,72 +1,62 @@
 ---
 spec: 026-nueva-landing
 verdict: approved
-round: 3
+round: 4
 date: 2026-11-17
-base: 9bbea55
-head: be15dc8
-human_signoff: Luisander2651 2026-11-17
+base: be15dc8
+head: c2ce7e5
+human_signoff: pending
 ---
 
 # Review · 026 Nueva landing del sitio público
 
 ## Resumen
-Ronda 3 (`--rerun`) sobre T051, que corrige R31 y R33 de la ronda 2.
+Ronda 4 (`--rerun`), abierta durante `/release`. El CI del PR #54 encontró un defecto de la spec: el visor de certificaciones dejaba de estar fijo a la ventana. Lo había introducido la optimización de `content-visibility` de T092 y lo corrige T052. CI también mostró líneas base del inicio generadas con datos locales.
 
-Los dos quedan corregidos y no aparecen hallazgos nuevos. No hay bloqueantes. Todos los importantes de las tres rondas están corregidos o tienen destino decidido por el usuario: R8 va a un `/fix` antes de staging. Los menores se aceptaron al roadmap.
+El diff de código de esta ronda mide 53 líneas en 6 archivos. Lo revisé sin subagente, releyendo cada archivo:
+- **CSS:** quita `#certificaciones` de la regla de `content-visibility`.
+- **`SiteStylesTokensTest`:** el test protege esa exclusión.
+- **`baseline-1440.json`:** las líneas de `inicio` e `inicio-testimonios`, regeneradas con solo `ui:audit-data`, como en CI.
+- **`ui-audit.mjs`, `screens.json` y `ai-dd.yml`:** cada uno con su ficha `/fix` y su review ligera.
 
-Esta ronda la revisé sin subagente, releyendo `initMarquee` y las reglas de la cinta desde cero, porque el diff de código mide 9 líneas en 2 archivos.
+No hay hallazgos nuevos. La firma humana vuelve a `pending` porque cambió código después de la ronda 3.
 
-Rondas anteriores:
-- [history/review.r1.md](history/review.r1.md): la review completa, con la verificación de criterios, seguridad, SEO y preparación para liberar.
-- [history/review.r2.md](history/review.r2.md).
+Rondas anteriores: [r1](history/review.r1.md), [r2](history/review.r2.md), [r3](history/review.r3.md).
 
 Conteo de esta ronda: bloqueante 0 · importante 0 · menor 0
 
 ## Verificación automática
 | Comando | Resultado |
 |---|---|
-| `./vendor/bin/pest --parallel` | ✅ 2505 tests, 0 fallos |
-| `pint` sobre los archivos del rango | ✅ |
-| `npm run build` | ✅ |
-| `aidd.py validate` | ✅ 0 errores |
-| `npm run test:ui -- --only inicio` | ✅, salvo `inicio-testimonios` a 1440 px, intermitente desde T024 (R8) |
-| Chrome con toque emulado (390 px) | el primer toque en el ícono pausa y el segundo reanuda |
+| CI del PR #54 en `c2ce7e5` (`tests.yml`): Pest + `npm run test:ui` (346 visitas, 123 entradas) | ✅ |
+| CI del PR #54 (`ai-dd.yml`): artefactos, Pint, seguridad de los cambios (con trivy, ya corregido) | ✅ |
+| Local: `ui-audit inicio` con los datos de CI | ✅ dos veces seguidas; `inicio-testimonios` 5 de 5 |
+| Local: `ui-audit inicio-visor-certificado` | ✅ en 390, 768 y 1440 |
+| `aidd.py validate` | ✅ |
 
-## Seguimiento de la ronda 2
+## Seguimiento
 | ID | Estado | Evidencia |
 |---|---|---|
-| R31 | corregido | `home.js` `initMarquee`: `pointerdown` ignora los toques dentro del botón; `inicio.css`: la pausa por `:hover` solo con `(hover: hover)`. Casos en `SiteScriptsTest` (toque sobre el ícono) y en `SiteStylesTokensTest`; los dos fallan sin el cambio. |
-| R33 | corregido | El foco en el propio botón no retiene la cinta. Caso en `SiteScriptsTest`. |
-| R8 | abierto, con destino | `/fix` aparte antes de staging (nota A56 de T095) |
+| Visor de certificaciones desplazado (CI, `inicio-visor-certificado` a 1440 px) | corregido por T052 | `inicio.css`: `#certificaciones` fuera de `content-visibility`; caso de `SiteStylesTokensTest`; CI en verde |
+| Composición del inicio en CI (región 10) | corregido | Líneas base regeneradas con `ui:audit-data`; CI en verde |
+| R8 | corregido | Ficha `docs/changes/2026-11-17-fix-ui-audit-testimonios-intermitente.md`; CI en verde |
 
 ## Seguridad
-| Herramienta | Resultado |
-|---|---|
-| gitleaks v8.30.1 | ✅ 0 hallazgos en `7fae5a3..HEAD` (ronda 1) y en `6cb178e..HEAD` (ronda 2) |
-| semgrep 1.178.0 (`p/php`, `app config bootstrap routes`) | ✅ 0 hallazgos en la ronda 1, sobre todo el código. En las rondas 2 y 3 se colgó en local al descargar las reglas, y se detuvo a los 26 min y a los 400 s. Desde la ronda 1 solo cambió en su alcance `config/site.php` (R2, el horario provisional, sin entradas nuevas). CI lo ejecuta en cada push (`.github/workflows/ai-dd.yml`). |
-| composer audit / npm audit | sin altas ni críticas. El aviso bajo de Laravel 12.69.3 queda aceptado como R28 → `/chore` |
-| trivy 0.74.0 | ✅ sin hallazgos altos ni críticos; sin cambios en `docker/` desde la ronda 1 |
+- **Herramientas:** iguales que en la ronda 3. El job de seguridad del PR vuelve a ejecutar trivy, tras la ficha `docs/changes/2026-11-17-fix-trivy-varios-objetivos.md`, y pasa.
+- **SCA:** sin cambios de dependencias.
 
 ## Hallazgos
-Ninguno nuevo en esta ronda.
+Ninguno.
 
 ## Preparación para release
-- **Rollback:** `SITE_NEW_LANDING=false` más `config:cache`, o `docker/prod/rollback.sh`.
-- **Migraciones:** ninguna.
-- **Documentación:** `architecture.md`, `deployment.md`, `observability.md` y `seo.md` al día.
-- **Antes de staging:** cerrar el `/fix` de `ui-audit inicio-testimonios` (R8). Después, `ui-audit inicio` dos veces seguidas en los tres anchos.
-- **Pendientes de la clínica:** todos los datos de contacto siguen provisionales.
-- **Fotos de la propuesta:** generadas, aprobadas por el usuario para producción hasta tener fotos reales.
-- **Revisión humana:** aprobada por el dueño del repositorio (Luisander2651) el 2026-11-17; el merge se aprueba en `/release`.
+- **Rendimiento:** sacar las certificaciones de `content-visibility` añade su maquetación al primer layout del inicio. Lighthouse móvil se repite sobre producción en T095.
+- **Sin cambios:** el resto de la preparación es igual que en la ronda 3 (rollback, migraciones, documentación, datos provisionales y fotos generadas).
 
 ## Tareas añadidas
-Ninguna en esta ronda. Antes: T044–T050 (ronda 1) y T051 (ronda 2), todas hechas.
+- T052 ← visor de certificaciones desplazado (encontrado por CI durante `/release`)
 
 ## Aceptados sin tarea
-Siguen vigentes los aceptados de las rondas anteriores, que `/release` llevará al roadmap:
-- R9–R29: [history/review.r1.md](history/review.r1.md).
-- R32, R34, R35 y R36: [history/review.r2.md](history/review.r2.md).
+Siguen vigentes los de las rondas 1 y 2: R9–R29 y R32, R34, R35, R36 (ver [r3](history/review.r3.md)).
 
 - **R9** → roadmap: títulos de galería y acerca por debajo de 30 caracteres.
 - **R10** → roadmap: certificaciones sin `width`/`height`.
