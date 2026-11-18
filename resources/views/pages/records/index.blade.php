@@ -81,6 +81,8 @@
         {{-- Patient Grid --}}
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-records-list id="records-table-container"></div>
 
+        <x-ui.pagination label="Páginas de pacientes" data-records-pagination />
+
         {{-- Empty State --}}
         <p hidden data-records-no-match class="rounded-card border border-line bg-surface p-5 text-center text-sm text-muted shadow-sm">No se encontraron pacientes</p>
 

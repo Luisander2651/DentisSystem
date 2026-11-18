@@ -1,6 +1,7 @@
 import { stateBadge } from '../../ui/badge';
 import { renderAppointmentsHistory as renderSharedAppointmentsHistory } from '../../ui/appointments-history';
 import { closeDialog, isBackdropClick, openDialog } from '../../ui/dialog';
+import { mountPagination, readListState, writeListState } from '../../ui/pagination';
 import { announce, failureMessage } from '../../ui/status';
 
 (function () {
@@ -22,7 +23,6 @@ import { announce, failureMessage } from '../../ui/status';
     var statusFilter = document.querySelector('[data-records-status-filter]');
     var searchInput = document.querySelector('[data-records-search]');
     var noMatchBox = document.querySelector('[data-records-no-match]');
-    var loadedRecords = [];
 
     var detailSection = document.getElementById('record-detail-section');
     var selectedPatientLabel = document.getElementById('record-selected-patient-label');
@@ -48,11 +48,32 @@ import { announce, failureMessage } from '../../ui/status';
     var pendingDeleteEndpoint = null;
     var pendingDeleteLabel = null;
     var isDeleting = false;
-    var selectedStatus = '';
+    var STATUSES = ['active', 'inactive'];
+    var SEARCH_DELAY_MS = 300;
+    var initialState = readListState(window.location.search);
+
+    // Spec 028 (CA4, CA8, CA9): the page, the search and the filter come from the address and go
+    // to the server, which answers one page with the counts of the whole list.
+    var currentPage = initialState.pagina;
+    var selectedStatus = STATUSES.includes(initialState.estado) ? initialState.estado : '';
+    var patientsRequestNumber = 0;
 
     if (!page || !recordsGrid || !detailSection || !selectedPatientLabel) {
         return;
     }
+
+    if (searchInput) {
+        searchInput.value = initialState.busqueda;
+    }
+
+    var pagination = mountPagination(document.querySelector('[data-records-pagination]'), {
+        noun: 'pacientes',
+        onChange: function (pageNumber) {
+            currentPage = pageNumber;
+            loadPatients({ announcePage: true });
+        },
+        focusTarget: document.querySelector('main h1'),
+    });
 
     var selectedPatientId = String(page.dataset.selectedPatientId || '').trim();
 
@@ -346,45 +367,31 @@ import { announce, failureMessage } from '../../ui/status';
         }).join(', ');
     }
 
-    function matchingSearch(records) {
-        var query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    function searchText() {
+        return searchInput ? searchInput.value.trim() : '';
+    }
 
-        if (query === '') {
-            return records;
+    function renderCounters(counts) {
+        if (!counts) {
+            return;
         }
 
-        return records.filter(function (patient) {
-            var text = [patient.first_name, patient.last_name, patient.email].map(function (value) { return String(value ?? ''); }).join(' ').toLowerCase();
-
-            return text.includes(query);
-        });
+        if (countTotal) countTotal.textContent = String(counts.total ?? 0);
+        if (countActive) countActive.textContent = String(counts.active ?? 0);
+        if (countInactive) countInactive.textContent = String(counts.inactive ?? 0);
     }
 
     function renderPatientCards(payload) {
-        var records = Array.isArray(payload && payload.data)
-            ? payload.data
-            : (Array.isArray(payload) ? payload : []);
+        var records = Array.isArray(payload && payload.data) ? payload.data : [];
+        var meta = payload && payload.meta ? payload.meta : null;
+        var isSearching = searchText() !== '';
 
-        let activeCount = 0;
-        let inactiveCount = 0;
+        renderCounters(meta && meta.counts);
 
-        records.forEach(patient => {
-            if (patient.status === 'active') activeCount++;
-            else if (patient.status === 'inactive') inactiveCount++;
-        });
-
-        if (countTotal) countTotal.textContent = String(records.length);
-        if (countActive) countActive.textContent = String(activeCount);
-        if (countInactive) countInactive.textContent = String(inactiveCount);
-
-        // Spec 020 (D26, A42, A43): the search filters the list just loaded, also after the
-        // status filter reloads it. "No hay pacientes…" is for an empty list, "No se encontraron
+        // Spec 020 (D26, A42, A43): "No hay pacientes…" is for an empty list, "No se encontraron
         // pacientes" for a search that matches none.
-        loadedRecords = records;
-        records = matchingSearch(records);
-
-        if (emptyBox) emptyBox.classList.toggle('hidden', loadedRecords.length !== 0);
-        if (noMatchBox) noMatchBox.hidden = loadedRecords.length === 0 || records.length !== 0;
+        if (emptyBox) emptyBox.classList.toggle('hidden', records.length !== 0 || isSearching);
+        if (noMatchBox) noMatchBox.hidden = records.length !== 0 || !isSearching;
 
         if (records.length === 0) {
             recordsGrid.innerHTML = '';
@@ -585,18 +592,26 @@ import { announce, failureMessage } from '../../ui/status';
         detailSection.classList.remove('hidden');
     }
 
-    async function loadPatients() {
+    async function loadPatients(options) {
+        var thisRequest = ++patientsRequestNumber;
+
         hideError();
         if (loadingBox) loadingBox.classList.remove('hidden');
 
         try {
             var params = new URLSearchParams();
 
+            params.set('page', String(currentPage));
+
             if (selectedStatus) {
                 params.set('status', selectedStatus);
             }
 
-            var response = await fetch('/api/v1/patients' + (params.toString() ? '?' + params.toString() : ''), {
+            if (searchText()) {
+                params.set('search', searchText());
+            }
+
+            var response = await fetch('/api/v1/patients?' + params.toString(), {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -609,18 +624,46 @@ import { announce, failureMessage } from '../../ui/status';
                 return {};
             });
 
+            if (thisRequest !== patientsRequestNumber) {
+                return;
+            }
+
             if (!response.ok) {
                 if (recordsGrid) recordsGrid.innerHTML = '';
+                pagination.render(null);
                 showError(failureMessage(response.status, payload));
                 return;
             }
 
+            var meta = payload && payload.meta ? payload.meta : null;
+
+            currentPage = meta && meta.page ? meta.page : 1;
             renderPatientCards(payload);
+            pagination.render(meta);
+            writeListState({ pagina: currentPage, busqueda: searchText(), estado: selectedStatus });
+
+            if (options && options.announcePage) {
+                pagination.announcePage(meta);
+            } else if (options && options.announceSearch && searchText() !== '') {
+                var found = meta ? meta.total : 0;
+
+                // Review of spec 020 (R11): a screen reader hears what the search found.
+                announce(found === 0
+                    ? 'No se encontraron pacientes.'
+                    : found + (found === 1 ? ' paciente encontrado.' : ' pacientes encontrados.'));
+            }
         } catch (error) {
+            if (thisRequest !== patientsRequestNumber) {
+                return;
+            }
+
             if (recordsGrid) recordsGrid.innerHTML = '';
+            pagination.render(null);
             showError(failureMessage(0));
         } finally {
-            if (loadingBox) loadingBox.classList.add('hidden');
+            if (thisRequest === patientsRequestNumber && loadingBox) {
+                loadingBox.classList.add('hidden');
+            }
         }
     }
 
@@ -633,6 +676,7 @@ import { announce, failureMessage } from '../../ui/status';
 
         selectedStatus = String(button.getAttribute('data-status-value') || '');
         setActiveStatusButton(selectedStatus);
+        currentPage = 1;
         loadPatients();
     }
 
@@ -894,25 +938,14 @@ import { announce, failureMessage } from '../../ui/status';
     }
 
     if (searchInput) {
-        var searchAnnouncement = null;
+        var searchTimer = null;
 
         searchInput.addEventListener('input', function () {
-            renderPatientCards(loadedRecords);
-
-            // Review of spec 020 (R11): a screen reader hears what the search found, once it
-            // stops typing for a moment.
-            window.clearTimeout(searchAnnouncement);
-            searchAnnouncement = window.setTimeout(function () {
-                if (searchInput.value.trim() === '' || loadedRecords.length === 0) {
-                    return;
-                }
-
-                var found = matchingSearch(loadedRecords).length;
-
-                announce(found === 0
-                    ? 'No se encontraron pacientes.'
-                    : found + (found === 1 ? ' paciente encontrado.' : ' pacientes encontrados.'));
-            }, 400);
+            window.clearTimeout(searchTimer);
+            searchTimer = window.setTimeout(function () {
+                currentPage = 1;
+                loadPatients({ announceSearch: true });
+            }, SEARCH_DELAY_MS);
         });
 
         // Spec 020 (CA9): "Buscar paciente" of the start leaves the search ready to type.

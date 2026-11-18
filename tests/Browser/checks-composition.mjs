@@ -102,6 +102,11 @@ export const ADMITTED = [
         entries: ['agenda-cita-detalle-pendiente', 'agenda-cita-detalle-pendiente-asistente', 'agenda-cita-detalle-pendiente-doctor', 'dashboard-detalle-administrador', 'dashboard-detalle-asistente', 'expediente-administrador-cita-detalle-pendiente'],
         difference: 'El detalle de una cita asignada o reprogramada gana, tras sus datos, la sección "Código QR de acceso" con el QR de la cita y "Descargar QR".',
     },
+    {
+        criterion: '028 CA1',
+        entries: ['pacientes', 'expedientes', 'expedientes-buscar', 'expediente', 'expediente-contacto-form', 'expediente-direccion-form', 'expediente-medicos-form', 'expediente-asistente', 'expediente-doctor'],
+        difference: 'Pacientes y Expedientes clínicos muestran 12 pacientes por página y, bajo la rejilla, el control de páginas con "Mostrando X–Y de N", "Anterior", los números y "Siguiente" (candidato c3 de la spec 028).',
+    },
 ];
 
 // In points of the window width. The runner of CI and a local machine draw the same text with

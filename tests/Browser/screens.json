@@ -3265,7 +3265,8 @@
             "id": "pacientes",
             "screen": "pacientes",
             "path": "/pacientes",
-            "role": "administrador"
+            "role": "administrador",
+            "snapshot": true
         },
         {
             "id": "pacientes-crear",
@@ -3310,6 +3311,76 @@
             "sends": true
         },
         {
+            "id": "pacientes-pagina-2",
+            "screen": "pacientes",
+            "path": "/pacientes?pagina=2",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "recargar o volver con Atrás muestra la página 2",
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 13–24 de",
+                            "#patients-list": "Sofía Prueba"
+                        },
+                        "absent": [
+                            "[data-patient-edit][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                        ]
+                    }
+                },
+                {
+                    "name": "Anterior vuelve a la página 1",
+                    "do": [
+                        {
+                            "click": "[data-patients-pagination] a[aria-label=\"Página anterior\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 1–12 de"
+                        },
+                        "focused": "main h1",
+                        "announced": "Página 1 de 3",
+                        "open": [
+                            "[data-patient-edit][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "pacientes-buscar-otra-pagina",
+            "screen": "pacientes",
+            "path": "/pacientes",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "encuentra en la página 1 a quien está en la 2",
+                    "do": [
+                        {
+                            "fill": "#patient-search",
+                            "value": "Valeria"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "#patients-list": "Valeria Prueba"
+                        },
+                        "absent": [
+                            "[data-patient-edit][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]",
+                            "[data-patients-pagination]:not([hidden])"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "id": "expedientes",
             "screen": "expedientes",
             "path": "/expedientes-clinicos",
@@ -3333,6 +3404,9 @@
                         {
                             "fill": "[data-records-search]",
                             "value": "Valeria"
+                        },
+                        {
+                            "wait": 1500
                         }
                     ],
                     "expect": {
@@ -3350,6 +3424,9 @@
                         {
                             "fill": "[data-records-search]",
                             "value": "zzzz"
+                        },
+                        {
+                            "wait": 1500
                         }
                     ],
                     "expect": {
@@ -3416,6 +3493,26 @@
                     ],
                     "expect": {
                         "announcedOnce": "No se encontraron pacientes."
+                    }
+                }
+            ]
+        },
+        {
+            "id": "expedientes-pagina-2",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos?pagina=2",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "recargar muestra la página 2",
+                    "expect": {
+                        "textIn": {
+                            "[data-records-pagination]": "Mostrando 13–24 de",
+                            "[data-records-list]": "Sofía Prueba"
+                        },
+                        "absent": [
+                            "[data-records-list] a[href$=\"/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                        ]
                     }
                 }
             ]
