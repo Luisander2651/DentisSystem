@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Patients\Infrastructure\Persistence\Eloquent;
 
-use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Patients\Domain\Entities\Patient;
+use App\Modules\Patients\Domain\Repositories\PatientsRepositoryInterface;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientEmail;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientStatus;
 use App\Modules\Patients\Infrastructure\Persistence\Eloquent\Models\PatientModel;
+use Illuminate\Database\Eloquent\Builder;
 
 class EloquentPatientRepository implements PatientsRepositoryInterface
 {
@@ -62,7 +65,61 @@ class EloquentPatientRepository implements PatientsRepositoryInterface
 
         $patients = $query->get();
 
-        return $patients ? $patients->map(fn($patient) => $this->mapToDomain($patient))->toArray() : [];
+        return $patients ? $patients->map(fn ($patient) => $this->mapToDomain($patient))->toArray() : [];
+    }
+
+    public function findPage(PageRequest $request, ?PatientStatus $status, ?string $search): Page
+    {
+        $query = PatientModel::query()
+            ->when($status, fn (Builder $query) => $query->where('status', $status->value))
+            ->when($this->likePattern($search), fn (Builder $query, string $pattern) => $query->where(
+                fn (Builder $query) => $query
+                    ->where('first_name', 'ilike', $pattern)
+                    ->orWhere('last_name', 'ilike', $pattern)
+                    ->orWhereRaw("first_name || ' ' || last_name ilike ?", [$pattern])
+                    ->orWhere('email', 'ilike', $pattern)
+            ));
+
+        $total = (clone $query)->count();
+
+        $items = $query
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->offset($request->offsetFor($total))
+            ->limit($request->size)
+            ->get()
+            ->map(fn (PatientModel $patient): Patient => $this->mapToDomain($patient))
+            ->all();
+
+        return Page::create($items, $total, $request);
+    }
+
+    public function countByStatus(): array
+    {
+        $byStatus = PatientModel::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $active = (int) ($byStatus[PatientStatus::active()->value] ?? 0);
+        $inactive = (int) ($byStatus[PatientStatus::inactive()->value] ?? 0);
+
+        return ['total' => $active + $inactive, 'active' => $active, 'inactive' => $inactive];
+    }
+
+    /**
+     * The search as a pattern that matches its text literally anywhere: the LIKE wildcards and the
+     * escape character it holds lose their meaning (TM3). No search, no pattern.
+     */
+    private function likePattern(?string $search): ?string
+    {
+        $text = trim((string) $search);
+
+        if ($text === '') {
+            return null;
+        }
+
+        return '%'.addcslashes($text, '\%_').'%';
     }
 
     private function mapToDomain(object $model): Patient
