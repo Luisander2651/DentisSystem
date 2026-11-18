@@ -3,7 +3,7 @@ id: 028
 slug: paginacion-de-listas
 status: approved
 created: 2026-11-18
-extends: [004, 005, 006, 008, 012, 020, 025]
+extends: [004, 005, 006, 008, 012, 014, 020, 025, 027]
 ---
 
 # 028 · Paginación de las listas del panel y del portal
@@ -26,14 +26,14 @@ un control para moverse entre páginas, y que buscar y filtrar sigan encontrando
 
 ## Criterios de aceptación
 - [ ] CA1 · Dado que una lista tiene más registros de los que caben en una página, cuando el staff abre Pacientes, Expedientes clínicos, Usuarios, Tratamientos o cualquier pestaña de Contenido (Galería, Promociones, Certificaciones, Testimonios), entonces ve solo los primeros **12** y, bajo la lista, el texto "Mostrando 1–12 de N <registros>" y el control de páginas.
-- [ ] CA2 · Dado que una tabla tiene más de **10** filas, cuando se abre el historial de citas del expediente de un paciente, "Mis citas" del portal o las secciones "Citas sin cerrar" y "Completadas sin seguimiento" del inicio, entonces se ven 10 filas por página, con el mismo texto y control de páginas. Cada sección del inicio se pagina por separado.
+- [ ] CA2 · Dado que una tabla tiene más de **10** filas, cuando se abre el historial de citas del expediente de un paciente, "Mis citas" del portal o las secciones "Citas sin cerrar" y "Completadas sin seguimiento" del inicio, entonces se ven 10 filas por página, con el mismo texto y control de páginas. Cada sección del inicio se pagina por separado. Reemplaza en la 020 "Se ven hasta 10, con el total pendiente (p. ej. \"y 5 más\")" de CA4 y "Se ven hasta 10, con el total pendiente" de CA7: las demás se ven en las páginas siguientes. Reemplaza en la 025 "ve todas sus citas" de CA3: las ve por páginas, en el mismo orden.
 - [ ] CA3 · Dado el control de páginas, cuando se usa, entonces muestra "Anterior", los números de página (la primera, la última, la actual y sus vecinas, con "…" en los huecos) y "Siguiente". La página actual se distingue y se anuncia como actual. "Anterior" no se puede usar en la primera página ni "Siguiente" en la última. Al cambiar de página cambia la lista y el texto "Mostrando…", y la vista vuelve al inicio de la lista.
-- [ ] CA4 · Dado un registro que está en otra página, cuando el staff lo busca por nombre o correo (Pacientes, Expedientes clínicos) o por nombre o descripción (Tratamientos), o elige el filtro "Activos" o "Inactivos", entonces el resultado incluye **todos** los registros que coinciden, paginado igual, empezando en la página 1.
+- [ ] CA4 · Dado un registro que está en otra página, cuando el staff lo busca por nombre o correo (Pacientes, Expedientes clínicos) o por nombre, descripción o duración en minutos (Tratamientos, como hoy), o elige el filtro "Activos" o "Inactivos", entonces el resultado incluye **todos** los registros que coinciden, paginado igual, empezando en la página 1.
 - [ ] CA5 · Dada una lista paginada, buscada o filtrada, cuando se ven los contadores de la cabecera (Total, Activos e Inactivos en Pacientes y Expedientes; por rol en Usuarios; Total, Con duración y Promedio en Tratamientos; Total, Visibles y Ocultos en cada pestaña de Contenido), entonces cuentan todos los registros de esa lista, no solo los de la página visible ni solo los que coinciden con la búsqueda o el filtro.
 - [ ] CA6 · Dada una lista con registros que caben en una página, cuando se abre, entonces no aparece el control de páginas. Dada una lista vacía, o una búsqueda sin resultados, entonces se ve el mismo estado vacío de hoy, sin control de páginas.
 - [ ] CA7 · Dada cualquier lista paginada, cuando se recorren todas sus páginas, entonces cada registro aparece exactamente una vez, en un orden fijo: el orden actual de cada lista o, donde hoy no lo hay, los más recientes primero.
 - [ ] CA8 · Dado que el staff está en la página 3 de Pacientes con una búsqueda escrita, cuando recarga la pantalla o vuelve a ella con "Atrás" del navegador, entonces ve la misma página con la misma búsqueda y filtro. Lo mismo en Expedientes clínicos, Usuarios, Tratamientos, Contenido (pestaña y página) y "Mis citas".
-- [ ] CA9 · Dada una página que no existe (por ejemplo la 999, una negativa o un texto), cuando se pide desde la dirección, entonces se muestra la última página que existe, o la primera si el valor no es un número, sin mensaje de error.
+- [ ] CA9 · Dada una página que no existe (por ejemplo la 999, una negativa o un texto), cuando se pide desde la dirección, entonces se muestra la última página que existe si el número es mayor que la última, o la primera si el valor no es un número, es 0 o es negativo, sin mensaje de error.
 - [ ] CA10 · Dado que el staff crea, edita o elimina un registro desde una lista paginada, cuando termina, entonces la lista se actualiza sin salir de la página en la que estaba y el texto "Mostrando…" y los contadores reflejan el cambio. Si eliminó el único registro de la última página, pasa a la página anterior.
 - [ ] CA11 · Dado el control de páginas a 390, 768 y 1440 px, cuando se muestra con muchas páginas, entonces cabe en el ancho sin desplazamiento horizontal, cada botón mide al menos 44 px de alto a 390 px y se puede usar solo con el teclado, con el foco visible.
 - [ ] CA12 · Dada una lista con 5 000 registros, cuando se pide una página, entonces solo llegan al navegador los registros de esa página y la pantalla la muestra en menos de 1 s en local.
@@ -114,6 +114,9 @@ Ninguna.
 | 2026-11-18 | diseño | Diseño del control de páginas | Candidato `c3` aceptado con 80/100 tras tres candidatos; acta en [design.md](design.md) | `/design-spec 028` |
 | 2026-11-18 | brecha | Los contadores de Contenido (Total, Visibles, Ocultos) se calculan en el navegador y CA5 no los nombraba | Entran en CA5 | usuario (`/plan 028`) |
 | 2026-11-18 | brecha | Con un filtro, ¿los contadores de la cabecera cuentan solo lo filtrado (como hoy) o todo? | Siempre todos los registros de la lista; "Mostrando… de N" dice cuántos coinciden (CA5) | usuario (`/plan 028`) |
+| 2026-11-18 | brecha | La búsqueda de Tratamientos encuentra hoy también por duración | Se conserva: nombre, descripción o duración (CA4) | usuario (`/analyze 028` A20) |
+| 2026-11-18 | brecha | Qué criterios de las specs extendidas cambia la paginación | 020 CA4 y CA7 ("hasta 10 … y N más") y 025 CA3 ("todas sus citas") se reemplazan en CA2; 014 (errores de Contenido) y 027 (respuesta de Testimonios en el panel) entran en `extends` | `/analyze 028` A12 |
+| 2026-11-18 | brecha | ¿Una página 0 o negativa lleva a la última o a la primera? | A la primera (CA9) | `/analyze 028` A19 |
 | 2026-11-18 | implícita | Accesibilidad y tamaño táctil del control | WCAG AA, ≥ 44 px a 390 px y solo componentes del sistema | `docs/constitution.md` P15, `docs/design/system.md` |
 | 2026-11-18 | implícita | Errores con datos inválidos | Sin detalles internos | `docs/constitution.md` P7 |
 
@@ -128,3 +131,5 @@ Ninguna.
 | 2026-11-18 | Spec aprobada | Aprobación del usuario |
 | 2026-11-18 | CA5 incluye los contadores de Contenido y cuenta siempre todos los registros | Hallazgos de `/plan 028` (decisión del usuario) |
 | 2026-11-18 | Spec aprobada de nuevo con el CA5 corregido | Aprobación del usuario |
+| 2026-11-18 | CA2 declara lo que reemplaza de 020 y 025; `extends` suma 014 y 027; CA4 conserva la búsqueda por duración; CA9 fija 0 y negativas → primera página | Hallazgos A12, A19 y A20 de `/analyze 028` |
+| 2026-11-18 | Spec aprobada de nuevo tras los hallazgos de `/analyze 028` | Aprobación del usuario |
