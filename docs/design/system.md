@@ -414,7 +414,8 @@ Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
 | Pantalla | Móvil | Escritorio | Componentes |
 |---|---|---|---|
 | Inicio (sitio público) | [capturas/inicio-390.png](capturas/inicio-390.png) | [capturas/inicio-1440.png](capturas/inicio-1440.png) | barra, tarjetas, preguntas frecuentes, pie |
-| Inicio del panel | pendiente (spec 020, T055) | pendiente (spec 020, T055) | menú lateral, siguiente cita, barra del día, línea de ahora, pendientes |
+| Inicio del panel | [capturas/dashboard-administrador-390.png](capturas/dashboard-administrador-390.png) | [capturas/dashboard-administrador-1440.png](capturas/dashboard-administrador-1440.png) | menú lateral, siguiente cita, barra del día, línea de ahora, pendientes |
+| Portal del paciente | [capturas/portal-inicio-390.png](capturas/portal-inicio-390.png) | [capturas/portal-inicio-1440.png](capturas/portal-inicio-1440.png) | menú lateral, próxima cita con su QR, historial |
 | Agenda | [capturas/agenda-con-citas-390.png](capturas/agenda-con-citas-390.png) | [capturas/agenda-con-citas-1440.png](capturas/agenda-con-citas-1440.png) | calendario, filtros, diálogos |
 | Agenda, un día sin citas para hoy | `/agenda` | Administrador | [390](capturas/agenda-hoy-sin-citas-390.png) · [1440](capturas/agenda-hoy-sin-citas-1440.png) | capturada |
 | Pacientes | [capturas/pacientes-390.png](capturas/pacientes-390.png) | [capturas/pacientes-1440.png](capturas/pacientes-1440.png) | búsqueda, tarjetas, diálogos |
@@ -423,19 +424,15 @@ Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
 ## Inventario de vistas
 
 **Todas** las vistas de la app, con capturas de la app real hechas con datos de prueba. Nada se
-dibuja a mano. Las capturas son las del sistema 2.0.0: las generó el paso `ui-audit` de CI el
-2026-10-12 (corrida del commit `871ee45`) sobre una base recién migrada que solo contiene los datos
-de `UiAuditSeeder`. **76 de 76 capturadas** (149 imágenes, a 390 y 1440 px). La spec 017 renombró "Editar cita" a
-"Reprogramar cita", añadió "Confirmar cancelación" y regeneró esas capturas y la del detalle de
-cita asignada el 2026-10-16, con `ui-audit` en local sobre los mismos datos. CI comprueba además
-cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas quedan en el artefacto
-`ui-audit` de cada corrida. La spec 020 rehace el inicio del panel: el 2026-10-26 se regeneraron con `ui-audit` en local sus
-vistas (las tres con datos, la del paciente, el menú móvil y "nuevo paciente") y sale la de "nuevo usuario"; la base local
-lleva, además de los datos de `UiAuditSeeder`, alguna cita de desarrollo que se ve en las listas del administrador. El 2026-11-18 se regeneraron
-las del sitio público con la landing de la spec 026 y el formulario de opinión de la spec 027 (27 imágenes): `ui-audit` en
-local con movimiento reducido y con las secciones diferidas (`content-visibility: auto`) y las imágenes perezosas forzadas a
-pintarse, para que la captura de página completa no salga con huecos. Sale "Galería, visor de imagen": la galería nueva no
-tiene visor. La galería y las certificaciones muestran también contenido de prueba de la base local.
+dibuja a mano. **122 de 122 vistas capturadas** (234 imágenes, a 390 y 1440 px). Todas se regeneraron el
+2026-11-18 con `ui-audit` en local, sobre los datos de `UiAuditSeeder` y el contenido de desarrollo de la base local, que se
+ve en las listas del administrador, la galería y las certificaciones. Las capturas anteriores eran de octubre y
+no mostraban "Reportes" en el menú lateral (spec 019), el portal del paciente (spec 025) ni el sitio público nuevo (spec 026).
+Se capturan con movimiento reducido y con las secciones diferidas (`content-visibility: auto`) y las imágenes perezosas
+forzadas a pintarse, para que la captura de página completa no salga con huecos. CI comprueba además cada pantalla a 768 px
+y la navegación desplegada a 1024 px; esas capturas quedan en el artefacto `ui-audit` de cada corrida. Las imágenes de
+"Galería, visor de imagen" y del inicio del paciente anterior a la spec 025 se conservan porque las usa el sistema 1.0.0
+archivado.
 
 | Vista | Ruta / plantilla | Rol | Capturas | Estado |
 |---|---|---|---|---|
@@ -464,10 +461,29 @@ tiene visor. La galería y las certificaciones muestran también contenido de pr
 | Inicio del panel, con datos | `/dashboard` · `pages/dashboard.blade.php` | Administrador | [390](capturas/dashboard-administrador-390.png) · [1440](capturas/dashboard-administrador-1440.png) | capturada (spec 020): siguiente cita, día, acciones, agenda, mes y pendientes |
 | Inicio del panel, con datos | `/dashboard` | Asistente | [390](capturas/dashboard-asistente-390.png) · [1440](capturas/dashboard-asistente-1440.png) | capturada (spec 020): sin el mes ni las completadas sin seguimiento |
 | Inicio del panel, con datos | `/dashboard` | Doctor | [390](capturas/dashboard-doctor-390.png) · [1440](capturas/dashboard-doctor-1440.png) | capturada (spec 020): solo sus citas, sin el mes |
-| Inicio del panel, vacío y error de una sección | `/dashboard` | Administrador | — | lo comprueba `ui-audit` (flujos de vacío, carga, error y "Reintentar"; spec 020); sin captura propia |
-| Inicio del panel | `/dashboard` | Paciente | [390](capturas/dashboard-paciente-390.png) · [1440](capturas/dashboard-paciente-1440.png) | capturada |
+| Inicio del panel, vacío y error de una sección | `/dashboard` | Administrador | [1440](capturas/dashboard-administrador-flujos-1440.png) | capturada a 1440 px; `ui-audit` comprueba los flujos de vacío, carga, error y "Reintentar" (spec 020) |
+| Portal del paciente, inicio con su próxima cita | `/dashboard` · `pages/dashboard.blade.php` | Paciente | [390](capturas/portal-inicio-390.png) · [1440](capturas/portal-inicio-1440.png) | capturada (spec 025): próxima cita con su QR |
+| Portal del paciente, inicio sin próxima cita | `/dashboard` | Paciente | [390](capturas/portal-inicio-vacio-390.png) · [1440](capturas/portal-inicio-vacio-1440.png) | capturada (spec 025) |
+| Portal del paciente, inicio si el QR no carga | `/dashboard` | Paciente | [390](capturas/portal-inicio-fallo-qr-390.png) · [1440](capturas/portal-inicio-fallo-qr-1440.png) | capturada (spec 025): la cita sigue a la vista con un aviso |
+| Portal del paciente, inicio si la cita no carga | `/dashboard` | Paciente | [390](capturas/portal-inicio-fallo-cita-390.png) · [1440](capturas/portal-inicio-fallo-cita-1440.png) | capturada (spec 025) |
+| Portal del paciente, Mis citas | `/mis-citas` · `pages/portal/appointments.blade.php` | Paciente | [390](capturas/portal-mis-citas-390.png) · [1440](capturas/portal-mis-citas-1440.png) | capturada (spec 025) |
+| Portal del paciente, Mis citas sin citas | `/mis-citas` | Paciente | [390](capturas/portal-mis-citas-vacio-390.png) · [1440](capturas/portal-mis-citas-vacio-1440.png) | capturada (spec 025) |
+| Portal del paciente, Mis citas si el historial no carga | `/mis-citas` | Paciente | [390](capturas/portal-mis-citas-fallo-390.png) · [1440](capturas/portal-mis-citas-fallo-1440.png) | capturada (spec 025) |
+| Portal del paciente, detalle de una cita abierta (con su QR) | `components/portal/appointment-detail-modal.blade.php` | Paciente | [390](capturas/portal-detalle-abierta-390.png) · [1440](capturas/portal-detalle-abierta-1440.png) | capturada (spec 025) |
+| Portal del paciente, detalle de una cita completada (recetas y recomendaciones) | `components/portal/appointment-detail-modal.blade.php` | Paciente | [390](capturas/portal-detalle-completada-390.png) · [1440](capturas/portal-detalle-completada-1440.png) | capturada (spec 025) |
+| Portal del paciente, detalle de una cita completada sin recetas | `components/portal/appointment-detail-modal.blade.php` | Paciente | [390](capturas/portal-detalle-sin-recetas-390.png) · [1440](capturas/portal-detalle-sin-recetas-1440.png) | capturada (spec 025) |
+| Portal del paciente, detalle de una cita cancelada | `components/portal/appointment-detail-modal.blade.php` | Paciente | [390](capturas/portal-detalle-cancelada-390.png) · [1440](capturas/portal-detalle-cancelada-1440.png) | capturada (spec 025) |
+| Portal del paciente, detalle si las recetas no cargan | `components/portal/appointment-detail-modal.blade.php` | Paciente | [390](capturas/portal-detalle-fallo-390.png) · [1440](capturas/portal-detalle-fallo-1440.png) | capturada (spec 025) |
+| Portal del paciente, menú abierto en móvil | `/dashboard` · `components/ui/sidebar.blade.php` | Paciente | [390](capturas/portal-menu-390.png) | capturada a 390 px (solo las pantallas del paciente; CI lo revisa también a 768 px) |
 | Inicio del panel, nuevo paciente | `components/ui/create-patient-modal.blade.php` | Administrador | [390](capturas/dashboard-crear-paciente-390.png) · [1440](capturas/dashboard-crear-paciente-1440.png) | capturada |
 | Menú lateral abierto en móvil | `/dashboard` · `components/ui/sidebar.blade.php` | Administrador | [390](capturas/dashboard-menu-390.png) | capturada a 390 px (existe por debajo de 1024 px; CI lo revisa también a 768 px) |
+| Inicio del panel, detalle de cita | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/dashboard-detalle-administrador-390.png) · [1440](capturas/dashboard-detalle-administrador-1440.png) | capturada (spec 020) |
+| Inicio del panel, detalle de cita | `components/calendar/view-appointment-modal.blade.php` | Asistente | [390](capturas/dashboard-detalle-asistente-390.png) · [1440](capturas/dashboard-detalle-asistente-1440.png) | capturada (spec 020) |
+| Inicio del panel, completar cita | `components/calendar/complete-appointment-modal.blade.php` | Doctor | [390](capturas/dashboard-completar-390.png) · [1440](capturas/dashboard-completar-1440.png) | capturada (spec 020) |
+| Inicio del panel, confirmar cancelación | `components/calendar/cancel-appointment-confirm.blade.php` | Asistente | [390](capturas/dashboard-cancelar-390.png) · [1440](capturas/dashboard-cancelar-1440.png) | capturada (spec 020) |
+| Inicio del panel, registrar seguimiento | `components/calendar/complete-appointment-modal.blade.php` | Administrador | [390](capturas/dashboard-registrar-seguimiento-390.png) · [1440](capturas/dashboard-registrar-seguimiento-1440.png) | capturada (spec 020) |
+| Inicio del panel, agendar cita | `components/calendar/create-appointment-modal.blade.php` | Administrador | [390](capturas/dashboard-nueva-cita-390.png) · [1440](capturas/dashboard-nueva-cita-1440.png) | capturada (spec 020) |
+| Inicio del panel, usuario inactivo | `/dashboard` · `errors/403.blade.php` | Usuario inactivo | [390](capturas/dashboard-inactivo-390.png) · [1440](capturas/dashboard-inactivo-1440.png) | capturada (spec 025) |
 | Agenda, mes actual sin citas | `/agenda` · `pages/agenda/index.blade.php` | Administrador | [390](capturas/agenda-390.png) · [1440](capturas/agenda-1440.png) | capturada |
 | Agenda, mes con citas | `/agenda` (julio de 2026) | Administrador | [390](capturas/agenda-con-citas-390.png) · [1440](capturas/agenda-con-citas-1440.png) | capturada |
 | Agenda, citas del día | `components/calendar/day-details-modal.blade.php` | Administrador | [1440](capturas/agenda-dia-1440.png) | capturada a 1440 px (el diálogo existe desde 768 px y CI lo revisa también a ese ancho; en el móvil es una lista bajo el calendario) |
@@ -475,6 +491,7 @@ tiene visor. La galería y las certificaciones muestran también contenido de pr
 | Agenda, detalle de cita asignada (con "Reprogramar" y "Cancelar cita") | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-pendiente-390.png) · [1440](capturas/agenda-cita-detalle-pendiente-1440.png) | capturada |
 | Agenda, reprogramar cita | `components/calendar/edit-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-reprogramar-390.png) · [1440](capturas/agenda-cita-reprogramar-1440.png) | capturada |
 | Agenda, confirmar cancelación | `components/calendar/cancel-appointment-confirm.blade.php` | Administrador | [390](capturas/agenda-cita-cancelar-390.png) · [1440](capturas/agenda-cita-cancelar-1440.png) | capturada |
+| Agenda, detalle de cita cancelada | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-detalle-cancelada-390.png) · [1440](capturas/agenda-cita-detalle-cancelada-1440.png) | capturada (spec 017) |
 | Agenda, agendar cita | `components/calendar/create-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-crear-390.png) · [1440](capturas/agenda-cita-crear-1440.png) | capturada |
 | Agenda, completar cita (paso 1) | `components/calendar/complete-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-completar-390.png) · [1440](capturas/agenda-cita-completar-1440.png) | capturada |
 | Agenda, completar cita con error de validación | `components/calendar/complete-appointment-modal.blade.php` | Administrador | [390](capturas/agenda-cita-completar-validacion-390.png) · [1440](capturas/agenda-cita-completar-validacion-1440.png) | capturada |
@@ -495,6 +512,7 @@ tiene visor. La galería y las certificaciones muestran también contenido de pr
 | Pacientes, editar | `components/ui/edit-patient-modal.blade.php` | Administrador | [390](capturas/pacientes-editar-390.png) · [1440](capturas/pacientes-editar-1440.png) | capturada |
 | Pacientes, confirmar eliminación | `components/ui/confirm-delete-modal.blade.php` | Administrador | [390](capturas/pacientes-eliminar-390.png) · [1440](capturas/pacientes-eliminar-1440.png) | capturada |
 | Expedientes clínicos | `/expedientes-clinicos` · `pages/records/index.blade.php` | Administrador | [390](capturas/expedientes-390.png) · [1440](capturas/expedientes-1440.png) | capturada |
+| Expedientes clínicos, con el buscador abierto | `/expedientes-clinicos?buscar=1` | Administrador | [390](capturas/expedientes-buscar-390.png) · [1440](capturas/expedientes-buscar-1440.png) | capturada |
 | Expediente de un paciente | `/expedientes-clinicos/{patientId}` | Administrador | [390](capturas/expediente-390.png) · [1440](capturas/expediente-1440.png) | capturada |
 | Expediente, formulario de contacto | `components/records/contact-info-table.blade.php` | Administrador | [390](capturas/expediente-contacto-form-390.png) · [1440](capturas/expediente-contacto-form-1440.png) | capturada |
 | Expediente, formulario de dirección | `components/records/address-table.blade.php` | Administrador | [390](capturas/expediente-direccion-form-390.png) · [1440](capturas/expediente-direccion-form-1440.png) | capturada |
@@ -504,6 +522,7 @@ tiene visor. La galería y las certificaciones muestran también contenido de pr
 | Expediente, confirmar eliminación | `components/ui/confirm-delete-modal.blade.php` | Administrador | [390](capturas/expediente-administrador-eliminar-390.png) · [1440](capturas/expediente-administrador-eliminar-1440.png) | capturada |
 | Expediente, confirmar eliminación | `components/ui/confirm-delete-modal.blade.php` | Asistente | [390](capturas/expediente-asistente-eliminar-390.png) · [1440](capturas/expediente-asistente-eliminar-1440.png) | capturada |
 | Expediente, detalle de una cita | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/expediente-administrador-cita-detalle-390.png) · [1440](capturas/expediente-administrador-cita-detalle-1440.png) | capturada |
+| Expediente, detalle de una cita pendiente | `components/calendar/view-appointment-modal.blade.php` | Administrador | [390](capturas/expediente-administrador-cita-detalle-pendiente-390.png) · [1440](capturas/expediente-administrador-cita-detalle-pendiente-1440.png) | capturada |
 | Expediente, detalle de una cita | `components/calendar/view-appointment-modal.blade.php` | Asistente | [390](capturas/expediente-asistente-cita-detalle-390.png) · [1440](capturas/expediente-asistente-cita-detalle-1440.png) | capturada |
 | Expediente, detalle de una cita | `components/calendar/view-appointment-modal.blade.php` | Doctor | [390](capturas/expediente-doctor-cita-detalle-390.png) · [1440](capturas/expediente-doctor-cita-detalle-1440.png) | capturada |
 | Tratamientos | `/tratamientos` · `pages/tratamientos/index.blade.php` | Administrador | [390](capturas/tratamientos-390.png) · [1440](capturas/tratamientos-1440.png) | capturada |
@@ -537,6 +556,7 @@ tiene visor. La galería y las certificaciones muestran también contenido de pr
 | Reportes, mes con citas (julio de 2026) | `/reportes?mes=2026-07` · `pages/reportes/index.blade.php` | Administrador | [390](capturas/reportes-390.png) · [1440](capturas/reportes-1440.png) | capturada en local el 2026-10-21 (spec 019, T050); julio muestra además una cita de desarrollo de la base local ("Limpieza 2"), que en CI no existe |
 | Reportes, mes sin citas (agosto de 2026) | `/reportes?mes=2026-08` | Administrador | [390](capturas/reportes-sin-citas-390.png) · [1440](capturas/reportes-sin-citas-1440.png) | capturada en local el 2026-10-21 (spec 019, T050) |
 | Reportes, mes en curso | `/reportes` (mes en curso elegido) | Administrador | [390](capturas/reportes-mes-en-curso-390.png) · [1440](capturas/reportes-mes-en-curso-1440.png) | capturada en local el 2026-10-21 (spec 019, T050) |
+| Reportes, descarga en curso | `/reportes?mes=2026-07` | Administrador | [390](capturas/reportes-descarga-390.png) · [1440](capturas/reportes-descarga-1440.png) | capturada (spec 019) |
 | Acceso denegado (asistente en Reportes) | `/reportes` · `errors/403.blade.php` | Asistente | [390](capturas/error-403-asistente-reportes-390.png) · [1440](capturas/error-403-asistente-reportes-1440.png) | capturada en local el 2026-10-21 (spec 019, T050) |
 
 Estados: `capturada` · `sin captura (motivo)` · `no accesible (motivo)`. Los diálogos se capturan
