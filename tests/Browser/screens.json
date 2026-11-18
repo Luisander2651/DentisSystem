@@ -1194,13 +1194,13 @@
                             "#record-appointments-body tr:nth-child(1)": "26/11/2026",
                             "#record-appointments-body tr:nth-child(2)": "12/11/2026",
                             "#record-appointments-body tr:nth-child(3) td:nth-child(2)": "16:00",
-                            "#record-appointments-body tr:last-child": "06/07/2026",
+                            "#record-appointments-body tr:nth-child(10)": "06/07/2026",
                             "#record-appointments-body tr:nth-child(1) td:nth-child(5)": "Reprogramada",
                             "#record-appointments-body tr:nth-child(2) td:nth-child(5)": "Asignada",
-                            "#record-appointments-body tr:nth-last-child(2) td:nth-child(5)": "Cancelada",
-                            "#record-appointments-body tr:last-child td:nth-child(5)": "Completada",
+                            "#record-appointments-body tr:nth-child(9) td:nth-child(5)": "Cancelada",
+                            "#record-appointments-body tr:nth-child(10) td:nth-child(5)": "Completada",
                             "#record-appointments-list li:nth-child(1)": "26/11/2026 · 12:00",
-                            "#record-appointments-list li:last-child": "06/07/2026 · 09:00"
+                            "#record-appointments-list li:nth-child(10)": "06/07/2026 · 09:00"
                         },
                         "absent": [
                             "[data-portal-history-status]:not([hidden])"

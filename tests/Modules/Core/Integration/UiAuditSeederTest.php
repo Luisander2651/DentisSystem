@@ -63,7 +63,7 @@ it('seeds one user per role, an inactive staff member, two patients, appointment
 
     expect($staff->where('status', 'active')->pluck('role.name')->sort()->values()->all())
         ->toBe(['Administrador', 'Asistente', 'Doctor', 'Doctor'])
-        ->and($staff->where('status', 'inactive'))->toHaveCount(1);
+        ->and($staff->where('status', 'inactive'))->toHaveCount(1 + UiAuditSeeder::PAGED_STAFF_COUNT);
 
     $fullRecord = PatientModel::query()->where('email', UiAuditSeeder::PATIENT_EMAIL)->firstOrFail();
     $emptyRecord = PatientModel::query()->where('email', UiAuditSeeder::EMPTY_PATIENT_EMAIL)->firstOrFail();
@@ -79,13 +79,16 @@ it('seeds one user per role, an inactive staff member, two patients, appointment
 
     expect($appointments->pluck('status')->unique()->sort()->values()->all())
         ->toBe(['asignada', 'cancelada', 'completada', 'reprogramada'])
-        // Spec 025: besides July, the two open appointments of November that the patient portal shows.
+        // Spec 025: besides July, the two open appointments of November that the patient portal
+        // shows; spec 028: the older ones of April and June that give her history a second page.
         ->and($appointments->every(fn (AppointmentModel $appointment): bool => str_starts_with((string) $appointment->date, UiAuditSeeder::APPOINTMENTS_MONTH)
-            || str_starts_with((string) $appointment->date, UiAuditSeeder::PORTAL_MONTH)))
+            || str_starts_with((string) $appointment->date, UiAuditSeeder::PORTAL_MONTH)
+            || str_starts_with((string) $appointment->date, '2026-04')
+            || str_starts_with((string) $appointment->date, '2026-06')))
         ->toBeTrue()
         ->and(AppointmentTrackingModel::query()->whereIn('appointment_id', $appointments->pluck('id'))->count())->toBe(1);
 
-    expect(TreatmentModel::query()->whereIn('name', UiAuditSeeder::TREATMENT_NAMES)->count())->toBe(3)
+    expect(TreatmentModel::query()->whereIn('name', UiAuditSeeder::TREATMENT_NAMES)->count())->toBe(13)
         ->and(GalleryImageModel::query()->count())->toBeGreaterThan(0)
         ->and(PromotionModel::query()->count())->toBeGreaterThan(0)
         ->and(CertificationModel::query()->count())->toBeGreaterThan(0)
@@ -165,7 +168,7 @@ it('seeds the day of the dashboard with the appointments of the design (spec 020
         ->and(AppointmentTrackingModel::query()->whereIn('appointment_id', $day->where('status', 'completada')->pluck('id'))->count())->toBe(3);
 });
 
-it('leaves 15 unclosed appointments before the day and 6 completed without follow-up, at least 2 per doctor (spec 020)', function () {
+it('leaves 15 unclosed appointments before the day and 11 completed without follow-up, at least 2 per doctor (specs 020 and 028)', function () {
     (new UiAuditSeeder)->run();
 
     $unclosed = AppointmentModel::query()
@@ -180,8 +183,42 @@ it('leaves 15 unclosed appointments before the day and 6 completed without follo
         ->get();
 
     expect($unclosed)->toBe(15)
-        ->and($withoutTracking)->toHaveCount(6)
-        ->and($withoutTracking->countBy('user_id')->values()->sort()->values()->all())->toBe([3, 3]);
+        ->and($withoutTracking)->toHaveCount(11)
+        ->and($withoutTracking->countBy('user_id')->values()->sort()->values()->all())->toBe([5, 6]);
+});
+
+it('gives every paged list a second page and keeps on the first one what the entries open (spec 028, A30, A38)', function () {
+    (new UiAuditSeeder)->run();
+
+    $patient = PatientModel::query()->where('email', UiAuditSeeder::PATIENT_EMAIL)->firstOrFail();
+    $history = AppointmentModel::query()->where('patient_id', $patient->id)
+        ->orderByDesc('date')->orderByDesc('time')->orderByDesc('id')->pluck('id');
+    $opened = [
+        ...array_map(fn (int $index): string => UiAuditSeeder::stableId('appointment', $index), range(0, 5)),
+        ...array_map(fn (int $index): string => UiAuditSeeder::stableId('portal-appointment', $index), range(0, 1)),
+        ...array_map(fn (int $index): string => UiAuditSeeder::stableId('other-doctor-appointment', $index), range(0, 1)),
+    ];
+
+    expect($history)->toHaveCount(20)
+        ->and($history->take(10)->sort()->values()->all())->toBe(collect($opened)->sort()->values()->all());
+
+    $users = UserModel::query()->where('email', 'like', '%@'.UiAuditSeeder::EMAIL_DOMAIN)
+        ->orderByDesc('created_at')->orderByDesc('id')->pluck('id');
+    $openedUsers = [...array_map(fn (string $key): string => UiAuditSeeder::stableId('user', $key), array_keys(UiAuditSeeder::STAFF_EMAILS)), UiAuditSeeder::stableId('user', 'otro-doctor')];
+
+    expect($users->count())->toBeGreaterThan(12)
+        ->and($users->take(5)->sort()->values()->all())->toBe(collect($openedUsers)->sort()->values()->all());
+
+    $treatments = TreatmentModel::query()->whereIn('name', UiAuditSeeder::TREATMENT_NAMES)->orderBy('name')->orderBy('id')->pluck('name');
+
+    expect($treatments->count())->toBeGreaterThan(12)
+        ->and($treatments->take(3)->sort()->values()->all())->toBe(['Limpieza dental de prueba', 'Ortodoncia de prueba', 'Resina de prueba']);
+
+    $gallery = GalleryImageModel::query()->orderByDesc('created_at')->orderByDesc('id')->get();
+
+    expect($gallery->count())->toBeGreaterThan(12)
+        ->and($gallery->take(4)->pluck('description')->sort()->values()->all())->toBe(['Consultorio principal', 'Sala de espera', 'Sala de rayos X', 'Área de esterilización'])
+        ->and($gallery->where('status', 'visible'))->toHaveCount(3);
 });
 
 it('gives the figures of September 2026 that the month of the administrator paints (spec 020, A31, A34)', function () {
@@ -261,8 +298,9 @@ it('does not duplicate anything when it runs twice', function () {
 it('seeds through the ui:audit-data command', function () {
     $this->artisan('ui:audit-data')->assertSuccessful();
 
-    // One per role, the inactive one and the second doctor of spec 018.
-    expect(UserModel::query()->where('email', 'like', '%@'.UiAuditSeeder::EMAIL_DOMAIN)->count())->toBe(5);
+    // One per role, the inactive one, the second doctor of spec 018 and the inactive assistants
+    // of spec 028.
+    expect(UserModel::query()->where('email', 'like', '%@'.UiAuditSeeder::EMAIL_DOMAIN)->count())->toBe(5 + UiAuditSeeder::PAGED_STAFF_COUNT);
 });
 
 it('fails the ui:audit-data command outside local and testing without writing (abuse)', function () {
