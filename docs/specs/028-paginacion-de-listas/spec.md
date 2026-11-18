@@ -29,7 +29,7 @@ un control para moverse entre páginas, y que buscar y filtrar sigan encontrando
 - [ ] CA2 · Dado que una tabla tiene más de **10** filas, cuando se abre el historial de citas del expediente de un paciente, "Mis citas" del portal o las secciones "Citas sin cerrar" y "Completadas sin seguimiento" del inicio, entonces se ven 10 filas por página, con el mismo texto y control de páginas. Cada sección del inicio se pagina por separado.
 - [ ] CA3 · Dado el control de páginas, cuando se usa, entonces muestra "Anterior", los números de página (la primera, la última, la actual y sus vecinas, con "…" en los huecos) y "Siguiente". La página actual se distingue y se anuncia como actual. "Anterior" no se puede usar en la primera página ni "Siguiente" en la última. Al cambiar de página cambia la lista y el texto "Mostrando…", y la vista vuelve al inicio de la lista.
 - [ ] CA4 · Dado un registro que está en otra página, cuando el staff lo busca por nombre o correo (Pacientes, Expedientes clínicos) o por nombre o descripción (Tratamientos), o elige el filtro "Activos" o "Inactivos", entonces el resultado incluye **todos** los registros que coinciden, paginado igual, empezando en la página 1.
-- [ ] CA5 · Dada una lista paginada o filtrada, cuando se ven los contadores de la cabecera (Total, Activos e Inactivos en Pacientes y Expedientes; por rol en Usuarios; Total, Con duración y Promedio en Tratamientos), entonces cuentan todos los registros, no solo los de la página visible.
+- [ ] CA5 · Dada una lista paginada, buscada o filtrada, cuando se ven los contadores de la cabecera (Total, Activos e Inactivos en Pacientes y Expedientes; por rol en Usuarios; Total, Con duración y Promedio en Tratamientos; Total, Visibles y Ocultos en cada pestaña de Contenido), entonces cuentan todos los registros de esa lista, no solo los de la página visible ni solo los que coinciden con la búsqueda o el filtro.
 - [ ] CA6 · Dada una lista con registros que caben en una página, cuando se abre, entonces no aparece el control de páginas. Dada una lista vacía, o una búsqueda sin resultados, entonces se ve el mismo estado vacío de hoy, sin control de páginas.
 - [ ] CA7 · Dada cualquier lista paginada, cuando se recorren todas sus páginas, entonces cada registro aparece exactamente una vez, en un orden fijo: el orden actual de cada lista o, donde hoy no lo hay, los más recientes primero.
 - [ ] CA8 · Dado que el staff está en la página 3 de Pacientes con una búsqueda escrita, cuando recarga la pantalla o vuelve a ella con "Atrás" del navegador, entonces ve la misma página con la misma búsqueda y filtro. Lo mismo en Expedientes clínicos, Usuarios, Tratamientos, Contenido (pestaña y página) y "Mis citas".
@@ -112,6 +112,8 @@ Ninguna.
 | 2026-11-18 | supuesto | ¿Qué pasa con una página que no existe? | Se muestra la última que existe, o la primera si no es un número (CA9) | agente |
 | 2026-11-18 | diseño | Criterios medibles del diseño: K1–K3 con el script, M1 y M2 a mano; `plantilla` con peso 0 (un control de páginas debe ser familiar); presupuesto de 3 candidatos frente a los 5 del proyecto | Aprobados | usuario |
 | 2026-11-18 | diseño | Diseño del control de páginas | Candidato `c3` aceptado con 80/100 tras tres candidatos; acta en [design.md](design.md) | `/design-spec 028` |
+| 2026-11-18 | brecha | Los contadores de Contenido (Total, Visibles, Ocultos) se calculan en el navegador y CA5 no los nombraba | Entran en CA5 | usuario (`/plan 028`) |
+| 2026-11-18 | brecha | Con un filtro, ¿los contadores de la cabecera cuentan solo lo filtrado (como hoy) o todo? | Siempre todos los registros de la lista; "Mostrando… de N" dice cuántos coinciden (CA5) | usuario (`/plan 028`) |
 | 2026-11-18 | implícita | Accesibilidad y tamaño táctil del control | WCAG AA, ≥ 44 px a 390 px y solo componentes del sistema | `docs/constitution.md` P15, `docs/design/system.md` |
 | 2026-11-18 | implícita | Errores con datos inválidos | Sin detalles internos | `docs/constitution.md` P7 |
 
@@ -124,3 +126,5 @@ Ninguna.
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-11-18 | Spec aprobada | Aprobación del usuario |
+| 2026-11-18 | CA5 incluye los contadores de Contenido y cuenta siempre todos los registros | Hallazgos de `/plan 028` (decisión del usuario) |
+| 2026-11-18 | Spec aprobada de nuevo con el CA5 corregido | Aprobación del usuario |
