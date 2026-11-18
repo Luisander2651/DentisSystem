@@ -185,8 +185,10 @@ git push origin vX.Y.Z
 ```
 Se despliega siempre un tag, nunca `main`: `deploy.sh` exige que el `HEAD` del clon sea el commit
 del tag, y así `deploys.log`, `.deploy/current` y `rollback.sh` saben qué código está en servicio.
-Un merge que solo cambia `docker/prod/`, `docker-compose.prod.yml` o documentación no necesita
-versión nueva: basta `git pull` en el clon (y `docker/prod/compose.sh up -d` si cambió Compose).
+Un merge que solo cambia documentación no necesita nada en producción. Uno que cambia
+`docker/prod/` o `docker-compose.prod.yml` sí necesita un tag nuevo (patch): el clon está en el
+tag en servicio, sin rama, así que `git pull` no lo mueve (pasó con Alloy v1.1.1, 2026-11-17). Se
+despliega como cualquier versión, con `deploy.sh`.
 
 ### Despliegues siguientes
 ```bash

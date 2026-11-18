@@ -5,6 +5,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-11-17
+Mantenimiento: actualización de seguridad del framework.
+
+### Security
+- Laravel actualizado a 12.72.0, que corrige un aviso de seguridad de severidad baja (CVE-2026-128083) y la caducidad de los enlaces firmados temporales (chore 2026-11-17-chore-deps-alloy-laravel).
+
 ## [0.12.0] - 2026-11-17
 Los pacientes dejan su opinión desde el sitio; la clínica la revisa antes de publicarla (spec 027).
 
