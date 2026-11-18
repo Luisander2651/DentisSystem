@@ -310,6 +310,17 @@
 .opt .dayl li.is-next { border-left: 4px solid var(--color-primary); }
 .opt .dayl li.nowline { display: flex; align-items: center; gap: 8px; font-size: var(--text-min); font-weight: 700; color: var(--color-muted); padding: 0; border: 0; background: none; }
 .opt .dayl li.nowline::after { content: ""; flex: 1; height: 2px; background: var(--color-primary); }
+.opt .pg { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+.opt .pg-summary { margin: 0; font-size: var(--text-small); color: var(--color-muted); text-align: center; }
+.opt .pg-summary strong { color: var(--color-ink); font-weight: 600; }
+.opt .pg-controls { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.opt .pg-pages { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.opt .pg-item, .opt .pg-gap { display: inline-flex; min-width: var(--spacing-control); height: var(--spacing-control); align-items: center; justify-content: center; gap: 6px; border-radius: var(--radius-control); font: 600 var(--text-small) var(--font-sans); color: var(--color-ink); text-decoration: none; box-sizing: border-box; }
+.opt .pg-item { border: 1px solid var(--color-field); background: var(--color-surface); padding: 0 12px; }
+.opt .pg-item[aria-current="page"] { border: 2px solid var(--color-primary); background: var(--color-primary-soft); font-weight: 700; }
+.opt .pg-item[aria-disabled="true"] { background: var(--color-canvas); color: var(--color-muted); }
+.opt .pg-gap { min-width: 24px; color: var(--color-muted); }
+@media (min-width: 1024px) { .opt .pg { flex-direction: row; align-items: center; justify-content: space-between; } .opt .pg-summary { text-align: left; } }
 </style>
 </head>
 <body>
@@ -514,6 +525,43 @@
                 </div>
                 <p class="note" style="margin-top:12px">240 × 240 px con el marco que reserva el espacio. "Descargar QR" se activa cuando la imagen carga; si no carga, el aviso ocupa su lugar: "No pudimos cargar el código QR. Vuelve a cargar la página."</p>
             </div>
+        </div>
+    </div></div>
+    <h3 class="v-group">Paginación</h3>
+    <p class="v-note">Spec 028 (candidato <code>c3</code>). Bajo una rejilla de tarjetas (12 por página) o en el pie de una tabla (10). Por debajo de 768 px, los números en una fila y "Anterior" y "Siguiente" a medias debajo; desde 1024 px, el resumen a la izquierda. La actual: borde de 2 px <code>primary</code>, fondo <code>primary-soft</code> y 700. No disponible: fondo <code>canvas</code> y texto <code>muted</code>. Con una sola página no se pinta. El cambio de página lo anuncia la región de estado de la pantalla.</p>
+    <div class="v-stage"><div class="opt">
+        <div class="card">
+            <h3>Página intermedia · Pacientes, 2 de 8</h3>
+            <nav class="pg" aria-label="Páginas de pacientes">
+                <p class="pg-summary">Mostrando <strong>13–24</strong> de <strong>87</strong> pacientes</p>
+                <div class="pg-controls">
+                    <a class="pg-item" href="#componentes" aria-label="Página anterior">‹ Anterior</a>
+                    <ul class="pg-pages">
+                        <li><a class="pg-item" href="#componentes" aria-label="Página 1">1</a></li>
+                        <li><a class="pg-item" href="#componentes" aria-current="page" aria-label="Página 2, actual">2</a></li>
+                        <li><a class="pg-item" href="#componentes" aria-label="Página 3">3</a></li>
+                        <li><a class="pg-item" href="#componentes" aria-label="Página 4">4</a></li>
+                        <li><span class="pg-gap" aria-hidden="true">…</span></li>
+                        <li><a class="pg-item" href="#componentes" aria-label="Página 8, última">8</a></li>
+                    </ul>
+                    <a class="pg-item" href="#componentes" aria-label="Página siguiente">Siguiente ›</a>
+                </div>
+            </nav>
+        </div>
+        <div class="card" style="margin-top:16px">
+            <h3>Primera página · Mis citas, 1 de 3</h3>
+            <nav class="pg" aria-label="Páginas del historial de citas">
+                <p class="pg-summary">Mostrando <strong>1–10</strong> de <strong>27</strong> citas</p>
+                <div class="pg-controls">
+                    <span class="pg-item" aria-disabled="true" aria-label="Página anterior, no disponible">‹ Anterior</span>
+                    <ul class="pg-pages">
+                        <li><a class="pg-item" href="#componentes" aria-current="page" aria-label="Página 1, actual">1</a></li>
+                        <li><a class="pg-item" href="#componentes" aria-label="Página 2">2</a></li>
+                        <li><a class="pg-item" href="#componentes" aria-label="Página 3, última">3</a></li>
+                    </ul>
+                    <a class="pg-item" href="#componentes" aria-label="Página siguiente">Siguiente ›</a>
+                </div>
+            </nav>
         </div>
     </div></div>
     <h3 class="v-group">Formularios</h3>

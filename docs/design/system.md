@@ -386,6 +386,35 @@ los formatos: el expediente muestra la fecha tal cual y la hora en "10:00 AM"; e
 `dd/mm/aaaa` y `HH:MM`. Las recetas de un detalle salen de `resources/js/ui/prescriptions.js`
 (medicamento y dosis como título, duración y frecuencia en una línea, instrucciones debajo).
 
+### Paginación · `x-ui.pagination` y `resources/js/ui/pagination.js`
+Spec 028 (`docs/specs/028-paginacion-de-listas/design.md`, candidato `c3`). Toda lista del panel y del
+portal con más elementos de los que caben en una página: 12 en las rejillas de tarjetas (Pacientes,
+Expedientes clínicos, Usuarios, Tratamientos, las pestañas de Contenido) y 10 en las tablas
+(historial de citas, "Mis citas", pendientes del inicio). Sin tokens nuevos.
+
+- **Anatomía:** un `nav` con nombre propio ("Páginas de pacientes"); arriba, el resumen "Mostrando
+  13–24 de 87 pacientes" (14 px en `muted`, las cifras en `ink` 600); debajo, "‹ Anterior", los
+  números de página y "Siguiente ›". Los números son la primera, la actual con sus vecinas y la
+  última, con "…" (24 px de ancho, `muted`, oculto a lectores de pantalla) en los huecos.
+- **Botón de página:** como `x-ui.button` `secondary`: 44 × 44 px como mínimo, borde de 1 px `field`,
+  fondo `surface`, radio `control`, 14 px / 600 en tinta, hover `canvas`, foco con contorno de 2 px en
+  tinta separado 2 px.
+- **Página actual:** `aria-current="page"`, borde de 2 px `primary`, fondo `primary-soft`, texto en
+  700; nombre "Página 2, actual". Se distingue sin depender solo del color.
+- **No disponible** ("Anterior" en la primera, "Siguiente" en la última): sin enlace, `aria-disabled`,
+  fuera del orden de foco, borde `field`, fondo `canvas`, texto `muted`; nombre "Página anterior, no
+  disponible".
+- **Por ancho:** por debajo de 768 px, el resumen centrado y una rejilla de dos columnas: los números
+  a todo el ancho en la primera fila y "Anterior" y "Siguiente" a medias en la segunda (solo una
+  vecina de la actual). Desde 768 px, una sola fila centrada Anterior → números → Siguiente, con las
+  dos vecinas. Desde 1024 px, el resumen a la izquierda y la fila a la derecha. Separación de 8 px.
+- **Lugar:** bajo la rejilla de tarjetas, con 24 px arriba; en una tabla, en el pie de su tarjeta,
+  con borde superior `line` y 16 px de relleno.
+- **Con una sola página o sin resultados** no se pinta: queda el estado vacío de la lista.
+- **Accesibilidad:** al cambiar de página, el foco va al título de la lista y la región de estado de
+  la pantalla (`x-ui.status`) anuncia "Página N de M". El resumen no lleva una región propia: una
+  sola región de estado por marco (plan 028, D6).
+
 ### Estados de pantalla
 Vacío: texto centrado y completo, sin recortes. Carga: `animate-spin` en el botón que envía. Error:
 mensaje en la región de estado y, si es de un campo, bajo el campo.
@@ -642,3 +671,4 @@ lo nuevo a partir del último.
 | 2026-11-12 | diseño | Variante "sitio público" (spec 026, versión 2.1.0) | Se adopta la propuesta de `nueva-landing/`: colores, radios, alto grande, fuentes autoalojadas, curvas, pesos y escala de espaciado del sitio público, más los tonos decorativos del diente 3D, todo en `@theme static` de `app.css`; componentes exclusivos del sitio documentados en Componentes. El panel y el portal no cambian | usuario (spec 026, `design.md`; `/analyze 026` A1, A30) |
 | 2026-11-15 | diseño | Tonos de la dentadura del antes y después (spec 026, dentro de 2.1.0, aún sin liberar) | Once tokens decorativos más (encía, interior de la boca, sombra de contacto y esmalte) que la dentadura 3D de la galería lee al arrancar, como el diente del inicio; reutiliza `--color-enamel-white`, `--color-blush`, `--color-primary-tint-2` y `--color-primary` | usuario (spec 026 CA18 editada, `design.md` refinado 2026-11-15) |
 | 2026-11-13 | diseño | Pregunta abierta del acordeón del sitio público | `--color-primary-strong` (`#ba4168`): `primary-deep` se veía oscuro y `primary` no llega a 4.5:1 con texto blanco (3.96:1); se probó texto en tinta sobre `primary` y se descartó | usuario (spec 026, `design.md` → Decisiones) |
+| 2026-11-18 | diseño | Paginación de las listas del panel y del portal (spec 028) | Componente "Paginación" del candidato `c3` de la spec 028 (80/100): resumen "Mostrando X–Y de N", números con "…", "Anterior" y "Siguiente", cortes de 768 y 1024 px; sin tokens nuevos. El anuncio del cambio de página va por la región de estado de la pantalla, no por una región propia en el resumen | usuario (spec 028, `design.md`; plan D6) |
