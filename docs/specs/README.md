@@ -42,6 +42,7 @@ Estado actualizado: `python .ai/bin/aidd.py status`.
 | 025 | [Portal del paciente](025-portal-del-paciente/spec.md) | Appointments, AppointmentTracking, Auth, interfaz del portal | released (v0.10.0) | — | — | — |
 | 026 | [Nueva landing del sitio público](026-nueva-landing/spec.md) | ContentManagement, sitio público, sistema de diseño | released (v0.11.0) | — | — |
 | 027 | [Testimonios enviados desde el sitio público](027-testimonios-publicos/spec.md) | ContentManagement (Testimonios), sitio público | released (v0.12.0) | — | — | — |
+| 028 | [Paginación de las listas del panel y del portal](028-paginacion-de-listas/spec.md) | Patients, Users, Appointments, AppointmentTracking, ContentManagement, interfaz del panel y del portal | draft | — | — | — |
 
 ## Pendientes sin spec
 Ninguno.
