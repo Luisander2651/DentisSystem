@@ -1,0 +1,19 @@
+{
+  "spec": "028-paginacion-de-listas",
+  "mode": "operar",
+  "widths": [390, 768, 1440],
+  "threshold": 80, "floor": 3, "budget": 3,
+  "pages": ["candidatos/c<N>-tarjetas.html (Pacientes, página 2 de 8)", "candidatos/c<N>-tabla.html (Mis citas, página 1 de 3)"],
+  "tokens": { "colors": ["#047857","#0b1120","#1d4ed8","#25d366","#333847","#556274","#5c1726","#6b2940","#7c8aa0","#94a3b8","#a3345a","#b45309","#b91c1c","#ba4168","#bdcce6","#bfe9d6","#cbd5e1","#d15e75","#d1d9e6","#d75078","#d9bd85","#dc6588","#e2e8f0","#e6f2ff","#ecfdf5","#eef2f6","#eff6ff","#f2b0a6","#f2ebde","#f3c9d5","#f6d3dd","#f7e6cc","#f8fafc","#fae6ed","#faf2f5","#faf5eb","#fbe9ee","#fcabb5","#fdf1ee","#fef2f2","#fefeff","#ff7380","#ff8cad","#ffdbcc","#fffbeb","#ffffff"] },
+  "gates": { "contrast": 4.5, "touch": 44, "external_hosts": [] },
+  "kpis": [
+    { "id": "K1", "name": "Textos del control de páginas", "type": "visible", "texts": ["Mostrando", "Anterior", "Siguiente"], "ca": "CA1, CA2, CA3" },
+    { "id": "K2", "name": "Titulares en dos líneas como máximo", "type": "max_heading_lines", "value": 2, "ca": "modo operar" },
+    { "id": "K3", "name": "Estabilidad visual", "type": "max_cls", "value": 0.1, "ca": "modo operar" }
+  ],
+  "manual": [
+    { "id": "M1", "what": "La página actual se distingue sin depender solo del color y se anuncia como actual", "ca": "CA3" },
+    { "id": "M2", "what": "\"Anterior\" en la primera página y \"Siguiente\" en la última se ven y se anuncian como no disponibles", "ca": "CA3" }
+  ],
+  "rubric": { "weights": { "jerarquia": 30, "primera_pantalla": 20, "sistema": 30, "lectura": 20, "plantilla": 0 } }
+}

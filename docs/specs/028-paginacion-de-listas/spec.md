@@ -71,18 +71,24 @@ pestañas), inicio del panel (dos secciones de pendientes) y "Mis citas" del por
 Qué debe diseñarse: el control de páginas a 390, 768 y 1440 px, en lista de tarjetas y bajo una
 tabla, con sus estados (primera, intermedia y última página, muchas páginas con "…", foco) y su
 lugar en cada pantalla.
+Acta de diseño: [design.md](design.md) (candidato `c3`, 80/100).
 
 ## Criterios de diseño
-Modo: operar · umbral 80 · mínimo por punto 3 · presupuesto 3 candidatos.
+Modo: operar · umbral 80 · mínimo por punto 3 · presupuesto 3 candidatos. Se miden dos páginas por
+candidato: Pacientes en tarjetas (página 2 de 8) y "Mis citas" en tabla (página 1 de 3), en
+`design/criterios.json`.
 
 | ID | Qué se mide | Objetivo | Sale de |
 |---|---|---|---|
-| K1 | El control de páginas y el texto "Mostrando…" visibles bajo la lista | visibles sin desplazamiento horizontal a 390, 768 y 1440 px | CA1, CA2, CA11 |
-| K2 | Página actual y botones deshabilitados | la actual se distingue sin depender solo del color; "Anterior"/"Siguiente" deshabilitados se distinguen | CA3 |
-| K3 | Tamaño táctil y foco | botones ≥ 44 px de alto a 390 px; foco visible con contraste ≥ 3:1 | CA11, constitución P15 |
-| K4 | Tokens | solo tokens y componentes del sistema de diseño | constitución P15 |
+| K1 | Textos del control de páginas | "Mostrando", "Anterior" y "Siguiente" visibles en las dos páginas | CA1, CA2, CA3 |
+| K2 | Titulares | ≤ 2 líneas | modo operar |
+| K3 | Estabilidad visual | CLS ≤ 0.1 | modo operar |
+| M1 | Página actual (a mano) | se distingue sin depender solo del color y se anuncia como actual | CA3 |
+| M2 | Extremos (a mano) | "Anterior" en la primera y "Siguiente" en la última se ven y se anuncian como no disponibles | CA3 |
 
-Puertas: las de `design-spec/references/criterios.md` §2. Rúbrica: pesos por defecto.
+Puertas: las de `design-spec/references/criterios.md` §2 (sin desborde, toque ≥ 44 px, foco
+visible, contraste, solo tokens; cubren CA11 y la constitución P15). Rúbrica: `plantilla` con peso 0
+y jerarquía 30, primera pantalla 20, sistema 30, lectura 20.
 
 ## Requisitos no funcionales
 - Rendimiento: la primera página de cualquier lista se muestra en menos de 1 s en local con 5 000 registros (CA12).
@@ -104,6 +110,8 @@ Ninguna.
 | 2026-11-18 | supuesto | ¿Qué orden siguen las páginas? | El actual de cada lista; donde no hay orden definido, los más recientes primero (CA7) | agente |
 | 2026-11-18 | supuesto | ¿Máximo por página si alguien lo cambia a mano? | 50 (CA13) | agente |
 | 2026-11-18 | supuesto | ¿Qué pasa con una página que no existe? | Se muestra la última que existe, o la primera si no es un número (CA9) | agente |
+| 2026-11-18 | diseño | Criterios medibles del diseño: K1–K3 con el script, M1 y M2 a mano; `plantilla` con peso 0 (un control de páginas debe ser familiar); presupuesto de 3 candidatos frente a los 5 del proyecto | Aprobados | usuario |
+| 2026-11-18 | diseño | Diseño del control de páginas | Candidato `c3` aceptado con 80/100 tras tres candidatos; acta en [design.md](design.md) | `/design-spec 028` |
 | 2026-11-18 | implícita | Accesibilidad y tamaño táctil del control | WCAG AA, ≥ 44 px a 390 px y solo componentes del sistema | `docs/constitution.md` P15, `docs/design/system.md` |
 | 2026-11-18 | implícita | Errores con datos inválidos | Sin detalles internos | `docs/constitution.md` P7 |
 
