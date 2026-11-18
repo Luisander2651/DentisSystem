@@ -63,7 +63,7 @@ de uso actuales no cambian: los usan la agenda, el portal y los selectores.
 |---|---|---|---|
 | `page` | entero ≥ 1 | 1 | 422 `{"message": …, "errors": {"page": ["La página debe ser un número entero mayor que cero."]}}` |
 | `per_page` | entero ≥ 1 | 12 en tarjetas · 10 en tablas | < 1 o no entero → 422; **> 50 → se usa 50** (CA13, sin error) |
-| `search` | texto ≤ 100 caracteres, recortado; `''` = sin búsqueda | sin búsqueda | > 100 → 422 |
+| `search` | texto ≤ 100 caracteres, recortado; `''` = sin búsqueda; sin distinguir mayúsculas ni acentos (á, é, í, ó, ú, ü), la ñ como letra propia (D16) | sin búsqueda | > 100 → 422 |
 
 Una página mayor que la última devuelve la última (y `meta.page` lo dice); con 0 resultados,
 `meta.page = 1`, `last_page = 1`, `from = to = null` (CA9). Orden estable con desempate por `id`
@@ -134,7 +134,7 @@ aceptan solo `page` (`PendingPageRequest`): el tamaño es siempre 10 (constante 
   pacientes de factoría, página 1 → 12 y `meta` correcto; página 3 → 6; página 999 → la 3 (CA9);
   `per_page=10000` → 50 (CA13); `per_page=0`, `page=abc`, `search` de 101 caracteres → 422;
   búsqueda que encuentra a alguien de la página 3 y lo devuelve en la página 1 (CA4); `search` con
-  `%` y `_` busca el texto literal (TM3); `counts` igual con y sin `status`/`search` (CA5); orden
+  `%` y `_` busca el texto literal (TM3); acentos (D16): `sofia` y `SOFÍA` encuentran a "Sofía", `sofía` encuentra a "Sofia" y `nino` no encuentra a "Niño"; `counts` igual con y sin `status`/`search` (CA5); orden
   estable con `created_at` repetido: recorrer todas las páginas da cada id una vez (CA7). Por rol:
   paciente en `/patients` → 403 sin `meta`; asistente en `/users` → 403; paciente B no ve citas de
   A aunque mande `patient_id` (CA14). Usuarios con 0 resultados → `from`/`to` `null`.
@@ -174,7 +174,7 @@ aceptan solo `page` (`PendingPageRequest`): el tamaño es siempre 10 (constante 
 | CA1: 12 por página en listas de tarjetas, con "Mostrando…" y control | Core Pagination; Patients, Users, Treatments, Content `findPage`; `pagination.js`; pantallas | integración · `tests/Modules/Patients/Integration/PatientsPaginationTest.php` · 30 pacientes → 12 y `meta`; análogos en `tests/Modules/Users/Integration/UsersPaginationTest.php`, `tests/Modules/Appointments/Integration/TreatmentsPaginationTest.php`, `tests/Modules/ContentManagement/Integration/ContentPaginationTest.php`; navegador · `screens.json` `pacientes-pagina-2`, `contenido-galeria-pagina-2` · texto "Mostrando 13–24 de 25 pacientes" (los 25 de `UiAuditSeeder`; A36) |
 | CA2: 10 filas en tablas e inicio, secciones por separado | Appointments `findPageByPatient`, `findUnclosedBefore`; AppointmentTracking; `dashboard.js`, `records/index.js`, `portal/appointments.js` | integración · `tests/Modules/Appointments/Integration/PatientAppointmentsPaginationTest.php`, `PortalAppointmentsPaginationTest.php`, `UnclosedAppointmentsTest.php` (página 2), `tests/Modules/AppointmentTracking/Integration/CompletedWithoutTrackingTest.php` (página 2); navegador · `portal-mis-citas-pagina-2`, `expediente-historial-pagina-2`, `dashboard-pendientes-pagina-2` |
 | CA3: Anterior, números con "…", Siguiente; actual anunciada; extremos no disponibles; vuelve al inicio de la lista | `pagination.js`, `x-ui.pagination` | unit JS · `tests/Modules/Core/Unit/PaginationScriptTest.php` · ventana 1 2 3 4 … 8, extremos con `aria-disabled`, `aria-current`; navegador · `pacientes-pagina-2` · foco en el título tras "Siguiente"; verificación manual: M1 y M2 de `design.md` contra `candidatos/c3-*.html` a 390 y 1440 px |
-| CA4: búsqueda y filtros en todos los registros, desde la página 1 | Patients y Treatments `search`; `status` en el servidor; JS reinicia a página 1 | integración · `PatientsPaginationTest.php` · paciente de la página 3 encontrado en la 1 con `search` y con `status=inactive`; `TreatmentsPaginationTest.php` · por descripción; navegador · `pacientes-buscar-otra-pagina` |
+| CA4: búsqueda y filtros en todos los registros, desde la página 1, sin distinguir acentos | Patients y Treatments `search` (acentos quitados en la consulta, D16); `status` en el servidor; JS reinicia a página 1 | integración · `PatientsPaginationTest.php` · paciente de la página 3 encontrado en la 1 con `search` y con `status=inactive`; `PatientsPageRepositoryTest.php` · `sofia`/`SOFÍA` encuentran "Sofía", `nino` no encuentra "Niño"; `TreatmentsPaginationTest.php` · por descripción y sin acentos; navegador · `pacientes-buscar-otra-pagina` |
 | CA5: contadores de toda la lista (Contenido incluido), sin importar búsqueda ni filtro | `countByStatus`, `countByRole`, `stats`; `PageMeta`; JS lee `meta.counts` | integración · cada `*PaginationTest.php` · `counts` igual con y sin `status`/`search`; `TreatmentsPaginationTest.php` · promedio sobre todos |
 | CA6: sin control con una página; estado vacío actual sin control | `pagination.js` | unit JS · `PaginationScriptTest.php` · `last_page` 1 → no pinta; navegador · `pacientes` con búsqueda sin resultados y `portal-mis-citas-vacio` · sin `nav` |
 | CA7: cada registro una vez, orden fijo | Orden con desempate por `id` en cada `findPage` | integración · cada `*PaginationTest.php` · `created_at` repetido, recorrer todas las páginas → ids únicos y completos; Mis citas más reciente primero |
@@ -230,6 +230,7 @@ no cambian.
 - D15 · Detalle de cita del portal (A31): `appointment-detail.js` recibe los datos de la cita de la pantalla que lo abre, en lugar de pedir `/api/v1/portal/appointments` y buscarla por id, que con la paginación solo traería las 10 primeras. Las recetas se siguen pidiendo como hoy.
 - D13 · Tareas por lista con API y pantalla juntas (A3): cada tarea deja en verde Pest y `npm run test:ui` de las pantallas que consumen su endpoint, aunque pase de 3 archivos de código (decisión del usuario, 2026-11-18).
 - D14 · Tratamientos busca también por duración, como hoy (decisión del usuario, 2026-11-18; spec CA4).
+- D16 · Búsqueda sin acentos (spec CA4, editada el 2026-11-18): en los repositorios de Pacientes y Tratamientos, los campos y el texto buscado pasan por `translate(lower(...), 'áéíóúü', 'aeiouu')` antes del `ILIKE` (el texto buscado, ya escapado, se normaliza igual en PHP o con la misma expresión). La ñ no se toca. Opciones: la extensión `unaccent` (cubre todos los acentos, pero exige una migración con `CREATE EXTENSION` y permisos en producción) o `translate` (sin migración ni extensión). Se elige `translate` (decisión del usuario, 2026-11-18). Sin índices nuevos, como en D11: `ILIKE '%…%'` ya no usa índice. Tareas: T032 nueva para Pacientes y Expedientes (T006 y T008 ya hechas); T013 lo aplica en Tratamientos.
 - Sin ADR: no hay dependencias nuevas ni dependencias nuevas entre módulos (todos ya dependen de `app/Core`).
 
 ## Impacto en arquitectura

@@ -28,7 +28,7 @@ un control para moverse entre páginas, y que buscar y filtrar sigan encontrando
 - [ ] CA1 · Dado que una lista tiene más registros de los que caben en una página, cuando el staff abre Pacientes, Expedientes clínicos, Usuarios, Tratamientos o cualquier pestaña de Contenido (Galería, Promociones, Certificaciones, Testimonios), entonces ve solo los primeros **12** y, bajo la lista, el texto "Mostrando 1–12 de N <registros>" y el control de páginas.
 - [ ] CA2 · Dado que una tabla tiene más de **10** filas, cuando se abre el historial de citas del expediente de un paciente, "Mis citas" del portal o las secciones "Citas sin cerrar" y "Completadas sin seguimiento" del inicio, entonces se ven 10 filas por página, con el mismo texto y control de páginas. Cada sección del inicio se pagina por separado. Reemplaza en la 020 "Se ven hasta 10, con el total pendiente (p. ej. \"y 5 más\")" de CA4 y "Se ven hasta 10, con el total pendiente" de CA7: las demás se ven en las páginas siguientes. Reemplaza en la 025 "ve todas sus citas" de CA3: las ve por páginas, en el mismo orden.
 - [ ] CA3 · Dado el control de páginas, cuando se usa, entonces muestra "Anterior", los números de página (la primera, la última, la actual y sus vecinas, con "…" en los huecos) y "Siguiente". La página actual se distingue y se anuncia como actual. "Anterior" no se puede usar en la primera página ni "Siguiente" en la última. Al cambiar de página cambia la lista y el texto "Mostrando…", y la vista vuelve al inicio de la lista.
-- [ ] CA4 · Dado un registro que está en otra página, cuando el staff lo busca por nombre o correo (Pacientes, Expedientes clínicos) o por nombre, descripción o duración en minutos (Tratamientos, como hoy), o elige el filtro "Activos" o "Inactivos", entonces el resultado incluye **todos** los registros que coinciden, paginado igual, empezando en la página 1.
+- [ ] CA4 · Dado un registro que está en otra página, cuando el staff lo busca por nombre o correo (Pacientes, Expedientes clínicos) o por nombre, descripción o duración en minutos (Tratamientos, como hoy), o elige el filtro "Activos" o "Inactivos", entonces el resultado incluye **todos** los registros que coinciden, paginado igual, empezando en la página 1. La búsqueda no distingue mayúsculas ni acentos: "sofia" encuentra a "Sofía" y "SOFÍA" a "sofia" (á, é, í, ó, ú y ü valen como su vocal); la ñ sigue siendo una letra propia: "nino" no encuentra a "Niño".
 - [ ] CA5 · Dada una lista paginada, buscada o filtrada, cuando se ven los contadores de la cabecera (Total, Activos e Inactivos en Pacientes y Expedientes; por rol en Usuarios; Total, Con duración y Promedio en Tratamientos; Total, Visibles y Ocultos en cada pestaña de Contenido), entonces cuentan todos los registros de esa lista, no solo los de la página visible ni solo los que coinciden con la búsqueda o el filtro.
 - [ ] CA6 · Dada una lista con registros que caben en una página, cuando se abre, entonces no aparece el control de páginas. Dada una lista vacía, o una búsqueda sin resultados, entonces se ve el mismo estado vacío de hoy, sin control de páginas.
 - [ ] CA7 · Dada cualquier lista paginada, cuando se recorren todas sus páginas, entonces cada registro aparece exactamente una vez, en un orden fijo: el orden actual de cada lista o, donde hoy no lo hay, los más recientes primero.
@@ -117,6 +117,7 @@ Ninguna.
 | 2026-11-18 | brecha | La búsqueda de Tratamientos encuentra hoy también por duración | Se conserva: nombre, descripción o duración (CA4) | usuario (`/analyze 028` A20) |
 | 2026-11-18 | brecha | Qué criterios de las specs extendidas cambia la paginación | 020 CA4 y CA7 ("hasta 10 … y N más") y 025 CA3 ("todas sus citas") se reemplazan en CA2; 014 (errores de Contenido) y 027 (respuesta de Testimonios en el panel) entran en `extends` | `/analyze 028` A12 |
 | 2026-11-18 | brecha | ¿Una página 0 o negativa lleva a la última o a la primera? | A la primera (CA9) | `/analyze 028` A19 |
+| 2026-11-18 | brecha | ¿La búsqueda distingue acentos? Hoy "sofia" no encuentra a "Sofía" | No distingue acentos (á, é, í, ó, ú, ü); la ñ sigue siendo una letra propia (CA4) | usuario (`/implement 028`, T009) |
 | 2026-11-18 | implícita | Accesibilidad y tamaño táctil del control | WCAG AA, ≥ 44 px a 390 px y solo componentes del sistema | `docs/constitution.md` P15, `docs/design/system.md` |
 | 2026-11-18 | implícita | Errores con datos inválidos | Sin detalles internos | `docs/constitution.md` P7 |
 
@@ -124,6 +125,7 @@ Ninguna.
 - Hoy Pacientes y Expedientes clínicos buscan y filtran en el navegador sobre la lista completa; CA4 exige moverlo al servidor.
 - El sistema de diseño no tiene componente de paginación: `/design-spec 028` lo define y el plan lo incorpora al sistema ("Cambios a incorporar al sistema").
 - Las respuestas de lista cambian de forma (datos de la página y totales): revisar los demás usos de esos mismos endpoints, como el selector de pacientes al agendar.
+- Acentos en la búsqueda (decisión del usuario, 2026-11-18): quitarlos en la propia consulta, tanto en los campos como en el texto buscado, sin la extensión `unaccent` (evita una migración con `CREATE EXTENSION`). Afecta a Pacientes (T006 y T008, ya hechas: tarea nueva) y a Tratamientos (T013).
 
 ## Historial
 | Fecha | Cambio | Motivo |
@@ -133,3 +135,5 @@ Ninguna.
 | 2026-11-18 | Spec aprobada de nuevo con el CA5 corregido | Aprobación del usuario |
 | 2026-11-18 | CA2 declara lo que reemplaza de 020 y 025; `extends` suma 014 y 027; CA4 conserva la búsqueda por duración; CA9 fija 0 y negativas → primera página | Hallazgos A12, A19 y A20 de `/analyze 028` |
 | 2026-11-18 | Spec aprobada de nuevo tras los hallazgos de `/analyze 028` | Aprobación del usuario |
+| 2026-11-18 | CA4: la búsqueda no distingue acentos; la ñ sigue siendo una letra propia | Decisión del usuario durante `/implement 028` |
+| 2026-11-18 | Spec aprobada de nuevo con el CA4 sin distinguir acentos | Aprobación del usuario |
