@@ -7,7 +7,7 @@ html: docs/design/system.html
 canvas: null
 widths: [390, 768, 1440]
 created: 2026-10-04
-updated: 2026-11-16
+updated: 2026-11-18
 ---
 
 # Sistema de diseño de Dentissa
@@ -431,16 +431,30 @@ cita asignada el 2026-10-16, con `ui-audit` en local sobre los mismos datos. CI 
 cada pantalla a 768 px y la navegación desplegada a 1024 px; esas capturas quedan en el artefacto
 `ui-audit` de cada corrida. La spec 020 rehace el inicio del panel: el 2026-10-26 se regeneraron con `ui-audit` en local sus
 vistas (las tres con datos, la del paciente, el menú móvil y "nuevo paciente") y sale la de "nuevo usuario"; la base local
-lleva, además de los datos de `UiAuditSeeder`, alguna cita de desarrollo que se ve en las listas del administrador.
+lleva, además de los datos de `UiAuditSeeder`, alguna cita de desarrollo que se ve en las listas del administrador. El 2026-11-18 se regeneraron
+las del sitio público con la landing de la spec 026 y el formulario de opinión de la spec 027 (27 imágenes): `ui-audit` en
+local con movimiento reducido y con las secciones diferidas (`content-visibility: auto`) y las imágenes perezosas forzadas a
+pintarse, para que la captura de página completa no salga con huecos. Sale "Galería, visor de imagen": la galería nueva no
+tiene visor. La galería y las certificaciones muestran también contenido de prueba de la base local.
 
 | Vista | Ruta / plantilla | Rol | Capturas | Estado |
 |---|---|---|---|---|
-| Inicio | `/` · `pages/landing/inicio.blade.php` | público | [390](capturas/inicio-390.png) · [1440](capturas/inicio-1440.png) | capturada |
-| Inicio, menú móvil abierto | `/` · `components/landing/nav.blade.php` | público | [390](capturas/inicio-menu-390.png) | capturada a 390 px (existe por debajo de 1024 px; CI lo revisa también a 768 px) |
-| Acerca de Nosotros | `/acerca-de-nosotros` · `pages/landing/acerca.blade.php` | público | [390](capturas/acerca-390.png) · [1440](capturas/acerca-1440.png) | capturada |
-| Galería | `/galeria` · `pages/landing/galeria.blade.php` | público | [390](capturas/galeria-390.png) · [1440](capturas/galeria-1440.png) | capturada |
-| Galería, visor de imagen | `/galeria` (visor) | público | [390](capturas/galeria-visor-390.png) · [1440](capturas/galeria-visor-1440.png) | capturada |
-| Contacto | `/contacto` · `pages/landing/contacto.blade.php` | público | [390](capturas/contacto-390.png) · [1440](capturas/contacto-1440.png) | capturada |
+| Inicio | `/` · `site/inicio.blade.php` | público | [390](capturas/inicio-390.png) · [1440](capturas/inicio-1440.png) | capturada (spec 026) |
+| Inicio, menú móvil abierto | `/` · `components/site/header.blade.php` | público | [390](capturas/inicio-menu-390.png) | capturada a 390 px (existe por debajo de 920 px; CI lo revisa también a 768 px) |
+| Inicio, visor de certificación | `/ (visor)` · `site/inicio.blade.php` | público | [390](capturas/inicio-visor-certificado-390.png) · [1440](capturas/inicio-visor-certificado-1440.png) | capturada (spec 026) |
+| Inicio, testimonios avanzados | `/ (carrusel)` · `site/inicio.blade.php` | público | [390](capturas/inicio-testimonios-390.png) · [1440](capturas/inicio-testimonios-1440.png) | capturada (spec 026) |
+| Acerca de Nosotros | `/acerca-de-nosotros` · `site/nosotros.blade.php` | público | [390](capturas/acerca-390.png) · [1440](capturas/acerca-1440.png) | capturada (spec 026) |
+| Acerca de Nosotros, menú móvil abierto | `/acerca-de-nosotros` · `components/site/header.blade.php` | público | [390](capturas/acerca-menu-390.png) | capturada a 390 px |
+| Galería | `/galeria` · `site/galeria.blade.php` | público | [390](capturas/galeria-390.png) · [1440](capturas/galeria-1440.png) | capturada (spec 026); el visor de la galería anterior ya no existe |
+| Galería, menú móvil abierto | `/galeria` · `components/site/header.blade.php` | público | [390](capturas/galeria-menu-390.png) | capturada a 390 px |
+| Contacto | `/contacto` · `site/contacto.blade.php` | público | [390](capturas/contacto-390.png) · [1440](capturas/contacto-1440.png) | capturada (spec 026) |
+| Contacto, menú móvil abierto | `/contacto` · `components/site/header.blade.php` | público | [390](capturas/contacto-menu-390.png) | capturada a 390 px |
+| Aviso de Privacidad | `/aviso-de-privacidad` · `pages/landing/aviso-privacidad.blade.php` | público | [390](capturas/aviso-privacidad-390.png) · [1440](capturas/aviso-privacidad-1440.png) | capturada |
+| Aviso de Privacidad, menú móvil abierto | `/aviso-de-privacidad` · `components/site/header.blade.php` | público | [390](capturas/aviso-privacidad-menu-390.png) | capturada a 390 px |
+| Términos y Condiciones | `/terminos-y-condiciones` · `pages/landing/terminos.blade.php` | público | [390](capturas/terminos-390.png) · [1440](capturas/terminos-1440.png) | capturada |
+| Términos y Condiciones, menú móvil abierto | `/terminos-y-condiciones` · `components/site/header.blade.php` | público | [390](capturas/terminos-menu-390.png) | capturada a 390 px |
+| Deja tu opinión | `/opinion` · `site/opinion.blade.php` | público | [390](capturas/opinion-390.png) · [1440](capturas/opinion-1440.png) | capturada (spec 027) |
+| Deja tu opinión, con errores | `/opinion` · `site/opinion.blade.php` | público | [390](capturas/opinion-errores-390.png) · [1440](capturas/opinion-errores-1440.png) | capturada (spec 027) |
 | Iniciar sesión | `/login` · `pages/auth/login.blade.php` | público | [390](capturas/login-390.png) · [1440](capturas/login-1440.png) | capturada |
 | Registrarse | `/register` · `pages/auth/register.blade.php` | público | [390](capturas/register-390.png) · [1440](capturas/register-1440.png) | capturada |
 | Recuperar contraseña | `/forgot-password` · `pages/auth/forgot-password.blade.php` | público | [390](capturas/forgot-password-390.png) · [1440](capturas/forgot-password-1440.png) | capturada |
