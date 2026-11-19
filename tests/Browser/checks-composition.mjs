@@ -122,6 +122,11 @@ export const ADMITTED = [
         entries: ['contenido-galeria', 'contenido-galeria-pagina-2'],
         difference: 'La pestaña Galería muestra 12 imágenes por página y, bajo la rejilla, el control de páginas (candidato c3 de la spec 028).',
     },
+    {
+        criterion: '028 CA2',
+        entries: ['expediente', 'expediente-contacto-form', 'expediente-direccion-form', 'expediente-medicos-form', 'expediente-asistente', 'expediente-doctor', 'expediente-historial-pagina-2'],
+        difference: 'El historial de citas del expediente muestra 10 citas por página y, en el pie de su tarjeta, el control de páginas (candidato c3 de la spec 028).',
+    },
 ];
 
 // In points of the window width. The runner of CI and a local machine draw the same text with

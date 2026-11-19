@@ -3544,6 +3544,33 @@
             "role": "administrador"
         },
         {
+            "id": "expediente-historial-pagina-2",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "Siguiente muestra las citas más antiguas",
+                    "do": [
+                        {
+                            "click": "[data-history-pagination] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-history-pagination]": "Mostrando 11–20 de 20",
+                            "#record-appointments-body tr:nth-child(1)": "2026-06-29"
+                        },
+                        "focused": "section:has([data-history-pagination]) h2",
+                        "announced": "Página 2 de 2"
+                    }
+                }
+            ]
+        },
+        {
             "id": "expediente-contacto-form",
             "screen": "expedientes",
             "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",

@@ -66,6 +66,19 @@ import { announce, failureMessage } from '../../ui/status';
         searchInput.value = initialState.busqueda;
     }
 
+    // Spec 028 (CA2): the history of the chosen record, ten per page, without the address.
+    var historyPage = 1;
+    var historyRequestNumber = 0;
+    var historyNav = document.querySelector('[data-history-pagination]');
+    var historyPagination = mountPagination(historyNav, {
+        noun: 'citas',
+        onChange: function (pageNumber) {
+            historyPage = pageNumber;
+            loadAppointments(selectedPatientId, { announcePage: true });
+        },
+        focusTarget: historyNav ? historyNav.closest('section').querySelector('h2') : null,
+    });
+
     var pagination = mountPagination(document.querySelector('[data-records-pagination]'), {
         noun: 'pacientes',
         onChange: function (pageNumber) {
@@ -534,17 +547,20 @@ import { announce, failureMessage } from '../../ui/status';
         });
     }
 
-    async function loadAppointments(patientId) {
+    async function loadAppointments(patientId, options) {
         var tbody = document.getElementById('record-appointments-body');
         if (!tbody) return;
 
         if (!patientId) {
             renderAppointmentsHistory([]);
+            historyPagination.render(null);
             return;
         }
 
+        var thisRequest = ++historyRequestNumber;
+
         try {
-            var response = await fetch('/api/v1/appointments/patient/' + encodeURIComponent(patientId), {
+            var response = await fetch('/api/v1/appointments/patient/' + encodeURIComponent(patientId) + '?page=' + encodeURIComponent(String(historyPage)), {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -557,14 +573,32 @@ import { announce, failureMessage } from '../../ui/status';
                 return {};
             });
 
-            if (!response.ok) {
-                renderAppointmentsHistory([]);
+            if (thisRequest !== historyRequestNumber) {
                 return;
             }
 
+            if (!response.ok) {
+                renderAppointmentsHistory([]);
+                historyPagination.render(null);
+                return;
+            }
+
+            var meta = payload.meta || null;
+
+            historyPage = meta && meta.page ? meta.page : 1;
             renderAppointmentsHistory(payload.data || []);
+            historyPagination.render(meta);
+
+            if (options && options.announcePage) {
+                historyPagination.announcePage(meta);
+            }
         } catch (error) {
+            if (thisRequest !== historyRequestNumber) {
+                return;
+            }
+
             renderAppointmentsHistory([]);
+            historyPagination.render(null);
         }
     }
 
