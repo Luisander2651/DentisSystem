@@ -2,12 +2,14 @@
 
 namespace App\Modules\ContentManagement\Modules\Promociones\Infrastructure\Persistence\Eloquent;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\ContentManagement\Modules\Promociones\Domain\Entities\PromotionEntity;
 use App\Modules\ContentManagement\Modules\Promociones\Domain\Repositories\PromotionRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionId;
 use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionName;
-use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\Persistence\Eloquent\Models\PromotionModel;
 use App\Modules\ContentManagement\Modules\Promociones\Domain\ValueObjects\PromotionStatus;
+use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\Persistence\Eloquent\Models\PromotionModel;
 
 final readonly class EloquentPromotionRepository implements PromotionRepositoryInterface
 {
@@ -50,6 +52,35 @@ final readonly class EloquentPromotionRepository implements PromotionRepositoryI
         $promotions = $query->get();
 
         return $promotions->map(fn ($promotion) => $this->mapToDomain($promotion))->toArray();
+    }
+
+    public function findPage(PageRequest $request): Page
+    {
+        $total = PromotionModel::query()->count();
+
+        $items = PromotionModel::query()
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->offset($request->offsetFor($total))
+            ->limit($request->size)
+            ->get()
+            ->map(fn (PromotionModel $model): PromotionEntity => $this->mapToDomain($model))
+            ->all();
+
+        return Page::create($items, $total, $request);
+    }
+
+    public function countByStatus(): array
+    {
+        $byStatus = PromotionModel::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $visible = (int) ($byStatus[PromotionStatus::visible()->value] ?? 0);
+        $hidden = (int) ($byStatus[PromotionStatus::hidden()->value] ?? 0);
+
+        return ['total' => $visible + $hidden, 'visible' => $visible, 'hidden' => $hidden];
     }
 
     private function mapToDomain(object $model): PromotionEntity
