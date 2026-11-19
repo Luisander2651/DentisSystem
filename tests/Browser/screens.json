@@ -3922,6 +3922,38 @@
             "sends": true
         },
         {
+            "id": "contenido-galeria-pagina-2",
+            "screen": "contenido-galeria",
+            "path": "/contenido",
+            "role": "administrador",
+            "steps": [
+                {
+                    "click": "[data-content-tab=\"galeria\"]"
+                }
+            ],
+            "flows": [
+                {
+                    "name": "Siguiente lleva a la página 2",
+                    "do": [
+                        {
+                            "click": "[data-gallery-pagination] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-gallery-pagination]": "Mostrando 13–",
+                            "[data-gallery-list]": "Imagen oculta de prueba 01"
+                        },
+                        "focused": "[data-content-panel=\"galeria\"] h2",
+                        "announced": "Página 2 de 2"
+                    }
+                }
+            ]
+        },
+        {
             "id": "contenido-promociones",
             "screen": "contenido-promociones",
             "path": "/contenido",

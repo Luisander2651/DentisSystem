@@ -45,6 +45,7 @@ use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Co
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\UpdateCertificationController;
 use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\DeleteGalleryImageController;
 use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\GetGalleryImagesController;
+use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\ListGalleryImagesPageController;
 use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\SaveGalleryImageController;
 use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\UpdateGalleryImageController;
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\DeletePromotionController;
@@ -144,7 +145,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::post('/', SaveGalleryImageController::class);
                 Route::put('/{id}', UpdateGalleryImageController::class);
                 Route::delete('/{id}', DeleteGalleryImageController::class);
-                Route::get('/', GetGalleryImagesController::class);
+                Route::get('/', ListGalleryImagesPageController::class);
             });
 
             Route::prefix('promotions')->group(function (): void {

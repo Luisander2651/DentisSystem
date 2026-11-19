@@ -117,6 +117,11 @@ export const ADMITTED = [
         entries: ['tratamientos'],
         difference: 'Tratamientos muestra 12 tratamientos por página y, bajo la rejilla, el control de páginas (candidato c3 de la spec 028).',
     },
+    {
+        criterion: '028 CA1',
+        entries: ['contenido-galeria'],
+        difference: 'La pestaña Galería muestra 12 imágenes por página y, bajo la rejilla, el control de páginas (candidato c3 de la spec 028).',
+    },
 ];
 
 // In points of the window width. The runner of CI and a local machine draw the same text with
