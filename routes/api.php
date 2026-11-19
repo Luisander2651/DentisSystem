@@ -56,7 +56,7 @@ use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Contro
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\UpdatePromotionController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\DeleteTestimonialController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\GetPublicTestimonialsController;
-use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\GetTestimonialsController;
+use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\ListTestimonialsPageController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\SaveTestimonialController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\UpdateTestimonialController;
 use App\Modules\Patients\Infrastructure\Http\Controllers\Addresses\CreateAddressController;
@@ -161,7 +161,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::post('/', SaveTestimonialController::class);
                 Route::put('/{id}', UpdateTestimonialController::class);
                 Route::delete('/{id}', DeleteTestimonialController::class);
-                Route::get('/', GetTestimonialsController::class);
+                Route::get('/', ListTestimonialsPageController::class);
             });
 
             Route::prefix('appointment-tracking')->group(function (): void {

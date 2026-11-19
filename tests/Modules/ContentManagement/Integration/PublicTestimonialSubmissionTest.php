@@ -213,14 +213,16 @@ it('keeps listing the hidden ones to the staff, who publishes them (CA11, CA4)',
     $this->post('/opinion', opinionForm(['name' => 'Recién enviada']))->assertRedirect('/opinion');
     $this->actingAsAdmin();
 
-    $one = $this->getJson('/api/v1/testimonials')->assertOk()->json();
+    // Spec 028: the panel always gets a page, {"data": [...], "meta"}, also with a single one.
+    $one = $this->getJson('/api/v1/testimonials')->assertOk()->json('data');
 
     TestimonialModel::query()->create(['author' => 'Publicado', 'description' => 'Una opinión ya revisada y publicada por la clínica.', 'status' => 'visible']);
-    $many = $this->getJson('/api/v1/testimonials')->assertOk()->json();
+    $many = $this->getJson('/api/v1/testimonials')->assertOk()->json('data');
 
-    expect($one['author'])->toBe('Recién enviada')
-        ->and($one['status'])->toBe('oculto')
-        ->and(array_column($many, 'status', 'author'))->toBe(['Recién enviada' => 'oculto', 'Publicado' => 'visible']);
+    expect($one)->toHaveCount(1)
+        ->and($one[0]['author'])->toBe('Recién enviada')
+        ->and($one[0]['status'])->toBe('oculto')
+        ->and(array_column($many, 'status', 'author'))->toEqualCanonicalizing(['Recién enviada' => 'oculto', 'Publicado' => 'visible']);
 });
 
 function opinionPage(string $html): DOMXPath

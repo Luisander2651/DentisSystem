@@ -15,6 +15,7 @@
         Cargando testimonios...
     </div>
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-testimonials-list></div>
+    <x-ui.pagination label="Páginas de testimonios" data-testimonials-pagination />
     <div class="hidden rounded-card border border-line bg-surface p-5 text-center text-sm text-muted shadow-sm" data-testimonials-empty>
         Aún no hay testimonios.
     </div>
