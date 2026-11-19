@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Domain\Service;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
@@ -32,6 +34,14 @@ class AppointmentsService
     public function findByStatusAndDate(?AppointmentStatus $status, ?AppointmentDate $date, ?PatientId $patientId = null, ?AppointmentUserId $userId = null): array
     {
         return $this->repository->findAllByStatusAndDateOrPatientId($status, $date, $patientId, $userId);
+    }
+
+    /**
+     * @return Page<AppointmentEntity>
+     */
+    public function findPageByPatient(PatientId $patientId, PageRequest $request): Page
+    {
+        return $this->repository->findPageByPatient($patientId, $request);
     }
 
     public function deleteAppointment(AppointmentId $id): void

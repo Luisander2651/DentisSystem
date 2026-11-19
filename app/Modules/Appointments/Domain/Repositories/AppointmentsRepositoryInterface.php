@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Domain\Repositories;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
@@ -30,4 +32,12 @@ interface AppointmentsRepositoryInterface
      * rescheduled, from the most recent to the oldest, at most `$limit`, and the total of all.
      */
     public function findUnclosedBefore(AppointmentDate $today, ?AppointmentUserId $userId, int $limit): AppointmentPage;
+
+    /**
+     * Spec 028 (CA2, CA7): one page of the appointments of a patient, the most recent first
+     * (date, time and id, all descending), with the doctor, the patient and the treatment loaded.
+     *
+     * @return Page<AppointmentEntity>
+     */
+    public function findPageByPatient(PatientId $patientId, PageRequest $request): Page;
 }

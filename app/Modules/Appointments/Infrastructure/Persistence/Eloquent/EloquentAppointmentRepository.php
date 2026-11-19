@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Infrastructure\Persistence\Eloquent;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
@@ -70,6 +72,30 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
         $appointments = $query->get();
 
         return $appointments ? $appointments->map(fn ($appointment) => $this->mapToDomain($appointment))->toArray() : [];
+    }
+
+    public function findPageByPatient(PatientId $patientId, PageRequest $request): Page
+    {
+        $query = AppointmentModel::query()->where('patient_id', $patientId->value);
+
+        $total = (clone $query)->count();
+
+        $items = $query
+            ->with([
+                'user:id,first_name,last_name',
+                'patient:id,first_name,last_name',
+                'treatment:id,name,time',
+            ])
+            ->orderByDesc('date')
+            ->orderByDesc('time')
+            ->orderByDesc('id')
+            ->offset($request->offsetFor($total))
+            ->limit($request->size)
+            ->get()
+            ->map(fn (AppointmentModel $appointment): AppointmentEntity => $this->mapToDomain($appointment))
+            ->all();
+
+        return Page::create($items, $total, $request);
     }
 
     public function delete(AppointmentId $id): void
