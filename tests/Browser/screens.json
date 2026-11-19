@@ -3479,6 +3479,132 @@
             "sends": true
         },
         {
+            "id": "pacientes-eliminar-ultima-pagina",
+            "screen": "pacientes",
+            "path": "/pacientes?pagina=3",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "eliminar el único paciente de la última página lleva a la anterior",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/patients",
+                            "query": {
+                                "page": "3"
+                            },
+                            "times": 1,
+                            "status": 200,
+                            "body": {
+                                "data": [
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000028",
+                                        "first_name": "Último",
+                                        "last_name": "Prueba",
+                                        "email": "ultimo@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    }
+                                ],
+                                "meta": {
+                                    "page": 3,
+                                    "per_page": 12,
+                                    "total": 25,
+                                    "last_page": 3,
+                                    "from": 25,
+                                    "to": 25,
+                                    "counts": {
+                                        "total": 25,
+                                        "active": 25,
+                                        "inactive": 0
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "to": "/api/v1/patients/00000000-0000-4000-8000-000000000028",
+                            "times": 1,
+                            "status": 200,
+                            "body": {
+                                "message": "Paciente eliminado correctamente."
+                            }
+                        },
+                        {
+                            "to": "/api/v1/patients",
+                            "query": {
+                                "page": "3"
+                            },
+                            "times": 1,
+                            "status": 200,
+                            "body": {
+                                "data": [
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000213",
+                                        "first_name": "Trece",
+                                        "last_name": "Prueba",
+                                        "email": "pagina.13@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000214",
+                                        "first_name": "Catorce",
+                                        "last_name": "Prueba",
+                                        "email": "pagina.14@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    }
+                                ],
+                                "meta": {
+                                    "page": 2,
+                                    "per_page": 12,
+                                    "total": 24,
+                                    "last_page": 2,
+                                    "from": 13,
+                                    "to": 24,
+                                    "counts": {
+                                        "total": 24,
+                                        "active": 24,
+                                        "inactive": 0
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "waitFor": "[data-patient-delete][data-patient-id=\"00000000-0000-4000-8000-000000000028\"]"
+                        },
+                        {
+                            "click": "[data-patient-delete][data-patient-id=\"00000000-0000-4000-8000-000000000028\"]"
+                        },
+                        {
+                            "waitFor": "#patients-delete-modal [data-confirm-delete-submit]"
+                        },
+                        {
+                            "click": "#patients-delete-modal [data-confirm-delete-submit]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 13–24 de 24",
+                            "#patients-list": "Trece Prueba"
+                        },
+                        "announced": "Paciente eliminado",
+                        "address": {
+                            "pagina": "2"
+                        },
+                        "requests": [
+                            {
+                                "method": "DELETE",
+                                "to": "/api/v1/patients/00000000-0000-4000-8000-000000000028"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "id": "pacientes-pagina-2",
             "screen": "pacientes",
             "path": "/pacientes?pagina=2",

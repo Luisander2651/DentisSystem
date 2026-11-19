@@ -485,8 +485,12 @@ function responderFor(flow, sent) {
         const used = flow.answers.map(() => 0);
 
         return (request) => {
-            const path = new URL(request.url).pathname;
+            const url = new URL(request.url);
+            const path = url.pathname;
+            // Spec 028 (review R7): `query` also asks for those values in the query string, so a
+            // request for another page reaches the API and the flow notices it.
             const index = flow.answers.findIndex((answer, position) => path.endsWith(answer.to)
+                && Object.entries(answer.query ?? {}).every(([key, value]) => url.searchParams.get(key) === value)
                 && (answer.times === undefined || used[position] < answer.times));
 
             if (index === -1) {
