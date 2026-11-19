@@ -1,7 +1,7 @@
 ---
 id: 028
 slug: paginacion-de-listas
-status: approved
+status: implemented
 created: 2026-11-18
 extends: [004, 005, 006, 008, 012, 014, 020, 025, 027]
 ---
