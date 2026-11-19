@@ -10,7 +10,6 @@ use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
-use App\Modules\Appointments\Domain\ValueObjects\AppointmentPage;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentUserId;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentModel;
@@ -106,7 +105,7 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
     /**
      * Spec 020 (CA4, TM8): one limited query for the page and a count() with the same filters.
      */
-    public function findUnclosedBefore(AppointmentDate $today, ?AppointmentUserId $userId, int $limit): AppointmentPage
+    public function findUnclosedBefore(AppointmentDate $today, ?AppointmentUserId $userId, PageRequest $request): Page
     {
         $query = AppointmentModel::query()
             ->where('date', '<', $today->value)
@@ -123,12 +122,14 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
             ])
             ->orderByDesc('date')
             ->orderByDesc('time')
-            ->limit($limit)
+            ->orderByDesc('id')
+            ->offset($request->offsetFor($total))
+            ->limit($request->size)
             ->get()
             ->map(fn (AppointmentModel $appointment): AppointmentEntity => $this->mapToDomain($appointment))
             ->all();
 
-        return AppointmentPage::create($items, $total);
+        return Page::create($items, $total, $request);
     }
 
     public function mapToDomain(object $model): AppointmentEntity

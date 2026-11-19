@@ -9,7 +9,6 @@ use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
-use App\Modules\Appointments\Domain\ValueObjects\AppointmentPage;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentUserId;
 use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
@@ -29,9 +28,12 @@ interface AppointmentsRepositoryInterface
 
     /**
      * Spec 020 (CA4, TM8): the appointments of days before `$today` still assigned or
-     * rescheduled, from the most recent to the oldest, at most `$limit`, and the total of all.
+     * rescheduled, from the most recent to the oldest, and the total of all. Spec 028 (CA2,
+     * CA7): one page of them, with the id as the last tie-break.
+     *
+     * @return Page<AppointmentEntity>
      */
-    public function findUnclosedBefore(AppointmentDate $today, ?AppointmentUserId $userId, int $limit): AppointmentPage;
+    public function findUnclosedBefore(AppointmentDate $today, ?AppointmentUserId $userId, PageRequest $request): Page;
 
     /**
      * Spec 028 (CA2, CA7): one page of the appointments of a patient, the most recent first

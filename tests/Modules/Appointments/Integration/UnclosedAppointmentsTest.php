@@ -159,7 +159,10 @@ it('answers an empty list with a total of 0', function () {
 
     $this->getJson(UNCLOSED_URL)
         ->assertOk()
-        ->assertExactJson(['data' => ['items' => [], 'total' => 0]]);
+        ->assertExactJson([
+            'data' => ['items' => [], 'total' => 0],
+            'meta' => ['page' => 1, 'per_page' => 10, 'total' => 0, 'last_page' => 1, 'from' => null, 'to' => null],
+        ]);
 });
 
 it('tells each role what it may do with an unclosed appointment', function (string $actor, array $can) {
@@ -179,3 +182,51 @@ it('tells each role what it may do with an unclosed appointment', function (stri
     'asistente' => ['asistente', ['complete' => false, 'cancel' => true]],
     'doctor' => ['doctor', ['complete' => true, 'cancel' => false]],
 ]);
+
+/*
+ * Spec 028 (CA2, CA9, CA14): the section is paged by ten; the rest are on the next pages.
+ */
+it('gives the second page with the five left, the total and its meta', function () {
+    unclosedDays($this);
+    $this->actingAsAdmin();
+
+    $response = $this->getJson(UNCLOSED_URL.'?page=2')->assertOk();
+
+    expect($response->json('data.total'))->toBe(15)
+        ->and(unclosedMoments($response->json('data.items')))->toBe(['2026-10-12 10:00', '2026-10-09 10:00', '2026-10-08 10:00', '2026-10-07 10:00', '2026-10-06 10:00'])
+        ->and($response->json('meta'))->toBe(['page' => 2, 'per_page' => 10, 'total' => 15, 'last_page' => 2, 'from' => 11, 'to' => 15]);
+});
+
+it('keeps ten per page whatever size the request asks for', function () {
+    unclosedDays($this);
+    $this->actingAsAdmin();
+
+    $this->getJson(UNCLOSED_URL.'?per_page=50')
+        ->assertOk()
+        ->assertJsonCount(10, 'data.items')
+        ->assertJsonPath('meta.per_page', 10);
+});
+
+it('rejects a page that is not a whole number above zero with 422', function (string $page) {
+    $this->actingAsAdmin();
+
+    $this->getJson(UNCLOSED_URL.'?page='.$page)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['page']);
+})->with(['abc', '0', '1.5']);
+
+it('gives the doctor only their own on every page, while the administrator sees all', function () {
+    $days = unclosedDays($this);
+
+    $this->actingAs($days['diego'], 'sanctum');
+    $diegoSecond = $this->getJson(UNCLOSED_URL.'?page=2')->assertOk()->json();
+
+    $this->app['auth']->forgetGuards();
+    $this->actingAsAdmin();
+    $adminSecond = $this->getJson(UNCLOSED_URL.'?page=2')->assertOk()->json();
+
+    expect($diegoSecond['data']['total'])->toBe(11)
+        ->and(array_unique(array_column($diegoSecond['data']['items'], 'doctor_name')))->toBe(['Diego Prueba'])
+        ->and($diegoSecond['data']['items'])->toHaveCount(1)
+        ->and($adminSecond['data']['total'])->toBe(15);
+});
