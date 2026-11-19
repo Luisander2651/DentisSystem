@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Domain\Service;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Users\Domain\Entities\UserEntity;
 use App\Modules\Users\Domain\Exceptions\UserException;
 use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
@@ -51,6 +53,22 @@ class UserService
     public function findByRoleAndStatus(?UserStatus $status, ?UserRoleId $role): array
     {
         return $this->userRepository->findByRoleAndStatus($status, $role);
+    }
+
+    /**
+     * @return Page<UserEntity>
+     */
+    public function findPage(PageRequest $request, ?UserStatus $status, ?UserRoleId $role): Page
+    {
+        return $this->userRepository->findPage($request, $status, $role);
+    }
+
+    /**
+     * @return array{total: int, administrador: int, asistente: int, doctor: int}
+     */
+    public function countByRole(): array
+    {
+        return $this->userRepository->countByRole();
     }
 
     public function findById(UserId $id): UserEntity
