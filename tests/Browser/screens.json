@@ -3799,6 +3799,68 @@
             "sends": true
         },
         {
+            "id": "tratamientos-pagina-2",
+            "screen": "tratamientos",
+            "path": "/tratamientos?pagina=2",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "recargar o volver con Atrás muestra la página 2",
+                    "expect": {
+                        "textIn": {
+                            "[data-treatments-pagination]": "Mostrando 13–",
+                            "#treatments-list": "Tratamiento de prueba 10"
+                        },
+                        "absent": [
+                            "[data-treatments-delete][data-treatment-name=\"Limpieza dental de prueba\"]"
+                        ]
+                    }
+                },
+                {
+                    "name": "Anterior vuelve a la página 1",
+                    "do": [
+                        {
+                            "click": "[data-treatments-pagination] a[aria-label=\"Página anterior\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-treatments-pagination]": "Mostrando 1–12 de"
+                        },
+                        "focused": "main h1",
+                        "announced": "Página 1 de 2",
+                        "open": [
+                            "[data-treatments-delete][data-treatment-name=\"Limpieza dental de prueba\"]"
+                        ]
+                    }
+                },
+                {
+                    "name": "la búsqueda encuentra en la página 1 lo que está en la 2",
+                    "do": [
+                        {
+                            "fill": "#treatments-search",
+                            "value": "tratamiento de prueba 10"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "#treatments-list": "Tratamiento de prueba 10"
+                        },
+                        "absent": [
+                            "[data-treatments-delete][data-treatment-name=\"Limpieza dental de prueba\"]",
+                            "[data-treatments-pagination]:not([hidden])"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "id": "contenido-galeria",
             "screen": "contenido-galeria",
             "path": "/contenido",

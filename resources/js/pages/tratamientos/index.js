@@ -1,4 +1,5 @@
 import { closeDialog, openDialog } from '../../ui/dialog';
+import { mountPagination, readListState, writeListState } from '../../ui/pagination';
 import { announce, announceError, clearAnnouncements, failureMessage, markFieldErrors } from '../../ui/status';
 
 (function () {
@@ -50,7 +51,27 @@ import { announce, announceError, clearAnnouncements, failureMessage, markFieldE
     var deleteSubmit = deleteModal ? deleteModal.querySelector('[data-treatments-delete-submit]') : null;
     var deleteCloseButtons = deleteModal ? deleteModal.querySelectorAll('[data-treatments-delete-close]') : [];
 
-    var allTreatments = [];
+    var SEARCH_DELAY_MS = 300;
+    var initialState = readListState(window.location.search);
+
+    // Spec 028 (CA4, CA5, CA8, CA9): the page and the search come from the address and go to the
+    // server, which answers one page with the stats of the whole catalogue.
+    var currentPage = initialState.pagina;
+    var requestNumber = 0;
+    var searchTimer = null;
+
+    if (searchInput) {
+        searchInput.value = initialState.busqueda;
+    }
+
+    var pagination = mountPagination(document.querySelector('[data-treatments-pagination]'), {
+        noun: 'tratamientos',
+        onChange: function (page) {
+            currentPage = page;
+            loadTreatments({ announcePage: true });
+        },
+        focusTarget: document.querySelector('main h1'),
+    });
     var isCreateSubmitting = false;
     var isEditSubmitting = false;
     var isDeleteSubmitting = false;
@@ -247,53 +268,31 @@ import { announce, announceError, clearAnnouncements, failureMessage, markFieldE
         setModalVisibility(deleteModal, true);
     }
 
-    function applyFilters() {
-        var query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    function searchText() {
+        return searchInput ? searchInput.value.trim() : '';
+    }
 
-        if (!query) {
-            renderTreatments(allTreatments);
+    function renderCounters(counts) {
+        if (!counts) {
             return;
         }
 
-        var filtered = allTreatments.filter(function (record) {
-            var name = String(record.name ?? '').toLowerCase();
-            var description = String(record.description ?? '').toLowerCase();
-            var time = String(record.time ?? '').toLowerCase();
+        if (totalCountEl) {
+            totalCountEl.textContent = String(counts.total ?? 0);
+        }
 
-            return name.includes(query) || description.includes(query) || time.includes(query);
-        });
+        if (withTimeCountEl) {
+            withTimeCountEl.textContent = String(counts.with_duration ?? 0);
+        }
 
-        renderTreatments(filtered);
+        if (averageTimeEl) {
+            averageTimeEl.textContent = (counts.average_minutes ?? 0) + ' min';
+        }
     }
 
     function renderTreatments(records) {
         if (!listEl) {
             return;
-        }
-
-        var total = allTreatments.length;
-        var withTime = 0;
-        var totalDuration = 0;
-
-        allTreatments.forEach(function (record) {
-            var numericTime = Number(record.time);
-
-            if (Number.isFinite(numericTime) && numericTime >= 0) {
-                withTime += 1;
-                totalDuration += numericTime;
-            }
-        });
-
-        if (totalCountEl) {
-            totalCountEl.textContent = String(total);
-        }
-
-        if (withTimeCountEl) {
-            withTimeCountEl.textContent = String(withTime);
-        }
-
-        if (averageTimeEl) {
-            averageTimeEl.textContent = withTime > 0 ? Math.round(totalDuration / withTime) + ' min' : '0 min';
         }
 
         if (records.length === 0) {
@@ -364,20 +363,50 @@ import { announce, announceError, clearAnnouncements, failureMessage, markFieldE
         return payload;
     }
 
-    async function loadTreatments() {
+    async function loadTreatments(options) {
+        var thisRequest = ++requestNumber;
+
         hideError();
         setLoading(true);
 
         try {
-            var payload = await requestJson('/api/v1/treatments', { method: 'GET' });
-            allTreatments = normalizeTreatmentsPayload(payload).map(normalizeTreatment);
-            applyFilters();
+            var params = new URLSearchParams();
+
+            params.set('page', String(currentPage));
+
+            if (searchText()) {
+                params.set('search', searchText());
+            }
+
+            var payload = await requestJson('/api/v1/treatments?' + params.toString(), { method: 'GET' });
+
+            if (thisRequest !== requestNumber) {
+                return;
+            }
+
+            var meta = payload && payload.meta ? payload.meta : null;
+
+            currentPage = meta && meta.page ? meta.page : 1;
+            renderCounters(meta && meta.counts);
+            renderTreatments(normalizeTreatmentsPayload(payload).map(normalizeTreatment));
+            pagination.render(meta);
+            writeListState({ pagina: currentPage, busqueda: searchText(), estado: '' });
+
+            if (options && options.announcePage) {
+                pagination.announcePage(meta);
+            }
         } catch (error) {
+            if (thisRequest !== requestNumber) {
+                return;
+            }
+
             showError(messageOf(error));
-            allTreatments = [];
             renderTreatments([]);
+            pagination.render(null);
         } finally {
-            setLoading(false);
+            if (thisRequest === requestNumber) {
+                setLoading(false);
+            }
         }
     }
 
@@ -456,7 +485,13 @@ import { announce, announceError, clearAnnouncements, failureMessage, markFieldE
     });
 
     if (searchInput) {
-        searchInput.addEventListener('input', applyFilters);
+        searchInput.addEventListener('input', function () {
+            window.clearTimeout(searchTimer);
+            searchTimer = window.setTimeout(function () {
+                currentPage = 1;
+                loadTreatments();
+            }, SEARCH_DELAY_MS);
+        });
     }
 
     if (listEl) {
@@ -635,7 +670,9 @@ import { announce, announceError, clearAnnouncements, failureMessage, markFieldE
     }
 
     window.treatmentsPage = {
-        reload: loadTreatments,
+        reload: function () {
+            return loadTreatments();
+        },
         showError: showError,
         hideError: hideError,
     };
