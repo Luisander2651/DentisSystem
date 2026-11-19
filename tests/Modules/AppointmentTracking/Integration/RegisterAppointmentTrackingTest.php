@@ -96,7 +96,10 @@ it('takes the appointment out of the list without follow-up', function () {
 
     $this->getJson('/api/v1/agenda/without-tracking')
         ->assertOk()
-        ->assertExactJson(['data' => ['items' => [], 'total' => 0]]);
+        ->assertExactJson([
+            'data' => ['items' => [], 'total' => 0],
+            'meta' => ['page' => 1, 'per_page' => 10, 'total' => 0, 'last_page' => 1, 'from' => null, 'to' => null],
+        ]);
 });
 
 it('refuses the doctor on an appointment of another doctor without saving anything (abuse)', function () {

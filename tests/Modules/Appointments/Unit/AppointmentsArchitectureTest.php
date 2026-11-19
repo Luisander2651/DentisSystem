@@ -61,10 +61,6 @@ it('keeps the agenda of today free of infrastructure', function () {
     expect(appointmentsDomainViolations('ValueObjects/TodayAgenda.php'))->toBe([]);
 });
 
-it('keeps the page of appointments free of infrastructure', function () {
-    expect(appointmentsDomainViolations('ValueObjects/AppointmentPage.php'))->toBe([]);
-});
-
 it('keeps the port and the use case of the QR code free of infrastructure and of the QR library', function (string $file) {
     expect(appointmentsLayerViolations('Aplication', $file, APPOINTMENTS_APPLICATION_FORBIDDEN))->toBe([]);
 })->with([

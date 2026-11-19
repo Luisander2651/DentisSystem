@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\AppointmentTracking\Domain\Repositories;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 
 /**
@@ -12,10 +14,10 @@ use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 interface PendingTrackingRepositoryInterface
 {
     /**
-     * At most `$limit` of them, from the most recent to the oldest, and the total of all; only the
-     * ones of `$userId` when it is given.
+     * One page of them, from the most recent to the oldest (date, time and id), and the total of
+     * all; only the ones of `$userId` when it is given (spec 028, CA2, CA7).
      *
-     * @return array{items: list<AppointmentEntity>, total: int}
+     * @return Page<AppointmentEntity>
      */
-    public function findCompletedWithoutTracking(?string $userId, int $limit): array;
+    public function findCompletedWithoutTracking(?string $userId, PageRequest $request): Page;
 }
