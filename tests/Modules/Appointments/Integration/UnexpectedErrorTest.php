@@ -26,9 +26,9 @@ it('answers a generic 500 when listing appointments fails unexpectedly', functio
 it('answers a generic 500 when updating a treatment fails unexpectedly', function () {
     $this->actingAsAdmin();
     $treatment = $this->createTreatment();
-    // TreatmentsService depends on the final EloquentTreatmentRepository (known P3 leak), so it
-    // cannot be mocked. Renaming the table makes the real query fail; PostgreSQL DDL is
-    // transactional, so RefreshDatabase rolls it back.
+    // Renaming the table makes the real query fail, the way a database outage would; PostgreSQL
+    // DDL is transactional, so RefreshDatabase rolls it back. (Since spec 028 TreatmentsService
+    // depends on TreatmentsRepositoryInterface and could be mocked too.)
     DB::statement('ALTER TABLE treatments RENAME TO treatments_unavailable');
 
     $this->putJson($this->treatmentAdminUrl($treatment->id), ['name' => 'Limpieza profunda'])

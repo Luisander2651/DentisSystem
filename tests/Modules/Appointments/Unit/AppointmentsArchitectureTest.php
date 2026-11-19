@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 /*
  * Spec 020 (P3, A18): every file of the Domain of Appointments that this spec creates or changes
- * knows neither the Infrastructure of any module, nor facades, nor Eloquent. TreatmentsService
- * stays out on purpose: it depends on the final EloquentTreatmentRepository (known P3 debt, see
- * UnexpectedErrorTest) and this spec does not touch it.
+ * knows neither the Infrastructure of any module, nor facades, nor Eloquent. Since spec 028 (A26)
+ * TreatmentsService is in too: it depends on TreatmentsRepositoryInterface, bound in
+ * AppServiceProvider, instead of the final EloquentTreatmentRepository.
  */
 
 const APPOINTMENTS_ARCHITECTURE_FORBIDDEN = '/App\\\\Modules\\\\[^\\\\;]+\\\\Infrastructure|Illuminate\\\\Support\\\\Facades|Illuminate\\\\Database\\\\Eloquent/';
@@ -53,6 +53,8 @@ it('keeps the files of the Domain this spec changes free of infrastructure', fun
 })->with([
     'Repositories/AppointmentsRepositoryInterface.php',
     'Service/AppointmentsService.php',
+    'Repositories/TreatmentsRepositoryInterface.php',
+    'Service/TreatmentsService.php',
 ]);
 
 it('keeps the agenda of today free of infrastructure', function () {
