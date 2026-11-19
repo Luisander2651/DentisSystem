@@ -3514,7 +3514,29 @@
                         "announced": "Página 1 de 3",
                         "open": [
                             "[data-patient-edit][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
-                        ]
+                        ],
+                        "address": {
+                            "pagina": null
+                        }
+                    }
+                },
+                {
+                    "name": "Siguiente lleva a la página 3 y la dirección lo dice",
+                    "do": [
+                        {
+                            "click": "[data-patients-pagination] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 25–"
+                        },
+                        "address": {
+                            "pagina": "3"
+                        }
                     }
                 }
             ]
@@ -3522,7 +3544,7 @@
         {
             "id": "pacientes-buscar-otra-pagina",
             "screen": "pacientes",
-            "path": "/pacientes",
+            "path": "/pacientes?pagina=2",
             "role": "administrador",
             "flows": [
                 {
@@ -3544,7 +3566,79 @@
                             "[data-patient-edit][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]",
                             "[data-patients-pagination]:not([hidden])",
                             "#patient-search:not([maxlength=\"100\"])"
-                        ]
+                        ],
+                        "address": {
+                            "busqueda": "valeria",
+                            "pagina": null
+                        }
+                    }
+                },
+                {
+                    "name": "buscar desde la página 2 vuelve a la 1",
+                    "do": [
+                        {
+                            "fill": "#patient-search",
+                            "value": "prueba"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 1–12 de"
+                        },
+                        "address": {
+                            "busqueda": "prueba",
+                            "pagina": null
+                        }
+                    }
+                },
+                {
+                    "name": "filtrar desde la página 2 vuelve a la 1",
+                    "do": [
+                        {
+                            "click": "[data-patients-status-filter] [data-status-value=\"active\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 1–12 de"
+                        },
+                        "address": {
+                            "estado": "active",
+                            "pagina": null
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": "pacientes-direccion",
+            "screen": "pacientes",
+            "path": "/pacientes?pagina=2&busqueda=prueba&estado=active",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "recargar con página, búsqueda y filtro en la dirección muestra lo mismo",
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 13–24 de"
+                        },
+                        "values": {
+                            "#patient-search": "prueba"
+                        },
+                        "absent": [
+                            "[data-patients-status-filter] [data-status-value=\"active\"][aria-pressed=\"false\"]"
+                        ],
+                        "address": {
+                            "pagina": "2",
+                            "busqueda": "prueba",
+                            "estado": "active"
+                        }
                     }
                 }
             ]

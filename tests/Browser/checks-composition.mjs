@@ -108,6 +108,11 @@ export const ADMITTED = [
         difference: 'Pacientes y Expedientes clínicos muestran 12 pacientes por página y, bajo la rejilla, el control de páginas con "Mostrando X–Y de N", "Anterior", los números y "Siguiente" (candidato c3 de la spec 028).',
     },
     {
+        criterion: '028 CA4, CA8 (review R5, R6)',
+        entries: ['pacientes-buscar-otra-pagina'],
+        difference: 'La entrada abre Pacientes en la página 2 para probar que buscar y filtrar vuelven a la primera; el control de páginas muestra "Anterior" disponible.',
+    },
+    {
         criterion: '028 CA1',
         entries: ['usuarios'],
         difference: 'Usuarios muestra 12 miembros del staff por página y, bajo la rejilla, el control de páginas (candidato c3 de la spec 028).',
