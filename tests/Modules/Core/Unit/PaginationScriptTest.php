@@ -52,16 +52,54 @@ function paginationNumbers(string $html): array
     return array_map('trim', $items[1]);
 }
 
+/**
+ * The labels of a window as seen from 768 px (`desktop`) or below it (`mobile`), "…" for a gap.
+ *
+ * @param  list<array<string, mixed>>  $window
+ * @return list<string>
+ */
+function paginationWindowAt(array $window, string $width): array
+{
+    $seen = array_filter($window, fn (array $entry): bool => $width === 'mobile'
+        ? ! ($entry['near'] ?? false)
+        : ! ($entry['mobile'] ?? false));
+
+    return array_values(array_map(fn (array $entry): string => $entry['type'] === 'gap' ? '…' : (string) $entry['page'], $seen));
+}
+
 it('shows the first, the last, the current page and its neighbours, with "…" in the gaps', function (int $page, int $lastPage, array $expected) {
     $window = runPaginationScript('window', ['page' => $page, 'lastPage' => $lastPage]);
 
-    expect(array_map(fn (array $entry): string => $entry['type'] === 'gap' ? '…' : (string) $entry['page'], $window))->toBe($expected);
+    expect(paginationWindowAt($window, 'desktop'))->toBe($expected);
 })->with([
     'page 2 of 8' => [2, 8, ['1', '2', '3', '4', '…', '8']],
     'page 1 of 3' => [1, 3, ['1', '2', '3']],
     'page 8 of 8' => [8, 8, ['1', '…', '6', '7', '8']],
     'page 5 of 10' => [5, 10, ['1', '…', '3', '4', '5', '6', '7', '…', '10']],
 ]);
+
+/*
+ * Review R1: below 768 px the neighbours two pages away hide, and a jump they leave next to the
+ * first or the last page gets its own "…", seen only there.
+ */
+it('keeps a "…" in every gap below 768 px too', function (int $page, int $lastPage, array $desktop, array $mobile) {
+    $window = runPaginationScript('window', ['page' => $page, 'lastPage' => $lastPage]);
+
+    expect(paginationWindowAt($window, 'desktop'))->toBe($desktop)
+        ->and(paginationWindowAt($window, 'mobile'))->toBe($mobile);
+})->with([
+    'page 4 of 8' => [4, 8, ['1', '2', '3', '4', '5', '6', '…', '8'], ['1', '…', '3', '4', '5', '…', '8']],
+    'page 5 of 8' => [5, 8, ['1', '…', '3', '4', '5', '6', '7', '8'], ['1', '…', '4', '5', '6', '…', '8']],
+    'page 2 of 8' => [2, 8, ['1', '2', '3', '4', '…', '8'], ['1', '2', '3', '…', '8']],
+    'page 3 of 5' => [3, 5, ['1', '2', '3', '4', '5'], ['1', '2', '3', '4', '5']],
+]);
+
+it('shows the gaps of the narrow window only below 768 px', function () {
+    $html = paginationHtml(4, 8);
+
+    expect($html)->toMatch('/<li class="[^"]*\bmd:hidden\b[^"]*"><span\b[^>]*aria-hidden="true"[^>]*>…<\/span><\/li>/')
+        ->and(substr_count($html, '>…</span>'))->toBe(2);
+});
 
 it('marks the neighbours two pages away so they hide below 768 px', function () {
     $window = runPaginationScript('window', ['page' => 2, 'lastPage' => 8]);
@@ -88,19 +126,30 @@ it('leaves "Anterior" unusable on the first page and "Siguiente" on the last one
     $first = paginationHtml(1, 3, perPage: 10, total: 27, noun: 'citas');
     $last = paginationHtml(8, 8, total: 87);
 
-    expect($first)->toMatch('/<span\b[^>]*aria-disabled="true"[^>]*aria-label="Página anterior, no disponible"[^>]*>/')
-        ->not->toMatch('/<a\b[^>]*aria-label="Página anterior/')
+    // Review R2: a link without href keeps its role and its name, which a plain span cannot have.
+    expect($first)->toMatch('/<a\b(?![^>]*\bhref=)(?![^>]*data-pagination-page)[^>]*role="link"[^>]*aria-disabled="true"[^>]*aria-label="Página anterior, no disponible"[^>]*>/')
+        ->not->toMatch('/<a\b[^>]*href="[^"]*"[^>]*aria-label="Página anterior/')
+        ->not->toMatch('/<span\b[^>]*aria-disabled/')
         ->and(strip_tags($first))->toContain('Mostrando 1–10 de 27 citas')
         ->and(paginationNumbers($first))->toBe(['1', '2', '3'])
-        ->and($last)->toMatch('/<span\b[^>]*aria-disabled="true"[^>]*aria-label="Página siguiente, no disponible"[^>]*>/')
-        ->not->toMatch('/<a\b[^>]*aria-label="Página siguiente/');
+        ->and($last)->toMatch('/<a\b(?![^>]*\bhref=)(?![^>]*data-pagination-page)[^>]*role="link"[^>]*aria-disabled="true"[^>]*aria-label="Página siguiente, no disponible"[^>]*>/')
+        ->not->toMatch('/<a\b[^>]*href="[^"]*"[^>]*aria-label="Página siguiente/');
+});
+
+it('draws the current page bold and the others semibold (review R3)', function () {
+    $html = paginationHtml(2, 8);
+    preg_match('/<a\b[^>]*aria-current="page"[^>]*>/', $html, $current);
+    preg_match('/<a\b[^>]*aria-label="Página 3"[^>]*>/', $html, $other);
+
+    expect($current[0])->toContain('font-bold')->not->toContain('font-semibold')
+        ->and($other[0])->toContain('font-semibold')->not->toContain('font-bold');
 });
 
 it('hides the gap from screen readers and keeps the unusable buttons out of the focus order', function () {
     $html = paginationHtml(1, 8);
 
     expect($html)->toMatch('/<span\b[^>]*aria-hidden="true"[^>]*>…<\/span>/')
-        ->not->toMatch('/<span\b[^>]*aria-disabled="true"[^>]*tabindex="0"/');
+        ->not->toMatch('/<a\b[^>]*aria-disabled="true"[^>]*tabindex=/');
 });
 
 it('builds nothing when everything fits in one page or there is nothing', function (array $meta) {
@@ -120,6 +169,7 @@ it('reads the page, the search and the filter from the address, with page 1 for 
     'a negative page' => ['?pagina=-3', ['pagina' => 1, 'busqueda' => '', 'estado' => '']],
     'a page with decimals' => ['?pagina=2.5', ['pagina' => 1, 'busqueda' => '', 'estado' => '']],
     'the search focus flag of Expedientes' => ['?buscar=1', ['pagina' => 1, 'busqueda' => '', 'estado' => '']],
+    'a search longer than the server takes (review R4)' => ['?busqueda='.str_repeat('a', 150), ['pagina' => 1, 'busqueda' => str_repeat('a', 100), 'estado' => '']],
 ]);
 
 it('writes only what differs from the first page with no search', function (array $state, string $expected) {

@@ -9,20 +9,48 @@
  */
 import { announce } from './status';
 
-const ITEM = 'inline-flex min-h-control min-w-control w-full items-center justify-center gap-1.5 rounded-control border border-field px-3 text-sm font-semibold text-ink transition-colors md:w-auto';
-const LINK = ITEM + ' bg-surface hover:bg-canvas';
+/* The weight goes in each variant: two weights on one element are settled by the order of the CSS. */
+const ITEM = 'inline-flex min-h-control min-w-control w-full items-center justify-center gap-1.5 rounded-control border border-field px-3 text-sm text-ink transition-colors md:w-auto';
+const LINK = ITEM + ' bg-surface font-semibold hover:bg-canvas';
 const CURRENT = ITEM + ' border-2 border-primary bg-primary-soft font-bold';
-const UNAVAILABLE = ITEM + ' cursor-default bg-canvas text-muted';
-const GAP = 'inline-flex min-h-control w-6 flex-none items-center justify-center text-sm font-semibold text-muted';
+const UNAVAILABLE = ITEM + ' cursor-default bg-canvas font-semibold text-muted';
+/* The longest search the server takes (PageQueryRules); a longer one in the address is cut. */
+const SEARCH_MAX_LENGTH = 100;
+const GAP ='inline-flex min-h-control w-6 flex-none items-center justify-center text-sm font-semibold text-muted';
 
 const PREVIOUS_ICON = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>';
 const NEXT_ICON = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>';
 
 /**
  * Los números que se ven: la primera, la última y la actual con dos vecinas a cada lado. Las que
- * están a dos páginas (`near`) se ocultan por debajo de 768 px. Un hueco de más de una página es "…".
+ * están a dos páginas (`near`) se ocultan por debajo de 768 px. Un hueco de más de una página es "…";
+ * el salto que deja una vecina oculta junto a la primera o la última lleva su propio "…", que solo
+ * se ve por debajo de 768 px (`mobile`).
  */
 export function pageWindow(page, lastPage) {
+    const entries = [];
+    let lastSeenOnMobile = 0;
+    let gapSinceThen = false;
+
+    for (const entry of fullPageWindow(page, lastPage)) {
+        if (entry.type === 'gap') {
+            gapSinceThen = true;
+        } else if (!entry.near) {
+            if (lastSeenOnMobile > 0 && entry.page - lastSeenOnMobile > 1 && !gapSinceThen) {
+                entries.splice(entries.length - 1, 0, { type: 'gap', mobile: true });
+            }
+
+            lastSeenOnMobile = entry.page;
+            gapSinceThen = false;
+        }
+
+        entries.push(entry);
+    }
+
+    return entries;
+}
+
+function fullPageWindow(page, lastPage) {
     const shown = new Set([1, lastPage]);
 
     for (let candidate = page - 2; candidate <= page + 2; candidate++) {
@@ -55,7 +83,8 @@ function pageHref(page) {
 
 function stepMarkup(target, enabled, label, content, place) {
     if (!enabled) {
-        return '<span class="' + UNAVAILABLE + ' ' + place + '" aria-disabled="true" aria-label="' + label + ', no disponible">' + content + '</span>';
+        // A link without href: it keeps its role and its name and stays out of the focus order.
+        return '<a class="' + UNAVAILABLE + ' ' + place + '" role="link" aria-disabled="true" aria-label="' + label + ', no disponible">' + content + '</a>';
     }
 
     return '<a class="' + LINK + ' ' + place + '" href="' + pageHref(target) + '" data-pagination-page="' + target + '" aria-label="' + label + '">' + content + '</a>';
@@ -72,7 +101,7 @@ export function paginationMarkup(meta, noun) {
     const { page, last_page: lastPage } = meta;
     const numbers = pageWindow(page, lastPage).map((entry) => {
         if (entry.type === 'gap') {
-            return '<li class="flex flex-none"><span class="' + GAP + '" aria-hidden="true">…</span></li>';
+            return '<li class="' + (entry.mobile ? 'flex flex-none md:hidden' : 'flex flex-none') + '"><span class="' + GAP + '" aria-hidden="true">…</span></li>';
         }
 
         const place = entry.near ? 'hidden md:flex md:flex-none' : 'flex flex-1 md:flex-none';
@@ -105,7 +134,7 @@ export function readListState(search) {
 
     return {
         pagina: page,
-        busqueda: params.get('busqueda') ?? '',
+        busqueda: (params.get('busqueda') ?? '').slice(0, SEARCH_MAX_LENGTH),
         estado: params.get('estado') ?? '',
     };
 }
