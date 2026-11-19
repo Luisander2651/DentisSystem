@@ -124,6 +124,11 @@ export const ADMITTED = [
     },
     {
         criterion: '028 CA2',
+        entries: ['dashboard-administrador', 'dashboard-administrador-flujos', 'dashboard-asistente', 'dashboard-pendientes-pagina-2'],
+        difference: 'En el inicio, "Citas sin cerrar" y "Completadas sin seguimiento" muestran 10 citas por página con el control de páginas en el pie de cada tarjeta, en lugar de "y N más" (candidato c3 de la spec 028).',
+    },
+    {
+        criterion: '028 CA2',
         entries: ['expediente', 'expediente-contacto-form', 'expediente-direccion-form', 'expediente-medicos-form', 'expediente-asistente', 'expediente-doctor', 'expediente-historial-pagina-2', 'portal-mis-citas', 'portal-mis-citas-pagina-2', 'portal-mis-citas-vacio', 'portal-mis-citas-fallo'],
         difference: 'El historial de citas del expediente y "Mis citas" del portal muestran 10 citas por página y, en el pie de su tarjeta, el control de páginas (candidato c3 de la spec 028).',
     },

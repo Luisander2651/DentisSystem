@@ -1,4 +1,5 @@
 import { stateBadge } from '../ui/badge';
+import { mountPagination } from '../ui/pagination';
 import { announce, announceError } from '../ui/status';
 
 /*
@@ -115,7 +116,7 @@ import { announce, announceError } from '../ui/status';
         suffix.textContent = ` de ${appointment.patient_name ?? ''} a las ${appointment.time ?? ''}`;
     }
 
-    async function read(url) {
+    async function readPayload(url) {
         const response = await fetch(url, {
             credentials: 'include',
             headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -125,9 +126,11 @@ import { announce, announceError } from '../ui/status';
             throw new Error(String(response.status));
         }
 
-        const payload = await response.json();
+        return response.json();
+    }
 
-        return payload.data;
+    async function read(url) {
+        return (await readPayload(url)).data;
     }
 
     function failed(names) {
@@ -309,9 +312,31 @@ import { announce, announceError } from '../ui/status';
         text(section(name), '[data-dashboard-count]', '');
     }
 
-    function paintPending(name, data, rowTemplate, moreText) {
+    /*
+     * Spec 028 (CA2, CA3): each pending section is paged by ten on its own, without the address;
+     * the page asked for is kept when the section reloads after completing or cancelling.
+     */
+    const pendingPage = { unclosed: 1, 'without-tracking': 1 };
+    const pagers = {};
+
+    ['unclosed', 'without-tracking'].forEach((name) => {
+        const nav = root.querySelector(`[data-dashboard-pagination="${name}"]`);
+
+        pagers[name] = mountPagination(nav, {
+            noun: 'citas',
+            onChange: (page) => {
+                pendingPage[name] = page;
+                (name === 'unclosed' ? loadUnclosed : loadWithoutTracking)({ announcePage: true });
+            },
+            focusTarget: nav ? nav.closest('[data-dashboard-section]').querySelector('h2') : null,
+        });
+    });
+
+    function paintPending(name, data, rowTemplate, meta, options = {}) {
         const target = section(name);
         setTotal(name, data.total);
+        pendingPage[name] = meta?.page ?? 1;
+        pagers[name].render(data.items.length === 0 ? null : meta);
 
         if (data.items.length === 0) {
             show(target, 'empty');
@@ -362,15 +387,17 @@ import { announce, announceError } from '../ui/status';
         show(target, 'content');
 
         const more = target.querySelector('[data-dashboard-more]');
-        const remaining = data.total - data.items.length;
 
-        if (more && remaining > 0) {
-            text(more, '[data-dashboard-more-text]', `y ${remaining} más ${moreText}`);
+        if (more && (meta?.last_page ?? 1) > 1) {
             more.hidden = false;
+        }
+
+        if (options.announcePage) {
+            pagers[name].announcePage(meta);
         }
     }
 
-    async function loadUnclosed() {
+    async function loadUnclosed(options = {}) {
         const target = section('unclosed');
 
         if (!target) {
@@ -382,20 +409,21 @@ import { announce, announceError } from '../ui/status';
         unknownTotal('unclosed', '…');
 
         try {
-            const data = await read('/api/v1/agenda/unclosed');
+            const payload = await readPayload('/api/v1/agenda/unclosed?page=' + encodeURIComponent(String(pendingPage['unclosed'])));
 
             if (isLatest('unclosed', ticket)) {
-                paintPending('unclosed', data, 'unclosed-row', 'sin cerrar');
+                paintPending('unclosed', payload.data, 'unclosed-row', payload.meta ?? null, options);
             }
         } catch {
             if (isLatest('unclosed', ticket)) {
                 unknownTotal('unclosed', 'no disponible');
+                pagers['unclosed'].render(null);
                 failed(['unclosed']);
             }
         }
     }
 
-    async function loadWithoutTracking() {
+    async function loadWithoutTracking(options = {}) {
         const target = section('without-tracking');
 
         if (!target) {
@@ -407,14 +435,15 @@ import { announce, announceError } from '../ui/status';
         unknownTotal('without-tracking', '…');
 
         try {
-            const data = await read('/api/v1/agenda/without-tracking');
+            const payload = await readPayload('/api/v1/agenda/without-tracking?page=' + encodeURIComponent(String(pendingPage['without-tracking'])));
 
             if (isLatest('without-tracking', ticket)) {
-                paintPending('without-tracking', data, 'without-tracking-row', 'sin seguimiento');
+                paintPending('without-tracking', payload.data, 'without-tracking-row', payload.meta ?? null, options);
             }
         } catch {
             if (isLatest('without-tracking', ticket)) {
                 unknownTotal('without-tracking', 'no disponible');
+                pagers['without-tracking'].render(null);
                 failed(['without-tracking']);
             }
         }

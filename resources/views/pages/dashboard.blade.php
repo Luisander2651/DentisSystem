@@ -148,8 +148,9 @@
         <p class="{{ $empty }} mt-3" data-dashboard-state="empty" hidden>No hay citas pendientes de cerrar.</p>
         @include('pages.dashboard.section-error')
         <div class="mt-4 space-y-4" data-dashboard-content hidden></div>
-        <p class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted" data-dashboard-more hidden>
-            <span data-dashboard-more-text></span>
+        {{-- Spec 028 (CA2): diez por página; reemplaza a "y N más". --}}
+        <x-ui.pagination label="Páginas de citas sin cerrar" data-dashboard-pagination="unclosed" />
+        <p class="mt-4 text-sm text-muted" data-dashboard-more hidden>
             <a href="{{ route('agenda.index') }}" class="{{ $link }}">Ver en la agenda</a>
         </p>
     </section>
@@ -162,7 +163,7 @@
             <p class="{{ $empty }} mt-3" data-dashboard-state="empty" hidden>Todas las citas completadas tienen seguimiento.</p>
             @include('pages.dashboard.section-error')
             <div class="mt-4 space-y-4" data-dashboard-content hidden></div>
-            <p class="mt-4 text-sm text-muted" data-dashboard-more hidden><span data-dashboard-more-text></span></p>
+            <x-ui.pagination label="Páginas de completadas sin seguimiento" data-dashboard-pagination="without-tracking" />
         </section>
     @endif
 

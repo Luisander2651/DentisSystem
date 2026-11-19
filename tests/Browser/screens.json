@@ -267,6 +267,60 @@
             "snapshot": true
         },
         {
+            "id": "dashboard-pendientes-pagina-2",
+            "screen": "dashboard",
+            "path": "/dashboard",
+            "role": "administrador",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "flows": [
+                {
+                    "name": "Citas sin cerrar pasa a la página 2 sin mover la otra sección",
+                    "do": [
+                        {
+                            "waitFor": "[data-dashboard-pagination=\"unclosed\"] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "click": "[data-dashboard-pagination=\"unclosed\"] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-dashboard-pagination=\"unclosed\"]": "Mostrando 11–",
+                            "[data-dashboard-pagination=\"without-tracking\"]": "Mostrando 1–10 de"
+                        },
+                        "focused": "#dashboard-unclosed-title",
+                        "announced": "Página 2 de"
+                    }
+                },
+                {
+                    "name": "Completadas sin seguimiento pasa a la página 2 sin mover la otra sección",
+                    "do": [
+                        {
+                            "waitFor": "[data-dashboard-pagination=\"without-tracking\"] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "click": "[data-dashboard-pagination=\"without-tracking\"] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-dashboard-pagination=\"without-tracking\"]": "Mostrando 11–",
+                            "[data-dashboard-pagination=\"unclosed\"]": "Mostrando 1–10 de"
+                        },
+                        "focused": "#dashboard-without-tracking-title",
+                        "announced": "Página 2 de"
+                    }
+                }
+            ]
+        },
+        {
             "id": "dashboard-administrador-flujos",
             "screen": "dashboard",
             "path": "/dashboard",
