@@ -19,7 +19,9 @@ it('returns every staff member when no filter is given', function () {
     // The acting administrator counts too: three rows in total.
     $this->getJson($this->usersUrl())
         ->assertOk()
-        ->assertJsonCount(3, 'data');
+        ->assertJsonCount(3, 'data')
+        ->assertJsonPath('meta.total', 3)
+        ->assertJsonPath('meta.counts', ['total' => 3, 'administrador' => 1, 'asistente' => 1, 'doctor' => 1]);
 });
 
 it('filters by status', function () {
@@ -68,6 +70,8 @@ it('rejects an invalid filter value', function (string $query, string $field) {
 })->with([
     'legacy role vocabulary' => ['role=admin', 'role'],
     'unknown status' => ['status=activo', 'status'],
+    'page text' => ['page=abc', 'page'],
+    'per_page zero' => ['per_page=0', 'per_page'],
 ]);
 
 it('projects exactly the six public fields', function () {

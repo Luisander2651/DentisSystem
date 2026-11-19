@@ -107,6 +107,11 @@ export const ADMITTED = [
         entries: ['pacientes', 'expedientes', 'expedientes-buscar', 'expediente', 'expediente-contacto-form', 'expediente-direccion-form', 'expediente-medicos-form', 'expediente-asistente', 'expediente-doctor'],
         difference: 'Pacientes y Expedientes clínicos muestran 12 pacientes por página y, bajo la rejilla, el control de páginas con "Mostrando X–Y de N", "Anterior", los números y "Siguiente" (candidato c3 de la spec 028).',
     },
+    {
+        criterion: '028 CA1',
+        entries: ['usuarios'],
+        difference: 'Usuarios muestra 12 miembros del staff por página y, bajo la rejilla, el control de páginas (candidato c3 de la spec 028).',
+    },
 ];
 
 // In points of the window width. The runner of CI and a local machine draw the same text with
