@@ -1,5 +1,6 @@
 import { stateBadge } from '../../../ui/badge';
 import { mountPagination } from '../../../ui/pagination';
+import { contentTabStartPage, rememberContentTabPage } from '../tabs';
 import { failureMessage } from '../../../ui/status';
 import { initPromotionsEditModal } from './edit-modal';
 import { initPromotionsDeleteModal } from './delete-modal';
@@ -20,7 +21,8 @@ export function initPromocionesModule() {
 
     // Spec 028 (CA1, CA5, CA10): the server answers one page with the counts of the whole list;
     // saving or deleting reloads the page shown.
-    var currentPage = 1;
+    var panel = promotionsList.closest('[data-content-panel]');
+    var currentPage = contentTabStartPage(panel);
     var requestNumber = 0;
     var pagination = mountPagination(document.querySelector('[data-promotions-pagination]'), {
         noun: 'promociones',
@@ -28,7 +30,7 @@ export function initPromocionesModule() {
             currentPage = page;
             loadPromotions({ announcePage: true });
         },
-        focusTarget: promotionsList.closest('[data-content-panel]')?.querySelector('h2') ?? null,
+        focusTarget: panel ? panel.querySelector('h2') : null,
     });
 
     function escapeHtml(value) {
@@ -204,6 +206,7 @@ export function initPromocionesModule() {
             renderPromotionsCounts(meta && meta.counts);
             renderPromotionCards(normalizePromotionPayload(payload));
             pagination.render(meta);
+            rememberContentTabPage(panel, currentPage);
 
             if (options && options.announcePage) {
                 pagination.announcePage(meta);

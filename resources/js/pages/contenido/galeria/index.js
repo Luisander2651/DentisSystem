@@ -1,5 +1,6 @@
 import { stateBadge } from '../../../ui/badge';
 import { mountPagination } from '../../../ui/pagination';
+import { contentTabStartPage, rememberContentTabPage } from '../tabs';
 import { failureMessage } from '../../../ui/status';
 import { initGalleryEditModal } from './edit-modal';
 import { initGalleryDeleteModal } from './delete-modal';
@@ -20,7 +21,8 @@ export function initGalleryModule() {
 
     // Spec 028 (CA1, CA5, CA10): the server answers one page with the counts of the whole gallery;
     // saving or deleting reloads the page shown.
-    var currentPage = 1;
+    var panel = galleryList.closest('[data-content-panel]');
+    var currentPage = contentTabStartPage(panel);
     var requestNumber = 0;
     var pagination = mountPagination(document.querySelector('[data-gallery-pagination]'), {
         noun: 'imágenes',
@@ -28,7 +30,7 @@ export function initGalleryModule() {
             currentPage = page;
             loadGalleryImages({ announcePage: true });
         },
-        focusTarget: galleryList.closest('[data-content-panel]')?.querySelector('h2') ?? null,
+        focusTarget: panel ? panel.querySelector('h2') : null,
     });
 
     function escapeHtml(value) {
@@ -208,6 +210,7 @@ export function initGalleryModule() {
             renderGalleryCounts(meta && meta.counts);
             renderGalleryCards(normalizeGalleryPayload(payload));
             pagination.render(meta);
+            rememberContentTabPage(panel, currentPage);
 
             if (options && options.announcePage) {
                 pagination.announcePage(meta);

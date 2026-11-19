@@ -3924,19 +3924,42 @@
         {
             "id": "contenido-galeria-pagina-2",
             "screen": "contenido-galeria",
-            "path": "/contenido",
+            "path": "/contenido?pestana=galeria&pagina=2",
             "role": "administrador",
-            "steps": [
-                {
-                    "click": "[data-content-tab=\"galeria\"]"
-                }
-            ],
             "flows": [
                 {
-                    "name": "Siguiente lleva a la página 2",
+                    "name": "recargar o volver con Atrás muestra la página 2 de Galería",
+                    "expect": {
+                        "textIn": {
+                            "[data-gallery-pagination]": "Mostrando 13–",
+                            "[data-gallery-list]": "Imagen oculta de prueba 01"
+                        }
+                    }
+                },
+                {
+                    "name": "otra pestaña y de vuelta conserva la página 2",
                     "do": [
                         {
-                            "click": "[data-gallery-pagination] a[aria-label=\"Página siguiente\"]"
+                            "click": "[data-content-tab=\"promociones\"]"
+                        },
+                        {
+                            "click": "[data-content-tab=\"galeria\"]"
+                        },
+                        {
+                            "wait": 500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-gallery-pagination]": "Mostrando 13–"
+                        }
+                    }
+                },
+                {
+                    "name": "Anterior vuelve a la página 1",
+                    "do": [
+                        {
+                            "click": "[data-gallery-pagination] a[aria-label=\"Página anterior\"]"
                         },
                         {
                             "wait": 1500
@@ -3944,11 +3967,10 @@
                     ],
                     "expect": {
                         "textIn": {
-                            "[data-gallery-pagination]": "Mostrando 13–",
-                            "[data-gallery-list]": "Imagen oculta de prueba 01"
+                            "[data-gallery-pagination]": "Mostrando 1–12 de"
                         },
                         "focused": "[data-content-panel=\"galeria\"] h2",
-                        "announced": "Página 2 de 2"
+                        "announced": "Página 1 de 2"
                     }
                 }
             ]

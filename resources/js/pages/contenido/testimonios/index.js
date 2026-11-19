@@ -1,5 +1,6 @@
 import { stateBadge } from '../../../ui/badge';
 import { mountPagination } from '../../../ui/pagination';
+import { contentTabStartPage, rememberContentTabPage } from '../tabs';
 import { failureMessage } from '../../../ui/status';
 import { initTestimonialsEditModal } from './edit-modal';
 import { initTestimonialsDeleteModal } from './delete-modal';
@@ -19,7 +20,8 @@ export function initTestimoniosModule() {
 
     // Spec 028 (CA1, CA5, CA10): the server answers one page with the counts of the whole list;
     // saving or deleting reloads the page shown.
-    var currentPage = 1;
+    var panel = testimonialsList.closest('[data-content-panel]');
+    var currentPage = contentTabStartPage(panel);
     var requestNumber = 0;
     var pagination = mountPagination(document.querySelector('[data-testimonials-pagination]'), {
         noun: 'testimonios',
@@ -27,7 +29,7 @@ export function initTestimoniosModule() {
             currentPage = page;
             loadTestimonials({ announcePage: true });
         },
-        focusTarget: testimonialsList.closest('[data-content-panel]')?.querySelector('h2') ?? null,
+        focusTarget: panel ? panel.querySelector('h2') : null,
     });
 
     function escapeHtml(value) {
@@ -200,6 +202,7 @@ export function initTestimoniosModule() {
             renderTestimonialsCounts(meta && meta.counts);
             renderTestimonialCards(normalizeTestimonialPayload(payload));
             pagination.render(meta);
+            rememberContentTabPage(panel, currentPage);
 
             if (options && options.announcePage) {
                 pagination.announcePage(meta);

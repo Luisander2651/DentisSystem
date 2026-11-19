@@ -119,7 +119,7 @@ export const ADMITTED = [
     },
     {
         criterion: '028 CA1',
-        entries: ['contenido-galeria'],
+        entries: ['contenido-galeria', 'contenido-galeria-pagina-2'],
         difference: 'La pestaña Galería muestra 12 imágenes por página y, bajo la rejilla, el control de páginas (candidato c3 de la spec 028).',
     },
 ];
