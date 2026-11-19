@@ -3362,7 +3362,7 @@
                     "do": [
                         {
                             "fill": "#patient-search",
-                            "value": "Valeria"
+                            "value": "valeria"
                         },
                         {
                             "wait": 1500
@@ -3493,6 +3493,26 @@
                     ],
                     "expect": {
                         "announcedOnce": "No se encontraron pacientes."
+                    }
+                },
+                {
+                    "name": "encuentra sin acentos",
+                    "do": [
+                        {
+                            "fill": "[data-records-search]",
+                            "value": "sofia"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-records-list]": "Sofía Prueba"
+                        },
+                        "absent": [
+                            "[data-records-list] a[href$=\"/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                        ]
                     }
                 }
             ]

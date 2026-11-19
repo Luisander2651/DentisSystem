@@ -74,10 +74,10 @@ class EloquentPatientRepository implements PatientsRepositoryInterface
             ->when($status, fn (Builder $query) => $query->where('status', $status->value))
             ->when($this->likePattern($search), fn (Builder $query, string $pattern) => $query->where(
                 fn (Builder $query) => $query
-                    ->where('first_name', 'ilike', $pattern)
-                    ->orWhere('last_name', 'ilike', $pattern)
-                    ->orWhereRaw("first_name || ' ' || last_name ilike ?", [$pattern])
-                    ->orWhere('email', 'ilike', $pattern)
+                    ->whereRaw($this->withoutAccents('first_name').' ilike ?', [$pattern])
+                    ->orWhereRaw($this->withoutAccents('last_name').' ilike ?', [$pattern])
+                    ->orWhereRaw($this->withoutAccents("first_name || ' ' || last_name").' ilike ?', [$pattern])
+                    ->orWhereRaw($this->withoutAccents('email').' ilike ?', [$pattern])
             ));
 
         $total = (clone $query)->count();
@@ -107,9 +107,14 @@ class EloquentPatientRepository implements PatientsRepositoryInterface
         return ['total' => $active + $inactive, 'active' => $active, 'inactive' => $inactive];
     }
 
+    private const ACCENTED = 'áéíóúüÁÉÍÓÚÜ';
+
+    private const UNACCENTED = 'aeiouuAEIOUU';
+
     /**
-     * The search as a pattern that matches its text literally anywhere: the LIKE wildcards and the
-     * escape character it holds lose their meaning (TM3). No search, no pattern.
+     * The search as a pattern that matches its text literally anywhere, without its accents (D16):
+     * the LIKE wildcards and the escape character it holds lose their meaning (TM3). No search, no
+     * pattern.
      */
     private function likePattern(?string $search): ?string
     {
@@ -119,7 +124,18 @@ class EloquentPatientRepository implements PatientsRepositoryInterface
             return null;
         }
 
-        return '%'.addcslashes($text, '\%_').'%';
+        $unaccented = strtr($text, array_combine(mb_str_split(self::ACCENTED), mb_str_split(self::UNACCENTED)));
+
+        return '%'.addcslashes($unaccented, '\%_').'%';
+    }
+
+    /**
+     * Spec 028 (CA4, D16): a column compared without its accents, so "sofia" finds "Sofía". The ñ
+     * stays a letter of its own.
+     */
+    private function withoutAccents(string $column): string
+    {
+        return "translate({$column}, '".self::ACCENTED."', '".self::UNACCENTED."')";
     }
 
     private function mapToDomain(object $model): Patient

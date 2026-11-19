@@ -182,3 +182,33 @@ it('counts the whole list by status', function () {
 it('counts zero for an empty list', function () {
     expect(patientsPageService()->countByStatus())->toBe(['total' => 0, 'active' => 0, 'inactive' => 0]);
 });
+
+it('searches without telling accents apart', function (string $search, array $expected) {
+    patientsPageCreate(['first_name' => 'Sofía', 'last_name' => 'Núñez', 'email' => 'p1@example.com']);
+    patientsPageCreate(['first_name' => 'Sofia', 'last_name' => 'Ramos', 'email' => 'p2@example.com']);
+    patientsPageCreate(['first_name' => 'Raúl', 'last_name' => 'Güemes', 'email' => 'p3@example.com']);
+    patientsPageCreate(['first_name' => 'Ana', 'last_name' => 'Pérez', 'email' => 'p4@example.com']);
+
+    $page = patientsPageService()->findPage(PageRequest::create(1, 12), null, $search);
+
+    expect(array_map(fn (Patient $patient): string => $patient->Email()->value, $page->items))
+        ->toEqualCanonicalizing($expected);
+})->with([
+    'without the accent' => ['sofia', ['p1@example.com', 'p2@example.com']],
+    'upper case with the accent' => ['SOFÍA', ['p1@example.com', 'p2@example.com']],
+    'accent the name lacks' => ['Rámos', ['p2@example.com']],
+    'full name without accents' => ['sofia nunez', []],
+    'diaeresis' => ['guemes', ['p3@example.com']],
+    'acute in the last name' => ['PEREZ', ['p4@example.com']],
+]);
+
+it('keeps the ñ as a letter of its own', function () {
+    patientsPageCreate(['first_name' => 'Niño', 'last_name' => 'Ibáñez', 'email' => 'p5@example.com']);
+    patientsPageCreate(['first_name' => 'Nino', 'last_name' => 'Salas', 'email' => 'p6@example.com']);
+
+    $withoutTilde = patientsPageService()->findPage(PageRequest::create(1, 12), null, 'niño');
+    $withN = patientsPageService()->findPage(PageRequest::create(1, 12), null, 'ibanez');
+
+    expect(array_map(fn (Patient $patient): string => $patient->Email()->value, $withoutTilde->items))->toBe(['p5@example.com'])
+        ->and($withN->items)->toBe([]);
+});
