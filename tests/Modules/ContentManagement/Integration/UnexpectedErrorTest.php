@@ -25,6 +25,7 @@ it('answers a generic 500 when listing content fails unexpectedly', function (st
     'certifications' => ['/api/v1/certifications', CertificationRepositoryInterface::class, 'findByIdAndNameAndStatus'],
     'gallery' => ['/api/v1/gallery-images', GalleryImageRepositoryInterface::class, 'findPage'],
     'gallery counts' => ['/api/v1/gallery-images', GalleryImageRepositoryInterface::class, 'countByStatus'],
-    'promotions' => ['/api/v1/promotions', PromotionRepositoryInterface::class, 'findByIdAndName'],
+    'promotions' => ['/api/v1/promotions', PromotionRepositoryInterface::class, 'findPage'],
+    'promotions counts' => ['/api/v1/promotions', PromotionRepositoryInterface::class, 'countByStatus'],
     'testimonials' => ['/api/v1/testimonials', TestimonialRepositoryInterface::class, 'findByIdAndNameAndStatus'],
 ]);

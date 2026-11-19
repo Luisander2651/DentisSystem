@@ -19,6 +19,7 @@
         Cargando promociones...
     </div>
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-promotions-list></div>
+    <x-ui.pagination label="Páginas de promociones" data-promotions-pagination />
     <div class="hidden rounded-card border border-line bg-surface p-5 text-center text-sm text-muted shadow-sm" data-promotions-empty>
         Aún no hay promociones registradas.
     </div>

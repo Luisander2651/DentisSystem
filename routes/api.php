@@ -50,6 +50,7 @@ use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controller
 use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\UpdateGalleryImageController;
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\DeletePromotionController;
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\GetPromotionsController;
+use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\ListPromotionsPageController;
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\SavePromotionController;
 use App\Modules\ContentManagement\Modules\Promociones\Infrastructure\HTTP\Controllers\UpdatePromotionController;
 use App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\HTTP\Controllers\DeleteTestimonialController;
@@ -152,7 +153,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::post('/', SavePromotionController::class);
                 Route::put('/{id}', UpdatePromotionController::class);
                 Route::delete('/{id}', DeletePromotionController::class);
-                Route::get('/', GetPromotionsController::class);
+                Route::get('/', ListPromotionsPageController::class);
             });
 
             Route::prefix('testimonials')->group(function (): void {
