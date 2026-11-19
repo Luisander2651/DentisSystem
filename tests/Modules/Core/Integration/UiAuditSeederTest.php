@@ -407,3 +407,29 @@ it('keeps a seeded user and treatment that an appointment of someone else still 
         ->and(UserModel::query()->where('email', UiAuditSeeder::STAFF_EMAILS['administrador'])->exists())->toBeFalse()
         ->and(TreatmentModel::query()->where('name', UiAuditSeeder::TREATMENT_NAMES[1])->exists())->toBeFalse();
 });
+
+it('removes on a new run the appointments that its patients got from elsewhere, and only those (spec 028, review R9)', function () {
+    (new UiAuditSeeder)->run();
+
+    $portalPatient = PatientModel::query()->where('email', UiAuditSeeder::PATIENT_EMAIL)->firstOrFail();
+    $seededDoctor = UserModel::query()->where('email', UiAuditSeeder::STAFF_EMAILS['doctor'])->firstOrFail();
+    $seededTreatment = TreatmentModel::query()->where('name', UiAuditSeeder::TREATMENT_NAMES[0])->firstOrFail();
+    $appointmentFor = fn (string $patientId): AppointmentModel => AppointmentModel::query()->create([
+        'id' => (string) Str::uuid(),
+        'date' => '2026-11-19',
+        'time' => '10:00:00',
+        'status' => 'asignada',
+        'treatment_id' => $seededTreatment->id,
+        'user_id' => $seededDoctor->id,
+        'patient_id' => $patientId,
+    ]);
+    $leftByAnEntry = $appointmentFor($portalPatient->id);
+    $ofSomeoneElse = $appointmentFor($this->createPatient()->id);
+    $seededCount = AppointmentModel::query()->where('patient_id', $portalPatient->id)->count() - 1;
+
+    (new UiAuditSeeder)->run();
+
+    expect($leftByAnEntry->fresh())->toBeNull()
+        ->and($ofSomeoneElse->fresh())->not->toBeNull()
+        ->and(AppointmentModel::query()->where('patient_id', $portalPatient->id)->count())->toBe($seededCount);
+});

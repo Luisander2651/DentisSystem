@@ -146,6 +146,13 @@ final class UiAuditSeeder extends Seeder
 
     private const IMAGE_DISK = 'public';
 
+    /**
+     * The appointments run() wrote, so the ones its patients got from elsewhere can go (spec 028).
+     *
+     * @var list<string>
+     */
+    private array $seededAppointmentIds = [];
+
     public function run(): void
     {
         $this->assertAllowedEnvironment();
@@ -163,6 +170,7 @@ final class UiAuditSeeder extends Seeder
         $this->seedDashboard(['doctor' => $staff['doctor'], 'otro' => $otherDoctor], $treatments);
         $this->seedContent();
         $this->seedPagedLists($patient, ['doctor' => $staff['doctor'], 'otro' => $otherDoctor], $treatments);
+        $this->removeForeignAppointments();
     }
 
     /**
@@ -204,6 +212,31 @@ final class UiAuditSeeder extends Seeder
         TestimonialModel::query()->whereIn('author', self::TESTIMONIAL_AUTHORS)->delete();
 
         Storage::disk(self::IMAGE_DISK)->deleteDirectory(self::IMAGE_DIRECTORY);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $values
+     */
+    private function seedAppointment(array $attributes, array $values): AppointmentModel
+    {
+        $appointment = AppointmentModel::query()->updateOrCreate($attributes, $values);
+        $this->seededAppointmentIds[] = $appointment->id;
+
+        return $appointment;
+    }
+
+    /**
+     * Spec 028 (review R9): the entries that send for real, such as agenda-cita-crear, leave
+     * appointments for the seeded patients; the entries that count a patient's appointments
+     * need only the seeded ones on every run.
+     */
+    private function removeForeignAppointments(): void
+    {
+        AppointmentModel::query()
+            ->whereIn('patient_id', PatientModel::query()->where('email', 'like', '%@'.self::EMAIL_DOMAIN)->select('id'))
+            ->whereNotIn('id', $this->seededAppointmentIds)
+            ->delete();
     }
 
     private function assertAllowedEnvironment(): void
@@ -336,7 +369,7 @@ final class UiAuditSeeder extends Seeder
         ];
 
         foreach ($appointments as $index => [$day, $time, $status, $treatment]) {
-            AppointmentModel::query()->updateOrCreate(['id' => self::stableId('appointment', $index)], [
+            $this->seedAppointment(['id' => self::stableId('appointment', $index)], [
                 'date' => self::APPOINTMENTS_MONTH.'-'.$day,
                 'time' => $time,
                 'whatsapp_reminder' => false,
@@ -379,7 +412,7 @@ final class UiAuditSeeder extends Seeder
         ];
 
         foreach ($appointments as $index => [$day, $time, $status, $treatment]) {
-            AppointmentModel::query()->updateOrCreate(['id' => self::stableId('portal-appointment', $index)], [
+            $this->seedAppointment(['id' => self::stableId('portal-appointment', $index)], [
                 'date' => self::PORTAL_MONTH.'-'.$day,
                 'time' => $time,
                 'whatsapp_reminder' => false,
@@ -433,7 +466,7 @@ final class UiAuditSeeder extends Seeder
         ];
 
         foreach ($appointments as $index => [$day, $time, $status, $treatment]) {
-            AppointmentModel::query()->updateOrCreate(['id' => self::stableId('other-doctor-appointment', $index)], [
+            $this->seedAppointment(['id' => self::stableId('other-doctor-appointment', $index)], [
                 'date' => self::APPOINTMENTS_MONTH.'-'.$day,
                 'time' => $time,
                 'whatsapp_reminder' => false,
@@ -493,7 +526,7 @@ final class UiAuditSeeder extends Seeder
             $date = $month.$day;
             $appointmentId = self::stableId('dashboard-appointment', $index);
 
-            AppointmentModel::query()->updateOrCreate(['id' => $appointmentId], [
+            $this->seedAppointment(['id' => $appointmentId], [
                 'date' => $date,
                 'time' => $time,
                 'whatsapp_reminder' => false,
@@ -613,7 +646,7 @@ final class UiAuditSeeder extends Seeder
         ];
 
         foreach ($appointments as $index => [$date, $time, $status, $treatment, $doctor]) {
-            AppointmentModel::query()->updateOrCreate(['id' => self::stableId('paged-appointment', $index)], [
+            $this->seedAppointment(['id' => self::stableId('paged-appointment', $index)], [
                 'date' => $date,
                 'time' => $time,
                 'whatsapp_reminder' => false,
