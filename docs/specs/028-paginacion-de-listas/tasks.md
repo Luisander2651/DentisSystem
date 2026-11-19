@@ -137,10 +137,18 @@ Revisado contra `plan.md` → Constitution Check (constitución 1.2.1):
 - [x] T031 Registrar las peticiones en nginx sin la consulta: un `log_format` propio (método, `$uri`, estado, tamaño, tiempo, agente) y `access_log` con ese formato **dentro de cada bloque `server`** (los dos de `prod.conf`, también el del puerto 80, y el de `default.conf`), que reemplaza al `access_log` de la imagen de nginx (con la consulta) en lugar de sumarse a él (A37), para que el correo o el nombre buscados no lleguen a los logs ni a Loki (TM8). Ruta protegida `docker/`, aprobada por el usuario el 2026-11-18 (A27) — `docker/nginx/prod.conf`, `docker/nginx/default.conf`, `tests/Modules/Core/Unit/NginxProdConfTest.php` — hecho cuando: el test recorre todos los bloques `server` de los dos archivos y comprueba que cada uno declara `access_log` con el formato propio, que no hay otro `access_log` y que el formato no contiene `$request`, `$args` ni `$query_string` (sin romper los tests actuales del bloque 443 y sus `location`); verificación manual: con el entorno local, `GET /api/v1/patients?search=x` no deja ninguna línea con `search=` en `docker compose logs nginx`; en verde — cubre: CA4 — depende: T008
   - Ajuste al implementar: la ruta sale de `$request_uri` cortada en el `?` (un `map` a `$path_without_query`) y no de `$uri`, porque `try_files` la convierte en `/index.php` y todas las peticiones a Laravel se registrarían igual. El formato conserva la IP del visitante, como el de la imagen.
 
+### Correcciones de /review (ronda 1)
+- [ ] T033 Corregir el control de páginas: `pageWindow()` devuelve también los huecos de la ventana móvil (la actual con una vecina a cada lado) con `mobile: true`, pintados solo por debajo de 768 px, de modo que la 4 de 8 se ve `1 … 3 4 5 … 8` en móvil y `1 2 3 4 5 6 … 8` desde 768 px; "Anterior" y "Siguiente" no disponibles pasan a `<a role="link" aria-disabled="true">` sin `href` ni `data-pagination-page`, con el `aria-label` "…, no disponible"; el peso sale de `ITEM` y va en cada variante (`font-semibold` en enlace y no disponible, `font-bold` en la actual); `readListState()` recorta `busqueda` a 100 caracteres — `resources/js/ui/pagination.js`, `tests/Modules/Core/Unit/PaginationScriptTest.php` — hecho cuando: el test cubre la 4 y la 5 de 8 en las dos ventanas, el marcado de los extremos no disponibles (`a` con `role="link"`, `aria-disabled="true"` y sin `href`), que la actual no lleva `font-semibold` y que `?busqueda=` de 150 caracteres se lee con 100; revisión de accesibilidad contra M1 y M2 de `design.md`; `npm run test:ui -- --only pacientes-pagina-2,expedientes-pagina-2,usuarios-pagina-2,tratamientos-pagina-2,contenido-galeria-pagina-2,portal-mis-citas-pagina-2,expediente-historial-pagina-2,dashboard-pendientes-pagina-2` en verde; en verde — cubre: CA3, CA11 — depende: T004 — añadida por /review: R1, R2, R3, R4
+- [ ] T034 Limitar los buscadores a 100 caracteres: `maxlength="100"` en los campos de búsqueda de Pacientes, Expedientes clínicos y Tratamientos, y un flujo en `pacientes-buscar-otra-pagina` que escribe 150 caracteres y comprueba que el campo vale los primeros 100 y que no aparece el aviso de error de la lista — `resources/views/pages/patients/index.blade.php`, `resources/views/pages/records/index.blade.php`, `resources/views/pages/tratamientos/index.blade.php`, `tests/Browser/screens.json` — hecho cuando: el flujo nuevo en verde y en rojo sin el `maxlength` de Pacientes; `npm run test:ui -- --only pacientes,pacientes-buscar-otra-pagina,expedientes,expedientes-buscar,tratamientos` en verde; revisión de accesibilidad; en verde — cubre: CA4 — depende: T033 — añadida por /review: R4
+- [ ] T035 Probar en el navegador la página, la búsqueda y el filtro en la dirección: una comprobación `expect.address` en `checks-dialogs.mjs` (cada par clave → valor debe estar en `location.search`, y `null` exige que la clave falte); `pacientes-buscar-otra-pagina` empieza en `/pacientes?pagina=2`, busca "valeria" y comprueba "Mostrando 1–", `busqueda=valeria` y que falta `pagina`, y después filtra por "Inactivos" y comprueba `estado` y "Mostrando 1–"; `pacientes-pagina-2` añade un flujo que pulsa "Siguiente" desde la 1 y comprueba `pagina=2`; una entrada `pacientes-direccion` carga `/pacientes?pagina=2&busqueda=prueba&estado=active` y comprueba el valor del campo, el chip activo y "Mostrando 13–" — `tests/Browser/checks-dialogs.mjs`, `tests/Browser/screens.json`, `tests/Browser/baseline-1440.json` — hecho cuando: cada flujo nuevo en rojo si se quita `writeListState` de `resources/js/pages/patients/index.js` o el `currentPage = 1` de la búsqueda, y en verde con el código actual; `npm run test:ui -- --only pacientes-pagina-2,pacientes-buscar-otra-pagina,pacientes-direccion` dos veces en verde; en verde — cubre: CA4, CA8 — depende: T008, T034 — añadida por /review: R5, R6
+- [ ] T036 Probar en el navegador eliminar el único paciente de la última página: un flujo de `pacientes-eliminar` que empieza en `/pacientes?pagina=3`, responde el `DELETE` con 200 y la nueva lectura de la página 3 con la página 2 del servidor (`meta.page` 2, `last_page` 2), y comprueba "Mostrando 13–24", `pagina=2` en la dirección y el foco donde lo deja la pantalla tras eliminar — `tests/Browser/screens.json` — hecho cuando: el flujo en rojo si la pantalla vuelve a pedir la página 1 tras eliminar, y en verde con el código actual; `npm run test:ui -- --only pacientes-eliminar` dos veces en verde; en verde — cubre: CA10 — depende: T035 — añadida por /review: R7
+- [ ] T037 Probar el tope de 50 en Mis citas y en el historial del expediente: el caso `per_page=10000` siembra 60 citas y espera 50 elementos y `meta.per_page` 50 — `tests/Modules/Appointments/Integration/PortalAppointmentsPaginationTest.php`, `tests/Modules/Appointments/Integration/PatientAppointmentsPaginationTest.php` — hecho cuando: los dos casos en rojo si `PageRequest::MAX_SIZE` sube a 100, y en verde con el valor actual; en verde — cubre: CA13 — depende: T026, T027 — añadida por /review: R8
+- [ ] T038 Que `ui:audit-data` borre las citas de sus pacientes que no sembró: antes de sembrar, `UiAuditSeeder` elimina las citas de los pacientes que crea cuyo id no es uno de los suyos (`stableId`), las que dejan las entradas que envían de verdad, como `agenda-cita-crear` — `database/seeders/UiAuditSeeder.php`, `tests/Modules/Core/Integration/UiAuditSeederTest.php` — hecho cuando: el test crea una cita ajena para la paciente del portal y otra para un paciente que no es del seeder, vuelve a sembrar y comprueba que solo desaparece la primera; tras `npm run test:ui -- --only agenda-cita-crear`, `php artisan ui:audit-data` y `npm run test:ui -- --only portal-mis-citas-pagina-2,expediente-historial-pagina-2,portal-detalle-fallo` en verde; en verde — cubre: CA2 — depende: T005 — añadida por /review: R9
+
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md`: convención de paginación de la API (`page`, `per_page`, `search`, forma de `meta` y `counts`; pendientes solo con `page`) y `app/Core/Domain/Pagination` en la descripción de `app/Core`; confirmar que `MobileLoginTest` y los tests de `/internal/appointments/*` no cambiaron en toda la spec (P4, D1)
 - [x] T091 Actualizar `docs/security.md` (superficie de ataque: `page`, `per_page` y `search` en las listas, con sus límites; los logs de acceso sin consulta; RS15.a corregida en `GetUsersByRoleAndStatusController` y pendiente en el resto, por corrección: A15), `docs/observability.md` (los 500 de las listas como `unexpected_error`), `docs/roadmap.md` (025/R10, 025/R23 y 020/R17 resueltos) y revisar `docs/deployment.md` (sin variables ni pasos nuevos)
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -153,18 +161,18 @@ Revisado contra `plan.md` → Constitution Check (constitución 1.2.1):
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
 |---|---|---|
 | CA1 | T005, T008, T012, T015, T020, T021, T022, T023 | T005, T008, T012, T015, T020, T021, T022, T023 |
-| CA2 | T005, T025, T026, T027, T028, T029, T030 | T005, T025, T026, T027, T028, T029, T030 |
-| CA3 | T001, T004, T008, T026, T027, T030 | T001, T004, T008, T026, T027, T030 |
-| CA4 | T006, T008, T013, T015, T031, T032 | T006, T008, T013, T015, T031, T032 |
+| CA2 | T005, T025, T026, T027, T028, T029, T030, T038 | T005, T025, T026, T027, T028, T029, T030, T038 |
+| CA3 | T001, T004, T008, T026, T027, T030, T033 | T001, T004, T008, T026, T027, T030, T033 |
+| CA4 | T006, T008, T013, T015, T031, T032, T034, T035 | T006, T008, T013, T015, T031, T032, T034, T035 |
 | CA5 | T007, T008, T010, T011, T012, T013, T014, T015, T016, T017, T018, T019, T020, T021, T022, T023 | T007, T008, T010, T011, T012, T013, T014, T015, T016, T017, T018, T019, T020, T021, T022, T023 |
 | CA6 | T004, T008, T020, T021, T022, T023, T026, T027, T030 | T004, T008, T020, T021, T022, T023, T026, T027, T030 |
 | CA7 | T006, T010, T013, T016, T017, T018, T019, T025, T027, T028, T029 | T006, T010, T013, T016, T017, T018, T019, T025, T027, T028, T029 |
-| CA8 | T004, T008, T012, T015, T024, T027 | T004, T008, T012, T015, T024, T027 |
+| CA8 | T004, T008, T012, T015, T024, T027, T035 | T004, T008, T012, T015, T024, T027, T035 |
 | CA9 | T002, T003, T004, T006, T008, T012, T015, T026, T028, T029 | T002, T003, T004, T006, T008, T012, T015, T026, T028, T029 |
-| CA10 | T008, T012, T015, T020, T021, T022, T023 | T008, T012, T015, T020, T021, T022, T023 |
-| CA11 | T001, T004, T008, T012, T015, T020, T021, T022, T023, T026, T027, T030 | T001, T004, T008, T012, T015, T020, T021, T022, T023, T026, T027, T030 |
+| CA10 | T008, T012, T015, T020, T021, T022, T023, T036 | T008, T012, T015, T020, T021, T022, T023, T036 |
+| CA11 | T001, T004, T008, T012, T015, T020, T021, T022, T023, T026, T027, T030, T033 | T001, T004, T008, T012, T015, T020, T021, T022, T023, T026, T027, T030, T033 |
 | CA12 | T009, T027 | T009, T027 |
-| CA13 | T002, T003, T008, T012, T015, T020, T021, T022, T023, T026 | T002, T003, T008, T012, T015, T020, T021, T022, T023, T026 |
+| CA13 | T002, T003, T008, T012, T015, T020, T021, T022, T023, T026, T037 | T002, T003, T008, T012, T015, T020, T021, T022, T023, T026, T037 |
 | CA14 | T007, T008, T011, T012, T014, T015, T020, T021, T022, T023, T026, T027, T028, T029 | T007, T008, T011, T012, T014, T015, T020, T021, T022, T023, T026, T027, T028, T029 |
 
 | Amenaza (TM#) | Tarea(s) de control | Tarea(s) de test |
@@ -188,12 +196,12 @@ Revisado contra `plan.md` → Constitution Check (constitución 1.2.1):
 | AppointmentTracking | T029 |
 | ContentManagement (4 submódulos) | T016, T017, T018, T019, T020, T021, T022, T023 |
 | Rutas | T020, T021, T022, T023 |
-| Interfaz (nuevo) | T004 |
-| Interfaz (pantallas) | T008, T012, T015, T020, T021, T022, T023, T024, T026, T027, T030 |
+| Interfaz (nuevo) | T004, T033 |
+| Interfaz (pantallas) | T008, T012, T015, T020, T021, T022, T023, T024, T026, T027, T030, T034 |
 | Sistema de diseño | T001 |
 | Infraestructura (nginx) | T031 |
-| Datos de prueba | T005 |
-| Tests de navegador | T005, T008, T012, T015, T020, T021, T022, T023, T024, T026, T027, T030 |
+| Datos de prueba | T005, T038 |
+| Tests de navegador | T005, T008, T012, T015, T020, T021, T022, T023, T024, T026, T027, T030, T034, T035, T036 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
 |---|---|
