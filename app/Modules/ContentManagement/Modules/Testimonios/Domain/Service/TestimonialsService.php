@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\ContentManagement\Modules\Testimonios\Domain\Service;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Entities\TestimonialEntity;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Repositories\TestimonialRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialDate;
@@ -34,5 +36,21 @@ final readonly class TestimonialsService
             status: $status,
             date: $date,
         );
+    }
+
+    /**
+     * @return Page<TestimonialEntity>
+     */
+    public function findPage(PageRequest $request): Page
+    {
+        return $this->repository->findPage($request);
+    }
+
+    /**
+     * @return array{total: int, visible: int, hidden: int}
+     */
+    public function countByStatus(): array
+    {
+        return $this->repository->countByStatus();
     }
 }
