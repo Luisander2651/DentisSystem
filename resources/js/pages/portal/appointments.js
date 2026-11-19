@@ -1,4 +1,6 @@
 import { renderAppointmentsHistory } from '../../ui/appointments-history';
+import { mountPagination, readListState, writeListState } from '../../ui/pagination';
+import { openAppointmentDetail } from './appointment-detail';
 import { announceError } from '../../ui/status';
 
 /*
@@ -6,6 +8,9 @@ import { announceError } from '../../ui/status';
  * (tarjetas bajo 768 px, tabla desde 768 px), de la más reciente a la más antigua (CA3), con las
  * fechas en dd/mm/aaaa y la hora en HH:MM; sin citas, "Aún no tienes citas registradas" (CA4); si
  * falla, el bloque de error con "Reintentar" en su lugar (CA9). Todo dato va escapado.
+ *
+ * Spec 028 (CA2, CA8): diez citas por página, con la página en la dirección; "Ver" abre el detalle
+ * con la cita de la página cargada (D15).
  */
 (function () {
     const root = document.querySelector('[data-portal-appointments]');
@@ -20,6 +25,17 @@ import { announceError } from '../../ui/status';
     const status = root.querySelector('[data-portal-history-status]');
     const content = root.querySelector('[data-dashboard-content]');
     let ticket = 0;
+    let currentPage = readListState(window.location.search).pagina;
+    const shown = new Map();
+    const historyNav = root.querySelector('[data-history-pagination]');
+    const pagination = mountPagination(historyNav, {
+        noun: 'citas',
+        onChange: (page) => {
+            currentPage = page;
+            load({ announcePage: true });
+        },
+        focusTarget: historyNav ? historyNav.closest('section').querySelector('h2') : null,
+    });
 
     /** "2026-11-26" → "26/11/2026". */
     function shortDate(value) {
@@ -36,8 +52,11 @@ import { announceError } from '../../ui/status';
         content.hidden = state !== 'content';
     }
 
-    function paint(appointments) {
+    function paint(appointments, meta) {
         const list = Array.isArray(appointments) ? appointments : [];
+
+        shown.clear();
+        list.forEach((appointment) => shown.set(String(appointment.id), appointment));
 
         root.querySelectorAll('[data-record-when="appointments"]').forEach((node) => node.classList.toggle('hidden', list.length === 0));
         root.querySelectorAll('[data-record-when-empty="appointments"]').forEach((node) => node.classList.toggle('hidden', list.length > 0));
@@ -52,14 +71,15 @@ import { announceError } from '../../ui/status';
             viewAttribute: 'data-portal-view-appointment',
         });
 
+        pagination.render(meta);
         show('content');
     }
 
-    async function load() {
+    async function load(options = {}) {
         const mine = ++ticket;
 
         try {
-            const response = await fetch('/api/v1/portal/appointments', {
+            const response = await fetch('/api/v1/portal/appointments?page=' + encodeURIComponent(String(currentPage)), {
                 credentials: 'include',
                 headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             });
@@ -71,7 +91,15 @@ import { announceError } from '../../ui/status';
             const payload = await response.json();
 
             if (mine === ticket) {
-                paint(payload.data);
+                const meta = payload.meta ?? null;
+
+                currentPage = meta?.page ?? 1;
+                paint(payload.data, meta);
+                writeListState({ pagina: currentPage, busqueda: '', estado: '' });
+
+                if (options.announcePage) {
+                    pagination.announcePage(meta);
+                }
             }
         } catch (failure) {
             if (mine === ticket) {
@@ -80,6 +108,14 @@ import { announceError } from '../../ui/status';
             }
         }
     }
+
+    root.addEventListener('click', (event) => {
+        const opener = event.target.closest('[data-portal-view-appointment]');
+
+        if (opener) {
+            openAppointmentDetail(shown.get(String(opener.dataset.appointmentId)) ?? null, opener);
+        }
+    });
 
     status.addEventListener('click', (event) => {
         if (!event.target.closest('[data-dashboard-retry]')) {

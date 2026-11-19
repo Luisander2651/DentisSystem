@@ -124,8 +124,8 @@ export const ADMITTED = [
     },
     {
         criterion: '028 CA2',
-        entries: ['expediente', 'expediente-contacto-form', 'expediente-direccion-form', 'expediente-medicos-form', 'expediente-asistente', 'expediente-doctor', 'expediente-historial-pagina-2'],
-        difference: 'El historial de citas del expediente muestra 10 citas por página y, en el pie de su tarjeta, el control de páginas (candidato c3 de la spec 028).',
+        entries: ['expediente', 'expediente-contacto-form', 'expediente-direccion-form', 'expediente-medicos-form', 'expediente-asistente', 'expediente-doctor', 'expediente-historial-pagina-2', 'portal-mis-citas', 'portal-mis-citas-pagina-2', 'portal-mis-citas-vacio', 'portal-mis-citas-fallo'],
+        difference: 'El historial de citas del expediente y "Mis citas" del portal muestran 10 citas por página y, en el pie de su tarjeta, el control de páginas (candidato c3 de la spec 028).',
     },
 ];
 

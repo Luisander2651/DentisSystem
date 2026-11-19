@@ -69,9 +69,33 @@ it('makes the same number of queries with 5 appointments as with 100', function 
     $this->getJson($url)->assertOk();
     $withMany = portalQueriesOf($this, $url);
 
-    expect(count($this->getJson('/api/v1/portal/appointments')->json('data')))->toBe(100)
+    $page = $this->getJson('/api/v1/portal/appointments')->json();
+
+    // Spec 028 (CA12, A22): Mis citas brings ten per page and says how many there are in all.
+    expect($page['data'])->toHaveCount(10)
+        ->and($page['meta']['total'])->toBe(100)
         ->and($withMany)->toBe($withFew);
 })->with([
     'mis citas' => '/api/v1/portal/appointments',
     'próxima cita' => '/api/v1/portal/appointments/next',
 ]);
+
+it('reads one page of Mis citas with LIMIT and OFFSET, never the whole history (spec 028, CA12)', function () {
+    $treatments = [$this->createTreatment()->id];
+    $doctors = [$this->createUserWithRole('doctor')->id];
+    $patient = $this->createPatient();
+    portalPerformanceAppointments($treatments, $doctors, $patient->id, 100);
+    $this->actingAs($patient, 'patient');
+    $this->getJson('/api/v1/portal/appointments')->assertOk();
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    $this->getJson('/api/v1/portal/appointments?page=3')->assertOk()->assertJsonCount(10, 'data');
+    $queries = array_column(DB::getQueryLog(), 'query');
+    DB::disableQueryLog();
+
+    $pageQueries = array_values(array_filter($queries, fn (string $sql): bool => str_contains($sql, 'from "appointments"') && str_contains($sql, 'order by')));
+
+    expect($pageQueries)->toHaveCount(1)
+        ->and($pageQueries[0])->toContain('limit 10')->toContain('offset 20');
+});

@@ -1,6 +1,7 @@
 import { stateBadge } from '../../ui/badge';
 import { announceError } from '../../ui/status';
 import { createAppointmentQr, qrFilename } from '../../ui/appointment-qr';
+import { openAppointmentDetail } from './appointment-detail';
 
 /*
  * Inicio del paciente (spec 025, c3). Pide su próxima cita y la pinta en la tarjeta del inicio con
@@ -25,7 +26,10 @@ import { createAppointmentQr, qrFilename } from '../../ui/appointment-qr';
     const section = root.querySelector('[data-portal-section="next"]');
     const card = section.querySelector('[data-next-card]');
     const detail = section.querySelector('[data-portal-next-detail]');
-    const qr = createAppointmentQr(section.querySelector('[data-view-appointment-qr]'));    let ticket = 0;
+    const qr = createAppointmentQr(section.querySelector('[data-view-appointment-qr]'));
+    let ticket = 0;
+    // Spec 028 (D15, A39): the detail opens with the next appointment the start already has.
+    let nextAppointment = null;
 
     /** "2026-11-12" → "Jueves 12 de noviembre", read as a date of the calendar, without hours. */
     function longDate(value) {
@@ -69,6 +73,7 @@ import { createAppointmentQr, qrFilename } from '../../ui/appointment-qr';
         holder.innerHTML = stateBadge(appointment.status);
         card.querySelector('[data-next-status]').replaceChildren(holder.content.firstElementChild);
 
+        nextAppointment = appointment;
         detail.dataset.appointmentId = appointment.id;
         let suffix = detail.querySelector('[data-action-for]');
 
@@ -152,4 +157,7 @@ import { createAppointmentQr, qrFilename } from '../../ui/appointment-qr';
     });
 
     load();
+    detail.addEventListener('click', () => {
+        openAppointmentDetail(nextAppointment, detail);
+    });
 })();

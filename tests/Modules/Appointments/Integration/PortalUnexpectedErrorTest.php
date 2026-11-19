@@ -24,15 +24,16 @@ function assertPortalGenericError(TestResponse $response): void
     expect($response->getContent())->not->toContain(PORTAL_FAILURE_DETAIL);
 }
 
-it('answers a generic 500 when the appointments fail to load', function (string $url) {
+it('answers a generic 500 when the appointments fail to load', function (string $url, string $method) {
     $this->actingAsPatient();
     $this->mock(AppointmentsRepositoryInterface::class)
-        ->shouldReceive('findAllByStatusAndDateOrPatientId')->once()->andThrow(new RuntimeException(PORTAL_FAILURE_DETAIL));
+        ->shouldReceive($method)->once()->andThrow(new RuntimeException(PORTAL_FAILURE_DETAIL));
 
     assertPortalGenericError($this->getJson($url));
 })->with([
-    'mis citas' => '/api/v1/portal/appointments',
-    'próxima cita' => '/api/v1/portal/appointments/next',
+    // Spec 028: Mis citas reads one page of the patient.
+    'mis citas' => ['/api/v1/portal/appointments', 'findPageByPatient'],
+    'próxima cita' => ['/api/v1/portal/appointments/next', 'findAllByStatusAndDateOrPatientId'],
 ]);
 
 it('answers a generic 500 when an appointment fails to load', function (string $suffix) {

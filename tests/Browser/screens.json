@@ -1001,6 +1001,38 @@
                             "[data-portal-access][hidden]"
                         ]
                     }
+                },
+                {
+                    "name": "el detalle se abre con la próxima cita aunque la lista de citas venga vacía",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/portal/appointments",
+                            "status": 200,
+                            "body": {
+                                "data": []
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "waitFor": "[data-portal-next-detail]"
+                        },
+                        {
+                            "click": "[data-portal-next-detail]"
+                        },
+                        {
+                            "waitFor": "[data-portal-detail-general] dd"
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-portal-detail-general]": "Asignada"
+                        },
+                        "absent": [
+                            "[data-portal-detail-modal] [data-portal-detail-error]:not(.hidden)"
+                        ]
+                    }
                 }
             ]
         },
@@ -1207,7 +1239,8 @@
                         ]
                     }
                 }
-            ]
+            ],
+            "snapshot": true
         },
         {
             "id": "portal-mis-citas-vacio",
@@ -1347,6 +1380,53 @@
                             "ms": 0
                         },
                         "focused": "[data-portal-history-status] [data-dashboard-retry]"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "portal-mis-citas-pagina-2",
+            "screen": "portal",
+            "path": "/mis-citas?pagina=2",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "flows": [
+                {
+                    "name": "recargar o volver con Atrás muestra la página 2",
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-history-pagination]": "Mostrando 11–20 de 20",
+                            "#record-appointments-body tr:nth-child(1)": "29/06/2026",
+                            "#record-appointments-body tr:nth-child(10)": "06/04/2026"
+                        }
+                    }
+                },
+                {
+                    "name": "Anterior vuelve a la página 1",
+                    "do": [
+                        {
+                            "wait": 1000
+                        },
+                        {
+                            "click": "[data-history-pagination] a[aria-label=\"Página anterior\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-history-pagination]": "Mostrando 1–10 de 20",
+                            "#record-appointments-body tr:nth-child(1)": "26/11/2026"
+                        },
+                        "focused": "section:has([data-history-pagination]) h2",
+                        "announced": "Página 1 de 2"
                     }
                 }
             ]
@@ -1626,6 +1706,40 @@
                 },
                 {
                     "absent": "[data-portal-detail-recommendations]"
+                }
+            ]
+        },
+        {
+            "id": "portal-detalle-pagina-2",
+            "screen": "portal",
+            "dialog": "detalle-portal",
+            "dialogSelector": "[data-portal-detail-modal]",
+            "path": "/mis-citas?pagina=2",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                390,
+                1440
+            ],
+            "steps": [
+                {
+                    "waitFor": "[data-portal-view-appointment][data-appointment-id=\"46c8e68e-363c-5b65-8bf8-27a45cf60322\"]"
+                },
+                {
+                    "click": "[data-portal-view-appointment][data-appointment-id=\"46c8e68e-363c-5b65-8bf8-27a45cf60322\"]"
+                },
+                {
+                    "waitFor": "[data-portal-detail-general] dd"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "[data-portal-detail-general] div:last-child dd",
+                    "is": "Cancelada"
+                },
+                {
+                    "absent": "[data-portal-detail-modal] [data-portal-detail-error]:not(.hidden)"
                 }
             ]
         },

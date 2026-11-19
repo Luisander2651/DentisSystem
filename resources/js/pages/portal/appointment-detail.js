@@ -6,8 +6,8 @@ import { renderPrescriptions } from '../../ui/prescriptions';
 
 /*
  * Detalle de una cita del paciente (spec 025, c3-detalle). Se abre desde "Ver detalle" del inicio y
- * desde "Ver" de Mis citas, que llevan el id de la cita; la cita sale de la lista del paciente (la
- * API del portal no da una sola). En una cita abierta muestra su QR con "Descargar QR" (CA7); en una
+ * desde "Ver" de Mis citas: cada pantalla le da la cita que ya tiene (spec 028, D15), porque con la
+ * paginación la lista del paciente ya no trae todas sus citas. En una cita abierta muestra su QR con "Descargar QR" (CA7); en una
  * completada, las recomendaciones y las recetas o "Esta cita no tiene recetas" (CA5, CA6); en una
  * cancelada, ninguna de las dos (CA8). Si falla el QR o las recetas, su aviso va en su lugar y el
  * resto se queda igual (CA9). Todo dato entra con textContent (TM7).
@@ -141,25 +141,11 @@ import { renderPrescriptions } from '../../ui/prescriptions';
         }
     }
 
-    async function open(appointmentId, opener) {
+    function open(appointment, opener) {
         const mine = ++opening;
 
         reset();
         openDialog(modal, opener);
-
-        let appointment = null;
-
-        try {
-            const list = await read('/api/v1/portal/appointments');
-            appointment = (Array.isArray(list) ? list : []).find((item) => String(item.id) === String(appointmentId)) ?? null;
-        } catch (error) {
-            appointment = null;
-        }
-
-        if (mine !== opening) {
-            return;
-        }
-
         loading.hidden = true;
 
         if (!appointment) {
@@ -188,13 +174,8 @@ import { renderPrescriptions } from '../../ui/prescriptions';
         }
     }
 
-    document.addEventListener('click', (event) => {
-        const opener = event.target.closest('[data-portal-next-detail], [data-portal-view-appointment]');
-
-        if (opener && opener.dataset.appointmentId) {
-            open(opener.dataset.appointmentId, opener);
-        }
-    });
+    // The screens reach it through the dialog, so it works however many times the module loads.
+    modal.portalOpenAppointment = open;
 
     // However the dialog closes (Cerrar, Escape, the X or the backdrop), the opening ends.
     modal.addEventListener('close', () => {
@@ -209,3 +190,15 @@ import { renderPrescriptions } from '../../ui/prescriptions';
         }
     });
 })();
+
+/**
+ * Opens the detail of an appointment the screen already holds (a row of the page of Mis citas, the
+ * next appointment of the start). Without the appointment, the dialog says it could not be loaded.
+ */
+export function openAppointmentDetail(appointment, opener) {
+    const modal = document.querySelector('[data-portal-detail-modal]');
+
+    if (modal && typeof modal.portalOpenAppointment === 'function') {
+        modal.portalOpenAppointment(appointment ?? null, opener);
+    }
+}

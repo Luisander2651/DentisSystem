@@ -25,7 +25,7 @@
     </section>
 
     <div data-dashboard-content hidden>
-        <x-records.appointments-history-table empty-text="Aún no tienes citas registradas" />
+        <x-records.appointments-history-table empty-text="Aún no tienes citas registradas" pagination-label="Páginas de mis citas" />
     </div>
 </div>
 
