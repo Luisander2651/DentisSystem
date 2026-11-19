@@ -41,6 +41,7 @@ use App\Modules\Auth\Infrastructure\Http\Controllers\ResetPasswordController;
 use App\Modules\Auth\Infrastructure\Http\Controllers\SendResetPasswordEmailController;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\DeleteCertificationController;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\GetCertificationsController;
+use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\ListCertificationsPageController;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\SaveCertificationController;
 use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\HTTP\Controllers\UpdateCertificationController;
 use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\HTTP\Controllers\DeleteGalleryImageController;
@@ -139,7 +140,7 @@ Route::middleware(['throttle:api', 'sanctum.cookie'])->group(function () {
                 Route::post('/', SaveCertificationController::class);
                 Route::put('/{id}', UpdateCertificationController::class);
                 Route::delete('/{id}', DeleteCertificationController::class);
-                Route::get('/', GetCertificationsController::class);
+                Route::get('/', ListCertificationsPageController::class);
             });
 
             Route::prefix('gallery-images')->group(function (): void {

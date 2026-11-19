@@ -19,6 +19,7 @@
         Cargando certificaciones...
     </div>
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-certifications-list></div>
+    <x-ui.pagination label="Páginas de certificaciones" data-certifications-pagination />
     <div class="hidden rounded-card border border-line bg-surface p-5 text-center text-sm text-muted shadow-sm" data-certifications-empty>
         Aún no hay certificaciones registradas.
     </div>

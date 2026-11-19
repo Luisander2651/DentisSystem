@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Core\Authorization\Exceptions\AuthorizationException;
 use App\Core\Domain\Pagination\PageRequest;
+use App\Modules\ContentManagement\Modules\Certificaciones\Aplication\UseCases\ListCertificationsPageUseCase;
+use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Repositories\CertificationRepositoryInterface;
+use App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\Persistence\Eloquent\Models\CertificationModel;
 use App\Modules\ContentManagement\Modules\Galeria\Aplication\UseCases\ListGalleryImagesPageUseCase;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\Repositories\GalleryImageRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Galeria\Infrastructure\Persistence\Eloquent\Models\GalleryImageModel;
@@ -252,6 +255,110 @@ it('keeps the public promotions without meta', function () {
     contentPaginationPromotions(15, 2);
 
     $this->getJson('/api/v1/public/promotions')
+        ->assertOk()
+        ->assertJsonMissingPath('meta');
+});
+
+// --- Certificaciones ---
+
+function contentPaginationCertifications(int $count, int $hidden = 0): void
+{
+    foreach (range(1, $count) as $number) {
+        CertificationModel::create([
+            'name' => "Certificación {$number}",
+            'description' => "Descripción {$number}",
+            'date' => '2025-06-01',
+            'image_url' => "/storage/certificaciones/certificacion-{$number}.jpg",
+            'status' => $number <= $hidden ? 'oculto' : 'visible',
+        ])->forceFill(['created_at' => Carbon::parse('2026-01-01 08:00:00')->addMinutes($number)])->save();
+    }
+}
+
+it('answers the first page of the certifications with its meta and the counts by status', function () {
+    $this->actingAsAdmin();
+    contentPaginationCertifications(30, 4);
+
+    $this->getJson('/api/v1/certifications')
+        ->assertOk()
+        ->assertJsonCount(12, 'data')
+        ->assertJsonPath('data.0.name', 'Certificación 30')
+        ->assertJsonPath('meta', [
+            'page' => 1,
+            'per_page' => 12,
+            'total' => 30,
+            'last_page' => 3,
+            'from' => 1,
+            'to' => 12,
+            'counts' => ['total' => 30, 'visible' => 26, 'hidden' => 4],
+        ]);
+});
+
+it('always answers a list of certifications, also with a single one', function () {
+    $this->actingAsAdmin();
+    contentPaginationCertifications(1);
+
+    $this->getJson('/api/v1/certifications')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.name', 'Certificación 1')
+        ->assertJsonPath('meta.total', 1);
+});
+
+it('answers the page of certifications asked for, the last one beyond it and never more than fifty', function (string $query, int $count, int $page) {
+    $this->actingAsAdmin();
+    contentPaginationCertifications(60);
+
+    $this->getJson('/api/v1/certifications'.$query)
+        ->assertOk()
+        ->assertJsonCount($count, 'data')
+        ->assertJsonPath('meta.page', $page);
+})->with([
+    'second page' => ['?page=2', 12, 2],
+    'beyond the last' => ['?page=99', 12, 5],
+    'ten thousand per page' => ['?per_page=10000', 50, 1],
+]);
+
+it('refuses the certifications of the panel with 403 and without meta whoever is not an administrator', function (string $actor) {
+    contentPaginationCertifications(3);
+
+    match ($actor) {
+        'asistente' => $this->actingAsNonAdminUser('Asistente'),
+        'doctor' => $this->actingAsNonAdminUser('Doctor'),
+        'paciente' => $this->actingAsPatient(),
+        'inactivo' => $this->actingAsInactiveAdmin(),
+    };
+
+    $this->getJson('/api/v1/certifications')
+        ->assertForbidden()
+        ->assertJsonMissingPath('meta')
+        ->assertJsonMissingPath('data');
+})->with(['asistente', 'doctor', 'paciente', 'inactivo']);
+
+it('neither reads nor counts the certifications when the permission is denied', function () {
+    $repository = $this->mock(CertificationRepositoryInterface::class);
+    $repository->shouldNotReceive('findPage');
+    $repository->shouldNotReceive('countByStatus');
+    $this->app->instance(AuthorizationServiceInterface::class, contentPaginationDenying());
+
+    expect(fn () => app(ListCertificationsPageUseCase::class)->execute(PageRequest::create(1, 12)))
+        ->toThrow(AuthorizationException::class);
+});
+
+it('rejects invalid page parameters of the certifications with 422', function (string $query, string $field) {
+    $this->actingAsAdmin();
+
+    $this->getJson('/api/v1/certifications'.$query)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([$field]);
+})->with([
+    'page text' => ['?page=abc', 'page'],
+    'per_page zero' => ['?per_page=0', 'per_page'],
+]);
+
+it('keeps the public certifications without meta', function () {
+    contentPaginationCertifications(15, 2);
+
+    $this->getJson('/api/v1/public/certifications')
         ->assertOk()
         ->assertJsonMissingPath('meta');
 });
