@@ -8,6 +8,7 @@ use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Appointments\Aplication\DTOs\GetAppointmentsByIdPatientDto;
 use App\Modules\Appointments\Aplication\UseCases\ListPatientAppointmentsPageUseCase;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Tests\Modules\Appointments\Integration\AppointmentsIntegrationTestCase;
 
@@ -53,7 +54,7 @@ it('answers ten appointments per page with their meta, the most recent first', f
         ]);
 });
 
-it('answers the page asked for, the last one beyond it and never more than fifty', function (string $query, int $count, int $page) {
+it('answers the page asked for and the last one beyond it', function (string $query, int $count, int $page) {
     $this->actingAsNonAdminUser('Asistente');
     ($this->seedHistory)(25);
 
@@ -64,8 +65,30 @@ it('answers the page asked for, the last one beyond it and never more than fifty
 })->with([
     'third page' => ['?page=3', 5, 3],
     'beyond the last' => ['?page=99', 5, 3],
-    'ten thousand per page' => ['?per_page=10000', 25, 1],
 ]);
+
+it('never answers more than fifty appointments, however many are asked for (review R8)', function () {
+    $this->actingAsNonAdminUser('Asistente');
+    $treatmentId = $this->createTreatment()->id;
+    $doctorId = $this->createUserWithRole('Doctor')->id;
+
+    foreach (range(0, 59) as $day) {
+        $this->createAppointment([
+            'patient_id' => $this->patient->id,
+            'treatment_id' => $treatmentId,
+            'user_id' => $doctorId,
+            'date' => Carbon::create(2026, 1, 1)->addDays($day)->toDateString(),
+            'status' => 'completada',
+        ]);
+    }
+
+    $this->getJson("/api/v1/appointments/patient/{$this->patient->id}?per_page=10000")
+        ->assertOk()
+        ->assertJsonCount(50, 'data')
+        ->assertJsonPath('meta.per_page', 50)
+        ->assertJsonPath('meta.total', 60)
+        ->assertJsonPath('meta.last_page', 2);
+});
 
 it('answers an empty page for a patient without appointments or that does not exist', function (bool $exists) {
     $this->actingAsNonAdminUser('Asistente');

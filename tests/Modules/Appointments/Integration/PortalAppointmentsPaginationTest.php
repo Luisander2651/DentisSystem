@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Carbon;
 use Tests\Modules\Appointments\Integration\AppointmentsIntegrationTestCase;
 
 uses(AppointmentsIntegrationTestCase::class);
@@ -45,7 +46,7 @@ it('answers ten appointments per page with their meta, the most recent first', f
         ]);
 });
 
-it('answers the page asked for, the last one beyond it and never more than fifty', function (string $query, int $count, int $page) {
+it('answers the page asked for and the last one beyond it', function (string $query, int $count, int $page) {
     $patient = $this->actingAsPatient();
     ($this->seedPortal)($patient->id, 25);
 
@@ -56,8 +57,28 @@ it('answers the page asked for, the last one beyond it and never more than fifty
 })->with([
     'third page' => ['?page=3', 5, 3],
     'beyond the last' => ['?page=99', 5, 3],
-    'ten thousand per page' => ['?per_page=10000', 25, 1],
 ]);
+
+it('never answers more than fifty appointments, however many are asked for (review R8)', function () {
+    $patient = $this->actingAsPatient();
+
+    foreach (range(0, 59) as $day) {
+        $this->createAppointment([
+            'patient_id' => $patient->id,
+            'treatment_id' => $this->treatmentId,
+            'user_id' => $this->doctorId,
+            'date' => Carbon::create(2026, 1, 1)->addDays($day)->toDateString(),
+            'status' => 'completada',
+        ]);
+    }
+
+    $this->getJson('/api/v1/portal/appointments?per_page=10000')
+        ->assertOk()
+        ->assertJsonCount(50, 'data')
+        ->assertJsonPath('meta.per_page', 50)
+        ->assertJsonPath('meta.total', 60)
+        ->assertJsonPath('meta.last_page', 2);
+});
 
 it('gives patient B only their own appointments even with the id of patient A', function () {
     $patientA = $this->createPatient();
