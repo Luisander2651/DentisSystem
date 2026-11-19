@@ -36,6 +36,7 @@
         <input
             type="text"
             id="treatments-search"
+            maxlength="100"
             placeholder="Nombre o descripción"
             class="block h-control w-full rounded-control border border-field bg-surface pl-11 pr-4 text-control text-ink"
         >

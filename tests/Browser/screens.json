@@ -3542,7 +3542,8 @@
                         },
                         "absent": [
                             "[data-patient-edit][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]",
-                            "[data-patients-pagination]:not([hidden])"
+                            "[data-patients-pagination]:not([hidden])",
+                            "#patient-search:not([maxlength=\"100\"])"
                         ]
                     }
                 }
@@ -3582,7 +3583,8 @@
                             "[data-records-list]": "Valeria Prueba"
                         },
                         "absent": [
-                            "[data-records-list] a[href$=\"/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                            "[data-records-list] a[href$=\"/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]",
+                            "[data-records-search]:not([maxlength=\"100\"])"
                         ]
                     }
                 },
@@ -4007,7 +4009,8 @@
                             "#treatments-list": "Tratamiento de prueba 10"
                         },
                         "absent": [
-                            "[data-treatments-delete][data-treatment-name=\"Limpieza dental de prueba\"]"
+                            "[data-treatments-delete][data-treatment-name=\"Limpieza dental de prueba\"]",
+                            "#treatments-search:not([maxlength=\"100\"])"
                         ]
                     }
                 },

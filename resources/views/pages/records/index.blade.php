@@ -60,6 +60,7 @@
                 <input
                     type="text"
                     id="records-search"
+                    maxlength="100"
                     placeholder="Nombre o correo"
                     data-records-search
                     class="block h-control w-full rounded-control border border-field bg-surface pl-11 pr-4 text-control text-ink"

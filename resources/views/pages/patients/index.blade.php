@@ -38,6 +38,7 @@
             <input 
                 type="text" 
                 id="patient-search"
+                maxlength="100"
                 placeholder="Nombre o correo" 
                 class="block h-control w-full rounded-control border border-field bg-surface pl-11 pr-4 text-control text-ink"
             >
