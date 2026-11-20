@@ -5,6 +5,24 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-20
+Las listas del panel y del portal se recorren por páginas (spec 028).
+
+### Added
+- Pacientes, Expedientes clínicos, Usuarios, Tratamientos y las pestañas de Contenido muestran sus registros por páginas, con "Anterior", los números de página y "Siguiente", y el texto "Mostrando X–Y de N" (spec 028).
+- El historial de citas del expediente, "Mis citas" del portal y los pendientes del inicio ("Citas sin cerrar" y "Completadas sin seguimiento") muestran 10 filas por página (spec 028).
+- La página, la búsqueda y el filtro quedan en la dirección: al recargar o volver con "Atrás" se ve la misma página (spec 028).
+
+### Changed
+- La búsqueda y los filtros de Pacientes, Expedientes clínicos y Tratamientos encuentran registros de cualquier página, sin distinguir acentos, y vuelven a la primera página al cambiar (spec 028).
+- Los contadores de la cabecera de cada lista cuentan todos los registros, no solo los de la página (spec 028).
+- Al eliminar el único registro de la última página, la lista pasa a la anterior (spec 028).
+- Los buscadores admiten hasta 100 caracteres (spec 028).
+
+### Security
+- Ninguna lista entrega más de 50 registros por petición, aunque se pida un tamaño de página mayor (spec 028).
+- Los registros de acceso del servidor web ya no guardan la consulta de la dirección, donde pueden ir búsquedas con nombres o correos (spec 028).
+
 ## [0.12.1] - 2026-11-17
 Mantenimiento: actualización de seguridad del framework.
 
