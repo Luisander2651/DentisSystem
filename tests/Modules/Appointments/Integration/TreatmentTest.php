@@ -128,6 +128,8 @@ it('admin can list treatments via the admin endpoint', function () {
 
     $response->assertStatus(200);
     $response->assertJsonCount(2, 'data');
+    $response->assertJsonPath('meta.total', 2);
+    $response->assertJsonPath('meta.counts', ['total' => 2, 'with_duration' => 2, 'average_minutes' => 30]);
 });
 
 it('non-admin cannot list treatments via the admin endpoint', function () {

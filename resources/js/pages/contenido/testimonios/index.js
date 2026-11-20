@@ -1,4 +1,6 @@
 import { stateBadge } from '../../../ui/badge';
+import { mountPagination } from '../../../ui/pagination';
+import { contentTabStartPage, rememberContentTabPage } from '../tabs';
 import { failureMessage } from '../../../ui/status';
 import { initTestimonialsEditModal } from './edit-modal';
 import { initTestimonialsDeleteModal } from './delete-modal';
@@ -15,6 +17,20 @@ export function initTestimoniosModule() {
     if (!testimonialsList) {
         return;
     }
+
+    // Spec 028 (CA1, CA5, CA10): the server answers one page with the counts of the whole list;
+    // saving or deleting reloads the page shown.
+    var panel = testimonialsList.closest('[data-content-panel]');
+    var currentPage = contentTabStartPage(panel);
+    var requestNumber = 0;
+    var pagination = mountPagination(document.querySelector('[data-testimonials-pagination]'), {
+        noun: 'testimonios',
+        onChange: function (page) {
+            currentPage = page;
+            loadTestimonials({ announcePage: true });
+        },
+        focusTarget: panel ? panel.querySelector('h2') : null,
+    });
 
     function escapeHtml(value) {
         return String(value ?? '')
@@ -102,31 +118,25 @@ export function initTestimoniosModule() {
         testimonialsError.classList.add('hidden');
     }
 
-    function renderTestimonialCards(records) {
-        var visibleCount = 0;
-        var hiddenCount = 0;
-
-        records.forEach(function (record) {
-            if (normalizeTestimonialStatus(record.status) === 'visible') {
-                visibleCount += 1;
-                return;
-            }
-
-            hiddenCount += 1;
-        });
+    function renderTestimonialsCounts(counts) {
+        if (!counts) {
+            return;
+        }
 
         if (testimonialsCount) {
-            testimonialsCount.textContent = String(records.length);
+            testimonialsCount.textContent = String(counts.total ?? 0);
         }
 
         if (testimonialsVisibleCount) {
-            testimonialsVisibleCount.textContent = String(visibleCount);
+            testimonialsVisibleCount.textContent = String(counts.visible ?? 0);
         }
 
         if (testimonialsHiddenCount) {
-            testimonialsHiddenCount.textContent = String(hiddenCount);
+            testimonialsHiddenCount.textContent = String(counts.hidden ?? 0);
         }
+    }
 
+    function renderTestimonialCards(records) {
         testimonialsList.innerHTML = records.map(function (record) {
             var id = record.id ?? '';
             var author = record.author ?? '';
@@ -155,12 +165,14 @@ export function initTestimoniosModule() {
         }
     }
 
-    async function loadTestimonials() {
+    async function loadTestimonials(options) {
+        var thisRequest = ++requestNumber;
+
         setTestimonialsLoading(true);
         hideTestimonialsError();
 
         try {
-            var response = await fetch('/api/v1/testimonials', {
+            var response = await fetch('/api/v1/testimonials?page=' + encodeURIComponent(String(currentPage)), {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -173,23 +185,47 @@ export function initTestimoniosModule() {
                 return {};
             });
 
-            if (!response.ok) {
-                showTestimonialsError(failureMessage(response.status, payload));
-                renderTestimonialCards([]);
+            if (thisRequest !== requestNumber) {
                 return;
             }
 
+            if (!response.ok) {
+                showTestimonialsError(failureMessage(response.status, payload));
+                renderTestimonialCards([]);
+                pagination.render(null);
+                return;
+            }
+
+            var meta = payload && payload.meta ? payload.meta : null;
+
+            currentPage = meta && meta.page ? meta.page : 1;
+            renderTestimonialsCounts(meta && meta.counts);
             renderTestimonialCards(normalizeTestimonialPayload(payload));
+            pagination.render(meta);
+            rememberContentTabPage(panel, currentPage);
+
+            if (options && options.announcePage) {
+                pagination.announcePage(meta);
+            }
         } catch (error) {
+            if (thisRequest !== requestNumber) {
+                return;
+            }
+
             showTestimonialsError(failureMessage(0));
             renderTestimonialCards([]);
+            pagination.render(null);
         } finally {
-            setTestimonialsLoading(false);
+            if (thisRequest === requestNumber) {
+                setTestimonialsLoading(false);
+            }
         }
     }
 
     var testimonialsApi = {
-        reload: loadTestimonials,
+        reload: function () {
+            return loadTestimonials();
+        },
         showError: showTestimonialsError,
         hideError: hideTestimonialsError,
         getCookie: getCookie,

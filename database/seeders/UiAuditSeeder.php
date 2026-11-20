@@ -88,7 +88,43 @@ final class UiAuditSeeder extends Seeder
         'Limpieza dental de prueba',
         'Resina de prueba',
         'Ortodoncia de prueba',
+        ...self::PAGED_TREATMENT_NAMES,
     ];
+
+    /**
+     * Spec 028 (A30): ten more treatments so Tratamientos has a second page. Their names sort
+     * after the three of the agenda, so those stay on the first page.
+     */
+    public const PAGED_TREATMENT_NAMES = [
+        'Tratamiento de prueba 01',
+        'Tratamiento de prueba 02',
+        'Tratamiento de prueba 03',
+        'Tratamiento de prueba 04',
+        'Tratamiento de prueba 05',
+        'Tratamiento de prueba 06',
+        'Tratamiento de prueba 07',
+        'Tratamiento de prueba 08',
+        'Tratamiento de prueba 09',
+        'Tratamiento de prueba 10',
+    ];
+
+    /**
+     * Spec 028 (A30, A38): what is added so every paged list has a second page is older than what
+     * the other entries of ui-audit open by its id, so those keep appearing on the first page.
+     */
+    public const PAGED_CREATED_AT = '2026-01-15 09:00:00';
+
+    /**
+     * Spec 028: nine inactive assistants, so Usuarios has a second page without touching the
+     * selectors of doctors of the agenda.
+     */
+    public const PAGED_STAFF_COUNT = 9;
+
+    /**
+     * Spec 028: nine hidden images, so Galería has a second page while the public site, which
+     * shows only the visible ones, stays the same.
+     */
+    public const PAGED_GALLERY_COUNT = 9;
 
     public const PROMOTION_NAMES = [
         'Promoción de prueba: limpieza dental',
@@ -110,6 +146,13 @@ final class UiAuditSeeder extends Seeder
 
     private const IMAGE_DISK = 'public';
 
+    /**
+     * The appointments run() wrote, so the ones its patients got from elsewhere can go (spec 028).
+     *
+     * @var list<string>
+     */
+    private array $seededAppointmentIds = [];
+
     public function run(): void
     {
         $this->assertAllowedEnvironment();
@@ -126,6 +169,8 @@ final class UiAuditSeeder extends Seeder
         $this->seedOtherDoctorAppointments($patient, $otherDoctor, $treatments);
         $this->seedDashboard(['doctor' => $staff['doctor'], 'otro' => $otherDoctor], $treatments);
         $this->seedContent();
+        $this->seedPagedLists($patient, ['doctor' => $staff['doctor'], 'otro' => $otherDoctor], $treatments);
+        $this->removeForeignAppointments();
     }
 
     /**
@@ -167,6 +212,31 @@ final class UiAuditSeeder extends Seeder
         TestimonialModel::query()->whereIn('author', self::TESTIMONIAL_AUTHORS)->delete();
 
         Storage::disk(self::IMAGE_DISK)->deleteDirectory(self::IMAGE_DIRECTORY);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $values
+     */
+    private function seedAppointment(array $attributes, array $values): AppointmentModel
+    {
+        $appointment = AppointmentModel::query()->updateOrCreate($attributes, $values);
+        $this->seededAppointmentIds[] = $appointment->id;
+
+        return $appointment;
+    }
+
+    /**
+     * Spec 028 (review R9): the entries that send for real, such as agenda-cita-crear, leave
+     * appointments for the seeded patients; the entries that count a patient's appointments
+     * need only the seeded ones on every run.
+     */
+    private function removeForeignAppointments(): void
+    {
+        AppointmentModel::query()
+            ->whereIn('patient_id', PatientModel::query()->where('email', 'like', '%@'.self::EMAIL_DOMAIN)->select('id'))
+            ->whereNotIn('id', $this->seededAppointmentIds)
+            ->delete();
     }
 
     private function assertAllowedEnvironment(): void
@@ -272,12 +342,12 @@ final class UiAuditSeeder extends Seeder
 
         foreach (self::TREATMENT_NAMES as $index => $name) {
             $treatments[] = TreatmentModel::query()->updateOrCreate(['name' => $name], [
-                'description' => $details[$index][0],
-                'time' => $details[$index][1],
+                'description' => $details[$index][0] ?? 'Tratamiento para probar la segunda página.',
+                'time' => $details[$index][1] ?? 20 + 5 * $index,
             ]);
         }
 
-        return $treatments;
+        return array_slice($treatments, 0, 3);
     }
 
     /**
@@ -299,7 +369,7 @@ final class UiAuditSeeder extends Seeder
         ];
 
         foreach ($appointments as $index => [$day, $time, $status, $treatment]) {
-            AppointmentModel::query()->updateOrCreate(['id' => self::stableId('appointment', $index)], [
+            $this->seedAppointment(['id' => self::stableId('appointment', $index)], [
                 'date' => self::APPOINTMENTS_MONTH.'-'.$day,
                 'time' => $time,
                 'whatsapp_reminder' => false,
@@ -342,7 +412,7 @@ final class UiAuditSeeder extends Seeder
         ];
 
         foreach ($appointments as $index => [$day, $time, $status, $treatment]) {
-            AppointmentModel::query()->updateOrCreate(['id' => self::stableId('portal-appointment', $index)], [
+            $this->seedAppointment(['id' => self::stableId('portal-appointment', $index)], [
                 'date' => self::PORTAL_MONTH.'-'.$day,
                 'time' => $time,
                 'whatsapp_reminder' => false,
@@ -396,7 +466,7 @@ final class UiAuditSeeder extends Seeder
         ];
 
         foreach ($appointments as $index => [$day, $time, $status, $treatment]) {
-            AppointmentModel::query()->updateOrCreate(['id' => self::stableId('other-doctor-appointment', $index)], [
+            $this->seedAppointment(['id' => self::stableId('other-doctor-appointment', $index)], [
                 'date' => self::APPOINTMENTS_MONTH.'-'.$day,
                 'time' => $time,
                 'whatsapp_reminder' => false,
@@ -456,7 +526,7 @@ final class UiAuditSeeder extends Seeder
             $date = $month.$day;
             $appointmentId = self::stableId('dashboard-appointment', $index);
 
-            AppointmentModel::query()->updateOrCreate(['id' => $appointmentId], [
+            $this->seedAppointment(['id' => $appointmentId], [
                 'date' => $date,
                 'time' => $time,
                 'whatsapp_reminder' => false,
@@ -547,6 +617,76 @@ final class UiAuditSeeder extends Seeder
                 'description' => $testimonials[$index][0],
                 'status' => $testimonials[$index][1],
             ]);
+        }
+    }
+
+    /**
+     * Spec 028 (A30, A38): a second page in every paged list, with records older than the ones
+     * the other entries open. The patient gets five cancelled appointments in April and five
+     * completed without follow-up in June (11 completed without follow-up in all), so "Mis
+     * citas", the clinical record and "Completadas sin seguimiento" go beyond 10; Usuarios gets
+     * inactive assistants and Galería hidden images, both registered before everything else.
+     *
+     * @param  array{doctor: UserModel, otro: UserModel}  $doctors
+     * @param  list<TreatmentModel>  $treatments
+     */
+    private function seedPagedLists(PatientModel $patient, array $doctors, array $treatments): void
+    {
+        $appointments = [
+            ['2026-04-06', '09:00:00', 'cancelada', 0, 'doctor'],
+            ['2026-04-13', '10:00:00', 'cancelada', 1, 'otro'],
+            ['2026-04-20', '11:00:00', 'cancelada', 2, 'doctor'],
+            ['2026-04-27', '12:00:00', 'cancelada', 0, 'otro'],
+            ['2026-04-28', '13:00:00', 'cancelada', 1, 'doctor'],
+            ['2026-06-03', '09:30:00', 'completada', 0, 'doctor'],
+            ['2026-06-10', '10:30:00', 'completada', 1, 'otro'],
+            ['2026-06-17', '11:30:00', 'completada', 2, 'doctor'],
+            ['2026-06-24', '12:30:00', 'completada', 0, 'otro'],
+            ['2026-06-29', '13:30:00', 'completada', 1, 'doctor'],
+        ];
+
+        foreach ($appointments as $index => [$date, $time, $status, $treatment, $doctor]) {
+            $this->seedAppointment(['id' => self::stableId('paged-appointment', $index)], [
+                'date' => $date,
+                'time' => $time,
+                'whatsapp_reminder' => false,
+                'status' => $status,
+                'treatment_id' => $treatments[$treatment]->id,
+                'user_id' => $doctors[$doctor]->id,
+                'patient_id' => $patient->id,
+            ]);
+        }
+
+        for ($index = 1; $index <= self::PAGED_STAFF_COUNT; $index++) {
+            $email = sprintf('asistente.%02d@%s', $index, self::EMAIL_DOMAIN);
+            $user = UserModel::query()->firstOrNew(['email' => $email]);
+
+            if (! $user->exists) {
+                $user->id = self::stableId('user', 'asistente-'.$index);
+                $user->password = Hash::make(Str::random(40));
+            }
+
+            $user->fill([
+                'first_name' => sprintf('Asistente %02d', $index),
+                'last_name' => 'Prueba',
+                'status' => 'inactive',
+                'role_id' => UserRoleId::fromString('Asistente')->toDatabaseId(),
+            ]);
+            $user->created_at = self::PAGED_CREATED_AT;
+            $user->save();
+        }
+
+        foreach (self::PAGED_TREATMENT_NAMES as $name) {
+            TreatmentModel::query()->where('name', $name)->update(['created_at' => self::PAGED_CREATED_AT]);
+        }
+
+        for ($index = 1; $index <= self::PAGED_GALLERY_COUNT; $index++) {
+            $image = GalleryImageModel::query()->updateOrCreate(['url' => $this->storeImage('galeria-pagina-'.$index)], [
+                'description' => sprintf('Imagen oculta de prueba %02d', $index),
+                'status' => 'hidden',
+            ]);
+            $image->created_at = self::PAGED_CREATED_AT;
+            $image->save();
         }
     }
 

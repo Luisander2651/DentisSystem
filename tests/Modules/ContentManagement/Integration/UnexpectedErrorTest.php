@@ -22,8 +22,12 @@ it('answers a generic 500 when listing content fails unexpectedly', function (st
         ->assertStatus(500)
         ->assertExactJson(['error' => 'Internal server error']);
 })->with([
-    'certifications' => ['/api/v1/certifications', CertificationRepositoryInterface::class, 'findByIdAndNameAndStatus'],
-    'gallery' => ['/api/v1/gallery-images', GalleryImageRepositoryInterface::class, 'findByIdAndUrlAndStatus'],
-    'promotions' => ['/api/v1/promotions', PromotionRepositoryInterface::class, 'findByIdAndName'],
-    'testimonials' => ['/api/v1/testimonials', TestimonialRepositoryInterface::class, 'findByIdAndNameAndStatus'],
+    'certifications' => ['/api/v1/certifications', CertificationRepositoryInterface::class, 'findPage'],
+    'certifications counts' => ['/api/v1/certifications', CertificationRepositoryInterface::class, 'countByStatus'],
+    'gallery' => ['/api/v1/gallery-images', GalleryImageRepositoryInterface::class, 'findPage'],
+    'gallery counts' => ['/api/v1/gallery-images', GalleryImageRepositoryInterface::class, 'countByStatus'],
+    'promotions' => ['/api/v1/promotions', PromotionRepositoryInterface::class, 'findPage'],
+    'promotions counts' => ['/api/v1/promotions', PromotionRepositoryInterface::class, 'countByStatus'],
+    'testimonials' => ['/api/v1/testimonials', TestimonialRepositoryInterface::class, 'findPage'],
+    'testimonials counts' => ['/api/v1/testimonials', TestimonialRepositoryInterface::class, 'countByStatus'],
 ]);

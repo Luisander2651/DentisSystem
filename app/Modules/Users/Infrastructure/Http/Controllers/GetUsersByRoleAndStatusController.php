@@ -5,49 +5,46 @@ declare(strict_types=1);
 namespace App\Modules\Users\Infrastructure\Http\Controllers;
 
 use App\Core\Authorization\Exceptions\AuthorizationException;
-use App\Modules\Users\Aplication\DTOs\GetUsersByStatusAndRoleDTO;
-use App\Modules\Users\Aplication\Exceptions\UserAplicationExceptions;
-use App\Modules\Users\Aplication\UseCases\GetUsersByRoleAndStatusUseCase;
-use App\Modules\Users\Domain\Exceptions\UserException;
-use App\Modules\Users\Domain\Exceptions\ValueObjectsException;
+use App\Core\Http\PageMeta;
+use App\Core\Http\UnexpectedErrorResponse;
+use App\Modules\Users\Aplication\DTOs\ListUsersPageDTO;
+use App\Modules\Users\Aplication\UseCases\ListUsersPageUseCase;
 use App\Modules\Users\Infrastructure\Http\Requests\GetUsersRequest;
 use App\Modules\Users\Infrastructure\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 
+/**
+ * Spec 028 (CA1, CA5): one page of the staff with its `meta` and the counts by role of the whole
+ * list.
+ */
 final class GetUsersByRoleAndStatusController
 {
     public function __construct(
-        private GetUsersByRoleAndStatusUseCase $useCase
+        private ListUsersPageUseCase $useCase
     ) {}
 
     public function __invoke(GetUsersRequest $request): JsonResponse
     {
         try {
-            $users = $this->useCase->execute(GetUsersByStatusAndRoleDTO::create(
-                status: $request->query('status'),
-                role: $request->query('role'),
+            $pageRequest = $request->pageRequest(ListUsersPageDTO::DEFAULT_PER_PAGE);
+
+            $result = $this->useCase->execute(ListUsersPageDTO::create(
+                page: $pageRequest->page,
+                perPage: $pageRequest->size,
+                status: $request->validated('status'),
+                role: $request->validated('role'),
             ));
 
             // BR-8: UserResource projects six fields and the password hash is not one of
             // them, so the credential never reaches the wire.
-            return response()->json(['data' => UserResource::collection($users)], 200);
-        } catch (UserException $e) {
-            return response()->json(['error' => $e->getMessage()], 409);
-        } catch (ValueObjectsException $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
-        } catch (UserAplicationExceptions $e) {
-            return response()->json(['error' => $e->getMessage()], 409);
+            return response()->json([
+                'data' => UserResource::collection($result['page']->items),
+                'meta' => PageMeta::from($result['page'], $result['counts']),
+            ], 200);
         } catch (AuthorizationException $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         } catch (\Exception $e) {
-            // BR-13 (SECURITY-15).
-            Log::error('GetUsersByRoleAndStatusController: unexpected error', [
-                'exception' => $e::class,
-                'message' => $e->getMessage(),
-            ]);
-
-            return response()->json(['error' => 'Internal server error'], 500);
+            return UnexpectedErrorResponse::from($e, self::class);
         }
     }
 }

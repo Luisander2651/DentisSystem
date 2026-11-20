@@ -162,5 +162,76 @@ it('answers an empty list with a total of 0', function () {
 
     $this->getJson(WITHOUT_TRACKING_URL)
         ->assertOk()
-        ->assertExactJson(['data' => ['items' => [], 'total' => 0]]);
+        ->assertExactJson([
+            'data' => ['items' => [], 'total' => 0],
+            'meta' => ['page' => 1, 'per_page' => 10, 'total' => 0, 'last_page' => 1, 'from' => null, 'to' => null],
+        ]);
 });
+
+/*
+ * Spec 028 (CA2, CA7, CA9, CA14): the section is paged by ten; the rest are on the next pages.
+ */
+it('gives the second page with the ones left, the total and its meta', function () {
+    $this->actingAsAdmin();
+
+    foreach (range(1, 12) as $day) {
+        $this->createAppointment(['date' => sprintf('2026-10-%02d', $day), 'time' => '10:00', 'status' => 'completada']);
+    }
+
+    $response = $this->getJson(WITHOUT_TRACKING_URL.'?page=2')->assertOk();
+
+    expect(array_column($response->json('data.items'), 'date'))->toBe(['2026-10-02', '2026-10-01'])
+        ->and($response->json('data.total'))->toBe(12)
+        ->and($response->json('meta'))->toBe(['page' => 2, 'per_page' => 10, 'total' => 12, 'last_page' => 2, 'from' => 11, 'to' => 12]);
+});
+
+it('keeps ten per page whatever size the request asks for', function () {
+    $this->actingAsAdmin();
+
+    foreach (range(1, 12) as $day) {
+        $this->createAppointment(['date' => sprintf('2026-10-%02d', $day), 'time' => '10:00', 'status' => 'completada']);
+    }
+
+    $this->getJson(WITHOUT_TRACKING_URL.'?per_page=50')
+        ->assertOk()
+        ->assertJsonCount(10, 'data.items')
+        ->assertJsonPath('meta.per_page', 10);
+});
+
+it('gives every appointment exactly once across the pages when they share the date and the time', function () {
+    $this->actingAsAdmin();
+
+    $ids = array_map(fn (): string => $this->createAppointment(['date' => '2026-10-10', 'time' => '10:00', 'status' => 'completada'])->id, range(1, 15));
+
+    $seen = [
+        ...array_column($this->getJson(WITHOUT_TRACKING_URL.'?page=1')->json('data.items'), 'id'),
+        ...array_column($this->getJson(WITHOUT_TRACKING_URL.'?page=2')->json('data.items'), 'id'),
+    ];
+
+    expect($seen)->toBe(collect($ids)->sortDesc()->values()->all());
+});
+
+it('gives the doctor only their own on every page', function () {
+    $daniela = $this->createUserWithRole('doctor', ['first_name' => 'Daniela', 'last_name' => 'Prueba']);
+    $diego = $this->createUserWithRole('doctor', ['first_name' => 'Diego', 'last_name' => 'Prueba']);
+
+    foreach (range(1, 12) as $day) {
+        $this->createAppointment(['date' => sprintf('2026-10-%02d', $day), 'time' => '10:00', 'status' => 'completada', 'user_id' => $diego->id]);
+        $this->createAppointment(['date' => sprintf('2026-10-%02d', $day), 'time' => '11:00', 'status' => 'completada', 'user_id' => $daniela->id]);
+    }
+
+    $this->actingAs($diego, 'sanctum');
+    $second = $this->getJson(WITHOUT_TRACKING_URL.'?page=2')->assertOk()->json('data');
+
+    expect($second['total'])->toBe(12)
+        ->and($second['items'])->toHaveCount(2)
+        ->and(array_unique(array_column($second['items'], 'doctor_name')))->toBe(['Diego Prueba']);
+});
+
+it('rejects a page that is not a whole number above zero with 422', function (string $page) {
+    $this->actingAsAdmin();
+
+    $this->getJson(WITHOUT_TRACKING_URL.'?page='.$page)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['page']);
+})->with(['abc', '0']);

@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-10-11
+updated: 2026-11-19
 ---
 
 # Arquitectura de Dentissa
@@ -72,7 +72,7 @@ Auth guarda tokens de reset en Redis. Todos persisten en PostgreSQL.
 ## Módulos
 | Módulo | Ruta | Responsabilidad | Depende de |
 |---|---|---|---|
-| Core | `app/Core` | `CurrentActorAuthorizationService::assertCan` (mapa `permiso → roles`), `can()` (la misma comprobación sin lanzar), `currentActorId()` (id del staff que actúa, para los permisos `*-own`) y `currentPatientId()` (id del paciente activo de la sesión, spec 025), middlewares `OnlyAdmin`, `EnsureActiveStaff` (alias `staff`), `EnsureActivePatient` (alias `patient`), `NoStoreResponse` (alias `no-store`) e `InjectSanctumTokenFromCookie`, `UnexpectedErrorResponse`, `UuidIdentifier`, `TrimsPasswordFields` | Users (modelo y roles) |
+| Core | `app/Core` | `CurrentActorAuthorizationService::assertCan` (mapa `permiso → roles`), `can()` (la misma comprobación sin lanzar), `currentActorId()` (id del staff que actúa, para los permisos `*-own`) y `currentPatientId()` (id del paciente activo de la sesión, spec 025), middlewares `OnlyAdmin`, `EnsureActiveStaff` (alias `staff`), `EnsureActivePatient` (alias `patient`), `NoStoreResponse` (alias `no-store`) e `InjectSanctumTokenFromCookie`, `UnexpectedErrorResponse`, `UuidIdentifier`, `TrimsPasswordFields`; paginación de listas (spec 028): `Domain/Pagination` (`PageRequest`, `Page`, `PaginationException`), `Http/PageMeta` y las reglas `Http/Requests/PageQueryRules` y `PendingPageRequest` | Users (modelo y roles) |
 | Auth | `app/Modules/Auth` | Login unificado staff/paciente, registro público de pacientes, logout, reset de contraseña | Users, Patients, Core |
 | Users | `app/Modules/Users` | CRUD del personal (Administrador, Asistente, Doctor) y roles | Core |
 | Patients | `app/Modules/Patients` | Pacientes, contacto, dirección, datos médicos y expediente consolidado | Core |
@@ -108,7 +108,7 @@ Crear una cita:
 
 ## Frontend
 - Componentes y organización: `resources/views/layouts/{admin,app,dashboard,landing,patient,error,site}`, componentes Blade en `components/{ui,calendar,landing,records,dashboard,appointments,portal,site}` y páginas en `pages/<sección>/index.blade.php` con sus diálogos al lado. Los componentes `x-ui.*` (botón, campo, marca, diálogo, región de estado, contador, filtro, insignia, registro, subtítulo, encabezado de página) son la única forma de pintar esos elementos (spec 016).
-- JS: un archivo por página en `resources/js/pages/<sección>/<acción>.js`, cada uno declarado a mano como entrada en `vite.config.js`; `fetch` a `/api/v1`. Lo común vive en `resources/js/ui/`: `dialog.js` abre y cierra los `<dialog>` y devuelve el foco, `status.js` anuncia avisos y errores en la región de estado con textos propios en español, y `badge.js` pinta las insignias de estado. Desde la spec 025, el personal y el portal del paciente comparten además `appointment-qr.js` (el QR de una cita y su descarga en PNG, con el componente `x-appointments.qr-block`), `prescriptions.js` (las tarjetas de recetas) y `appointments-history.js` (el historial de citas del expediente, con los formatos que fije quien lo llama).
+- JS: un archivo por página en `resources/js/pages/<sección>/<acción>.js`, cada uno declarado a mano como entrada en `vite.config.js`; `fetch` a `/api/v1`. Lo común vive en `resources/js/ui/`: `dialog.js` abre y cierra los `<dialog>` y devuelve el foco, `status.js` anuncia avisos y errores en la región de estado con textos propios en español, `badge.js` pinta las insignias de estado y `pagination.js` (spec 028) pinta el control de páginas desde `meta` en el `nav` de `x-ui.pagination`, guarda página, búsqueda y filtro en la dirección (`pagina`, `busqueda`, `estado`) y anuncia la página nueva. Desde la spec 025, el personal y el portal del paciente comparten además `appointment-qr.js` (el QR de una cita y su descarga en PNG, con el componente `x-appointments.qr-block`), `prescriptions.js` (las tarjetas de recetas) y `appointments-history.js` (el historial de citas del expediente, con los formatos que fije quien lo llama).
 - Sitio público (spec 026): `layouts/site` con los componentes `components/site/{header,footer,seo}` y las vistas `resources/views/site/{inicio,nosotros,galeria,contacto}`; las páginas legales usan el mismo layout. Estilos propios en `resources/css/site/` (`site.css` con las fuentes autoalojadas de `resources/fonts/`, `components.css`, `animations.css` y uno por página en `pages/`) sobre los tokens de `app.css`, y JS en `resources/js/site/`: `core.js` (entrada del layout: menú, estado abierto/cerrado con el reloj de la clínica, entradas de sección) y una entrada por página en `pages/`, que `vite.config.js` recoge sola de esa carpeta; los módulos `tooth3d.js` (recorrido 3D del inicio), `gallery.js` (dentadura 3D del antes y después, con dibujo plano de respaldo), `gallery-photos.js`, `home.js` y `contact.js` (compositor de WhatsApp) los importa cada página. La galería ya no pide la API: sus imágenes llegan en el HTML. Los datos de la clínica, los tratamientos, las rutas indexables y el título y la descripción de cada página viven en `config/site.php` (variables `SITE_*`). `SITE_NEW_LANDING=false` vuelve a las vistas viejas de `layouts/landing`.
 - Estado: sin librería de estado; cada página mantiene su estado en el DOM.
 - Routing: rutas web en español (`/agenda`, `/pacientes`, `/expedientes-clinicos`, `/contenido`) definidas en `routes/web.php`, como closures o, en `/`, `/dashboard` (spec 020) y `/reportes`, con un controlador invocable. Cualquier otra dirección web cae en una ruta de respaldo declarada en `bootstrap/app.php`, fuera del grupo `web`, que responde la página "No encontrada" sin abrir sesión.
@@ -141,8 +141,8 @@ Crear una cita:
   `resources/js/pages/dashboard.js` pide en paralelo cuatro lecturas y pinta cada sección con su estado:
   Appointments añade `GET /agenda/today-summary` (citas de hoy, contadores y siguiente cita, calculada en
   el dominio por `TodayAgenda`) y `GET /agenda/unclosed` (citas pasadas aún asignadas o reprogramadas,
-  como mucho 10 con el total aparte, `AppointmentPage`); AppointmentTracking añade
-  `GET /agenda/without-tracking` (completadas sin seguimiento, `PendingTrackingRepositoryInterface`) y
+  de 10 en 10 desde la spec 028, `AppointmentsService::PENDING_PAGE_SIZE`); AppointmentTracking añade
+  `GET /agenda/without-tracking` (completadas sin seguimiento, de 10 en 10 con `PendingTrackingService`) y
   `POST /appointments/{id}/tracking` (registrar el seguimiento de una completada; la restricción única
   convierte el doble envío en 409). El recorte del doctor a sus citas vive en `DoctorScope`
   (`Aplication/Support`), que comparten los listados de la agenda y del inicio, y las reglas del
@@ -162,8 +162,8 @@ Crear una cita:
   `auth:sanctum,patient` y después `staff` u `only.admin` (staff) o `patient` (`EnsureActivePatient`:
   paciente activo; 403 al staff y al paciente desactivado). El grupo `/api/v1/portal`
   (`auth:sanctum,patient` + `patient` + `no-store`) tiene cuatro lecturas: `GET /appointments`
-  (historial) y `GET /appointments/next` (próxima cita abierta desde hoy) en Appointments, con
-  `GetPatientAppointmentsUseCase` y `GetPatientNextAppointmentUseCase`; `GET /appointments/{id}/qr`
+  (historial, de 10 en 10 desde la spec 028) y `GET /appointments/next` (próxima cita abierta desde hoy) en Appointments, con
+  `ListPortalAppointmentsPageUseCase` y `GetPatientNextAppointmentUseCase`; `GET /appointments/{id}/qr`
   (`GetPatientAppointmentQrUseCase`, el mismo puerto de QR de la 024; 409 en una cita cerrada) y, en
   AppointmentTracking, `GET /appointments/{id}/prescriptions` (`GetPatientPrescriptionsUseCase`: solo
   recomendaciones y recetas). Cada caso de uso toma el paciente de `currentPatientId()` y comprueba
@@ -184,6 +184,16 @@ Crear una cita:
   estado a `completada` o `cancelada`, o el recordatorio); sus reglas de entrada están en
   `UpdateAppointmentRequest`, que autoriza antes de validar. Los rechazos de entrada son 422 con el formato
   de validación de Laravel (`{"message", "errors"}`), el único que la interfaz muestra tal cual.
+- Paginación de listas (spec 028): las 11 listas del panel y del portal reciben `page` (entero ≥ 1),
+  `per_page` (≥ 1; más de 50 se baja a 50 sin error; por omisión 12 en tarjetas y 10 en tablas) y, donde
+  hay buscador, `search` (hasta 100 caracteres, sin distinguir mayúsculas ni acentos) y `status`. Responden
+  `{"data": [...], "meta": {"page", "per_page", "total", "last_page", "from", "to", "counts"}}`: `total`
+  cuenta lo que coincide con la búsqueda y el filtro, y `counts` (solo en las listas con contadores) toda
+  la lista. Una página mayor que la última devuelve la última; sin resultados, `from` y `to` son `null`.
+  Las pendientes del inicio (`/agenda/unclosed` y `/agenda/without-tracking`) solo aceptan `page`, van
+  siempre de 10 en 10 y conservan `{"data": {"items", "total"}}` con `meta` al lado. Excepción a P4
+  aceptada en la spec 028: el cambio no es aditivo y sigue en `/api/v1`, porque solo lo consume el JS que
+  se despliega a la vez; la app Android (`/auth/me`, `/internal/appointments/*`) no cambia.
 - Cómo se regenera: no aplica (no hay generación de tipos).
 
 ## Despliegue

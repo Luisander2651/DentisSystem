@@ -267,6 +267,60 @@
             "snapshot": true
         },
         {
+            "id": "dashboard-pendientes-pagina-2",
+            "screen": "dashboard",
+            "path": "/dashboard",
+            "role": "administrador",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "flows": [
+                {
+                    "name": "Citas sin cerrar pasa a la página 2 sin mover la otra sección",
+                    "do": [
+                        {
+                            "waitFor": "[data-dashboard-pagination=\"unclosed\"] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "click": "[data-dashboard-pagination=\"unclosed\"] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-dashboard-pagination=\"unclosed\"]": "Mostrando 11–",
+                            "[data-dashboard-pagination=\"without-tracking\"]": "Mostrando 1–10 de"
+                        },
+                        "focused": "#dashboard-unclosed-title",
+                        "announced": "Página 2 de"
+                    }
+                },
+                {
+                    "name": "Completadas sin seguimiento pasa a la página 2 sin mover la otra sección",
+                    "do": [
+                        {
+                            "waitFor": "[data-dashboard-pagination=\"without-tracking\"] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "click": "[data-dashboard-pagination=\"without-tracking\"] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-dashboard-pagination=\"without-tracking\"]": "Mostrando 11–",
+                            "[data-dashboard-pagination=\"unclosed\"]": "Mostrando 1–10 de"
+                        },
+                        "focused": "#dashboard-without-tracking-title",
+                        "announced": "Página 2 de"
+                    }
+                }
+            ]
+        },
+        {
             "id": "dashboard-administrador-flujos",
             "screen": "dashboard",
             "path": "/dashboard",
@@ -1001,6 +1055,38 @@
                             "[data-portal-access][hidden]"
                         ]
                     }
+                },
+                {
+                    "name": "el detalle se abre con la próxima cita aunque la lista de citas venga vacía",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/portal/appointments",
+                            "status": 200,
+                            "body": {
+                                "data": []
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "waitFor": "[data-portal-next-detail]"
+                        },
+                        {
+                            "click": "[data-portal-next-detail]"
+                        },
+                        {
+                            "waitFor": "[data-portal-detail-general] dd"
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-portal-detail-general]": "Asignada"
+                        },
+                        "absent": [
+                            "[data-portal-detail-modal] [data-portal-detail-error]:not(.hidden)"
+                        ]
+                    }
                 }
             ]
         },
@@ -1194,20 +1280,21 @@
                             "#record-appointments-body tr:nth-child(1)": "26/11/2026",
                             "#record-appointments-body tr:nth-child(2)": "12/11/2026",
                             "#record-appointments-body tr:nth-child(3) td:nth-child(2)": "16:00",
-                            "#record-appointments-body tr:last-child": "06/07/2026",
+                            "#record-appointments-body tr:nth-child(10)": "06/07/2026",
                             "#record-appointments-body tr:nth-child(1) td:nth-child(5)": "Reprogramada",
                             "#record-appointments-body tr:nth-child(2) td:nth-child(5)": "Asignada",
-                            "#record-appointments-body tr:nth-last-child(2) td:nth-child(5)": "Cancelada",
-                            "#record-appointments-body tr:last-child td:nth-child(5)": "Completada",
+                            "#record-appointments-body tr:nth-child(9) td:nth-child(5)": "Cancelada",
+                            "#record-appointments-body tr:nth-child(10) td:nth-child(5)": "Completada",
                             "#record-appointments-list li:nth-child(1)": "26/11/2026 · 12:00",
-                            "#record-appointments-list li:last-child": "06/07/2026 · 09:00"
+                            "#record-appointments-list li:nth-child(10)": "06/07/2026 · 09:00"
                         },
                         "absent": [
                             "[data-portal-history-status]:not([hidden])"
                         ]
                     }
                 }
-            ]
+            ],
+            "snapshot": true
         },
         {
             "id": "portal-mis-citas-vacio",
@@ -1347,6 +1434,53 @@
                             "ms": 0
                         },
                         "focused": "[data-portal-history-status] [data-dashboard-retry]"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "portal-mis-citas-pagina-2",
+            "screen": "portal",
+            "path": "/mis-citas?pagina=2",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "flows": [
+                {
+                    "name": "recargar o volver con Atrás muestra la página 2",
+                    "do": [
+                        {
+                            "wait": 1000
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-history-pagination]": "Mostrando 11–20 de 20",
+                            "#record-appointments-body tr:nth-child(1)": "29/06/2026",
+                            "#record-appointments-body tr:nth-child(10)": "06/04/2026"
+                        }
+                    }
+                },
+                {
+                    "name": "Anterior vuelve a la página 1",
+                    "do": [
+                        {
+                            "wait": 1000
+                        },
+                        {
+                            "click": "[data-history-pagination] a[aria-label=\"Página anterior\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-history-pagination]": "Mostrando 1–10 de 20",
+                            "#record-appointments-body tr:nth-child(1)": "26/11/2026"
+                        },
+                        "focused": "section:has([data-history-pagination]) h2",
+                        "announced": "Página 1 de 2"
                     }
                 }
             ]
@@ -1626,6 +1760,40 @@
                 },
                 {
                     "absent": "[data-portal-detail-recommendations]"
+                }
+            ]
+        },
+        {
+            "id": "portal-detalle-pagina-2",
+            "screen": "portal",
+            "dialog": "detalle-portal",
+            "dialogSelector": "[data-portal-detail-modal]",
+            "path": "/mis-citas?pagina=2",
+            "role": "paciente",
+            "now": "2026-09-17T11:40:00-06:00",
+            "serverNow": "2026-09-17T11:40:00-06:00",
+            "widths": [
+                390,
+                1440
+            ],
+            "steps": [
+                {
+                    "waitFor": "[data-portal-view-appointment][data-appointment-id=\"46c8e68e-363c-5b65-8bf8-27a45cf60322\"]"
+                },
+                {
+                    "click": "[data-portal-view-appointment][data-appointment-id=\"46c8e68e-363c-5b65-8bf8-27a45cf60322\"]"
+                },
+                {
+                    "waitFor": "[data-portal-detail-general] dd"
+                }
+            ],
+            "expects": [
+                {
+                    "text": "[data-portal-detail-general] div:last-child dd",
+                    "is": "Cancelada"
+                },
+                {
+                    "absent": "[data-portal-detail-modal] [data-portal-detail-error]:not(.hidden)"
                 }
             ]
         },
@@ -3265,7 +3433,8 @@
             "id": "pacientes",
             "screen": "pacientes",
             "path": "/pacientes",
-            "role": "administrador"
+            "role": "administrador",
+            "snapshot": true
         },
         {
             "id": "pacientes-crear",
@@ -3310,6 +3479,411 @@
             "sends": true
         },
         {
+            "id": "pacientes-eliminar-ultima-pagina",
+            "screen": "pacientes",
+            "path": "/pacientes?pagina=3",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "eliminar el único paciente de la última página lleva a la anterior",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/patients",
+                            "query": {
+                                "page": "3"
+                            },
+                            "times": 1,
+                            "status": 200,
+                            "body": {
+                                "data": [
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000028",
+                                        "first_name": "Último",
+                                        "last_name": "Prueba",
+                                        "email": "ultimo@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    }
+                                ],
+                                "meta": {
+                                    "page": 3,
+                                    "per_page": 12,
+                                    "total": 25,
+                                    "last_page": 3,
+                                    "from": 25,
+                                    "to": 25,
+                                    "counts": {
+                                        "total": 25,
+                                        "active": 25,
+                                        "inactive": 0
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "to": "/api/v1/patients/00000000-0000-4000-8000-000000000028",
+                            "times": 1,
+                            "status": 200,
+                            "body": {
+                                "message": "Paciente eliminado correctamente."
+                            }
+                        },
+                        {
+                            "to": "/api/v1/patients",
+                            "query": {
+                                "page": "3"
+                            },
+                            "times": 1,
+                            "status": 200,
+                            "body": {
+                                "data": [
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000213",
+                                        "first_name": "Trece",
+                                        "last_name": "Prueba",
+                                        "email": "pagina.13@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000214",
+                                        "first_name": "Catorce",
+                                        "last_name": "Prueba",
+                                        "email": "pagina.14@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    }
+                                ],
+                                "meta": {
+                                    "page": 2,
+                                    "per_page": 12,
+                                    "total": 24,
+                                    "last_page": 2,
+                                    "from": 13,
+                                    "to": 24,
+                                    "counts": {
+                                        "total": 24,
+                                        "active": 24,
+                                        "inactive": 0
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "do": [
+                        {
+                            "waitFor": "[data-patient-delete][data-patient-id=\"00000000-0000-4000-8000-000000000028\"]"
+                        },
+                        {
+                            "click": "[data-patient-delete][data-patient-id=\"00000000-0000-4000-8000-000000000028\"]"
+                        },
+                        {
+                            "waitFor": "#patients-delete-modal [data-confirm-delete-submit]"
+                        },
+                        {
+                            "click": "#patients-delete-modal [data-confirm-delete-submit]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 13–24 de 24",
+                            "#patients-list": "Trece Prueba"
+                        },
+                        "announced": "Paciente eliminado",
+                        "address": {
+                            "pagina": "2"
+                        },
+                        "requests": [
+                            {
+                                "method": "DELETE",
+                                "to": "/api/v1/patients/00000000-0000-4000-8000-000000000028"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "pacientes-pagina-2",
+            "screen": "pacientes",
+            "path": "/pacientes?pagina=2",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "recargar o volver con Atrás muestra la página 2",
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 13–24 de",
+                            "#patients-list": "Sofía Prueba"
+                        },
+                        "absent": [
+                            "[data-patient-edit][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                        ]
+                    }
+                },
+                {
+                    "name": "Anterior vuelve a la página 1",
+                    "do": [
+                        {
+                            "click": "[data-patients-pagination] a[aria-label=\"Página anterior\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 1–12 de"
+                        },
+                        "focused": "main h1",
+                        "announced": "Página 1 de 3",
+                        "open": [
+                            "[data-patient-edit][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                        ],
+                        "address": {
+                            "pagina": null
+                        }
+                    }
+                },
+                {
+                    "name": "Siguiente lleva a la página 3 y la dirección lo dice",
+                    "do": [
+                        {
+                            "click": "[data-patients-pagination] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 25–"
+                        },
+                        "address": {
+                            "pagina": "3"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": "pacientes-buscar-otra-pagina",
+            "screen": "pacientes",
+            "path": "/pacientes?pagina=2",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "encuentra en la página 1 a quien está en la 2",
+                    "do": [
+                        {
+                            "fill": "#patient-search",
+                            "value": "valeria"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "#patients-list": "Valeria Prueba"
+                        },
+                        "absent": [
+                            "[data-patient-edit][data-patient-id=\"fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]",
+                            "[data-patients-pagination]:not([hidden])",
+                            "#patient-search:not([maxlength=\"100\"])"
+                        ],
+                        "address": {
+                            "busqueda": "valeria",
+                            "pagina": null
+                        }
+                    }
+                },
+                {
+                    "name": "buscar desde la página 2 vuelve a la 1",
+                    "do": [
+                        {
+                            "fill": "#patient-search",
+                            "value": "prueba"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 1–12 de"
+                        },
+                        "address": {
+                            "busqueda": "prueba",
+                            "pagina": null
+                        }
+                    }
+                },
+                {
+                    "name": "filtrar desde la página 2 vuelve a la 1",
+                    "do": [
+                        {
+                            "click": "[data-patients-status-filter] [data-status-value=\"active\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 1–12 de"
+                        },
+                        "address": {
+                            "estado": "active",
+                            "pagina": null
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": "pacientes-direccion",
+            "screen": "pacientes",
+            "path": "/pacientes?pagina=2&busqueda=prueba&estado=active",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "recargar con página, búsqueda y filtro en la dirección los envía a la API y muestra lo mismo",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/patients",
+                            "query": {
+                                "page": "2",
+                                "search": "prueba",
+                                "status": "active"
+                            },
+                            "times": 1,
+                            "status": 200,
+                            "body": {
+                                "data": [
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000313",
+                                        "first_name": "Filtrado 13",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.13@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000314",
+                                        "first_name": "Filtrado 14",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.14@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000315",
+                                        "first_name": "Filtrado 15",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.15@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000316",
+                                        "first_name": "Filtrado 16",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.16@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000317",
+                                        "first_name": "Filtrado 17",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.17@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000318",
+                                        "first_name": "Filtrado 18",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.18@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000319",
+                                        "first_name": "Filtrado 19",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.19@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000320",
+                                        "first_name": "Filtrado 20",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.20@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000321",
+                                        "first_name": "Filtrado 21",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.21@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000322",
+                                        "first_name": "Filtrado 22",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.22@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000323",
+                                        "first_name": "Filtrado 23",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.23@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000324",
+                                        "first_name": "Filtrado 24",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.24@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    }
+                                ],
+                                "meta": {
+                                    "page": 2,
+                                    "per_page": 12,
+                                    "total": 40,
+                                    "last_page": 4,
+                                    "from": 13,
+                                    "to": 24,
+                                    "counts": {
+                                        "total": 40,
+                                        "active": 40,
+                                        "inactive": 0
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-patients-pagination]": "Mostrando 13–24 de 40"
+                        },
+                        "values": {
+                            "#patient-search": "prueba"
+                        },
+                        "absent": [
+                            "[data-patients-status-filter] [data-status-value=\"active\"][aria-pressed=\"false\"]"
+                        ],
+                        "address": {
+                            "pagina": "2",
+                            "busqueda": "prueba",
+                            "estado": "active"
+                        }
+                    }
+                }
+            ]
+        },
+        {
             "id": "expedientes",
             "screen": "expedientes",
             "path": "/expedientes-clinicos",
@@ -3333,6 +3907,9 @@
                         {
                             "fill": "[data-records-search]",
                             "value": "Valeria"
+                        },
+                        {
+                            "wait": 1500
                         }
                     ],
                     "expect": {
@@ -3340,7 +3917,8 @@
                             "[data-records-list]": "Valeria Prueba"
                         },
                         "absent": [
-                            "[data-records-list] a[href$=\"/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                            "[data-records-list] a[href$=\"/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]",
+                            "[data-records-search]:not([maxlength=\"100\"])"
                         ]
                     }
                 },
@@ -3350,6 +3928,9 @@
                         {
                             "fill": "[data-records-search]",
                             "value": "zzzz"
+                        },
+                        {
+                            "wait": 1500
                         }
                     ],
                     "expect": {
@@ -3417,6 +3998,46 @@
                     "expect": {
                         "announcedOnce": "No se encontraron pacientes."
                     }
+                },
+                {
+                    "name": "encuentra sin acentos",
+                    "do": [
+                        {
+                            "fill": "[data-records-search]",
+                            "value": "sofia"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-records-list]": "Sofía Prueba"
+                        },
+                        "absent": [
+                            "[data-records-list] a[href$=\"/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "expedientes-pagina-2",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos?pagina=2",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "recargar muestra la página 2",
+                    "expect": {
+                        "textIn": {
+                            "[data-records-pagination]": "Mostrando 13–24 de",
+                            "[data-records-list]": "Sofía Prueba"
+                        },
+                        "absent": [
+                            "[data-records-list] a[href$=\"/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129\"]"
+                        ]
+                    }
                 }
             ]
         },
@@ -3425,6 +4046,33 @@
             "screen": "expedientes",
             "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
             "role": "administrador"
+        },
+        {
+            "id": "expediente-historial-pagina-2",
+            "screen": "expedientes",
+            "path": "/expedientes-clinicos/fe9d9b81-8ea0-5180-9474-6050e2ebd129",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "Siguiente muestra las citas más antiguas",
+                    "do": [
+                        {
+                            "click": "[data-history-pagination] a[aria-label=\"Página siguiente\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-history-pagination]": "Mostrando 11–20 de 20",
+                            "#record-appointments-body tr:nth-child(1)": "2026-06-29"
+                        },
+                        "focused": "section:has([data-history-pagination]) h2",
+                        "announced": "Página 2 de 2"
+                    }
+                }
+            ]
         },
         {
             "id": "expediente-contacto-form",
@@ -3682,6 +4330,69 @@
             "sends": true
         },
         {
+            "id": "tratamientos-pagina-2",
+            "screen": "tratamientos",
+            "path": "/tratamientos?pagina=2",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "recargar o volver con Atrás muestra la página 2",
+                    "expect": {
+                        "textIn": {
+                            "[data-treatments-pagination]": "Mostrando 13–",
+                            "#treatments-list": "Tratamiento de prueba 10"
+                        },
+                        "absent": [
+                            "[data-treatments-delete][data-treatment-name=\"Limpieza dental de prueba\"]",
+                            "#treatments-search:not([maxlength=\"100\"])"
+                        ]
+                    }
+                },
+                {
+                    "name": "Anterior vuelve a la página 1",
+                    "do": [
+                        {
+                            "click": "[data-treatments-pagination] a[aria-label=\"Página anterior\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-treatments-pagination]": "Mostrando 1–12 de"
+                        },
+                        "focused": "main h1",
+                        "announced": "Página 1 de 2",
+                        "open": [
+                            "[data-treatments-delete][data-treatment-name=\"Limpieza dental de prueba\"]"
+                        ]
+                    }
+                },
+                {
+                    "name": "la búsqueda encuentra en la página 1 lo que está en la 2",
+                    "do": [
+                        {
+                            "fill": "#treatments-search",
+                            "value": "tratamiento de prueba 10"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "#treatments-list": "Tratamiento de prueba 10"
+                        },
+                        "absent": [
+                            "[data-treatments-delete][data-treatment-name=\"Limpieza dental de prueba\"]",
+                            "[data-treatments-pagination]:not([hidden])"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "id": "contenido-galeria",
             "screen": "contenido-galeria",
             "path": "/contenido",
@@ -3741,6 +4452,60 @@
                 }
             ],
             "sends": true
+        },
+        {
+            "id": "contenido-galeria-pagina-2",
+            "screen": "contenido-galeria",
+            "path": "/contenido?pestana=galeria&pagina=2",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "recargar o volver con Atrás muestra la página 2 de Galería",
+                    "expect": {
+                        "textIn": {
+                            "[data-gallery-pagination]": "Mostrando 13–",
+                            "[data-gallery-list]": "Imagen oculta de prueba 01"
+                        }
+                    }
+                },
+                {
+                    "name": "otra pestaña y de vuelta conserva la página 2",
+                    "do": [
+                        {
+                            "click": "[data-content-tab=\"promociones\"]"
+                        },
+                        {
+                            "click": "[data-content-tab=\"galeria\"]"
+                        },
+                        {
+                            "wait": 500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-gallery-pagination]": "Mostrando 13–"
+                        }
+                    }
+                },
+                {
+                    "name": "Anterior vuelve a la página 1",
+                    "do": [
+                        {
+                            "click": "[data-gallery-pagination] a[aria-label=\"Página anterior\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-gallery-pagination]": "Mostrando 1–12 de"
+                        },
+                        "focused": "[data-content-panel=\"galeria\"] h2",
+                        "announced": "Página 1 de 2"
+                    }
+                }
+            ]
         },
         {
             "id": "contenido-promociones",
@@ -3957,6 +4722,46 @@
                 }
             ],
             "sends": true
+        },
+        {
+            "id": "usuarios-pagina-2",
+            "screen": "usuarios",
+            "path": "/usuarios?pagina=2",
+            "role": "administrador",
+            "flows": [
+                {
+                    "name": "recargar o volver con Atrás muestra la página 2",
+                    "expect": {
+                        "textIn": {
+                            "[data-users-pagination]": "Mostrando 13–"
+                        },
+                        "absent": [
+                            "[data-user-edit][data-user-id=\"9dc7104c-d479-5b65-b39d-5901c84d0415\"]"
+                        ]
+                    }
+                },
+                {
+                    "name": "Anterior vuelve a la página 1",
+                    "do": [
+                        {
+                            "click": "[data-users-pagination] a[aria-label=\"Página anterior\"]"
+                        },
+                        {
+                            "wait": 1500
+                        }
+                    ],
+                    "expect": {
+                        "textIn": {
+                            "[data-users-pagination]": "Mostrando 1–12 de"
+                        },
+                        "focused": "main h1",
+                        "announced": "Página 1 de 2",
+                        "open": [
+                            "[data-user-edit][data-user-id=\"9dc7104c-d479-5b65-b39d-5901c84d0415\"]"
+                        ]
+                    }
+                }
+            ]
         },
         {
             "id": "error-404",

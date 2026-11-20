@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Infrastructure\Persistence\Eloquent;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Users\Domain\Entities\UserEntity;
 use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\Users\Domain\ValueObjects\UserEmail;
@@ -11,6 +13,7 @@ use App\Modules\Users\Domain\ValueObjects\UserId;
 use App\Modules\Users\Domain\ValueObjects\UserRoleId;
 use App\Modules\Users\Domain\ValueObjects\UserStatus;
 use App\Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Illuminate\Database\Eloquent\Builder;
 
 class EloquentUserRepository implements UserRepositoryInterface
 {
@@ -18,24 +21,24 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         // Buscar un usuario por su ID
         $user = UserModel::find($id->value);
-         
+
         if ($user === null) {
             return null;
         }
-        
+
         return $user ? $this->mapToDomain($user) : null;
     }
-    
+
     /**
      * @return UserEntity[]
      */
     public function findByRole(UserRoleId $role): array
     {
-        $roleId = (string)$role->toDatabaseId(); // 1 para admin, 2 para asistente, 3 para doctor
+        $roleId = (string) $role->toDatabaseId(); // 1 para admin, 2 para asistente, 3 para doctor
 
         $users = UserModel::where('role_id', $roleId)->get();
 
-        return $users ? $users->map(fn($user) => $this->mapToDomain($user))->toArray() : [];
+        return $users ? $users->map(fn ($user) => $this->mapToDomain($user))->toArray() : [];
     }
 
     /**
@@ -55,7 +58,7 @@ class EloquentUserRepository implements UserRepositoryInterface
 
         $users = $query->get();
 
-        return $users ? $users->map(fn($user) => $this->mapToDomain($user))->toArray() : [];
+        return $users ? $users->map(fn ($user) => $this->mapToDomain($user))->toArray() : [];
     }
 
     // Búsqueda por Email excluyendo un ID específico o null (solo bsucar por email)
@@ -66,7 +69,7 @@ class EloquentUserRepository implements UserRepositoryInterface
         if ($excludeId !== null) {
             $query->where('id', '!=', $excludeId->value);
         }
-        
+
         $user = $query->first();
 
         return $user ? $this->mapToDomain($user) : null;
@@ -77,11 +80,11 @@ class EloquentUserRepository implements UserRepositoryInterface
         // 1. Mapeo de datos para no repetir código
         $data = [
             'first_name' => $user->name()->firstName,
-            'last_name'  => $user->name()->lastName,
-            'email'      => $user->email()->value,
-            'password'   => $user->password()->value,
-            'role_id'    => $user->role()->toDatabaseId(),
-            'status'     => $user->status()->value,
+            'last_name' => $user->name()->lastName,
+            'email' => $user->email()->value,
+            'password' => $user->password()->value,
+            'role_id' => $user->role()->toDatabaseId(),
+            'status' => $user->status()->value,
         ];
 
         // 2. Persistencia
@@ -100,7 +103,47 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         $users = UserModel::where('status', 'active')->get();
 
-        return $users ? $users->map(fn($user) => $this->mapToDomain($user))->toArray() : [];
+        return $users ? $users->map(fn ($user) => $this->mapToDomain($user))->toArray() : [];
+    }
+
+    public function findPage(PageRequest $request, ?UserStatus $status, ?UserRoleId $role): Page
+    {
+        $query = UserModel::query()
+            ->when($status, fn (Builder $query) => $query->where('status', $status->value))
+            ->when($role, fn (Builder $query) => $query->where('role_id', $role->toDatabaseId()));
+
+        $total = (clone $query)->count();
+
+        $items = $query
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->offset($request->offsetFor($total))
+            ->limit($request->size)
+            ->get()
+            ->map(fn (UserModel $user): UserEntity => $this->mapToDomain($user))
+            ->all();
+
+        return Page::create($items, $total, $request);
+    }
+
+    public function countByRole(): array
+    {
+        $byRole = UserModel::query()
+            ->selectRaw('role_id, count(*) as total')
+            ->groupBy('role_id')
+            ->pluck('total', 'role_id');
+
+        $count = fn (UserRoleId $role): int => (int) ($byRole[$role->toDatabaseId()] ?? 0);
+        $administrador = $count(UserRoleId::administrador());
+        $asistente = $count(UserRoleId::asistente());
+        $doctor = $count(UserRoleId::doctor());
+
+        return [
+            'total' => $administrador + $asistente + $doctor,
+            'administrador' => $administrador,
+            'asistente' => $asistente,
+            'doctor' => $doctor,
+        ];
     }
 
     /**

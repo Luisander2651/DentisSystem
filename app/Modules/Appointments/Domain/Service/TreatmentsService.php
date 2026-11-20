@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Domain\Service;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Appointments\Domain\Entities\TreatmentEntity;
+use App\Modules\Appointments\Domain\Repositories\TreatmentsRepositoryInterface;
 use App\Modules\Appointments\Domain\ValueObjects\TreatmentId;
 use App\Modules\Appointments\Domain\ValueObjects\TreatmentName;
-use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\EloquentTreatmentRepository;
 
 final readonly class TreatmentsService
 {
     public function __construct(
-        private readonly EloquentTreatmentRepository $treatmentRepository
+        private TreatmentsRepositoryInterface $treatmentRepository
     ) {}
 
     public function saveTreatment(TreatmentEntity $treatment): void
@@ -33,5 +35,21 @@ final readonly class TreatmentsService
     public function deleteTreatment(TreatmentId $id): void
     {
         $this->treatmentRepository->delete($id);
+    }
+
+    /**
+     * @return Page<TreatmentEntity>
+     */
+    public function findPage(PageRequest $request, ?string $search): Page
+    {
+        return $this->treatmentRepository->findPage($request, $search);
+    }
+
+    /**
+     * @return array{total: int, with_duration: int, average_minutes: int|null}
+     */
+    public function stats(): array
+    {
+        return $this->treatmentRepository->stats();
     }
 }

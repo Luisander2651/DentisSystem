@@ -130,3 +130,60 @@ it('hands PHP the scheme nginx saw, not the X-Forwarded-Proto the client sent (R
 
     expect($php)->toMatch('/include\s+fastcgi_params\s*;.*fastcgi_param\s+HTTP_X_FORWARDED_PROTO\s+\$scheme\s*;/s');
 });
+
+/*
+ * Spec 028, TM8 (CA4): the e-mail or name typed in a search travels in the query string, so the
+ * access logs, which reach Loki, record the path without it. Every server declares its own
+ * access_log, because one inherited from the image's http block would still carry the query.
+ */
+
+const NGINX_ACCESS_FORMAT = 'without_query';
+
+/**
+ * @return array<string, string> configuration file => content without comments
+ */
+function nginxConfigurations(): array
+{
+    $configurations = [];
+    foreach (['docker/nginx/prod.conf', 'docker/nginx/default.conf'] as $file) {
+        $configurations[$file] = (string) preg_replace('/#.*$/m', '', (string) file_get_contents(base_path($file)));
+    }
+
+    return $configurations;
+}
+
+it('declares in every server an access log with the format without the query (TM8)', function () {
+    foreach (nginxConfigurations() as $file => $configuration) {
+        $servers = array_filter(nginxBlocks($configuration), fn (array $block): bool => $block[0] === 'server');
+
+        expect($servers)->not->toBeEmpty("{$file} has no server block");
+        foreach ($servers as [, $body]) {
+            expect(nginxOwnDirectives($body))->toMatch(
+                '/\baccess_log\s+\S+\s+'.NGINX_ACCESS_FORMAT.'\s*;/',
+                "a server of {$file} does not log with the format without the query",
+            );
+        }
+
+        preg_match_all('/\baccess_log\s+([^;]*);/', $configuration, $accessLogs);
+        expect($accessLogs[1])->toHaveCount(count($servers), "{$file} declares another access_log");
+        foreach ($accessLogs[1] as $accessLog) {
+            expect($accessLog)->toMatch('/\s'.NGINX_ACCESS_FORMAT.'$/', "{$file} declares access_log {$accessLog}");
+        }
+    }
+});
+
+it('logs the path without the query string (TM8)', function () {
+    foreach (nginxConfigurations() as $file => $configuration) {
+        expect(preg_match('/\blog_format\s+'.NGINX_ACCESS_FORMAT.'\s+(.*?);/s', $configuration, $format))
+            ->toBe(1, "{$file} does not define the format without the query");
+
+        foreach (['/\$request\b/', '/\$request_uri\b/', '/\$args\b/', '/\$query_string\b/', '/\$arg_/'] as $variable) {
+            expect($format[1])->not->toMatch($variable, "the format of {$file} logs the query");
+        }
+
+        // The path comes from the original request line, cut at the "?", because $uri becomes
+        // /index.php once try_files hands the request to Laravel.
+        expect($format[1])->toContain('$path_without_query')
+            ->and($configuration)->toMatch('/\bmap\s+\$request_uri\s+\$path_without_query\s*\{\s*"~\^\(\?<path>\[\^\?\]\*\)"\s+\$path\s*;\s*\}/');
+    }
+});

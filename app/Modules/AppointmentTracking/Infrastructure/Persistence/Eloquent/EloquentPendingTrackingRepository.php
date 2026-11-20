@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\AppointmentTracking\Infrastructure\Persistence\Eloquent;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\EloquentAppointmentRepository;
@@ -22,7 +24,7 @@ class EloquentPendingTrackingRepository implements PendingTrackingRepositoryInte
         private readonly EloquentAppointmentRepository $appointments,
     ) {}
 
-    public function findCompletedWithoutTracking(?string $userId, int $limit): array
+    public function findCompletedWithoutTracking(?string $userId, PageRequest $request): Page
     {
         $appointments = (new AppointmentModel)->getTable();
         $tracking = (new AppointmentTrackingModel)->getTable();
@@ -45,11 +47,13 @@ class EloquentPendingTrackingRepository implements PendingTrackingRepositoryInte
             ])
             ->orderByDesc('date')
             ->orderByDesc('time')
-            ->limit($limit)
+            ->orderByDesc('id')
+            ->offset($request->offsetFor($total))
+            ->limit($request->size)
             ->get()
             ->map(fn (AppointmentModel $appointment): AppointmentEntity => $this->appointments->mapToDomain($appointment))
             ->all();
 
-        return ['items' => $items, 'total' => $total];
+        return Page::create($items, $total, $request);
     }
 }

@@ -102,6 +102,41 @@ export const ADMITTED = [
         entries: ['agenda-cita-detalle-pendiente', 'agenda-cita-detalle-pendiente-asistente', 'agenda-cita-detalle-pendiente-doctor', 'dashboard-detalle-administrador', 'dashboard-detalle-asistente', 'expediente-administrador-cita-detalle-pendiente'],
         difference: 'El detalle de una cita asignada o reprogramada gana, tras sus datos, la sección "Código QR de acceso" con el QR de la cita y "Descargar QR".',
     },
+    {
+        criterion: '028 CA1',
+        entries: ['pacientes', 'expedientes', 'expedientes-buscar', 'expediente', 'expediente-contacto-form', 'expediente-direccion-form', 'expediente-medicos-form', 'expediente-asistente', 'expediente-doctor'],
+        difference: 'Pacientes y Expedientes clínicos muestran 12 pacientes por página y, bajo la rejilla, el control de páginas con "Mostrando X–Y de N", "Anterior", los números y "Siguiente" (candidato c3 de la spec 028).',
+    },
+    {
+        criterion: '028 CA4, CA8 (review R5, R6)',
+        entries: ['pacientes-buscar-otra-pagina'],
+        difference: 'La entrada abre Pacientes en la página 2 para probar que buscar y filtrar vuelven a la primera; el control de páginas muestra "Anterior" disponible.',
+    },
+    {
+        criterion: '028 CA1',
+        entries: ['usuarios'],
+        difference: 'Usuarios muestra 12 miembros del staff por página y, bajo la rejilla, el control de páginas (candidato c3 de la spec 028).',
+    },
+    {
+        criterion: '028 CA1',
+        entries: ['tratamientos'],
+        difference: 'Tratamientos muestra 12 tratamientos por página y, bajo la rejilla, el control de páginas (candidato c3 de la spec 028).',
+    },
+    {
+        criterion: '028 CA1',
+        entries: ['contenido-galeria', 'contenido-galeria-pagina-2'],
+        difference: 'La pestaña Galería muestra 12 imágenes por página y, bajo la rejilla, el control de páginas (candidato c3 de la spec 028).',
+    },
+    {
+        criterion: '028 CA2',
+        entries: ['dashboard-administrador', 'dashboard-administrador-flujos', 'dashboard-asistente', 'dashboard-pendientes-pagina-2'],
+        difference: 'En el inicio, "Citas sin cerrar" y "Completadas sin seguimiento" muestran 10 citas por página con el control de páginas en el pie de cada tarjeta, en lugar de "y N más" (candidato c3 de la spec 028).',
+    },
+    {
+        criterion: '028 CA2',
+        entries: ['expediente', 'expediente-contacto-form', 'expediente-direccion-form', 'expediente-medicos-form', 'expediente-asistente', 'expediente-doctor', 'expediente-historial-pagina-2', 'portal-mis-citas', 'portal-mis-citas-pagina-2', 'portal-mis-citas-vacio', 'portal-mis-citas-fallo'],
+        difference: 'El historial de citas del expediente y "Mis citas" del portal muestran 10 citas por página y, en el pie de su tarjeta, el control de páginas (candidato c3 de la spec 028).',
+    },
 ];
 
 // In points of the window width. The runner of CI and a local machine draw the same text with

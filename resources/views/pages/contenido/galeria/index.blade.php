@@ -19,6 +19,7 @@
         Cargando imágenes...
     </div>
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-gallery-list></div>
+    <x-ui.pagination label="Páginas de la galería" data-gallery-pagination />
     <div class="hidden rounded-card border border-line bg-surface p-5 text-center text-sm text-muted shadow-sm" data-gallery-empty>
         Aún no hay imágenes en la galería.
     </div>

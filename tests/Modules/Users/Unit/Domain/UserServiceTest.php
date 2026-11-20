@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Users\Domain\Entities\UserEntity;
 use App\Modules\Users\Domain\Exceptions\UserException;
 use App\Modules\Users\Domain\Repositories\UserRepositoryInterface;
@@ -69,6 +71,29 @@ function inMemoryUserRepository(): UserRepositoryInterface
         public function findByRole(UserRoleId $role): array
         {
             return $this->findByRoleAndStatus(null, $role);
+        }
+
+        public function findPage(PageRequest $request, ?UserStatus $status, ?UserRoleId $role): Page
+        {
+            $matching = $this->findByRoleAndStatus($status, $role);
+
+            return Page::create(
+                array_slice($matching, $request->offsetFor(count($matching)), $request->size),
+                count($matching),
+                $request,
+            );
+        }
+
+        public function countByRole(): array
+        {
+            $count = fn (UserRoleId $role): int => count($this->findByRoleAndStatus(null, $role));
+
+            return [
+                'total' => count($this->rows),
+                'administrador' => $count(UserRoleId::administrador()),
+                'asistente' => $count(UserRoleId::asistente()),
+                'doctor' => $count(UserRoleId::doctor()),
+            ];
         }
 
         public function findByEmailExcludingId(UserEmail $email, ?UserId $excludeId): ?UserEntity
@@ -184,4 +209,19 @@ it('filters by status and role independently and together', function () {
         ->and($service->findByRoleAndStatus(UserStatus::active(), null))->toHaveCount(1)
         ->and($service->findByRoleAndStatus(null, UserRoleId::doctor()))->toHaveCount(1)
         ->and($service->findByRoleAndStatus(UserStatus::active(), UserRoleId::doctor()))->toHaveCount(0);
+});
+
+it('reads a page of the staff and counts it by role (spec 028)', function () {
+    $repository = inMemoryUserRepository();
+    $service = new UserService($repository);
+
+    foreach (range(1, 13) as $index) {
+        $repository->save(staffWithEmail("staff{$index}@example.com", $index === 1 ? 'Doctor' : 'Asistente'));
+    }
+
+    $page = $service->findPage(PageRequest::create(2, 12), null, null);
+
+    expect($page->items)->toHaveCount(1)
+        ->and($page->total)->toBe(13)
+        ->and($service->countByRole())->toBe(['total' => 13, 'administrador' => 0, 'asistente' => 12, 'doctor' => 1]);
 });

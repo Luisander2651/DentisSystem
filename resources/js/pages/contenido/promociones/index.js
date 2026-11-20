@@ -1,4 +1,6 @@
 import { stateBadge } from '../../../ui/badge';
+import { mountPagination } from '../../../ui/pagination';
+import { contentTabStartPage, rememberContentTabPage } from '../tabs';
 import { failureMessage } from '../../../ui/status';
 import { initPromotionsEditModal } from './edit-modal';
 import { initPromotionsDeleteModal } from './delete-modal';
@@ -16,6 +18,20 @@ export function initPromocionesModule() {
     if (!promotionsList) {
         return;
     }
+
+    // Spec 028 (CA1, CA5, CA10): the server answers one page with the counts of the whole list;
+    // saving or deleting reloads the page shown.
+    var panel = promotionsList.closest('[data-content-panel]');
+    var currentPage = contentTabStartPage(panel);
+    var requestNumber = 0;
+    var pagination = mountPagination(document.querySelector('[data-promotions-pagination]'), {
+        noun: 'promociones',
+        onChange: function (page) {
+            currentPage = page;
+            loadPromotions({ announcePage: true });
+        },
+        focusTarget: panel ? panel.querySelector('h2') : null,
+    });
 
     function escapeHtml(value) {
         return String(value ?? '')
@@ -101,31 +117,25 @@ export function initPromocionesModule() {
         promotionsError.classList.add('hidden');
     }
 
-    function renderPromotionCards(records) {
-        var visibleCount = 0;
-        var hiddenCount = 0;
-
-        records.forEach(function (record) {
-            if (normalizePromotionStatus(record.status) === 'visible') {
-                visibleCount += 1;
-                return;
-            }
-
-            hiddenCount += 1;
-        });
+    function renderPromotionsCounts(counts) {
+        if (!counts) {
+            return;
+        }
 
         if (promotionsCount) {
-            promotionsCount.textContent = String(records.length);
+            promotionsCount.textContent = String(counts.total ?? 0);
         }
 
         if (promotionsVisibleCount) {
-            promotionsVisibleCount.textContent = String(visibleCount);
+            promotionsVisibleCount.textContent = String(counts.visible ?? 0);
         }
 
         if (promotionsHiddenCount) {
-            promotionsHiddenCount.textContent = String(hiddenCount);
+            promotionsHiddenCount.textContent = String(counts.hidden ?? 0);
         }
+    }
 
+    function renderPromotionCards(records) {
         promotionsList.innerHTML = records.map(function (record) {
             var id = record.id ?? '';
             var name = record.name ?? '';
@@ -159,12 +169,14 @@ export function initPromocionesModule() {
         }
     }
 
-    async function loadPromotions() {
+    async function loadPromotions(options) {
+        var thisRequest = ++requestNumber;
+
         setPromotionsLoading(true);
         hidePromotionsError();
 
         try {
-            var response = await fetch('/api/v1/promotions', {
+            var response = await fetch('/api/v1/promotions?page=' + encodeURIComponent(String(currentPage)), {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -177,23 +189,47 @@ export function initPromocionesModule() {
                 return {};
             });
 
-            if (!response.ok) {
-                showPromotionsError(failureMessage(response.status, payload));
-                renderPromotionCards([]);
+            if (thisRequest !== requestNumber) {
                 return;
             }
 
+            if (!response.ok) {
+                showPromotionsError(failureMessage(response.status, payload));
+                renderPromotionCards([]);
+                pagination.render(null);
+                return;
+            }
+
+            var meta = payload && payload.meta ? payload.meta : null;
+
+            currentPage = meta && meta.page ? meta.page : 1;
+            renderPromotionsCounts(meta && meta.counts);
             renderPromotionCards(normalizePromotionPayload(payload));
+            pagination.render(meta);
+            rememberContentTabPage(panel, currentPage);
+
+            if (options && options.announcePage) {
+                pagination.announcePage(meta);
+            }
         } catch (error) {
+            if (thisRequest !== requestNumber) {
+                return;
+            }
+
             showPromotionsError(failureMessage(0));
             renderPromotionCards([]);
+            pagination.render(null);
         } finally {
-            setPromotionsLoading(false);
+            if (thisRequest === requestNumber) {
+                setPromotionsLoading(false);
+            }
         }
     }
 
     var promotionsApi = {
-        reload: loadPromotions,
+        reload: function () {
+            return loadPromotions();
+        },
         showError: showPromotionsError,
         hideError: hidePromotionsError,
         getCookie: getCookie,

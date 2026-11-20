@@ -1,4 +1,6 @@
 import { stateBadge } from '../../../ui/badge';
+import { mountPagination } from '../../../ui/pagination';
+import { contentTabStartPage, rememberContentTabPage } from '../tabs';
 import { failureMessage } from '../../../ui/status';
 import { initCertificationsEditModal } from './edit-modal';
 import { initCertificationsDeleteModal } from './delete-modal';
@@ -16,6 +18,20 @@ export function initCertificacionesModule() {
     if (!certificationsList) {
         return;
     }
+
+    // Spec 028 (CA1, CA5, CA10): the server answers one page with the counts of the whole list;
+    // saving or deleting reloads the page shown.
+    var panel = certificationsList.closest('[data-content-panel]');
+    var currentPage = contentTabStartPage(panel);
+    var requestNumber = 0;
+    var pagination = mountPagination(document.querySelector('[data-certifications-pagination]'), {
+        noun: 'certificaciones',
+        onChange: function (page) {
+            currentPage = page;
+            loadCertifications({ announcePage: true });
+        },
+        focusTarget: panel ? panel.querySelector('h2') : null,
+    });
 
     function escapeHtml(value) {
         return String(value ?? '')
@@ -101,31 +117,25 @@ export function initCertificacionesModule() {
         certificationsError.classList.add('hidden');
     }
 
-    function renderCertificationCards(records) {
-        var visibleCount = 0;
-        var hiddenCount = 0;
-
-        records.forEach(function (record) {
-            if (normalizeCertificationStatus(record.status) === 'visible') {
-                visibleCount += 1;
-                return;
-            }
-
-            hiddenCount += 1;
-        });
+    function renderCertificationsCounts(counts) {
+        if (!counts) {
+            return;
+        }
 
         if (certificationsCount) {
-            certificationsCount.textContent = String(records.length);
+            certificationsCount.textContent = String(counts.total ?? 0);
         }
 
         if (certificationsVisibleCount) {
-            certificationsVisibleCount.textContent = String(visibleCount);
+            certificationsVisibleCount.textContent = String(counts.visible ?? 0);
         }
 
         if (certificationsHiddenCount) {
-            certificationsHiddenCount.textContent = String(hiddenCount);
+            certificationsHiddenCount.textContent = String(counts.hidden ?? 0);
         }
+    }
 
+    function renderCertificationCards(records) {
         certificationsList.innerHTML = records.map(function (record) {
             var id = record.id ?? '';
             var name = record.name ?? '';
@@ -159,12 +169,14 @@ export function initCertificacionesModule() {
         }
     }
 
-    async function loadCertifications() {
+    async function loadCertifications(options) {
+        var thisRequest = ++requestNumber;
+
         setCertificationsLoading(true);
         hideCertificationsError();
 
         try {
-            var response = await fetch('/api/v1/certifications', {
+            var response = await fetch('/api/v1/certifications?page=' + encodeURIComponent(String(currentPage)), {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -177,23 +189,47 @@ export function initCertificacionesModule() {
                 return {};
             });
 
-            if (!response.ok) {
-                showCertificationsError(failureMessage(response.status, payload));
-                renderCertificationCards([]);
+            if (thisRequest !== requestNumber) {
                 return;
             }
 
+            if (!response.ok) {
+                showCertificationsError(failureMessage(response.status, payload));
+                renderCertificationCards([]);
+                pagination.render(null);
+                return;
+            }
+
+            var meta = payload && payload.meta ? payload.meta : null;
+
+            currentPage = meta && meta.page ? meta.page : 1;
+            renderCertificationsCounts(meta && meta.counts);
             renderCertificationCards(normalizeCertificationPayload(payload));
+            pagination.render(meta);
+            rememberContentTabPage(panel, currentPage);
+
+            if (options && options.announcePage) {
+                pagination.announcePage(meta);
+            }
         } catch (error) {
+            if (thisRequest !== requestNumber) {
+                return;
+            }
+
             showCertificationsError(failureMessage(0));
             renderCertificationCards([]);
+            pagination.render(null);
         } finally {
-            setCertificationsLoading(false);
+            if (thisRequest === requestNumber) {
+                setCertificationsLoading(false);
+            }
         }
     }
 
     var certificationsApi = {
-        reload: loadCertifications,
+        reload: function () {
+            return loadCertifications();
+        },
         showError: showCertificationsError,
         hideError: hideCertificationsError,
         getCookie: getCookie,

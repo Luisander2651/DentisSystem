@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-10-11
+updated: 2026-11-19
 ---
 
 # Despliegue de Dentissa
@@ -28,7 +28,7 @@ local con la imagen de la release antes de ir a producción.
 - **Local:** `docker-compose.yml` con `app` (etapa `dev` de `docker/Dockerfile`: php:8.4-fpm-alpine con Node y Composer, código montado), `queue`, `nginx` (8000:80, sin TLS), `vite` en `127.0.0.1:5173`, `db` (postgres:16) y `redis` (7-alpine) solo en `127.0.0.1`, y observabilidad `loki` + `grafana` (`127.0.0.1:3000`) + `alloy`. `vendor/` y `node_modules/` viven en volúmenes con nombre.
 - **Prod:** droplet de DigitalOcean (1 vCPU, 2 GB de RAM y 2 GB de swap), usuario `deploy`, `ufw` con solo 22, 80 y 443.
   - **Cloudflare** delante: proxy activo, SSL/TLS en **Full (strict)** y "Always Use HTTPS". Laravel (`config/security.php`, `trusted_proxies`) y nginx (`docker/nginx/prod.conf`, `set_real_ip_from` con `CF-Connecting-IP`) confían solo en los rangos publicados por Cloudflare para obtener la IP real (CA16, CA17). Los rangos se revisan cada seis meses y en cada release contra https://www.cloudflare.com/ips/; la copia actual es del 2026-09-29.
-  - **Imágenes inmutables** (ADR 0004): `dentissa-app:<tag>` (etapa `prod`: código, `vendor` sin dependencias de desarrollo, assets compilados, `php.ini` con `expose_php=Off` y `zend.exception_ignore_args=On`, sin root) y `dentissa-web:<tag>` (nginx con TLS, cabeceras y `public/`). Se construyen en el droplet desde el clon; se conservan las dos últimas versiones.
+  - **Imágenes inmutables** (ADR 0004): `dentissa-app:<tag>` (etapa `prod`: código, `vendor` sin dependencias de desarrollo, assets compilados, `php.ini` con `expose_php=Off` y `zend.exception_ignore_args=On`, sin root) y `dentissa-web:<tag>` (nginx con TLS, cabeceras, logs de acceso sin la consulta desde la spec 028 y `public/`). Se construyen en el droplet desde el clon; se conservan las dos últimas versiones.
   - **`docker-compose.prod.yml`** (proyecto `dentissa`): `app`, `queue` (`queue:work`), `nginx` (único servicio con 80 y 443), `db`, `redis` con contraseña, `loki`, `grafana` (`127.0.0.1:3000`, solo por túnel SSH) y `alloy`. Los volúmenes de datos son los de la pila manual (`DATA_VOLUME_PREFIX`); `dentissa_storage-public` (archivos subidos) es externo y lo crea `deploy.sh`.
   - **TLS:** Let's Encrypt para `dentissapp.com` y `www`, renovado por `certbot` en el host con `webroot` (`/var/www/certbot`) y un `deploy_hook` que recarga nginx a través de `compose.sh`.
   - **Servicios externos:** Cloudflare R2 (imágenes del contenido), Brevo (correo de restablecimiento; la IP pública del droplet debe estar en Brevo → Security → Authorized IPs) y Twilio (WhatsApp).

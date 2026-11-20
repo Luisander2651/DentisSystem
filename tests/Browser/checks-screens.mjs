@@ -170,10 +170,12 @@ function measureInPage(entry, phone, lists, limits) {
             }
         }
 
-        // The seeded images are known: each one is titled by its description, word for word.
+        // The seeded images are known: each one is titled by its description, word for word. They
+        // are the newest, so they are on the first page (spec 028); another page holds others.
+        const shownPage = document.querySelector('[data-gallery-pagination] [aria-current="page"]')?.textContent.trim() ?? '1';
         const titles = [...document.querySelectorAll(`${lists['contenido-galeria']} h1, ${lists['contenido-galeria']} h2, ${lists['contenido-galeria']} h3, ${lists['contenido-galeria']} h4`)]
             .map((heading) => heading.textContent.trim());
-        const untitled = limits.seededGallery.filter((description) => !titles.includes(description));
+        const untitled = shownPage === '1' ? limits.seededGallery.filter((description) => !titles.includes(description)) : [];
 
         if (untitled.length > 0) {
             fail('tarjeta de galería sin su descripción como título', `ninguna tarjeta se titula ${untitled.map((description) => `"${description}"`).join(', ')}`);

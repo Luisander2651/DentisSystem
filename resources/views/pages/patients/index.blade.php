@@ -38,6 +38,7 @@
             <input 
                 type="text" 
                 id="patient-search"
+                maxlength="100"
                 placeholder="Nombre o correo" 
                 class="block h-control w-full rounded-control border border-field bg-surface pl-11 pr-4 text-control text-ink"
             >
@@ -72,6 +73,8 @@
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" id="patients-list"></div>
+
+    <x-ui.pagination label="Páginas de pacientes" data-patients-pagination />
 
     <div id="patients-empty" class="hidden rounded-card border border-line bg-surface p-12 text-center shadow-sm">
         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-canvas text-muted" aria-hidden="true">

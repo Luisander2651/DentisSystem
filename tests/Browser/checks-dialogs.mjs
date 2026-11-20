@@ -411,7 +411,9 @@ function flowStateInPage(expect) {
         focused: expect.focused ? document.activeElement?.matches(expect.focused) === true : true,
         focusedOn: document.activeElement ? A.describe(document.activeElement) : 'nada',
         downloads: window.__flowDownloads ?? [],
-        texts: Object.fromEntries(Object.keys(expect.textIn ?? {}).map((selector) => [selector, document.querySelector(selector)?.textContent.replace(/\s+/g, ' ').trim() ?? null])),
+        // Spec 028 (CA8, review R6): the page, the search and the filter kept in the address.
+        address: Object.fromEntries(Object.keys(expect.address ?? {}).map((key) => [key, new URLSearchParams(window.location.search).get(key)])),
+        texts:Object.fromEntries(Object.keys(expect.textIn ?? {}).map((selector) => [selector, document.querySelector(selector)?.textContent.replace(/\s+/g, ' ').trim() ?? null])),
     };
 }
 
@@ -483,8 +485,12 @@ function responderFor(flow, sent) {
         const used = flow.answers.map(() => 0);
 
         return (request) => {
-            const path = new URL(request.url).pathname;
+            const url = new URL(request.url);
+            const path = url.pathname;
+            // Spec 028 (review R7): `query` also asks for those values in the query string, so a
+            // request for another page reaches the API and the flow notices it.
             const index = flow.answers.findIndex((answer, position) => path.endsWith(answer.to)
+                && Object.entries(answer.query ?? {}).every(([key, value]) => url.searchParams.get(key) === value)
                 && (answer.times === undefined || used[position] < answer.times));
 
             if (index === -1) {
@@ -603,6 +609,11 @@ async function runFlows(page, entry, baseUrl) {
             Object.entries(state.closed).filter(([, closed]) => !closed).forEach(([selector]) => fail(`${selector} sigue abierto`));
             Object.entries(expect.values ?? {}).filter(([selector, value]) => state.values[selector] !== value)
                 .forEach(([selector, value]) => fail(`${selector} vale ${JSON.stringify(state.values[selector])} y debía conservar ${JSON.stringify(value)}`));
+            // A key with null must be missing from the address.
+            Object.entries(expect.address ?? {}).filter(([key, value]) => state.address[key] !== value)
+                .forEach(([key, value]) => fail(value === null
+                    ? `la dirección lleva ${key}=${state.address[key]} y no debía llevarlo`
+                    : `la dirección lleva ${key}=${state.address[key] ?? '(nada)'} y debía llevar ${key}=${value}`));
 
             if (expect.dialogSays && !state.dialogSays.includes(expect.dialogSays.text)) {
                 fail(`la región de ${expect.dialogSays.in} dice "${state.dialogSays || 'nada'}" y debía decir "${expect.dialogSays.text}"`);

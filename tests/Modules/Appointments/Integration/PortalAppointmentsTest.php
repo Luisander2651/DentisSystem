@@ -38,7 +38,11 @@ it('answers an empty list to a patient without appointments', function () {
     $this->actingAsPatient();
     $this->createAppointment();
 
-    $this->getJson(PORTAL_APPOINTMENTS_URL)->assertOk()->assertExactJson(['data' => []]);
+    // Spec 028: the empty list is a page too, with its `meta`.
+    $this->getJson(PORTAL_APPOINTMENTS_URL)->assertOk()->assertExactJson([
+        'data' => [],
+        'meta' => ['page' => 1, 'per_page' => 10, 'total' => 0, 'last_page' => 1, 'from' => null, 'to' => null],
+    ]);
 });
 
 it('ignores the id of another patient sent in the query or in the body (abuse)', function () {

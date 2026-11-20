@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-10-04
+updated: 2026-11-19
 ---
 
 # Seguridad de Dentissa
@@ -57,14 +57,15 @@ Esta tabla es una guía técnica, no asesoría legal: conviene validarla con un 
 | `/api/v1/{users,treatments,certifications,gallery-images,promotions,testimonials}`, `POST/DELETE /patients`, `/appointment-tracking/*` (editar seguimiento y recetas) | HTTP | sí, solo admin | `only.admin` + `assertCan` |
 | `POST /api/v1/appointments/{id}/complete`, `GET /api/v1/appointments/{id}/tracking` | HTTP | sí, staff activo | `staff` + `assertCan`: administrador cualquier cita; doctor solo las suyas (403 si es de otro doctor); asistente, paciente e inactivo → 403 (spec 018) |
 | `/api/v1/agenda/*`, `GET/PUT /patients/*`, subrecursos de paciente, expediente, `/appointments/*` | HTTP | sí, staff activo | `staff` + `assertCan` por rol (spec 014); pacientes → 403 |
-| `GET /api/v1/agenda/today-summary`, `GET /api/v1/agenda/unclosed` | HTTP | sí, staff activo | `staff` + `assertCan('appointments.view' / 'appointments.view-own')`: administrador y asistente, todas las citas; doctor, solo las suyas (`DoctorScope`; los parámetros de la petición se ignoran); paciente e inactivo → 403. Las sin cerrar, como mucho 10 con el total aparte; las listas no llevan datos clínicos ni de contacto, solo el nombre del paciente (spec 020, TM1, TM6, TM8) |
+| `GET /api/v1/agenda/today-summary`, `GET /api/v1/agenda/unclosed` | HTTP | sí, staff activo | `staff` + `assertCan('appointments.view' / 'appointments.view-own')`: administrador y asistente, todas las citas; doctor, solo las suyas (`DoctorScope`; los parámetros de la petición se ignoran); paciente e inactivo → 403. Las sin cerrar, de 10 en 10 (solo `page`; un `per_page` se ignora, spec 028); las listas no llevan datos clínicos ni de contacto, solo el nombre del paciente (spec 020, TM1, TM6, TM8) |
 | `GET /api/v1/appointments/{id}/qr` | HTTP | sí, staff activo | `staff` + `assertCan('appointments.view-detail')` (spec 024): todo el staff, cualquier cita; paciente → 403. SVG con solo el UUID de la cita, que funciona como credencial al portador en la puerta (riesgo aceptado para la maqueta, plan R1); `Cache-Control: private, no-store`, CSP global y `nosniff`; 400 si el id no es UUID |
-| `GET /api/v1/agenda/without-tracking` | HTTP | sí, staff activo | `staff` + `assertCan('appointment-tracking.create' / 'appointment-tracking.create-own')`: administrador, todas; doctor, solo las suyas; asistente, paciente e inactivo → 403. Como mucho 10, sin datos clínicos (spec 020, TM1, TM3, TM6, TM8) |
+| `GET /api/v1/agenda/without-tracking` | HTTP | sí, staff activo | `staff` + `assertCan('appointment-tracking.create' / 'appointment-tracking.create-own')`: administrador, todas; doctor, solo las suyas; asistente, paciente e inactivo → 403. De 10 en 10 (solo `page`, spec 028), sin datos clínicos (spec 020, TM1, TM3, TM6, TM8) |
 | `POST /api/v1/appointments/{id}/tracking` | HTTP | sí, staff activo | `staff` + `assertCan('appointment-tracking.create' / '…-own')`: administrador cualquier cita; doctor solo las suyas (403 si es de otro); asistente, paciente e inactivo → 403. FormRequest con mensajes en español; solo en una cita `completada` sin seguimiento (409 si no, también en el doble envío); id inexistente o que no es UUID → 404 (spec 020, TM2, TM3, TM5) |
 | `GET /api/v1/portal/appointments`, `GET /api/v1/portal/appointments/next` | HTTP | sí, paciente activo | `auth:sanctum,patient` + `patient` + `no-store` (`Cache-Control: no-store, private`); el caso de uso toma el paciente de la sesión (`currentPatientId()`), nunca de la petición. Solo fecha, hora, estado, tratamiento y doctor: sin datos clínicos ni de contacto. Staff → 403; paciente desactivado → 403 aunque su token siga vigente (spec 025) |
 | `GET /api/v1/portal/appointments/{id}/qr` | HTTP | sí, paciente activo | mismo grupo; la propiedad se comprueba antes que el estado: cita ajena o inexistente → 404 con el mismo cuerpo; cita propia cerrada → 409; id que no es UUID → 400. SVG con solo el UUID de la cita, el mismo de la spec 024 (spec 025) |
 | `GET /api/v1/portal/appointments/{id}/prescriptions` | HTTP | sí, paciente activo | mismo grupo y misma regla de propiedad (404 / 400); solo recomendaciones y recetas de una cita completada propia (medicamento, dosis, frecuencia, duración e instrucciones), sin diagnóstico, motivo, síntomas ni observaciones (spec 025) |
 | Web `/mis-citas` | HTTP | sí, paciente activo | `auth:sanctum,patient` + `patient`; staff o paciente desactivado → vista "Sin permiso"; `noindex` (spec 025) |
+| Parámetros de las listas paginadas (spec 028): `page`, `per_page`, `search`, `status` en Pacientes, Expedientes, Usuarios, Tratamientos, las cuatro de Contenido, el historial del expediente y Mis citas | HTTP | según la lista | sin cambios de rol: middleware + `assertCan()` antes de contar; un 403 no lleva `meta` ni totales (TM2, TM5). `page` y `per_page` enteros ≥ 1 (422 en español); `per_page` mayor que 50 se baja a 50 (TM4); `search` hasta 100 caracteres, enlazada como parámetro (`?`) y con `%`, `_` y `\` escapados para buscar el texto literal (TM3); en Mis citas el paciente sale de la sesión y un `patient_id` en la consulta se ignora (TM6). nginx registra la ruta sin la consulta, así que lo buscado no llega a los logs ni a Loki (TM8) |
 | Cabecera `X-Ui-Audit-Now` (todas las rutas web y `api`) | HTTP | — | reloj de la prueba de navegador (`UiAuditClock`): fija la hora de la petición solo en los entornos `local` y `testing`, comprobados en cada petición; en cualquier otro entorno, o con un valor inválido, se ignora (spec 020, TM9) |
 | `GET /api/v1/reports/monthly`, `GET /api/v1/reports/monthly/excel` | HTTP | sí, solo admin | `only.admin` + `assertCan('reports.view' / 'reports.export')`; `month` validado (`AAAA-MM`, de enero de 2020 al mes en curso; 422 en español); el Excel con límite propio de 10 descargas por minuto por administrador (`throttle:report-downloads`, 429 con texto fijo), además del general de la API; solo agregados, sin datos de pacientes; el archivo lo escribe OpenSpout 5.12.0 (ADR 0005) solo con celdas de texto o número explícitas, sin fórmulas, en un temporal que se borra al enviarlo (spec 019) |
 | Web `/`, `/contacto`, `/galeria`, `/acerca-de-nosotros`, `/login`, `/register`, `/forgot-password`, `/reset-password` | HTTP público | no | vistas GET |
@@ -196,6 +197,7 @@ el flujo de WhatsApp registra el teléfono y las variables de la plantilla; `.en
 Correcciones:
 - RS9.a Retirar teléfono, nombre y variables de plantilla de los logs (derivada; detalle en OB2) — estado: mitigada (v0.1.0; spec 015): los 7 archivos de OB2 más el controlador del restablecimiento; `WhatsAppFlowLogsTest`, `PasswordResetEmailTest`. La spec 014 ya había retirado los de `CreateAppointmentController` (OB2.a)
 - RS9.b `LOG_LEVEL=info` por defecto en `.env.example` (derivada) — estado: mitigada (v0.1.0; spec 015): `EnvExampleDefaultsTest`
+- RS9.c Lo buscado en las listas (correo o nombre en `?search=`) en los logs de acceso de nginx (derivada; spec 028, TM8) — estado: mitigada (spec 028, T031): `prod.conf` y `default.conf` registran con el formato `without_query` (la ruta de `$request_uri` cortada en el `?`) en cada bloque `server`, que reemplaza al formato de la imagen; `NginxProdConfTest`. Falta verificarlo en Loki tras el deploy (T097)
 
 ### RS10 · Baja — Configuración por defecto insegura en `.env.example`
 `APP_DEBUG=true`, `SESSION_ENCRYPT=false`.
@@ -232,9 +234,9 @@ Correcciones:
 Los catch genéricos de Auth y Users registran `getMessage()` y la traza, y sus mensajes de negocio repiten el email (spec 014, "Fuera de alcance"; OB10.b).
 
 Correcciones:
-- RS15.a Pasar esos controladores a `UnexpectedErrorResponse` y quitar el email de sus mensajes (derivada) — estado: pendiente (roadmap, Pendientes y deuda)
+- RS15.a Pasar esos controladores a `UnexpectedErrorResponse` y quitar el email de sus mensajes (derivada) — estado: pendiente (roadmap, Pendientes y deuda). Corregida en `GetUsersByRoleAndStatusController` por la spec 028 (la lista paginada de usuarios responde y registra con `UnexpectedErrorResponse`); el resto de controladores de Auth y Users sigue pendiente
 
-Controles verificados: sin `DB::raw`/`whereRaw` con entrada del usuario; sin `{!! !!}` en Blade;
+Controles verificados: sin `DB::raw`/`whereRaw` con entrada del usuario sin enlazar (la búsqueda de la spec 028 usa `whereRaw` con nombres de columna fijos y el texto como parámetro `?`); sin `{!! !!}` en Blade;
 versiones de Composer fijadas (SECURITY-10); respuesta neutra en el reset (sin enumeración); rate
 limiting en toda la API.
 

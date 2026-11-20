@@ -84,7 +84,7 @@ it('keeps a staff session and a patient session apart even when both accounts sh
 
     $this->forgetAuthState();
     $this->withHeader('Authorization', "Bearer {$patientToken}")->getJson('/api/v1/portal/appointments')
-        ->assertOk()->assertExactJson(['data' => []]);
+        ->assertOk()->assertJsonPath('data', [])->assertJsonPath('meta.total', 0);
 
     $this->forgetAuthState();
     $this->withHeader('Authorization', "Bearer {$patientToken}")->getJson('/api/v1/appointments')->assertForbidden();

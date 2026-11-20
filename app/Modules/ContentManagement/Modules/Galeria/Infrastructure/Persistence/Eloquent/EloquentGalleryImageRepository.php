@@ -2,6 +2,8 @@
 
 namespace App\Modules\ContentManagement\Modules\Galeria\Infrastructure\Persistence\Eloquent;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\Entities\GalleryImageEntity;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\Repositories\GalleryImageRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Galeria\Domain\ValueObjects\GalleryImageId;
@@ -47,6 +49,35 @@ final readonly class EloquentGalleryImageRepository implements GalleryImageRepos
         $images = $query->get();
 
         return $images->map(fn ($image) => $this->mapToDomain($image))->toArray();
+    }
+
+    public function findPage(PageRequest $request): Page
+    {
+        $total = GalleryImageModel::query()->count();
+
+        $items = GalleryImageModel::query()
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->offset($request->offsetFor($total))
+            ->limit($request->size)
+            ->get()
+            ->map(fn (GalleryImageModel $image): GalleryImageEntity => $this->mapToDomain($image))
+            ->all();
+
+        return Page::create($items, $total, $request);
+    }
+
+    public function countByStatus(): array
+    {
+        $byStatus = GalleryImageModel::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $visible = (int) ($byStatus[GalleryStatus::VISIBLE] ?? 0);
+        $hidden = (int) ($byStatus[GalleryStatus::HIDDEN] ?? 0);
+
+        return ['total' => $visible + $hidden, 'visible' => $visible, 'hidden' => $hidden];
     }
 
     private function mapToDomain(object $model): GalleryImageEntity

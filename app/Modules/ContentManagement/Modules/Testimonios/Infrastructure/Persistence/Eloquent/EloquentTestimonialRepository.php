@@ -2,6 +2,8 @@
 
 namespace App\Modules\ContentManagement\Modules\Testimonios\Infrastructure\Persistence\Eloquent;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Entities\TestimonialEntity;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\Repositories\TestimonialRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Testimonios\Domain\ValueObjects\TestimonialDate;
@@ -47,6 +49,35 @@ final readonly class EloquentTestimonialRepository implements TestimonialReposit
         $testimonials = $query->get();
 
         return $testimonials->map(fn ($testimonial) => $this->mapToDomain($testimonial))->toArray();
+    }
+
+    public function findPage(PageRequest $request): Page
+    {
+        $total = TestimonialModel::query()->count();
+
+        $items = TestimonialModel::query()
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->offset($request->offsetFor($total))
+            ->limit($request->size)
+            ->get()
+            ->map(fn (TestimonialModel $model): TestimonialEntity => $this->mapToDomain($model))
+            ->all();
+
+        return Page::create($items, $total, $request);
+    }
+
+    public function countByStatus(): array
+    {
+        $byStatus = TestimonialModel::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $visible = (int) ($byStatus[TestimonialStatus::visible()->value] ?? 0);
+        $hidden = (int) ($byStatus[TestimonialStatus::hidden()->value] ?? 0);
+
+        return ['total' => $visible + $hidden, 'visible' => $visible, 'hidden' => $hidden];
     }
 
     private function mapToDomain(object $model): TestimonialEntity

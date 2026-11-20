@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Appointments\Infrastructure\Persistence\Eloquent;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Appointments\Domain\Entities\AppointmentEntity;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentDate;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentId;
-use App\Modules\Appointments\Domain\ValueObjects\AppointmentPage;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentStatus;
 use App\Modules\Appointments\Domain\ValueObjects\AppointmentUserId;
 use App\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentModel;
@@ -72,6 +73,30 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
         return $appointments ? $appointments->map(fn ($appointment) => $this->mapToDomain($appointment))->toArray() : [];
     }
 
+    public function findPageByPatient(PatientId $patientId, PageRequest $request): Page
+    {
+        $query = AppointmentModel::query()->where('patient_id', $patientId->value);
+
+        $total = (clone $query)->count();
+
+        $items = $query
+            ->with([
+                'user:id,first_name,last_name',
+                'patient:id,first_name,last_name',
+                'treatment:id,name,time',
+            ])
+            ->orderByDesc('date')
+            ->orderByDesc('time')
+            ->orderByDesc('id')
+            ->offset($request->offsetFor($total))
+            ->limit($request->size)
+            ->get()
+            ->map(fn (AppointmentModel $appointment): AppointmentEntity => $this->mapToDomain($appointment))
+            ->all();
+
+        return Page::create($items, $total, $request);
+    }
+
     public function delete(AppointmentId $id): void
     {
         AppointmentModel::destroy($id->value);
@@ -80,7 +105,7 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
     /**
      * Spec 020 (CA4, TM8): one limited query for the page and a count() with the same filters.
      */
-    public function findUnclosedBefore(AppointmentDate $today, ?AppointmentUserId $userId, int $limit): AppointmentPage
+    public function findUnclosedBefore(AppointmentDate $today, ?AppointmentUserId $userId, PageRequest $request): Page
     {
         $query = AppointmentModel::query()
             ->where('date', '<', $today->value)
@@ -97,12 +122,14 @@ class EloquentAppointmentRepository implements AppointmentsRepositoryInterface
             ])
             ->orderByDesc('date')
             ->orderByDesc('time')
-            ->limit($limit)
+            ->orderByDesc('id')
+            ->offset($request->offsetFor($total))
+            ->limit($request->size)
             ->get()
             ->map(fn (AppointmentModel $appointment): AppointmentEntity => $this->mapToDomain($appointment))
             ->all();
 
-        return AppointmentPage::create($items, $total);
+        return Page::create($items, $total, $request);
     }
 
     public function mapToDomain(object $model): AppointmentEntity

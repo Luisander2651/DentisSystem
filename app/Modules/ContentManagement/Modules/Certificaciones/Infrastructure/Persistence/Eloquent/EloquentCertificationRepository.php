@@ -2,6 +2,8 @@
 
 namespace App\Modules\ContentManagement\Modules\Certificaciones\Infrastructure\Persistence\Eloquent;
 
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Entities\CertificationEntity;
 use App\Modules\ContentManagement\Modules\Certificaciones\Domain\Repositories\CertificationRepositoryInterface;
 use App\Modules\ContentManagement\Modules\Certificaciones\Domain\ValueObjects\CertificationId;
@@ -49,6 +51,35 @@ final readonly class EloquentCertificationRepository implements CertificationRep
         $certifications = $query->get();
 
         return $certifications->map(fn ($cert) => $this->mapToDomain($cert))->toArray();
+    }
+
+    public function findPage(PageRequest $request): Page
+    {
+        $total = CertificationModel::query()->count();
+
+        $items = CertificationModel::query()
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->offset($request->offsetFor($total))
+            ->limit($request->size)
+            ->get()
+            ->map(fn (CertificationModel $model): CertificationEntity => $this->mapToDomain($model))
+            ->all();
+
+        return Page::create($items, $total, $request);
+    }
+
+    public function countByStatus(): array
+    {
+        $byStatus = CertificationModel::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $visible = (int) ($byStatus[CertificationStatus::visible()->value] ?? 0);
+        $hidden = (int) ($byStatus[CertificationStatus::hidden()->value] ?? 0);
+
+        return ['total' => $visible + $hidden, 'visible' => $visible, 'hidden' => $hidden];
     }
 
     private function mapToDomain(object $model): CertificationEntity

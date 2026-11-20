@@ -1,4 +1,6 @@
 import { stateBadge } from '../../../ui/badge';
+import { mountPagination } from '../../../ui/pagination';
+import { contentTabStartPage, rememberContentTabPage } from '../tabs';
 import { failureMessage } from '../../../ui/status';
 import { initGalleryEditModal } from './edit-modal';
 import { initGalleryDeleteModal } from './delete-modal';
@@ -16,6 +18,20 @@ export function initGalleryModule() {
     if (!galleryList) {
         return;
     }
+
+    // Spec 028 (CA1, CA5, CA10): the server answers one page with the counts of the whole gallery;
+    // saving or deleting reloads the page shown.
+    var panel = galleryList.closest('[data-content-panel]');
+    var currentPage = contentTabStartPage(panel);
+    var requestNumber = 0;
+    var pagination = mountPagination(document.querySelector('[data-gallery-pagination]'), {
+        noun: 'imágenes',
+        onChange: function (page) {
+            currentPage = page;
+            loadGalleryImages({ announcePage: true });
+        },
+        focusTarget: panel ? panel.querySelector('h2') : null,
+    });
 
     function escapeHtml(value) {
         return String(value ?? '')
@@ -107,31 +123,25 @@ export function initGalleryModule() {
         galleryError.classList.add('hidden');
     }
 
-    function renderGalleryCards(records) {
-        var visibleCount = 0;
-        var hiddenCount = 0;
-
-        records.forEach(function (record) {
-            if (normalizeGalleryStatus(record.status) === 'visible') {
-                visibleCount += 1;
-                return;
-            }
-
-            hiddenCount += 1;
-        });
+    function renderGalleryCounts(counts) {
+        if (!counts) {
+            return;
+        }
 
         if (galleryCount) {
-            galleryCount.textContent = String(records.length);
+            galleryCount.textContent = String(counts.total ?? 0);
         }
 
         if (galleryVisibleCount) {
-            galleryVisibleCount.textContent = String(visibleCount);
+            galleryVisibleCount.textContent = String(counts.visible ?? 0);
         }
 
         if (galleryHiddenCount) {
-            galleryHiddenCount.textContent = String(hiddenCount);
+            galleryHiddenCount.textContent = String(counts.hidden ?? 0);
         }
+    }
 
+    function renderGalleryCards(records) {
         galleryList.innerHTML = records.map(function (record) {
             var url = record.url ?? '';
             var description = record.description ?? '';
@@ -163,12 +173,14 @@ export function initGalleryModule() {
         }
     }
 
-    async function loadGalleryImages() {
+    async function loadGalleryImages(options) {
+        var thisRequest = ++requestNumber;
+
         setGalleryLoading(true);
         hideGalleryError();
 
         try {
-            var response = await fetch('/api/v1/gallery-images', {
+            var response = await fetch('/api/v1/gallery-images?page=' + encodeURIComponent(String(currentPage)), {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -181,23 +193,47 @@ export function initGalleryModule() {
                 return {};
             });
 
-            if (!response.ok) {
-                showGalleryError(failureMessage(response.status, payload));
-                renderGalleryCards([]);
+            if (thisRequest !== requestNumber) {
                 return;
             }
 
+            if (!response.ok) {
+                showGalleryError(failureMessage(response.status, payload));
+                renderGalleryCards([]);
+                pagination.render(null);
+                return;
+            }
+
+            var meta = payload && payload.meta ? payload.meta : null;
+
+            currentPage = meta && meta.page ? meta.page : 1;
+            renderGalleryCounts(meta && meta.counts);
             renderGalleryCards(normalizeGalleryPayload(payload));
+            pagination.render(meta);
+            rememberContentTabPage(panel, currentPage);
+
+            if (options && options.announcePage) {
+                pagination.announcePage(meta);
+            }
         } catch (error) {
+            if (thisRequest !== requestNumber) {
+                return;
+            }
+
             showGalleryError(failureMessage(0));
             renderGalleryCards([]);
+            pagination.render(null);
         } finally {
-            setGalleryLoading(false);
+            if (thisRequest === requestNumber) {
+                setGalleryLoading(false);
+            }
         }
     }
 
     var galleryApi = {
-        reload: loadGalleryImages,
+        reload: function () {
+            return loadGalleryImages();
+        },
         showError: showGalleryError,
         hideError: hideGalleryError,
         getCookie: getCookie,

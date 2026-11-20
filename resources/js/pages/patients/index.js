@@ -1,3 +1,5 @@
+import { mountPagination, readListState, writeListState } from '../../ui/pagination';
+
 (function () {
     if (window.__patientsIndexInit) {
         return;
@@ -16,13 +18,29 @@
     const countActive = document.querySelector('[data-patients-active-count]');
     const countInactive = document.querySelector('[data-patients-inactive-count]');
 
-    let allPatients = [];
-    let patientCounters = {
-        total: 0,
-        active: 0,
-        inactive: 0,
-    };
-    let selectedStatus = '';
+    const STATUSES = ['active', 'inactive'];
+    const SEARCH_DELAY_MS = 300;
+    const initialState = readListState(window.location.search);
+
+    // Spec 028 (CA4, CA8, CA9): the page, the search and the filter come from the address and go
+    // to the server, which answers one page with the counts of the whole list.
+    let currentPage = initialState.pagina;
+    let selectedStatus = STATUSES.includes(initialState.estado) ? initialState.estado : '';
+    let requestNumber = 0;
+    let searchTimer = null;
+
+    if (searchInput) {
+        searchInput.value = initialState.busqueda;
+    }
+
+    const pagination = mountPagination(document.querySelector('[data-patients-pagination]'), {
+        noun: 'pacientes',
+        onChange: function (page) {
+            currentPage = page;
+            loadPatients({ announcePage: true });
+        },
+        focusTarget: document.querySelector('main h1'),
+    });
 
     function showError(message) {
         if (!errorBox) return;
@@ -57,39 +75,14 @@
             .replace(/'/g, '&#039;');
     }
 
-    function normalizePatientRecord(patient) {
-        const firstName = patient.first_name ?? '';
-        const lastName = patient.last_name ?? '';
-        const email = patient.email ?? '';
+    function renderCounters(counts) {
+        if (!counts) {
+            return;
+        }
 
-        return Object.assign({}, patient, {
-            _searchText: `${firstName} ${lastName} ${email}`.toLowerCase(),
-        });
-    }
-
-    function rebuildCounters(records) {
-        let activeCount = 0;
-        let inactiveCount = 0;
-
-        records.forEach(function (patient) {
-            if (patient.status === 'active') {
-                activeCount += 1;
-            } else if (patient.status === 'inactive') {
-                inactiveCount += 1;
-            }
-        });
-
-        patientCounters = {
-            total: records.length,
-            active: activeCount,
-            inactive: inactiveCount,
-        };
-    }
-
-    function renderCounters() {
-        if (countTotal) countTotal.textContent = String(patientCounters.total);
-        if (countActive) countActive.textContent = String(patientCounters.active);
-        if (countInactive) countInactive.textContent = String(patientCounters.inactive);
+        if (countTotal) countTotal.textContent = String(counts.total ?? 0);
+        if (countActive) countActive.textContent = String(counts.active ?? 0);
+        if (countInactive) countInactive.textContent = String(counts.inactive ?? 0);
     }
 
     function setActiveStatusButton(value) {
@@ -105,8 +98,6 @@
 
     function renderPatientCards(records) {
         if (!patientsList) return;
-
-        renderCounters();
 
         if (records.length === 0) {
             patientsList.innerHTML = '';
@@ -174,18 +165,30 @@
         }).join('');
     }
 
-    async function loadPatients() {
+    function searchText() {
+        return searchInput ? searchInput.value.trim() : '';
+    }
+
+    async function loadPatients(options = {}) {
+        const thisRequest = ++requestNumber;
+
         hideError();
         setLoading(true);
 
         try {
             const params = new URLSearchParams();
 
+            params.set('page', String(currentPage));
+
             if (selectedStatus) {
                 params.set('status', selectedStatus);
             }
 
-            const response = await fetch('/api/v1/patients' + (params.toString() ? '?' + params.toString() : ''), {
+            if (searchText()) {
+                params.set('search', searchText());
+            }
+
+            const response = await fetch('/api/v1/patients?' + params.toString(), {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -196,23 +199,41 @@
 
             const payload = await response.json().catch(() => ({}));
 
+            if (thisRequest !== requestNumber) {
+                return;
+            }
+
             if (!response.ok) {
                 const message = 'No se pudieron cargar los pacientes. Inténtalo de nuevo en un momento.';
                 showError(message);
                 renderPatientCards([]);
+                pagination.render(null);
                 return;
             }
 
-            allPatients = (Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : []))
-                .map(normalizePatientRecord);
+            const meta = payload?.meta ?? null;
 
-            rebuildCounters(allPatients);
-            renderPatientCards(allPatients);
+            currentPage = meta?.page ?? 1;
+            renderCounters(meta?.counts);
+            renderPatientCards(Array.isArray(payload?.data) ? payload.data : []);
+            pagination.render(meta);
+            writeListState({ pagina: currentPage, busqueda: searchText(), estado: selectedStatus });
+
+            if (options.announcePage) {
+                pagination.announcePage(meta);
+            }
         } catch (error) {
+            if (thisRequest !== requestNumber) {
+                return;
+            }
+
             showError('No hay conexión. Revisa tu red e inténtalo de nuevo.');
             renderPatientCards([]);
+            pagination.render(null);
         } finally {
-            setLoading(false);
+            if (thisRequest === requestNumber) {
+                setLoading(false);
+            }
         }
     }
 
@@ -225,21 +246,16 @@
 
         selectedStatus = String(button.getAttribute('data-status-value') || '');
         setActiveStatusButton(selectedStatus);
+        currentPage = 1;
         loadPatients();
     }
 
     function handleSearch() {
-        const query = searchInput.value.toLowerCase().trim();
-        if (!query) {
-            renderPatientCards(allPatients);
-            return;
-        }
-
-        const filtered = allPatients.filter(p => {
-            return String(p._searchText || '').includes(query);
-        });
-
-        renderPatientCards(filtered);
+        window.clearTimeout(searchTimer);
+        searchTimer = window.setTimeout(function () {
+            currentPage = 1;
+            loadPatients();
+        }, SEARCH_DELAY_MS);
     }
 
     if (searchInput) {
@@ -252,10 +268,14 @@
     }
 
     window.patientsPage = {
-        reload: loadPatients,
+        reload: function () {
+            return loadPatients();
+        },
         showError: showError,
         hideError: hideError,
     };
 
-    document.addEventListener('DOMContentLoaded', loadPatients);
+    document.addEventListener('DOMContentLoaded', function () {
+        loadPatients();
+    });
 })();

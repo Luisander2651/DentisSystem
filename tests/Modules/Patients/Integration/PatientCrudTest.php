@@ -118,7 +118,9 @@ it('lists patients filtered by status', function () {
 
     $response = $this->getJson($this->patientsUrl().'?status=active');
 
-    $response->assertStatus(200);
+    $response->assertStatus(200)
+        ->assertJsonPath('meta.total', 1)
+        ->assertJsonPath('meta.counts', ['total' => 2, 'active' => 1, 'inactive' => 1]);
     expect($response->json('data'))->toHaveCount(1);
 });
 

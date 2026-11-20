@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Domain\Service\AppointmentsService;
 use App\Modules\AppointmentTracking\Application\DTOs\CompleteAppointmentDTO;
@@ -14,6 +16,7 @@ use App\Modules\AppointmentTracking\Domain\Repositories\AppointmentTrackingRepos
 use App\Modules\AppointmentTracking\Domain\Repositories\PendingTrackingRepositoryInterface;
 use App\Modules\AppointmentTracking\Domain\Service\AppointmentCompletionService;
 use App\Modules\AppointmentTracking\Domain\Service\AppointmentTrackingService;
+use App\Modules\AppointmentTracking\Domain\Service\PendingTrackingService;
 use Tests\TestCase;
 
 uses(TestCase::class);
@@ -82,11 +85,11 @@ function trackingAuthorization(TrackingCallLog $log, array $granted): Authorizat
 function trackingPendingRepository(TrackingCallLog $log): PendingTrackingRepositoryInterface
 {
     $repository = Mockery::mock(PendingTrackingRepositoryInterface::class);
-    $repository->shouldReceive('findCompletedWithoutTracking')->andReturnUsing(function (?string $userId) use ($log): array {
+    $repository->shouldReceive('findCompletedWithoutTracking')->andReturnUsing(function (?string $userId, PageRequest $request) use ($log): Page {
         $log->calls[] = 'repository';
         $log->scopes[] = $userId;
 
-        return ['items' => [], 'total' => 0];
+        return Page::create([], 0, $request);
     });
 
     return $repository;
@@ -131,7 +134,7 @@ function trackingRegisterDto(): CompleteAppointmentDTO
 
 it('refuses the ones without follow-up to whoever may not register it, before reading (abuse)', function (array $granted) {
     $log = new TrackingCallLog;
-    $useCase = new GetCompletedWithoutTrackingUseCase(trackingAuthorization($log, $granted), trackingPendingRepository($log));
+    $useCase = new GetCompletedWithoutTrackingUseCase(trackingAuthorization($log, $granted), new PendingTrackingService(trackingPendingRepository($log)));
 
     expect(fn () => $useCase->execute())->toThrow(AuthorizationException::class)
         ->and($log->calls)->not->toContain('repository')
@@ -143,7 +146,7 @@ it('refuses the ones without follow-up to whoever may not register it, before re
 
 it('asks for its permission first and gives the doctor only their own (TM1)', function (array $granted, ?string $scope) {
     $log = new TrackingCallLog;
-    $useCase = new GetCompletedWithoutTrackingUseCase(trackingAuthorization($log, $granted), trackingPendingRepository($log));
+    $useCase = new GetCompletedWithoutTrackingUseCase(trackingAuthorization($log, $granted), new PendingTrackingService(trackingPendingRepository($log)));
 
     $useCase->execute();
 

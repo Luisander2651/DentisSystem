@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-10-04
+updated: 2026-11-19
 ---
 
 # Observabilidad y auditoría de Dentissa
@@ -101,6 +101,13 @@ usuario (indicado en cada caso).
   en las rutas del personal), el 404 por cita ajena y el 409 del QR de una cita cerrada. Hoy no se
   registran (OB1.a pendiente). Tras el deploy: sin 500 en `/api/v1/portal/*` y sin un aumento de 401
   en el resto de la API (señal de un fallo en los guards).
+- Spec 028 (paginación de listas): ningún log nuevo. Los 500 de las listas paginadas los registra
+  `UnexpectedErrorResponse` como `unexpected_error` con el controlador como `origin`, sin la búsqueda ni
+  datos del paciente; `GetUsersByRoleAndStatusController` deja de registrar el mensaje de la excepción
+  (RS15.a, en parte). nginx registra cada petición con la ruta sin la consulta (formato
+  `without_query` de `docker/nginx/*.conf`), así que lo buscado no llega a Loki (TM8). Tras el deploy:
+  en Loki, ninguna línea de nginx con `search=` ni `busqueda=` y ningún `unexpected_error` de los
+  controladores de listas en la primera hora.
 
 ## Correlación
 - Identificador por petición: cabecera `X-Request-Id` (propuesta); se acepta del cliente si es

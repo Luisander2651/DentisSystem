@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 use App\Core\Authorization\AuthorizationServiceInterface;
 use App\Core\Authorization\Exceptions\AuthorizationException;
+use App\Core\Domain\Pagination\Page;
+use App\Core\Domain\Pagination\PageRequest;
 use App\Modules\Appointments\Aplication\UseCases\GetTodaySummaryUseCase;
 use App\Modules\Appointments\Aplication\UseCases\GetUnclosedAppointmentsUseCase;
 use App\Modules\Appointments\Domain\Repositories\AppointmentsRepositoryInterface;
 use App\Modules\Appointments\Domain\Service\AppointmentsService;
-use App\Modules\Appointments\Domain\ValueObjects\AppointmentPage;
 use Tests\TestCase;
 
 uses(TestCase::class);
@@ -76,10 +77,10 @@ function dashboardRepositoryLogging(DashboardCallLog $log): AppointmentsReposito
 
         return [];
     });
-    $repository->shouldReceive('findUnclosedBefore')->andReturnUsing(function () use ($log): AppointmentPage {
+    $repository->shouldReceive('findUnclosedBefore')->andReturnUsing(function () use ($log): Page {
         $log->calls[] = 'repository';
 
-        return AppointmentPage::create([], 0);
+        return Page::create([], 0, PageRequest::create(1, 10));
     });
 
     return $repository;

@@ -2,6 +2,7 @@
 @props([
     'title' => 'Historial de citas',
     'emptyText' => 'Este paciente aún no tiene citas registradas.',
+    'paginationLabel' => 'Páginas del historial de citas',
 ])
 
 <section class="w-full overflow-hidden rounded-card border border-line bg-surface shadow-sm">
@@ -30,4 +31,7 @@
             </tbody>
         </table>
     </div>
+
+    {{-- Spec 028 (CA2): diez citas por página; el control aparece solo con más de una página. --}}
+    <x-ui.pagination variant="table" :label="$paginationLabel" data-history-pagination />
 </section>

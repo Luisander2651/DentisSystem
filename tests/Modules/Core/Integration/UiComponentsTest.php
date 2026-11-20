@@ -179,3 +179,26 @@ it('takes the title and the empty text of the history table when given', functio
     expect($html)->toContain('Aún no tienes citas registradas')
         ->not->toContain('Este paciente aún no tiene citas registradas.');
 });
+
+/*
+ * Spec 028 (CA1, CA2, CA6): the mount of the pagination control. It starts hidden and empty; the
+ * page script fills it from the `meta` of its list, under the cards or in the foot of a table.
+ */
+it('mounts the pagination control hidden, with its name, under a grid of cards', function () {
+    $html = normalizedHtml(Blade::render('<x-ui.pagination label="Páginas de pacientes" data-patients-pagination />'));
+
+    expect($html)->toMatch('/^<nav\b[^>]*data-pagination[^>]*>\s*<\/nav>$/')
+        ->toContain('aria-label="Páginas de pacientes"')
+        ->toContain('data-patients-pagination')
+        ->toMatch('/<nav\b[^>]*\shidden\b/')
+        ->toContain('pt-6')
+        ->not->toContain('border-t');
+});
+
+it('mounts the pagination control in the foot of a table', function () {
+    $html = normalizedHtml(Blade::render('<x-ui.pagination label="Páginas del historial de citas" variant="table" />'));
+
+    expect($html)->toContain('aria-label="Páginas del historial de citas"')
+        ->toContain('border-t border-line')
+        ->toContain('p-4');
+});
