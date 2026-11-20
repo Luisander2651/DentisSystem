@@ -3749,10 +3749,124 @@
             "role": "administrador",
             "flows": [
                 {
-                    "name": "recargar con página, búsqueda y filtro en la dirección muestra lo mismo",
+                    "name": "recargar con página, búsqueda y filtro en la dirección los envía a la API y muestra lo mismo",
+                    "load": true,
+                    "answers": [
+                        {
+                            "to": "/api/v1/patients",
+                            "query": {
+                                "page": "2",
+                                "search": "prueba",
+                                "status": "active"
+                            },
+                            "times": 1,
+                            "status": 200,
+                            "body": {
+                                "data": [
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000313",
+                                        "first_name": "Filtrado 13",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.13@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000314",
+                                        "first_name": "Filtrado 14",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.14@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000315",
+                                        "first_name": "Filtrado 15",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.15@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000316",
+                                        "first_name": "Filtrado 16",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.16@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000317",
+                                        "first_name": "Filtrado 17",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.17@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000318",
+                                        "first_name": "Filtrado 18",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.18@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000319",
+                                        "first_name": "Filtrado 19",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.19@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000320",
+                                        "first_name": "Filtrado 20",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.20@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000321",
+                                        "first_name": "Filtrado 21",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.21@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000322",
+                                        "first_name": "Filtrado 22",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.22@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000323",
+                                        "first_name": "Filtrado 23",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.23@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    },
+                                    {
+                                        "id": "00000000-0000-4000-8000-000000000324",
+                                        "first_name": "Filtrado 24",
+                                        "last_name": "Prueba",
+                                        "email": "filtrado.24@ui-audit.dentissa.test",
+                                        "status": "active"
+                                    }
+                                ],
+                                "meta": {
+                                    "page": 2,
+                                    "per_page": 12,
+                                    "total": 40,
+                                    "last_page": 4,
+                                    "from": 13,
+                                    "to": 24,
+                                    "counts": {
+                                        "total": 40,
+                                        "active": 40,
+                                        "inactive": 0
+                                    }
+                                }
+                            }
+                        }
+                    ],
                     "expect": {
                         "textIn": {
-                            "[data-patients-pagination]": "Mostrando 13–24 de"
+                            "[data-patients-pagination]": "Mostrando 13–24 de 40"
                         },
                         "values": {
                             "#patient-search": "prueba"
