@@ -5,7 +5,7 @@ round: 3
 date: 2026-11-20
 base: 59be294
 head: 35f1b09
-human_signoff: pending
+human_signoff: Luisander2651 2026-11-20 (ronda 3)
 ---
 
 # Review · 028 Paginación de las listas del panel y del portal
