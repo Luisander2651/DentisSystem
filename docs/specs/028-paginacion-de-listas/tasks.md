@@ -151,12 +151,14 @@ Revisado contra `plan.md` → Constitution Check (constitución 1.2.1):
 - [x] T037 Probar el tope de 50 en Mis citas y en el historial del expediente: el caso `per_page=10000` siembra 60 citas y espera 50 elementos y `meta.per_page` 50 — `tests/Modules/Appointments/Integration/PortalAppointmentsPaginationTest.php`, `tests/Modules/Appointments/Integration/PatientAppointmentsPaginationTest.php` — hecho cuando: los dos casos en rojo si `PageRequest::MAX_SIZE` sube a 100, y en verde con el valor actual; en verde — cubre: CA13 — depende: T026, T027 — añadida por /review: R8
   - nota: el caso `per_page=10000` sale del dataset (con 25 citas no probaba nada) a un test propio con 60 citas en cada archivo; el dataset queda con la página 3 y la página fuera de rango. Comprobado subiendo `PageRequest::MAX_SIZE` a 100: los dos fallan; restaurado, en verde.
 - [x] T038 Que `ui:audit-data` borre las citas de sus pacientes que no sembró: antes de sembrar, `UiAuditSeeder` elimina las citas de los pacientes que crea cuyo id no es uno de los suyos (`stableId`), las que dejan las entradas que envían de verdad, como `agenda-cita-crear` — `database/seeders/UiAuditSeeder.php`, `tests/Modules/Core/Integration/UiAuditSeederTest.php` — hecho cuando: el test crea una cita ajena para la paciente del portal y otra para un paciente que no es del seeder, vuelve a sembrar y comprueba que solo desaparece la primera; tras `npm run test:ui -- --only agenda-cita-crear`, `php artisan ui:audit-data` y `npm run test:ui -- --only portal-mis-citas-pagina-2,expediente-historial-pagina-2,portal-detalle-fallo` en verde; en verde — cubre: CA2 — depende: T005 — añadida por /review: R9
+
+- [ ] T039 Que `pacientes-direccion` pruebe que la búsqueda y el filtro de la dirección llegan a la API: el flujo responde con `answers` el `GET /api/v1/patients` solo cuando la consulta lleva `page` 2, `search` "prueba" y `status` "active" (`query`), con una página de servidor de 40 pacientes (`meta.total` 40, `last_page` 4), y exige "Mostrando 13–24 de 40" además del campo, el chip y la dirección que ya comprueba — `tests/Browser/screens.json` — hecho cuando: el flujo en rojo si `resources/js/pages/patients/index.js` deja de enviar `search` o `status` al cargar, y en verde con el código actual; `npm run test:ui -- --only pacientes-direccion` dos veces en verde; en verde — cubre: CA8 — depende: T035 — añadida por /review: R28
   - nota: el seeder guarda los ids de las citas que escribe (`seedAppointment()`) y al final de `run()` borra las demás citas de sus pacientes (correo del dominio reservado); las de otros pacientes no se tocan. En esta corrida `agenda-cita-crear` no dejó cita (20 citas de la paciente antes y después de volver a sembrar), así que la limpieza la prueba el test de Pest, que falló antes del cambio; las 3 entradas, dos veces en verde.
 
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md`: convención de paginación de la API (`page`, `per_page`, `search`, forma de `meta` y `counts`; pendientes solo con `page`) y `app/Core/Domain/Pagination` en la descripción de `app/Core`; confirmar que `MobileLoginTest` y los tests de `/internal/appointments/*` no cambiaron en toda la spec (P4, D1)
 - [x] T091 Actualizar `docs/security.md` (superficie de ataque: `page`, `per_page` y `search` en las listas, con sus límites; los logs de acceso sin consulta; RS15.a corregida en `GetUsersByRoleAndStatusController` y pendiente en el resto, por corrección: A15), `docs/observability.md` (los 500 de las listas como `unexpected_error`), `docs/roadmap.md` (025/R10, 025/R23 y 020/R17 resueltos) y revisar `docs/deployment.md` (sin variables ni pasos nuevos)
-- [x] T092 Marcar spec como `implemented`
+- [ ] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
@@ -175,7 +177,7 @@ Revisado contra `plan.md` → Constitution Check (constitución 1.2.1):
 | CA5 | T007, T008, T010, T011, T012, T013, T014, T015, T016, T017, T018, T019, T020, T021, T022, T023 | T007, T008, T010, T011, T012, T013, T014, T015, T016, T017, T018, T019, T020, T021, T022, T023 |
 | CA6 | T004, T008, T020, T021, T022, T023, T026, T027, T030 | T004, T008, T020, T021, T022, T023, T026, T027, T030 |
 | CA7 | T006, T010, T013, T016, T017, T018, T019, T025, T027, T028, T029 | T006, T010, T013, T016, T017, T018, T019, T025, T027, T028, T029 |
-| CA8 | T004, T008, T012, T015, T024, T027, T035 | T004, T008, T012, T015, T024, T027, T035 |
+| CA8 | T004, T008, T012, T015, T024, T027, T035, T039 | T004, T008, T012, T015, T024, T027, T035, T039 |
 | CA9 | T002, T003, T004, T006, T008, T012, T015, T026, T028, T029 | T002, T003, T004, T006, T008, T012, T015, T026, T028, T029 |
 | CA10 | T008, T012, T015, T020, T021, T022, T023, T036 | T008, T012, T015, T020, T021, T022, T023, T036 |
 | CA11 | T001, T004, T008, T012, T015, T020, T021, T022, T023, T026, T027, T030, T033 | T001, T004, T008, T012, T015, T020, T021, T022, T023, T026, T027, T030, T033 |
@@ -209,7 +211,7 @@ Revisado contra `plan.md` → Constitution Check (constitución 1.2.1):
 | Sistema de diseño | T001 |
 | Infraestructura (nginx) | T031 |
 | Datos de prueba | T005, T038 |
-| Tests de navegador | T005, T008, T012, T015, T020, T021, T022, T023, T024, T026, T027, T030, T034, T035, T036 |
+| Tests de navegador | T005, T008, T012, T015, T020, T021, T022, T023, T024, T026, T027, T030, T034, T035, T036, T039 |
 
 | Requisito no funcional | Tarea(s) de test o verificación manual (T095) |
 |---|---|
