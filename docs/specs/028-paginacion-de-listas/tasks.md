@@ -159,7 +159,7 @@ Revisado contra `plan.md` → Constitution Check (constitución 1.2.1):
 ## Integración y documentación
 - [x] T090 Actualizar `docs/architecture.md`: convención de paginación de la API (`page`, `per_page`, `search`, forma de `meta` y `counts`; pendientes solo con `page`) y `app/Core/Domain/Pagination` en la descripción de `app/Core`; confirmar que `MobileLoginTest` y los tests de `/internal/appointments/*` no cambiaron en toda la spec (P4, D1)
 - [x] T091 Actualizar `docs/security.md` (superficie de ataque: `page`, `per_page` y `search` en las listas, con sus límites; los logs de acceso sin consulta; RS15.a corregida en `GetUsersByRoleAndStatusController` y pendiente en el resto, por corrección: A15), `docs/observability.md` (los 500 de las listas como `unexpected_error`), `docs/roadmap.md` (025/R10, 025/R23 y 020/R17 resueltos) y revisar `docs/deployment.md` (sin variables ni pasos nuevos)
-- [ ] T092 Marcar spec como `implemented`
+- [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
 - [ ] T095 Desplegar a staging y verificar criterios de aceptación
