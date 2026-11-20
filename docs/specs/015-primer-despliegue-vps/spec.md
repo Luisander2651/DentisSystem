@@ -119,6 +119,7 @@ whatsApp); el resto, dentro.
 | OB4.a `LOG_CHANNEL=stderr` en `.env.example` | dentro | CA8 |
 | RS9.a Retirar teléfono, nombre y variables de plantilla de los logs | dentro | CA18 (todos los archivos citados en OB2) |
 | RS9.b `LOG_LEVEL=info` por defecto en `.env.example` | dentro | CA8 |
+| RS9.c Lo buscado en las listas en los logs de acceso de nginx | fuera | derivada después de esta spec → spec 028 |
 | OB2.a Retirar teléfono y nombre de `CreateAppointmentController` | fuera | ya mitigada por la spec 014 → spec 014 |
 | OB2.b Retirar datos personales del resto de logs citados | dentro | CA18 (whatsApp, Email y `RetriveDataForScheduledAppointmenEventUseCase`) |
 | OB10.a Respuestas 500 sin el mensaje de la excepción | fuera | ya mitigada por la spec 014 → spec 014 |
@@ -179,3 +180,4 @@ Ninguna.
 | 2026-09-29 | Aclarada la redacción de CA18: trazas del sistema en segundo plano solo sin argumentos ni datos personales (decisión del usuario, 2026-09-29) | `/analyze` ronda 4: A61 |
 | 2026-10-06 | Referencia corregida: la spec de monitoreo (alertas y retención de logs) pasa de 016 a 017, porque el número 016 lo toma la spec del sistema de diseño. Sin cambios de alcance ni de criterios | `/specify --edit`; decisión del usuario |
 | 2026-10-14 | Referencia corregida también en su plan: las métricas, las alertas y la retención de Loki van en la spec 017, no en la 016. Sin cambios de alcance ni de criterios | `/analyze 016` ronda 4 (A85) |
+| 2026-11-20 | RS9.c, derivada por la spec 028, añadida a Cobertura como fuera de esta spec. Sin cambios de alcance ni de criterios | `/release 028` |
