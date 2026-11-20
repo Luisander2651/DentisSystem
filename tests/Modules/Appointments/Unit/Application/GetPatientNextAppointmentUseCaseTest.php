@@ -18,7 +18,7 @@ uses(TestCase::class);
 /*
  * Spec 025 (CA1, CA2): the next appointment is the assigned or rescheduled one nearest from today
  * on, in the clinic's time zone. One of today counts even when its hour has gone by, so a patient
- * who arrives late still has their QR code. The patient is the one of the session.
+ * who arrives late still sees it. The patient is the one of the session.
  */
 
 const NEXT_APPOINTMENT_PATIENT_ID = '1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f';

@@ -200,7 +200,7 @@ it('offers the patient the actions of c3 and the ways to the clinic and to "Mis 
         iterator_to_array($page->query('.//a', dashboardRegion($page, $heading))),
     );
 
-    expect(dashboardControls($page, dashboardRegion($page, 'Próxima cita')))->toBe(['Contacta a la clínica', 'Reintentar', 'Descargar QR', 'Ver detalle'])
+    expect(dashboardControls($page, dashboardRegion($page, 'Próxima cita')))->toBe(['Contacta a la clínica', 'Reintentar', 'Ver detalle'])
         ->and($hrefs('Próxima cita'))->toBe(['/contacto'])
         ->and($hrefs('Mis citas'))->toBe(['/mis-citas'])
         ->and($hrefs('¿Necesitas cambiar tu cita?'))->toBe(['/contacto']);

@@ -47,8 +47,4 @@ return [
         'appointment_template_sid' => env('TWILIO_APPOINTMENT_TEMPLATE_SID'),
     ],
 
-    'attendance' => [
-        'key' => env('ATTENDANCE_SERVICE_KEY'),
-    ],
-
 ];

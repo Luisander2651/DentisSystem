@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Spec 025 (CA20, TM10): appointments, prescriptions and QR codes of the portal must not stay
+ * Spec 025 (CA20, TM10): appointments and prescriptions of the portal must not stay
  * in a browser or proxy cache. It runs before authentication (bootstrap/app.php), so the 401
  * and 403 answers of the group carry the header too.
  */

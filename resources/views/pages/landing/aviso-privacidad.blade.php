@@ -40,7 +40,7 @@
         <ul class="list-disc space-y-2 pl-5">
             <li><strong class="text-ink">Identificación y contacto:</strong> nombre, apellidos, correo electrónico, teléfono, dirección y un contacto de emergencia.</li>
             <li><strong class="text-ink">Cuenta:</strong> tu correo y tu contraseña, que guardamos cifrada y nadie de la clínica puede leer.</li>
-            <li><strong class="text-ink">Citas:</strong> fecha, hora, tratamiento, motivo de la consulta y el código QR de cada cita, con el que se registra tu entrada a la clínica.</li>
+            <li><strong class="text-ink">Citas:</strong> fecha, hora, tratamiento y motivo de la consulta.</li>
         </ul>
         <p>También tratamos <strong class="text-ink">datos personales sensibles</strong>, que la ley protege de forma especial:</p>
         <ul class="list-disc space-y-2 pl-5">
@@ -56,7 +56,6 @@
             <li>Crear y administrar tu cuenta de paciente.</li>
             <li>Agendar, confirmar, reprogramar y cancelar tus citas, incluidos los avisos por WhatsApp y correo electrónico.</li>
             <li>Integrar y actualizar tu expediente clínico, darte seguimiento y emitir tus recetas.</li>
-            <li>Registrar tu entrada y salida de la clínica con el código QR de tu cita.</li>
             <li>Cumplir las obligaciones legales y sanitarias que aplican a la clínica.</li>
         </ul>
         <p>Como finalidad secundaria, que no es necesaria para atenderte, podemos enviarte información sobre promociones y servicios de la clínica.</p>
@@ -71,7 +70,7 @@
         <ul class="list-disc space-y-2 pl-5">
             <li><strong class="text-ink">Twilio:</strong> envía los mensajes de WhatsApp para confirmar tus citas (tu nombre, tu teléfono y los datos de la cita).</li>
             <li><strong class="text-ink">Brevo:</strong> envía los correos electrónicos, como el de recuperación de contraseña.</li>
-            <li><strong class="text-ink">Cloudflare:</strong> protege el sitio y guarda las imágenes que publica la clínica y los códigos QR de las citas.</li>
+            <li><strong class="text-ink">Cloudflare:</strong> protege el sitio y guarda las imágenes que publica la clínica.</li>
             <li><strong class="text-ink">DigitalOcean:</strong> aloja los servidores donde funciona el sistema.</li>
         </ul>
         <p>Algunos de estos proveedores pueden tratar los datos fuera de México. No vendemos tus datos ni los transferimos a terceros para sus propios fines, salvo en los casos en que la ley lo permite sin tu consentimiento o cuando una autoridad competente lo requiera.</p>

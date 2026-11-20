@@ -21,7 +21,6 @@ function portalAccessRoutes(): array
     return [
         'GET /portal/appointments',
         'GET /portal/appointments/next',
-        'GET /portal/appointments/{id}/qr',
         'GET /portal/appointments/{id}/prescriptions',
     ];
 }
@@ -87,7 +86,6 @@ it('keeps the staff routes closed to a patient, active or not', function (string
     'agenda' => '/agenda/today-appointments',
     'citas de un paciente' => '/appointments/patient/{patientId}',
     'detalle de una cita' => '/appointments/{id}',
-    'QR del personal' => '/appointments/{id}/qr',
     'seguimiento clínico' => '/appointments/{id}/tracking',
 ])->with([
     'activo' => 'active',

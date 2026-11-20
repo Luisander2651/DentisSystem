@@ -1,16 +1,15 @@
 import { openDialog } from '../../ui/dialog';
 import { stateBadge } from '../../ui/badge';
 import { announceError } from '../../ui/status';
-import { createAppointmentQr, qrFilename } from '../../ui/appointment-qr';
 import { renderPrescriptions } from '../../ui/prescriptions';
 
 /*
  * Detalle de una cita del paciente (spec 025, c3-detalle). Se abre desde "Ver detalle" del inicio y
  * desde "Ver" de Mis citas: cada pantalla le da la cita que ya tiene (spec 028, D15), porque con la
- * paginación la lista del paciente ya no trae todas sus citas. En una cita abierta muestra su QR con "Descargar QR" (CA7); en una
- * completada, las recomendaciones y las recetas o "Esta cita no tiene recetas" (CA5, CA6); en una
- * cancelada, ninguna de las dos (CA8). Si falla el QR o las recetas, su aviso va en su lugar y el
- * resto se queda igual (CA9). Todo dato entra con textContent (TM7).
+ * paginación la lista del paciente ya no trae todas sus citas. En una cita completada muestra las
+ * recomendaciones y las recetas o "Esta cita no tiene recetas" (CA5, CA6); en una abierta o
+ * cancelada, ninguna de las dos (CA8). Si fallan las recetas, su aviso va en su lugar y el resto se
+ * queda igual (CA9). Todo dato entra con textContent (TM7).
  */
 (function () {
     const modal = document.querySelector('[data-portal-detail-modal]');
@@ -21,7 +20,6 @@ import { renderPrescriptions } from '../../ui/prescriptions';
 
     modal.dataset.portalReady = 'true';
 
-    const OPEN = ['asignada', 'reprogramada'];
     const loading = modal.querySelector('[data-portal-detail-loading]');
     const failure = modal.querySelector('[data-portal-detail-error]');
     const general = modal.querySelector('[data-portal-detail-general]');
@@ -30,9 +28,6 @@ import { renderPrescriptions } from '../../ui/prescriptions';
     const prescriptions = modal.querySelector('[data-portal-detail-prescriptions]');
     const prescriptionsList = modal.querySelector('[data-portal-detail-prescriptions-list]');
     const prescriptionsError = modal.querySelector('[data-portal-detail-prescriptions-error]');
-    const qr = createAppointmentQr(modal.querySelector('[data-view-appointment-qr]'));
-    const WEEKDAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-    const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
     // Each opening gets its number and closing moves it on, so a late answer never fills another.
     let opening = 0;
@@ -48,13 +43,6 @@ import { renderPrescriptions } from '../../ui/prescriptions';
         const value = parts(date);
 
         return value ? String(value.day).padStart(2, '0') + '/' + String(value.month).padStart(2, '0') + '/' + value.year : String(date || '');
-    }
-
-    /** "2026-11-12" → "jueves 12 de noviembre". */
-    function longDate(date) {
-        const value = parts(date);
-
-        return value ? WEEKDAYS[new Date(Date.UTC(value.year, value.month - 1, value.day)).getUTCDay()] + ' ' + value.day + ' de ' + MONTHS[value.month - 1] : String(date || '');
     }
 
     function addRow(label, value) {
@@ -94,10 +82,6 @@ import { renderPrescriptions } from '../../ui/prescriptions';
         prescriptions.classList.add('hidden');
         prescriptionsList.replaceChildren();
         prescriptionsError.classList.add('hidden');
-
-        if (qr) {
-            qr.reset();
-        }
     }
 
     async function read(url) {
@@ -161,15 +145,7 @@ import { renderPrescriptions } from '../../ui/prescriptions';
         addRow('Hora', String(appointment.time || '').slice(0, 5));
         addRow('Estado', badge(appointment.status));
 
-        if (OPEN.includes(appointment.status)) {
-            if (qr) {
-                qr.show({
-                    src: '/api/v1/portal/appointments/' + encodeURIComponent(appointment.id) + '/qr',
-                    alt: 'Código QR de acceso de tu cita del ' + longDate(appointment.date),
-                    filename: qrFilename(appointment.date, appointment.time),
-                });
-            }
-        } else if (appointment.status === 'completada') {
+        if (appointment.status === 'completada') {
             showPrescriptions(appointment, mine);
         }
     }
@@ -184,10 +160,6 @@ import { renderPrescriptions } from '../../ui/prescriptions';
         }
 
         opening++;
-
-        if (qr) {
-            qr.reset();
-        }
     });
 })();
 

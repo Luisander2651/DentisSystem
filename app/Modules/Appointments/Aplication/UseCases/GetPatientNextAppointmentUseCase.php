@@ -14,7 +14,7 @@ use App\Modules\Patients\Domain\ValueObjects\Patients\PatientId;
 /**
  * Spec 025 (CA1, CA2): the next appointment of the patient of the session is the assigned or
  * rescheduled one nearest from today on, in the clinic's time zone. One of today counts even
- * when its hour has gone by, so a patient who arrives late still has their QR code.
+ * when its hour has gone by, so a patient who arrives late still sees it.
  */
 final readonly class GetPatientNextAppointmentUseCase
 {

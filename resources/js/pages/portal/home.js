@@ -1,13 +1,11 @@
 import { stateBadge } from '../../ui/badge';
 import { announceError } from '../../ui/status';
-import { createAppointmentQr, qrFilename } from '../../ui/appointment-qr';
 import { openAppointmentDetail } from './appointment-detail';
 
 /*
- * Inicio del paciente (spec 025, c3). Pide su próxima cita y la pinta en la tarjeta del inicio con
- * su QR debajo (CA1); sin cita, el estado vacío con el enlace a contacto (CA2); si falla la cita,
- * el bloque de error con "Reintentar" en su lugar, y si falla el QR, su aviso en el lugar del
- * código (CA9). Todo dato entra con textContent (TM7). Los accesos esperan ocultos a que se sepa
+ * Inicio del paciente (spec 025, c3). Pide su próxima cita y la pinta en la tarjeta del inicio
+ * (CA1); sin cita, el estado vacío con el enlace a contacto (CA2); si falla la cita, el bloque de
+ * error con "Reintentar" en su lugar (CA9). Todo dato entra con textContent (TM7). Los accesos esperan ocultos a que se sepa
  * qué mostrar, para que nada a la vista salte al llegar la cita (K6).
  */
 (function () {
@@ -26,7 +24,6 @@ import { openAppointmentDetail } from './appointment-detail';
     const section = root.querySelector('[data-portal-section="next"]');
     const card = section.querySelector('[data-next-card]');
     const detail = section.querySelector('[data-portal-next-detail]');
-    const qr = createAppointmentQr(section.querySelector('[data-view-appointment-qr]'));
     let ticket = 0;
     // Spec 028 (D15, A39): the detail opens with the next appointment the start already has.
     let nextAppointment = null;
@@ -87,22 +84,10 @@ import { openAppointmentDetail } from './appointment-detail';
         suffix.textContent = ' de tu cita del ' + date.toLowerCase();
 
         show('content');
-
-        if (qr) {
-            qr.show({
-                src: '/api/v1/portal/appointments/' + encodeURIComponent(appointment.id) + '/qr',
-                alt: 'Código QR de acceso de tu cita del ' + date.toLowerCase(),
-                filename: qrFilename(appointment.date, appointment.time),
-            });
-        }
     }
 
     async function load() {
         const mine = ++ticket;
-
-        if (qr) {
-            qr.reset();
-        }
 
         try {
             const response = await fetch('/api/v1/portal/appointments/next', {
