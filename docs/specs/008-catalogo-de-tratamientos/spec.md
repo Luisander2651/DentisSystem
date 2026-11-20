@@ -58,3 +58,4 @@ choques de horario.
 | 2026-09-22 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
 | 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA3, el catálogo de la agenda es solo para el administrador; 500 genérico; `agenda/treatments` devuelve `time` nulo como `0` | /release |
 | 2026-10-18 | Comportamiento modificado por 018 en v0.4.0: CA3, el catálogo para agendar pasa de solo el administrador a administrador y asistente | /release |
+| 2026-11-20 | Comportamiento modificado por 028 en v0.13.0: sus listas se paginan en el servidor (página, búsqueda y filtro en la dirección; `meta` con el total y los contadores) | /release |

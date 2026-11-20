@@ -67,3 +67,4 @@ del personal (Administrador, Asistente, Doctor).
 |---|---|---|
 | 2026-09-22 | Creación inferida del código | /init |
 | 2026-09-22 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
+| 2026-11-20 | Comportamiento modificado por 028 en v0.13.0: sus listas se paginan en el servidor (página, búsqueda y filtro en la dirección; `meta` con el total y los contadores) | /release |

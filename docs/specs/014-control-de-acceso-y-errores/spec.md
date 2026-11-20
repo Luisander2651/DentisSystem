@@ -163,3 +163,4 @@ Constitution Check de `/plan`, junto con la falta de `request_id`.
 | 2026-09-25 | Review firmada por el usuario (Luisander2651) | Confirmación humana de la definición de terminado |
 | 2026-10-14 | Comportamiento modificado por 016 en v0.2.0: el acceso denegado en las pantallas web muestra la página "Sin permiso" (y el JSON fijo en español si se pide JSON); `api/*` no cambia | /release |
 | 2026-10-18 | Comportamiento modificado por 018 en v0.4.0: CA6, el asistente hace las operaciones de la agenda salvo completar y eliminar; CA7, el doctor ve sus citas y completa las suyas; CA10, asistente y doctor piden las citas del día (el doctor, solo las suyas); CA15, el asistente ve "agenda"; los selectores de la agenda dejan de ser solo del administrador | /release |
+| 2026-11-20 | Comportamiento modificado por 028 en v0.13.0: sus listas se paginan en el servidor (página, búsqueda y filtro en la dirección; `meta` con el total y los contadores) | /release |

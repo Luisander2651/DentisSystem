@@ -1,6 +1,6 @@
 ---
 status: approved
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 # Seguridad de Dentissa
@@ -197,7 +197,7 @@ el flujo de WhatsApp registra el teléfono y las variables de la plantilla; `.en
 Correcciones:
 - RS9.a Retirar teléfono, nombre y variables de plantilla de los logs (derivada; detalle en OB2) — estado: mitigada (v0.1.0; spec 015): los 7 archivos de OB2 más el controlador del restablecimiento; `WhatsAppFlowLogsTest`, `PasswordResetEmailTest`. La spec 014 ya había retirado los de `CreateAppointmentController` (OB2.a)
 - RS9.b `LOG_LEVEL=info` por defecto en `.env.example` (derivada) — estado: mitigada (v0.1.0; spec 015): `EnvExampleDefaultsTest`
-- RS9.c Lo buscado en las listas (correo o nombre en `?search=`) en los logs de acceso de nginx (derivada; spec 028, TM8) — estado: mitigada (spec 028, T031): `prod.conf` y `default.conf` registran con el formato `without_query` (la ruta de `$request_uri` cortada en el `?`) en cada bloque `server`, que reemplaza al formato de la imagen; `NginxProdConfTest`. Falta verificarlo en Loki tras el deploy (T097)
+- RS9.c Lo buscado en las listas (correo o nombre en `?search=`) en los logs de acceso de nginx (derivada; spec 028, TM8) — estado: mitigada (v0.13.0; spec 028): `prod.conf` y `default.conf` registran con el formato `without_query` (la ruta de `$request_uri` cortada en el `?`) en cada bloque `server`, que reemplaza al formato de la imagen; `NginxProdConfTest`; verificado en producción el 2026-11-20: nginx y Loki guardan `GET /api/v1/patients` sin la consulta y ninguna línea con `search=` ni `busqueda=` (T097)
 
 ### RS10 · Baja — Configuración por defecto insegura en `.env.example`
 `APP_DEBUG=true`, `SESSION_ENCRYPT=false`.

@@ -81,3 +81,4 @@ Página sencilla con el layout del sitio público: el título "Deja tu opinión"
 | 2026-11-17 | Spec creada | Pedido del usuario |
 | 2026-11-17 | CA2, CA4 y CA5 precisados; CA11 (API pública solo visibles); cobertura de RS4.a; constancia del consentimiento | `/analyze 027` ronda 1 (A1, A6, A7, A15) |
 | 2026-11-17 | Liberada en v0.12.0 | /release |
+| 2026-11-20 | Comportamiento modificado por 028 en v0.13.0: sus listas se paginan en el servidor (página, búsqueda y filtro en la dirección; `meta` con el total y los contadores) | /release |

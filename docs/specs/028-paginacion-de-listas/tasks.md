@@ -162,11 +162,14 @@ Revisado contra `plan.md` → Constitution Check (constitución 1.2.1):
 - [x] T092 Marcar spec como `implemented`
 
 ## Despliegue (lo ejecuta `/release`)
-- [ ] T095 Desplegar a staging y verificar criterios de aceptación
+- [x] T095 Desplegar a staging y verificar criterios de aceptación
   - Sin staging (`deploy.environments: [local, prod]`): antes de producción, CI del PR en verde (suite, `ui-audit`, seguridad y Pint).
-- [ ] T096 Aprobación humana para producción
-- [ ] T097 Desplegar a producción y vigilar métricas del plan (Rollout): 5xx y `unexpected_error` de los controladores de listas en Loki la primera hora; ninguna línea de nginx con `search=` ni `busqueda=` en Loki (TM8); Pacientes y Mis citas pasan a la página 2 en producción
-- [ ] T098 Marcar spec como `released`
+  - nota: CI del PR #63 en verde (dos corridas de `tests` con Pest y `ui-audit` completos, validador, Pint y seguridad; un intento falló porque Chrome no arrancó en el runner y pasó al relanzarlo). Review ronda 3 aprobada y firmada, sin cambios de código después. Los criterios se verifican en producción tras el deploy (ver T097).
+- [x] T096 Aprobación humana para producción
+  - aprobado por Luisander2651 el 2026-11-20 09:58 para v0.13.0 ("desplegar v0.13.0 a producción")
+- [x] T097 Desplegar a producción y vigilar métricas del plan (Rollout): 5xx y `unexpected_error` de los controladores de listas en Loki la primera hora; ninguna línea de nginx con `search=` ni `busqueda=` en Loki (TM8); Pacientes y Mis citas pasan a la página 2 en producción
+  - nota: 2026-11-20, `deploy.sh v0.13.0` (ejecutado por el usuario) correcto en 10 min 15 s: "Nothing to migrate", `verify.sh --local` con todo en ok y se conservan las imágenes de v0.13.0 y v0.12.1. `verify.sh --remote` con todo en ok. Smoke tests: `/`, `/acerca-de-nosotros`, `/galeria`, `/contacto`, `/sitemap.xml`, `/up` y `/login` responden 200 (0,24–0,41 s). Con la sesión del administrador se crearon 12 tratamientos de prueba: Tratamientos mostró "Mostrando 1–12 de 13" con el control de páginas, "Siguiente" llevó a `?pagina=2` ("Mostrando 13–13 de 13", foco en el título) y `?busqueda=paginacion 12` encontró el de la página 2 sin control (CA1, CA3, CA4, CA8); después se borraron. Logs de los 30 min posteriores (consultados por el usuario): 0 respuestas 5xx en nginx, 0 `unexpected_error`, 0 líneas con `search=` o `busqueda=`; nginx y Loki guardan `GET /api/v1/patients` sin la consulta (TM8, RS9.c).
+- [x] T098 Marcar spec como `released`
 
 ## Cobertura
 | Criterio | Tarea(s) de test | Tarea(s) de implementación |
