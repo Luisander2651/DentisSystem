@@ -1,5 +1,5 @@
 ---
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 # Roadmap
@@ -25,6 +25,11 @@ Para pasar de **prototipo** a **MVP** con una clínica real:
 - Specs 001–012 revisadas y pasadas de `inferred` a `approved` (cumplido el 2026-09-23).
 
 ## Pendientes y deuda
+- Aceptados sin tarea en la review de la spec 028 (v0.13.0; decisión del usuario, 2026-11-20):
+  - `/refactor` pendiente (pedido por el usuario): 028/R11, búsqueda sin acentos duplicada en Patients y Tratamientos; 028/R13, casos de uso y DTOs sin uso en Users y Appointments (`GetUsersByRoleAndStatusUseCase`, `GetTreatmentsUseCase` y `GetTreatmentsDTO`, `GetAppointentByPatientIdUseCase`, `GetPatientAppointmentsUseCase`); 028/R16, tres formas de pasar la página al caso de uso; 028/R19, listas de Contenido y cargador paginado duplicados; 028/R20, dependencia de autorización sin uso en los casos de uso públicos de Contenido.
+  - Servidor: 028/R10, una carrera entre contar y leer una página da 500 (`Page::create`); 028/R14, el `error_log` de nginx lleva la consulta en los errores de upstream; 028/R18, `counts.total` de galería con `status` de texto libre.
+  - Interfaz: 028/R21, `href` del control con la búsqueda anterior y sin `pestana`; 028/R22, el control intercepta Ctrl/Cmd + clic; 028/R23, foco perdido si falla el cambio de página; 028/R25, números de `meta` sin forzar en `innerHTML`; 028/R26, el anuncio no dice el rango ni el total; 028/R27, `estado` en inglés en la dirección; 028/R29 y 028/R30, espacios en `pagination.js` y `checks-dialogs.mjs`.
+  - Tests: 028/R12, el test de la barra invertida no protege su escape; 028/R15, "Citas sin cerrar" sin test de desempate por id; 028/R17, los casos `counts` del 500 de Contenido no llegan a `countByStatus`; 028/R24, CA6 en el navegador sin comprobar la ausencia del control.
 - Opiniones del sitio (spec 027, aceptado sin tarea): 027/R5, la página del límite de envíos no conserva lo que el visitante escribió.
 - Testimonios del inicio sin orden ni tope (detectado el 2026-11-17, tras la spec 027): `GetLandingContentUseCase` trae todos los visibles y la consulta del repositorio no tiene `ORDER BY`, así que salen en el orden que devuelva PostgreSQL. El carrusel pinta todos (un punto por testimonio) y la cinta, con 4 o más, los repite todos dos veces. Con la página de opiniones pueden crecer mucho. Definir el orden (los más recientes primero) y un tope para el carrusel y la cinta (por ejemplo, 8), con una spec corta.
 - Limpieza tras liberar la 026 (v0.11.0), con confirmación del usuario: un `/chore` borra las vistas, componentes y JS del sitio anterior (`layouts/landing`, `pages/landing/{inicio,acerca,galeria,contacto}`, `resources/js/pages/landing/`), `PublicGalleryScriptTest` y el interruptor `SITE_NEW_LANDING`. Sin migraciones que contraer.

@@ -76,6 +76,7 @@ testimonios del sitio público sin tocar código.
 | 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA8 resuelto | /release |
 | 2026-10-16 | Comportamiento modificado por 017 (liberado en v0.3.0): la vigencia de las promociones se evalúa en la zona de la clínica (`America/Mexico_City`, zona de toda la aplicación), como pedían sus Notas | /implement 017 |
 | 2026-10-16 | Comportamiento modificado por 017 en v0.3.0 | /release |
+| 2026-11-20 | Comportamiento modificado por 028 en v0.13.0: sus listas se paginan en el servidor (página, búsqueda y filtro en la dirección; `meta` con el total y los contadores) | /release |
 
 ## Aclaraciones
 ### Sesión 2026-09-23

@@ -246,3 +246,4 @@ Ninguna.
 | 2026-11-11 | `implemented`: los 20 criterios con sus tests en verde | `/implement 025` |
 | 2026-11-11 | Review: ronda 1 `changes_requested` (R1–R5), ronda 2 `approved` con firma del dueño del repositorio | `/review 025` |
 | 2026-11-11 | `released` en v0.10.0, con el chore de Symfony 7.4.23 | `/release 025` |
+| 2026-11-20 | Comportamiento modificado por 028 en v0.13.0: sus listas se paginan en el servidor (página, búsqueda y filtro en la dirección; `meta` con el total y los contadores) | /release |

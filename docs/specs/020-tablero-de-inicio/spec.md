@@ -302,3 +302,4 @@ Ninguna.
 | 2026-10-25 | CA2: la siguiente cita es la primera de hoy sin cerrar, aunque su hora haya pasado; vuelve a `draft` | Decisión del usuario durante /implement |
 | 2026-10-25 | Reaprobada tras la edición de CA2 | Aprobación del usuario |
 | 2026-11-11 | Comportamiento modificado por 025 en v0.10.0: el inicio del paciente sigue el diseño c3 de la 025, sin inicial, correo ni rol junto al saludo (la inicial de CA11 y la última frase de CA16 quedan reemplazadas) | /release |
+| 2026-11-20 | Comportamiento modificado por 028 en v0.13.0: sus listas se paginan en el servidor (página, búsqueda y filtro en la dirección; `meta` con el total y los contadores) | /release |

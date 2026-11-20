@@ -1,7 +1,8 @@
 ---
 id: 028
 slug: paginacion-de-listas
-status: implemented
+status: released
+released: v0.13.0 (2026-11-20)
 created: 2026-11-18
 extends: [004, 005, 006, 008, 012, 014, 020, 025, 027]
 ---
@@ -137,3 +138,4 @@ Ninguna.
 | 2026-11-18 | Spec aprobada de nuevo tras los hallazgos de `/analyze 028` | Aprobación del usuario |
 | 2026-11-18 | CA4: la búsqueda no distingue acentos; la ñ sigue siendo una letra propia | Decisión del usuario durante `/implement 028` |
 | 2026-11-18 | Spec aprobada de nuevo con el CA4 sin distinguir acentos | Aprobación del usuario |
+| 2026-11-20 | Liberada en v0.13.0 | /release |

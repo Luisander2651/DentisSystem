@@ -71,3 +71,4 @@ médicos (tipo de sangre, alergias, medicamentos, última visita al dentista).
 | 2026-09-22 | Creación inferida del código | /init |
 | 2026-09-22 | Aprobada por el usuario como descripción del comportamiento actual | Confirmación explícita |
 | 2026-10-04 | Comportamiento modificado por 014 en v0.1.0: CA3 y CA4 pasan de "usuario autenticado" a staff con permiso; CA11 y CA12 resueltos | /release |
+| 2026-11-20 | Comportamiento modificado por 028 en v0.13.0: sus listas se paginan en el servidor (página, búsqueda y filtro en la dirección; `meta` con el total y los contadores) | /release |
