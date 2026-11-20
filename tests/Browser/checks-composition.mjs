@@ -97,10 +97,11 @@ export const ADMITTED = [
         criterion: '022 CA7',
         entries: ['register'],
         difference: 'El registro gana, antes de "Registrarme", la leyenda "Al registrarte aceptas el Aviso de Privacidad y los Términos y Condiciones" con un enlace a cada página (decisión del usuario, 2026-11-03).',
-    },    {
-        criterion: '024 CA5',
-        entries: ['agenda-cita-detalle-pendiente', 'agenda-cita-detalle-pendiente-asistente', 'agenda-cita-detalle-pendiente-doctor', 'dashboard-detalle-administrador', 'dashboard-detalle-asistente', 'expediente-administrador-cita-detalle-pendiente'],
-        difference: 'El detalle de una cita asignada o reprogramada gana, tras sus datos, la sección "Código QR de acceso" con el QR de la cita y "Descargar QR".',
+    },
+    {
+        criterion: 'retiro del QR (decisión del usuario, 2026-11-20)',
+        entries: ['agenda-cita-detalle-pendiente', 'agenda-cita-detalle-pendiente-asistente', 'agenda-cita-detalle-pendiente-doctor', 'dashboard-detalle-administrador', 'dashboard-detalle-asistente', 'expediente-administrador-cita-detalle-pendiente', 'portal-inicio', 'portal-inicio-vacio', 'portal-inicio-fallo-cita', 'portal-detalle-abierta'],
+        difference: 'El QR de las citas pasa a DentissaCoreAsistencia: el detalle de una cita abierta pierde la sección "Código QR de acceso" y "Descargar QR", y el inicio del paciente deja "Ver detalle" en la tarjeta de su próxima cita.',
     },
     {
         criterion: '028 CA1',

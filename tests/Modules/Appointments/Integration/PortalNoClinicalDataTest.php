@@ -52,9 +52,7 @@ it('never sends internal clinical data, contact data or data of other patients',
         $this->getJson('/api/v1/portal/appointments')->assertOk()->getContent(),
         $this->getJson('/api/v1/portal/appointments/next')->assertOk()->getContent(),
         $this->getJson('/api/v1/portal/appointments/'.$completed->id.'/prescriptions')->assertOk()->getContent(),
-        $this->get('/api/v1/portal/appointments/'.$open->id.'/qr')->assertOk()->getContent(),
         $this->getJson('/api/v1/portal/appointments/'.$foreign->id.'/prescriptions')->assertNotFound()->getContent(),
-        $this->getJson('/api/v1/portal/appointments/'.$foreign->id.'/qr')->assertNotFound()->getContent(),
     ];
 
     $everything = implode("\n", $answers);

@@ -253,8 +253,8 @@
 @else
 {{--
     Spec 025 (c3, CA1, CA2, CA9): the start of the patient takes the greeting and the sections of
-    the start of the staff. The next appointment comes from the API (portal/home.js); its QR goes
-    under the card with "Descargar QR" and "Ver detalle". The accesses wait hidden until the next
+    the start of the staff. The next appointment comes from the API (portal/home.js), with "Ver
+    detalle" in the card. The accesses wait hidden until the next
     appointment is known, so nothing in sight jumps when it arrives (K6).
 --}}
 <div class="space-y-6" data-portal-home>
@@ -274,19 +274,18 @@
                 <p class="{{ $loading }} mt-3" data-dashboard-state="loading">Cargando…</p>
                 <div data-dashboard-state="empty" hidden>
                     <p class="mt-3 text-xl font-bold text-ink">Aún no tienes una cita agendada</p>
-                    <p class="mt-1 text-sm text-muted">Cuando la clínica te agende una, aquí verás la fecha, la hora y tu código QR de acceso.</p>
+                    <p class="mt-1 text-sm text-muted">Cuando la clínica te agende una, aquí verás la fecha y la hora.</p>
                     <div class="mt-4 flex flex-wrap gap-3">
                         <x-ui.button href="{{ route('contacto') }}">Contacta a la clínica</x-ui.button>
                     </div>
                 </div>
                 @include('pages.dashboard.section-error')
                 <div data-dashboard-content hidden>
-                    <x-dashboard.next-appointment class="mt-3"><x-slot:actions></x-slot:actions></x-dashboard.next-appointment>
-                    <x-appointments.qr-block class="mt-4" wide text="Muestra este código en la recepción.">
+                    <x-dashboard.next-appointment class="mt-3">
                         <x-slot:actions>
                             <x-ui.button data-portal-next-detail>Ver detalle</x-ui.button>
                         </x-slot:actions>
-                    </x-appointments.qr-block>
+                    </x-dashboard.next-appointment>
                 </div>
             </section>
         </div>

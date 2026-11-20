@@ -15,8 +15,7 @@
     </div>
     <p class="mt-3 text-xl font-bold text-ink" data-next-patient></p>
     <p class="mt-1 text-sm text-muted" data-next-detail></p>
-    {{-- Spec 025: the patient portal gives its own actions (none in c3: they go next to the QR);
-         without them, those of the staff. --}}
+    {{-- Spec 025: the patient portal gives its own actions; without them, those of the staff. --}}
     @isset($actions)
         @if ($actions->isNotEmpty())
             <div class="mt-4 flex flex-wrap gap-3">{{ $actions }}</div>

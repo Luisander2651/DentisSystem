@@ -13,9 +13,6 @@
 >
     <dl data-view-appointment-general></dl>
 
-    {{-- Spec 024: the QR code of an open appointment, for reception to show or send to the patient. --}}
-    <x-appointments.qr-block class="mt-4" title="Código QR de acceso" text="Muéstralo o mándalo al paciente para que entre el día de su cita." />
-
     <section class="mt-4 hidden" aria-labelledby="view-appointment-clinical-title" data-view-appointment-clinical-section>
         <h3 id="view-appointment-clinical-title" class="text-base font-bold text-ink">Registro clínico</h3>
         <div class="mt-2" data-view-appointment-clinical-body></div>

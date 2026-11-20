@@ -22,8 +22,8 @@ return [
     ],
 
     'privacy' => [
-        'version' => '1.0',
-        'updated_at' => '2026-11-03',
+        'version' => '1.1',
+        'updated_at' => '2026-11-20',
     ],
 
     'terms' => [

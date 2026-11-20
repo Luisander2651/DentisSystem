@@ -1,7 +1,6 @@
 import { closeDialog, openDialog } from '../../ui/dialog';
 import { stateBadge } from '../../ui/badge';
 import { announceError, failureMessage } from '../../ui/status';
-import { createAppointmentQr, qrFilename } from '../../ui/appointment-qr';
 import { renderPrescriptions } from '../../ui/prescriptions';
 
 (function () {
@@ -26,8 +25,6 @@ import { renderPrescriptions } from '../../ui/prescriptions';
     var editButton = modal.querySelector('[data-view-appointment-edit]');
     var cancelAppointmentButton = modal.querySelector('[data-view-appointment-cancel-appointment]');
     var cancelButtons = modal.querySelectorAll('[data-view-appointment-cancel]');
-    // Spec 024, shared with the patient portal since spec 025 (resources/js/ui/appointment-qr.js).
-    var qr = createAppointmentQr(modal.querySelector('[data-view-appointment-qr]'));
 
     if (!generalContainer || !clinicalSection || !clinicalBody) {
         return;
@@ -167,7 +164,6 @@ import { renderPrescriptions } from '../../ui/prescriptions';
         activeAppointmentId = appointmentId;
         activeAppointmentSummary = null;
         hideError();
-        if (qr) qr.reset();
         generalContainer.innerHTML = '';
         clinicalSection.classList.add('hidden');
         clinicalBody.innerHTML = '';
@@ -210,17 +206,6 @@ import { renderPrescriptions } from '../../ui/prescriptions';
             }
             if (isOpen && cancelAppointmentButton && canCancel) {
                 cancelAppointmentButton.hidden = false;
-            }
-
-            // Spec 024 (CA5, CA7): only an open appointment gets in, so only it shows its QR code.
-            if (isOpen) {
-                if (qr) {
-                    qr.show({
-                        src: '/api/v1/appointments/' + encodeURIComponent(appointmentId) + '/qr',
-                        alt: 'Código QR de la cita del ' + formatDate(appointment.date),
-                        filename: qrFilename(appointment.date, appointment.time),
-                    });
-                }
             }
 
             // Spec 018 (CA3, CA9): the administrator reads every clinical record, the doctor only
@@ -289,7 +274,6 @@ import { renderPrescriptions } from '../../ui/prescriptions';
         }
 
         openingCount++;
-        if (qr) qr.reset();
         activeAppointmentId = null;
         activeAppointmentSummary = null;
     });

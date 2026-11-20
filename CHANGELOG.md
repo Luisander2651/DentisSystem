@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-11-20
+El código QR de las citas y las consultas del microservicio de asistencias pasan a DentissaCoreAsistencia.
+
+### Removed
+- El detalle de una cita en la agenda, el detalle de la cita en el portal y el inicio del paciente ya no muestran el código QR de acceso ni "Descargar QR".
+- Dentissa ya no atiende las consultas del microservicio de asistencias (citas de hoy y una cita por su identificador).
+
+### Changed
+- El Aviso de Privacidad (versión 1.1) ya no menciona el código QR de las citas.
+- En el inicio del paciente, "Ver detalle" queda en la tarjeta de la próxima cita.
+
 ## [0.13.0] - 2026-11-20
 Las listas del panel y del portal se recorren por páginas (spec 028).
 
