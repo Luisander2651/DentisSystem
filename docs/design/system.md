@@ -7,7 +7,7 @@ html: docs/design/system.html
 canvas: null
 widths: [390, 768, 1440]
 created: 2026-10-04
-updated: 2026-11-18
+updated: 2026-11-22
 ---
 
 # Sistema de diseño de Dentissa
@@ -287,7 +287,7 @@ franja de 6 px en `primary` a la izquierda: el rosa como acento, no como fondo. 
 700 con cifras tabulares y su insignia de estado, el paciente en 20 px / 700, el tratamiento y el
 doctor en `muted`, las acciones en `secondary` y la línea "Después: …" con las dos citas siguientes
 y cuántas más quedan. Desde la spec 025, el slot `actions` sustituye a los botones del personal; si
-llega vacío no se pinta la fila (el portal del paciente pone sus acciones junto al QR). En el
+llega vacío no se pinta la fila (el portal del paciente pone ahí "Ver detalle"). En el
 portal, la etiqueta es "Próxima cita" y la línea de 20 px lleva la fecha ("Jueves 12 de noviembre").
 
 ### Barra del día · `x-dashboard.day-progress`
@@ -361,21 +361,6 @@ negrita, la fecha y la hora, advertencia en `danger` ("Esta acción no se puede 
 "No, mantenerla" (`secondary`, recibe el foco) / "Sí, cancelar la cita" (`danger`). No reutiliza
 `x-ui.confirm-delete-modal` porque ese fija sus textos.
 
-### Código QR de la cita · `x-appointments.qr-block` y `resources/js/ui/appointment-qr.js`
-Bloque del detalle de la cita (spec 024; componente propio desde la spec 025, que lo usa también en
-el detalle y en el inicio del portal del paciente), solo en citas asignadas o reprogramadas, después
-de sus datos. Props: `title`, `text`, `headingId` y `wide`; con `wide` (inicio del paciente) va sin
-título, con el texto y los botones junto a la imagen desde 768 px y un slot `actions` para botones
-propios ("Ver detalle"), y su aviso dice "… Vuelve a cargar la página.". Título "Código QR de acceso" (`text-base font-bold`), una línea en `text-muted` y el QR como
-`<img>` de **240 × 240 px** (`size-60`), sobre `bg-surface` con `p-2`, `border-field` y
-`rounded-box`: el marco reserva el espacio, así que el detalle no salta al cargar. Debajo,
-"Descargar QR" (`x-ui.button` `secondary`, deshabilitado hasta que la imagen carga), que descarga
-`cita-AAAA-MM-DD-HHMM.png` sin datos del paciente. Texto alternativo: "Código QR de la cita del
-<fecha>". Si la imagen no carga, el QR se oculta y aparece en su lugar un aviso persistente
-(`danger`): "No pudimos cargar el código QR. Cierra el detalle y vuelve a abrirlo.", que se
-anuncia una sola vez por la región de estado de la página (`announceError`), no como `role="alert"`.
-Sin valores visuales nuevos.
-
 ### Historial de citas · `records/appointments-history-table` y `resources/js/ui/appointments-history.js`
 Historial del expediente (spec 016, CA27), compartido con "Mis citas" del portal del paciente desde
 la spec 025: una tarjeta por cita por debajo de 768 px y una tabla (Fecha, Hora, Tratamiento,
@@ -444,7 +429,7 @@ Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
 |---|---|---|---|
 | Inicio (sitio público) | [capturas/inicio-390.png](capturas/inicio-390.png) | [capturas/inicio-1440.png](capturas/inicio-1440.png) | barra, tarjetas, preguntas frecuentes, pie |
 | Inicio del panel | [capturas/dashboard-administrador-390.png](capturas/dashboard-administrador-390.png) | [capturas/dashboard-administrador-1440.png](capturas/dashboard-administrador-1440.png) | menú lateral, siguiente cita, barra del día, línea de ahora, pendientes |
-| Portal del paciente | [capturas/portal-inicio-390.png](capturas/portal-inicio-390.png) | [capturas/portal-inicio-1440.png](capturas/portal-inicio-1440.png) | menú lateral, próxima cita con su QR, historial |
+| Portal del paciente | [capturas/portal-inicio-390.png](capturas/portal-inicio-390.png) | [capturas/portal-inicio-1440.png](capturas/portal-inicio-1440.png) | menú lateral, próxima cita, historial |
 | Agenda | [capturas/agenda-con-citas-390.png](capturas/agenda-con-citas-390.png) | [capturas/agenda-con-citas-1440.png](capturas/agenda-con-citas-1440.png) | calendario, filtros, diálogos |
 | Agenda, un día sin citas para hoy | `/agenda` | Administrador | [390](capturas/agenda-hoy-sin-citas-390.png) · [1440](capturas/agenda-hoy-sin-citas-1440.png) | capturada |
 | Pacientes | [capturas/pacientes-390.png](capturas/pacientes-390.png) | [capturas/pacientes-1440.png](capturas/pacientes-1440.png) | búsqueda, tarjetas, diálogos |
@@ -454,7 +439,7 @@ Sin cambios respecto al sistema 1.0.0. Ninguna animación declara versión con
 
 **Todas** las vistas de la app, con capturas de la app real hechas con datos de prueba. Nada se
 dibuja a mano. **122 de 122 vistas capturadas** (234 imágenes, a 390 y 1440 px). Todas se regeneraron el
-2026-11-18 con `ui-audit` en local, sobre los datos de `UiAuditSeeder` y el contenido de desarrollo de la base local, que se
+2026-11-22 con `ui-audit` en local, sobre los datos de `UiAuditSeeder` y el contenido de desarrollo de la base local, que se
 ve en las listas del administrador, la galería y las certificaciones. Las capturas anteriores eran de octubre y
 no mostraban "Reportes" en el menú lateral (spec 019), el portal del paciente (spec 025) ni el sitio público nuevo (spec 026).
 Se capturan con movimiento reducido y con las secciones diferidas (`content-visibility: auto`) y las imágenes perezosas
@@ -491,14 +476,13 @@ archivado.
 | Inicio del panel, con datos | `/dashboard` | Asistente | [390](capturas/dashboard-asistente-390.png) · [1440](capturas/dashboard-asistente-1440.png) | capturada (spec 020): sin el mes ni las completadas sin seguimiento |
 | Inicio del panel, con datos | `/dashboard` | Doctor | [390](capturas/dashboard-doctor-390.png) · [1440](capturas/dashboard-doctor-1440.png) | capturada (spec 020): solo sus citas, sin el mes |
 | Inicio del panel, vacío y error de una sección | `/dashboard` | Administrador | [1440](capturas/dashboard-administrador-flujos-1440.png) | capturada a 1440 px; `ui-audit` comprueba los flujos de vacío, carga, error y "Reintentar" (spec 020) |
-| Portal del paciente, inicio con su próxima cita | `/dashboard` · `pages/dashboard.blade.php` | Paciente | [390](capturas/portal-inicio-390.png) · [1440](capturas/portal-inicio-1440.png) | capturada (spec 025): próxima cita con su QR |
+| Portal del paciente, inicio con su próxima cita | `/dashboard` · `pages/dashboard.blade.php` | Paciente | [390](capturas/portal-inicio-390.png) · [1440](capturas/portal-inicio-1440.png) | capturada (spec 025): próxima cita con "Ver detalle" |
 | Portal del paciente, inicio sin próxima cita | `/dashboard` | Paciente | [390](capturas/portal-inicio-vacio-390.png) · [1440](capturas/portal-inicio-vacio-1440.png) | capturada (spec 025) |
-| Portal del paciente, inicio si el QR no carga | `/dashboard` | Paciente | [390](capturas/portal-inicio-fallo-qr-390.png) · [1440](capturas/portal-inicio-fallo-qr-1440.png) | capturada (spec 025): la cita sigue a la vista con un aviso |
 | Portal del paciente, inicio si la cita no carga | `/dashboard` | Paciente | [390](capturas/portal-inicio-fallo-cita-390.png) · [1440](capturas/portal-inicio-fallo-cita-1440.png) | capturada (spec 025) |
 | Portal del paciente, Mis citas | `/mis-citas` · `pages/portal/appointments.blade.php` | Paciente | [390](capturas/portal-mis-citas-390.png) · [1440](capturas/portal-mis-citas-1440.png) | capturada (spec 025) |
 | Portal del paciente, Mis citas sin citas | `/mis-citas` | Paciente | [390](capturas/portal-mis-citas-vacio-390.png) · [1440](capturas/portal-mis-citas-vacio-1440.png) | capturada (spec 025) |
 | Portal del paciente, Mis citas si el historial no carga | `/mis-citas` | Paciente | [390](capturas/portal-mis-citas-fallo-390.png) · [1440](capturas/portal-mis-citas-fallo-1440.png) | capturada (spec 025) |
-| Portal del paciente, detalle de una cita abierta (con su QR) | `components/portal/appointment-detail-modal.blade.php` | Paciente | [390](capturas/portal-detalle-abierta-390.png) · [1440](capturas/portal-detalle-abierta-1440.png) | capturada (spec 025) |
+| Portal del paciente, detalle de una cita abierta | `components/portal/appointment-detail-modal.blade.php` | Paciente | [390](capturas/portal-detalle-abierta-390.png) · [1440](capturas/portal-detalle-abierta-1440.png) | capturada (spec 025) |
 | Portal del paciente, detalle de una cita completada (recetas y recomendaciones) | `components/portal/appointment-detail-modal.blade.php` | Paciente | [390](capturas/portal-detalle-completada-390.png) · [1440](capturas/portal-detalle-completada-1440.png) | capturada (spec 025) |
 | Portal del paciente, detalle de una cita completada sin recetas | `components/portal/appointment-detail-modal.blade.php` | Paciente | [390](capturas/portal-detalle-sin-recetas-390.png) · [1440](capturas/portal-detalle-sin-recetas-1440.png) | capturada (spec 025) |
 | Portal del paciente, detalle de una cita cancelada | `components/portal/appointment-detail-modal.blade.php` | Paciente | [390](capturas/portal-detalle-cancelada-390.png) · [1440](capturas/portal-detalle-cancelada-1440.png) | capturada (spec 025) |
@@ -672,3 +656,4 @@ lo nuevo a partir del último.
 | 2026-11-15 | diseño | Tonos de la dentadura del antes y después (spec 026, dentro de 2.1.0, aún sin liberar) | Once tokens decorativos más (encía, interior de la boca, sombra de contacto y esmalte) que la dentadura 3D de la galería lee al arrancar, como el diente del inicio; reutiliza `--color-enamel-white`, `--color-blush`, `--color-primary-tint-2` y `--color-primary` | usuario (spec 026 CA18 editada, `design.md` refinado 2026-11-15) |
 | 2026-11-13 | diseño | Pregunta abierta del acordeón del sitio público | `--color-primary-strong` (`#ba4168`): `primary-deep` se veía oscuro y `primary` no llega a 4.5:1 con texto blanco (3.96:1); se probó texto en tinta sobre `primary` y se descartó | usuario (spec 026, `design.md` → Decisiones) |
 | 2026-11-18 | diseño | Paginación de las listas del panel y del portal (spec 028) | Componente "Paginación" del candidato `c3` de la spec 028 (80/100): resumen "Mostrando X–Y de N", números con "…", "Anterior" y "Siguiente", cortes de 768 y 1024 px; sin tokens nuevos. El anuncio del cambio de página va por la región de estado de la pantalla, no por una región propia en el resumen | usuario (spec 028, `design.md`; plan D6) |
+| 2026-11-22 | diseño | Retiro del código QR de las citas | Sale el bloque "Código QR de la cita" (`x-appointments.qr-block`) del detalle del personal, del detalle del portal y del inicio del paciente, que ahora lleva "Ver detalle" en la tarjeta de la próxima cita; se quita la vista "inicio si el QR no carga" y se recapturan todas las vistas a 390 y 1440 px. Sin tokens nuevos | usuario (chore de retiro de QR y asistencias, v0.14.0) |
